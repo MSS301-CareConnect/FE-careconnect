@@ -1,0 +1,123 @@
+import { useTranslation } from 'react-i18next'
+import { Link, NavLink } from 'react-router'
+
+import { Icon } from '~/shared/ui/icon'
+import { LanguageSwitch } from '~/shared/ui/language-switch'
+
+const AVATAR_URL =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuCOwlf-ropD0XzVPucNjZeyxWfHNYpZLLHO2tA1QIuWfZ33VlxhbzZTIB1YcbZ-rwHFz13i956cRk1gpsZ5cVjIOynvR4Gd4LbdRVa3Ef_NT-ET7V8rZN8V8yMzP5Cg8PfibQW0z9t2RpWlbRfADs2Dkv0NrgxUMMGgnfxRundX7EQUrkPQPXvOi09tDoRqfnJqaCo_VxeS0EBCgou4W0BpxNDZYLe95AOHSs04kmU1O5nEy0vYKnKE8A'
+
+export function CustomerHeader() {
+  const { t } = useTranslation()
+
+  return (
+    <header className='fixed top-0 left-0 z-50 w-full bg-surface-container-lowest/90 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl'>
+      <div className='mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-6'>
+        <div className='flex items-center gap-6'>
+          <Link to='/' className='flex items-center gap-2'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm'>
+              <Icon name='health_and_safety' className='text-2xl' />
+            </div>
+            <span className='text-xl font-bold tracking-tight text-primary'>{t('common.brand')}</span>
+          </Link>
+
+          <nav className='hidden items-center gap-1 lg:flex'>
+            <NavLink
+              to='/'
+              end
+              className={({ isActive }) =>
+                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+            >
+              {t('customer.nav.home')}
+            </NavLink>
+            <NavLink
+              to='/customer/caregivers'
+              className={({ isActive }) =>
+                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+            >
+              {t('customer.nav.findCaregivers')}
+            </NavLink>
+            <NavLink
+              to='/customer/bookings'
+              className={({ isActive }) =>
+                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+            >
+              {t('customer.nav.myBookings')}
+            </NavLink>
+            <NavLink
+              to='/customer/patient-profiles'
+              className={({ isActive }) =>
+                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+            >
+              {t('customer.nav.familyProfiles')}
+            </NavLink>
+            <NavLink
+              to='/customer/messages'
+              className={({ isActive }) =>
+                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+            >
+              {t('customer.nav.messages')}
+            </NavLink>
+          </nav>
+        </div>
+
+        <div className='flex items-center gap-3'>
+          <LanguageSwitch />
+
+          <button
+            type='button'
+            aria-label={t('customer.nav.notifications')}
+            className='relative rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface'
+          >
+            <Icon name='notifications' />
+            <span className='absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-error ring-2 ring-surface-container-lowest' />
+          </button>
+
+          <Link
+            to='/customer/my-profile'
+            title={t('customer.nav.myProfile')}
+            aria-label={t('customer.nav.myProfile')}
+            className='flex items-center gap-2 rounded-xl p-1 transition-colors hover:bg-surface-container'
+          >
+            <img
+              src={AVATAR_URL}
+              alt={t('customer.profile.overview.avatarAlt')}
+              className='h-9 w-9 rounded-full object-cover ring-2 ring-primary/20 transition-all hover:ring-primary'
+            />
+            <div className='hidden text-left sm:flex sm:flex-col'>
+              <span className='text-xs font-semibold leading-tight text-on-surface'>{t('customer.nav.userName')}</span>
+              <span className='text-[11px] leading-tight text-on-surface-variant'>
+                {t('customer.nav.customerRole')}
+              </span>
+            </div>
+          </Link>
+        </div>
+      </div>
+    </header>
+  )
+}

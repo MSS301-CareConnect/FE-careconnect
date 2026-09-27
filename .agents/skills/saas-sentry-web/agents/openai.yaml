@@ -1,0 +1,4 @@
+interface:
+  display_name: "SaaS-Sentry Web"
+  short_description: "Build and verify the SaaS-Sentry web client"
+  default_prompt: "Use $saas-sentry-web to implement this web task within the documented architecture and run its quality gates."

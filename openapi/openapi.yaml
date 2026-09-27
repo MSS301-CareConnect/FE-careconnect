@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: CareConnect API
+  version: 0.1.0
+  description: >-
+    Committed frontend snapshot of the backend contract. Replace this bootstrap
+    document with the OpenAPI export produced by NestJS when Swagger is enabled.
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: System
+    description: Bootstrap and health-style endpoints
+paths:
+  /:
+    get:
+      operationId: getApiStatus
+      summary: Read the current backend bootstrap response
+      tags:
+        - System
+      responses:
+        '200':
+          description: Backend is reachable
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ApiStatusResponse'
+components:
+  schemas:
+    ApiStatusResponse:
+      type: string
+      example: Hello World!
