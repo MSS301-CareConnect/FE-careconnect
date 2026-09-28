@@ -1,3 +1,6 @@
+import { careReportEn, careReportVi } from './care-report-resources'
+import { bookingReviewEn, bookingReviewVi } from './booking-review-resources'
+
 export const resources = {
   en: {
     translation: {
@@ -48,10 +51,205 @@ export const resources = {
         title: 'Page not found'
       },
       customer: {
+        careReport: careReportEn,
+        bookingReview: bookingReviewEn,
+        bookingDetail: {
+          documentTitle: 'Booking {{code}} | CareConnect',
+          breadcrumb: 'Booking details',
+          title: 'Care session details',
+          sampleNotice: 'This page shows sample booking data. Live clinical updates and actions are not connected yet.',
+          notFound: {
+            title: 'Booking not found',
+            description: 'This booking code is not in the available booking preview.',
+            back: 'Back to my bookings'
+          },
+          status: {
+            ongoing: 'Care in progress',
+            upcoming: 'Care scheduled',
+            completed: 'Care completed',
+            cancelled: 'Booking cancelled'
+          },
+          timeline: {
+            title: 'Care session progress',
+            schedule: 'Scheduled session',
+            progress: 'Session progress',
+            current: 'Current step',
+            steps: {
+              confirmed: 'Booking confirmed',
+              assigned: 'Caregiver assigned',
+              checkIn: 'Home check-in',
+              care: 'Care in progress',
+              complete: 'Session handover'
+            },
+            note: {
+              ongoing: 'The caregiver is carrying out the scheduled care plan.',
+              upcoming: 'The session is confirmed and waiting for the scheduled start time.',
+              completed: 'The care session has ended.',
+              cancelled: 'This booking was cancelled. No care session is in progress.'
+            }
+          },
+          vitals: {
+            title: 'Sample vital signs',
+            measured: 'Illustrative measurements from the provided design',
+            stable: 'Stable',
+            bloodPressure: 'Blood pressure',
+            oxygen: 'Oxygen saturation',
+            pulse: 'Heart rate',
+            temperature: 'Body temperature',
+            glucose: 'Blood glucose',
+            next: 'Next scheduled check',
+            normal: 'Normal',
+            good: 'Good',
+            regular: 'Regular',
+            beforeMeal: 'Before meal'
+          },
+          feed: {
+            title: 'Sample care journal',
+            subtitle: 'Illustrative entries from the provided design',
+            entries: {
+              start: { title: 'Session started', description: 'Check-in and initial wellbeing assessment.' },
+              medicine: { title: 'Morning medication', description: 'Medication support according to the care plan.' },
+              nursing: { title: 'Nursing care', description: 'Personal care and dressing check.' },
+              therapy: { title: 'Mobility exercises', description: 'Assisted rehabilitation exercises.' },
+              lunch: { title: 'Preparing lunch', description: 'A suitable meal is being prepared.' }
+            }
+          },
+          service: {
+            title: 'Care service package',
+            description: 'The care plan associated with this booking.',
+            included: 'Planned care activities',
+            items: {
+              monitoring: 'Monitor vital signs during the session',
+              movement: 'Support mobility and rehabilitation exercises',
+              hygiene: 'Assist with safe personal care',
+              medication: 'Support medication according to instructions',
+              report: 'Prepare a care summary after the session'
+            }
+          },
+          people: {
+            title: 'Care location and recipient',
+            address: 'Care location',
+            patient: 'Care recipient',
+            caregiver: 'Assigned caregiver',
+            caregiverNote: 'Caregiver details are shown as a preview.'
+          },
+          payment: {
+            title: 'Cost and payment',
+            total: 'Session total',
+            paid: 'Deposit paid',
+            remaining: 'Remaining balance',
+            refunded: 'Deposit refunded',
+            status: 'Payment status'
+          },
+          policy: {
+            title: 'Cancellation and support',
+            before: 'Cancellation and refund terms depend on the confirmed booking policy.',
+            during: 'For urgent care concerns, contact CareConnect support through the official channel.',
+            unavailable: 'Calling, messaging, and emergency stop are available after backend integration.',
+            call: 'Call caregiver',
+            message: 'Message caregiver',
+            stop: 'Request emergency stop'
+          }
+        },
+        myBookings: {
+          documentTitle: 'My Bookings | CareConnect',
+          breadcrumb: 'My Bookings',
+          title: 'Manage care bookings',
+          subtitle: 'Track confirmed sessions, care updates, and schedules for your family.',
+          newBooking: 'Book a new care session',
+          sampleNotice: 'Preview bookings while live booking history is being connected.',
+          stats: {
+            ongoing: 'Ongoing',
+            upcoming: 'Upcoming',
+            completed: 'Completed',
+            cancelled: 'Cancelled / Refunded'
+          },
+          tabs: {
+            all: 'All bookings',
+            ongoing: 'Ongoing',
+            upcoming: 'Upcoming',
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+          },
+          filters: {
+            month: 'Month',
+            allMonths: 'All dates',
+            patient: 'Family member',
+            allPatients: 'All family members',
+            search: 'Search by booking code, family member, or caregiver',
+            reset: 'Reset filters'
+          },
+          patients: {
+            father: 'Mr. Nguyen Van An',
+            mother: 'Ms. Nguyen Thi A'
+          },
+          items: {
+            ongoing: {
+              status: 'In progress',
+              patient: 'Mr. Nguyen Van An',
+              relation: '78 years old · Father (high blood pressure)',
+              caregiverRole: 'Emergency care specialist',
+              service: 'Advanced elderly care',
+              location: 'Apartment 18.04, Landmark 2, Vinhomes Central Park, Binh Thanh',
+              note: 'Checked in at 07:55 · 4h 15m of 9h completed',
+              payment: '50% deposit paid · 800,000 ₫ remaining'
+            },
+            upcoming: {
+              status: 'Confirmed and deposit paid',
+              patient: 'Ms. Nguyen Thi A',
+              relation: '76 years old · Mother (postoperative care)',
+              caregiverRole: 'Nursing graduate · 4.9 rating',
+              service: 'Recovery and mobility support',
+              location: 'Villa 42, Street 12, Thao Dien, Thu Duc City',
+              note: 'Session confirmed · Caregiver assigned',
+              payment: '750,000 ₫ deposit paid · 700,000 ₫ remaining'
+            },
+            completed: {
+              status: 'Completed',
+              patient: 'Ms. Nguyen Thi A',
+              relation: '76 years old · Mother',
+              caregiverRole: '10 years of elderly care experience',
+              service: 'Routine nursing and blood sugar monitoring',
+              location: 'Thao Dien, Thu Duc City',
+              note: 'Your rating: 5/5 · Attentive care and timely reports',
+              payment: 'Paid in full via Visa · Invoice #VAT-9750'
+            },
+            cancelled: {
+              status: 'Cancelled and fully refunded',
+              patient: 'Mr. Nguyen Van An',
+              relation: '78 years old · Father',
+              caregiverRole: 'Cardiology specialist',
+              service: 'Home nursing care',
+              location: 'Binh Thanh, Ho Chi Minh City',
+              note: 'Cancelled more than 24 hours before the session',
+              payment: '100% deposit refunded · 450,000 ₫'
+            }
+          },
+          labels: {
+            patient: 'Care recipient',
+            caregiver: 'Assigned caregiver',
+            service: 'Service package',
+            total: 'Total cost',
+            schedule: 'Schedule',
+            location: 'Care location',
+            payment: 'Payment status'
+          },
+          actions: {
+            details: 'View details',
+            close: 'Close details',
+            bookAgain: 'Book again',
+            findCaregiver: 'Find another caregiver'
+          },
+          empty: {
+            title: 'No matching bookings',
+            description: 'Try another search term or change the filters to view your care history.'
+          }
+        },
         nav: {
           home: 'Home',
           findCaregivers: 'Find Caregivers',
           myBookings: 'My Bookings',
+          menu: 'Customer menu',
           familyProfiles: 'Family Profiles',
           messages: 'Messages',
           notifications: 'Notifications',
@@ -961,10 +1159,206 @@ export const resources = {
         title: 'Không tìm thấy trang'
       },
       customer: {
+        careReport: careReportVi,
+        bookingReview: bookingReviewVi,
+        bookingDetail: {
+          documentTitle: 'Chi tiết lịch {{code}} | CareConnect',
+          breadcrumb: 'Chi tiết ca trực',
+          title: 'Chi tiết ca chăm sóc',
+          sampleNotice:
+            'Trang đang hiển thị dữ liệu lịch đặt mẫu. Cập nhật lâm sàng và thao tác trực tiếp chưa được kết nối.',
+          notFound: {
+            title: 'Không tìm thấy lịch đặt',
+            description: 'Mã lịch đặt này không có trong dữ liệu mẫu hiện tại.',
+            back: 'Quay lại lịch đặt của tôi'
+          },
+          status: {
+            ongoing: 'Đang chăm sóc',
+            upcoming: 'Sắp diễn ra',
+            completed: 'Đã hoàn thành',
+            cancelled: 'Đã hủy'
+          },
+          timeline: {
+            title: 'Tiến trình ca trực',
+            schedule: 'Thời gian ca trực',
+            progress: 'Tiến độ ca',
+            current: 'Giai đoạn hiện tại',
+            steps: {
+              confirmed: 'Đã xác nhận đặt lịch',
+              assigned: 'Đã phân công',
+              checkIn: 'Check-in tại nhà',
+              care: 'Đang chăm sóc',
+              complete: 'Nghiệm thu ca'
+            },
+            note: {
+              ongoing: 'Điều dưỡng đang thực hiện kế hoạch chăm sóc đã đặt.',
+              upcoming: 'Ca trực đã được xác nhận và đang chờ đến giờ bắt đầu.',
+              completed: 'Ca chăm sóc đã kết thúc.',
+              cancelled: 'Lịch đặt đã bị hủy. Hiện không có ca chăm sóc nào đang diễn ra.'
+            }
+          },
+          vitals: {
+            title: 'Chỉ số sinh hiệu mẫu',
+            measured: 'Số đo minh họa theo giao diện được cung cấp',
+            stable: 'Ổn định',
+            bloodPressure: 'Huyết áp',
+            oxygen: 'Oxy máu',
+            pulse: 'Nhịp tim',
+            temperature: 'Thân nhiệt',
+            glucose: 'Đường huyết',
+            next: 'Lần đo kế tiếp theo lịch',
+            normal: 'Bình thường',
+            good: 'Tốt',
+            regular: 'Đều',
+            beforeMeal: 'Trước ăn'
+          },
+          feed: {
+            title: 'Nhật ký chăm sóc mẫu',
+            subtitle: 'Các mục minh họa theo giao diện được cung cấp',
+            entries: {
+              start: { title: 'Bắt đầu ca trực', description: 'Check-in và kiểm tra sức khỏe ban đầu.' },
+              medicine: { title: 'Dùng thuốc sáng', description: 'Hỗ trợ dùng thuốc theo kế hoạch chăm sóc.' },
+              nursing: { title: 'Chăm sóc điều dưỡng', description: 'Vệ sinh cá nhân và kiểm tra băng gạc.' },
+              therapy: { title: 'Tập phục hồi vận động', description: 'Hỗ trợ các bài tập phục hồi chức năng.' },
+              lunch: { title: 'Chuẩn bị bữa trưa', description: 'Đang chuẩn bị bữa ăn phù hợp.' }
+            }
+          },
+          service: {
+            title: 'Thông tin gói dịch vụ y tế',
+            description: 'Kế hoạch chăm sóc gắn với lịch đặt này.',
+            included: 'Nội dung chăm sóc dự kiến',
+            items: {
+              monitoring: 'Theo dõi sinh hiệu trong ca trực',
+              movement: 'Hỗ trợ tập vận động và phục hồi chức năng',
+              hygiene: 'Hỗ trợ vệ sinh cá nhân an toàn',
+              medication: 'Hỗ trợ dùng thuốc theo hướng dẫn',
+              report: 'Tổng hợp báo cáo chăm sóc sau ca'
+            }
+          },
+          people: {
+            title: 'Địa chỉ & người nhận chăm sóc',
+            address: 'Địa điểm chăm sóc',
+            patient: 'Người nhận chăm sóc',
+            caregiver: 'Điều dưỡng phụ trách',
+            caregiverNote: 'Thông tin điều dưỡng đang ở chế độ xem mẫu.'
+          },
+          payment: {
+            title: 'Chi phí & thanh toán',
+            total: 'Tổng chi phí ca trực',
+            paid: 'Tiền cọc đã thanh toán',
+            remaining: 'Còn lại cần quyết toán',
+            refunded: 'Tiền cọc đã hoàn',
+            status: 'Tình trạng thanh toán'
+          },
+          policy: {
+            title: 'Chính sách hủy ca & hỗ trợ',
+            before: 'Điều kiện hủy và hoàn cọc áp dụng theo chính sách của lịch đặt đã xác nhận.',
+            during: 'Nếu có vấn đề chăm sóc khẩn cấp, hãy liên hệ CareConnect qua kênh hỗ trợ chính thức.',
+            unavailable: 'Gọi điện, nhắn tin và dừng ca khẩn cấp sẽ khả dụng sau khi kết nối backend.',
+            call: 'Gọi điện cho điều dưỡng',
+            message: 'Nhắn tin cho điều dưỡng',
+            stop: 'Yêu cầu dừng ca khẩn cấp'
+          }
+        },
+        myBookings: {
+          documentTitle: 'Lịch đặt của tôi | CareConnect',
+          breadcrumb: 'Lịch đặt của tôi',
+          title: 'Quản lý lịch chăm sóc',
+          subtitle: 'Theo dõi trạng thái xác nhận, cập nhật ca trực và lịch chăm sóc cho người thân.',
+          newBooking: 'Đặt lịch chăm sóc mới',
+          sampleNotice: 'Dữ liệu lịch đặt mẫu trong khi hệ thống đang kết nối lịch sử đặt lịch.',
+          stats: {
+            ongoing: 'Đang diễn ra',
+            upcoming: 'Sắp diễn ra',
+            completed: 'Đã hoàn thành',
+            cancelled: 'Đã hủy / Hoàn cọc'
+          },
+          tabs: {
+            all: 'Tất cả lịch đặt',
+            ongoing: 'Đang diễn ra',
+            upcoming: 'Sắp diễn ra',
+            completed: 'Đã hoàn thành',
+            cancelled: 'Đã hủy'
+          },
+          filters: {
+            month: 'Tháng',
+            allMonths: 'Tất cả thời gian',
+            patient: 'Người thân',
+            allPatients: 'Tất cả người thân',
+            search: 'Tìm theo mã lịch, người thân hoặc điều dưỡng',
+            reset: 'Đặt lại bộ lọc'
+          },
+          patients: {
+            father: 'Nguyễn Văn An (Bố ruột)',
+            mother: 'Nguyễn Thị A (Mẹ ruột)'
+          },
+          items: {
+            ongoing: {
+              status: 'Đang trong ca trực',
+              patient: 'Cụ Nguyễn Văn An',
+              relation: '78 tuổi · Bố ruột (cao huyết áp)',
+              caregiverRole: 'Chuyên khoa Hồi sức cấp cứu',
+              service: 'Chăm sóc người cao tuổi chuyên sâu',
+              location: 'Phòng 18.04, Tòa Landmark 2, Vinhomes Central Park, Bình Thạnh',
+              note: 'Check-in 07:55 · Đã thực hiện 4h 15m / 9h',
+              payment: 'Đã thanh toán cọc 50% · Còn lại 800.000 ₫'
+            },
+            upcoming: {
+              status: 'Đã xác nhận & đã cọc',
+              patient: 'Nguyễn Thị A',
+              relation: '76 tuổi · Mẹ ruột (hậu phẫu chỉnh hình)',
+              caregiverRole: 'Cử nhân Điều dưỡng · Đánh giá 4,9',
+              service: 'Chăm sóc phục hồi & hỗ trợ vận động',
+              location: 'Biệt thự 42, Đường số 12, Thảo Điền, TP. Thủ Đức',
+              note: 'Đã khóa lịch · Điều dưỡng đã nhận ca',
+              payment: 'Đã cọc 750.000 ₫ · Còn lại 700.000 ₫'
+            },
+            completed: {
+              status: 'Hoàn tất 100%',
+              patient: 'Nguyễn Thị A',
+              relation: '76 tuổi · Mẹ ruột',
+              caregiverRole: '10 năm kinh nghiệm điều dưỡng lão khoa',
+              service: 'Chăm sóc y tế định kỳ & theo dõi đường huyết',
+              location: 'Thảo Điền, TP. Thủ Đức',
+              note: 'Đánh giá của bạn: 5/5 · Chăm sóc chu đáo, báo cáo đúng giờ',
+              payment: 'Đã thanh toán đủ qua Visa · Hóa đơn #VAT-9750'
+            },
+            cancelled: {
+              status: 'Đã hủy & hoàn cọc 100%',
+              patient: 'Cụ Nguyễn Văn An',
+              relation: '78 tuổi · Bố ruột',
+              caregiverRole: 'Khoa Tim mạch can thiệp',
+              service: 'Chăm sóc điều dưỡng tại nhà',
+              location: 'Bình Thạnh, TP. Hồ Chí Minh',
+              note: 'Hủy trước 24 giờ · Miễn phí hủy ca',
+              payment: 'Đã hoàn cọc 100% · 450.000 ₫'
+            }
+          },
+          labels: {
+            patient: 'Người nhận chăm sóc',
+            caregiver: 'Điều dưỡng phụ trách',
+            service: 'Gói dịch vụ',
+            total: 'Tổng chi phí',
+            schedule: 'Lịch chăm sóc',
+            location: 'Địa điểm chăm sóc',
+            payment: 'Tình trạng thanh toán'
+          },
+          actions: {
+            details: 'Xem chi tiết',
+            close: 'Đóng chi tiết',
+            bookAgain: 'Đặt lại ca này',
+            findCaregiver: 'Tìm điều dưỡng khác'
+          },
+          empty: {
+            title: 'Không tìm thấy ca trực phù hợp',
+            description: 'Thử từ khóa khác hoặc thay đổi bộ lọc để xem lại lịch sử chăm sóc.'
+          }
+        },
         nav: {
           home: 'Trang chủ',
           findCaregivers: 'Tìm người chăm sóc',
           myBookings: 'Lịch đặt của tôi',
+          menu: 'Menu khách hàng',
           familyProfiles: 'Hồ sơ người thân',
           messages: 'Tin nhắn',
           notifications: 'Thông báo',

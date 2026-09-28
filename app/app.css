@@ -57,3 +57,23 @@ body {
   font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+
+@media print {
+  body:has(.care-report-page) header,
+  body:has(.care-report-page) footer {
+    display: none;
+  }
+
+  body:has(.care-report-page) main {
+    padding-top: 0;
+  }
+
+  .care-report-page {
+    background: white;
+  }
+
+  .care-report-page section {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}

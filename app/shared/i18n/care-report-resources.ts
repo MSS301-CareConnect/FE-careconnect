@@ -1,0 +1,173 @@
+export const careReportEn = {
+  read: 'Read care report',
+  title: 'Care report · {{code}}',
+  documentTitle: 'Care report {{code}} | CareConnect',
+  breadcrumb: 'Care report',
+  subtitle: 'Care summary for the completed session.',
+  preview: 'Sample report. Clinical information and digital signatures in this report have not been verified.',
+  unavailable: 'No care report available',
+  unavailableDescription: 'A report is available only for a completed care session.',
+  back: 'Back to booking details',
+  print: 'Print / save PDF',
+  rate: 'Rate caregiver',
+  rebook: 'Book a similar session',
+  completed: 'Session completed',
+  completedDescription: 'The following care activities are shown as an illustrative completion summary.',
+  duration: 'Actual session duration',
+  hours: '{{count}} hours',
+  compliance: 'Care activity groups',
+  groupsCompleted: '4/4 completed in this sample',
+  patient: 'Care recipient',
+  caregiver: 'Assigned caregiver',
+  schedule: 'Date and time',
+  location: 'Care location',
+  tasksTitle: 'Care activities performed',
+  tasksSubtitle: 'Illustrative nursing notes grouped by care activity.',
+  taskCompleted: 'Completed',
+  tasks: {
+    nutrition: {
+      title: 'Nutrition and meals',
+      subtitle: 'Meals and hydration',
+      first: 'Prepared suitable meals and assisted the care recipient with eating.',
+      second: 'Recorded food intake and monitored swallowing during meals.',
+      third: 'Supported hydration according to the recorded care plan.'
+    },
+    medication: {
+      title: 'Medication support',
+      subtitle: 'According to the prescribed care plan',
+      first: 'Supported medication intake as instructed in the care plan.',
+      second: 'Observed the recipient after medication and recorded the response.',
+      third: 'Checked the remaining medication and handed over the medication record.'
+    },
+    hygiene: {
+      title: 'Personal hygiene and nursing care',
+      subtitle: 'Comfort and infection prevention',
+      first: 'Assisted with personal hygiene and kept bedding clean and dry.',
+      second: 'Checked skin condition and supported pressure area care.',
+      third: 'Recorded care observations for the family handover.'
+    },
+    mobility: {
+      title: 'Rehabilitation and mobility',
+      subtitle: 'Assisted movement',
+      first: 'Supported the planned gentle movement exercises.',
+      second: 'Assisted safe sitting and movement within the home.',
+      third: 'Recorded the recipient’s participation and comfort during exercises.'
+    }
+  },
+  notesTitle: 'Caregiver clinical notes',
+  notesSubtitle: 'Illustrative handover summary for the family',
+  notes:
+    'The recipient participated in care activities and mobility exercises. Meals, hydration, medication support, and personal care were recorded during the session. This text is sample content, not a verified clinical assessment.',
+  signatureTitle: 'Report signature',
+  signatureNote: 'The digital signature in this sample report has not been verified.',
+  vitalsTitle: 'Vital signs summary',
+  vitalsSubtitle: 'Illustrative measurements from the supplied design',
+  vitals: {
+    pressure: 'Blood pressure',
+    oxygen: 'Oxygen saturation',
+    pulse: 'Heart rate',
+    temperature: 'Temperature',
+    glucose: 'Blood glucose'
+  },
+  measurementNote: 'These values are sample data, not measurements from a connected device.',
+  paymentTitle: 'Payment and handover',
+  total: 'Session total',
+  paymentStatus: 'Payment status',
+  reviewTitle: 'Service quality review',
+  reviewDescription: 'Prepare your feedback for the caregiver.',
+  ratingLabel: 'Caregiver rating',
+  ratingOption: '{{count}} stars',
+  feedback: 'Feedback for the caregiver',
+  feedbackPlaceholder: 'Share your experience with this care session…',
+  submit: 'Send review',
+  reviewUnavailable: 'Your review is a draft. Sending reviews is not available yet.',
+  supportTitle: 'Questions about the report?',
+  supportDescription: 'Use the official CareConnect support channel to ask about the care report.'
+} as const
+
+export const careReportVi = {
+  read: 'Đọc báo cáo chăm sóc',
+  title: 'Báo cáo chăm sóc · {{code}}',
+  documentTitle: 'Báo cáo chăm sóc {{code}} | CareConnect',
+  breadcrumb: 'Báo cáo chăm sóc',
+  subtitle: 'Tổng hợp chăm sóc của ca trực đã hoàn thành.',
+  preview: 'Báo cáo mẫu. Thông tin lâm sàng và chữ ký số trong báo cáo chưa được xác thực.',
+  unavailable: 'Chưa có báo cáo chăm sóc',
+  unavailableDescription: 'Báo cáo chỉ khả dụng khi ca chăm sóc đã hoàn thành.',
+  back: 'Quay lại chi tiết lịch đặt',
+  print: 'In / lưu PDF báo cáo',
+  rate: 'Đánh giá điều dưỡng',
+  rebook: 'Đặt lại ca tương tự',
+  completed: 'Hoàn thành ca trực',
+  completedDescription: 'Các hạng mục dưới đây thể hiện bản tổng hợp hoàn thành mang tính minh họa.',
+  duration: 'Thời gian thực tế',
+  hours: '{{count}} giờ',
+  compliance: 'Nhóm công việc chăm sóc',
+  groupsCompleted: 'Hoàn thành 4/4 trong dữ liệu mẫu',
+  patient: 'Người nhận chăm sóc',
+  caregiver: 'Điều dưỡng phụ trách',
+  schedule: 'Thời gian & khung giờ',
+  location: 'Địa điểm chăm sóc',
+  tasksTitle: 'Danh mục công việc đã thực hiện',
+  tasksSubtitle: 'Ghi chép điều dưỡng minh họa theo từng nhóm chăm sóc.',
+  taskCompleted: 'Hoàn thành',
+  tasks: {
+    nutrition: {
+      title: 'Chăm sóc dinh dưỡng & bữa ăn',
+      subtitle: 'Bữa ăn và nước uống',
+      first: 'Chuẩn bị bữa ăn phù hợp và hỗ trợ người nhận chăm sóc dùng bữa.',
+      second: 'Ghi nhận lượng thức ăn và theo dõi khả năng nuốt trong bữa ăn.',
+      third: 'Hỗ trợ uống nước theo kế hoạch chăm sóc đã ghi nhận.'
+    },
+    medication: {
+      title: 'Hỗ trợ dùng thuốc theo đơn',
+      subtitle: 'Theo kế hoạch chăm sóc được chỉ định',
+      first: 'Hỗ trợ dùng thuốc theo hướng dẫn trong kế hoạch chăm sóc.',
+      second: 'Theo dõi sau khi dùng thuốc và ghi nhận phản ứng.',
+      third: 'Kiểm tra thuốc còn lại và bàn giao nhật ký dùng thuốc.'
+    },
+    hygiene: {
+      title: 'Vệ sinh cá nhân & chăm sóc điều dưỡng',
+      subtitle: 'Thoải mái và phòng ngừa nhiễm khuẩn',
+      first: 'Hỗ trợ vệ sinh cá nhân, giữ chăn và ga giường sạch, khô.',
+      second: 'Kiểm tra tình trạng da và hỗ trợ chăm sóc vùng tì đè.',
+      third: 'Ghi nhận các quan sát để bàn giao cho gia đình.'
+    },
+    mobility: {
+      title: 'Phục hồi chức năng & vận động',
+      subtitle: 'Hỗ trợ vận động',
+      first: 'Hỗ trợ các bài tập vận động nhẹ theo kế hoạch.',
+      second: 'Hỗ trợ ngồi và di chuyển an toàn trong nhà.',
+      third: 'Ghi nhận mức độ tham gia và sự thoải mái khi tập.'
+    }
+  },
+  notesTitle: 'Ghi chú lâm sàng của điều dưỡng',
+  notesSubtitle: 'Tổng hợp bàn giao minh họa cho gia đình',
+  notes:
+    'Người nhận chăm sóc đã tham gia các hoạt động chăm sóc và tập vận động. Bữa ăn, nước uống, hỗ trợ dùng thuốc và vệ sinh cá nhân được ghi nhận trong ca. Nội dung này là dữ liệu mẫu, chưa phải đánh giá lâm sàng được xác thực.',
+  signatureTitle: 'Chữ ký báo cáo',
+  signatureNote: 'Chữ ký số trong bản báo cáo mẫu chưa được xác thực.',
+  vitalsTitle: 'Tổng hợp dấu hiệu sinh tồn',
+  vitalsSubtitle: 'Số đo minh họa theo giao diện được cung cấp',
+  vitals: {
+    pressure: 'Huyết áp',
+    oxygen: 'Oxy máu',
+    pulse: 'Nhịp tim',
+    temperature: 'Thân nhiệt',
+    glucose: 'Đường huyết'
+  },
+  measurementNote: 'Các giá trị là dữ liệu mẫu, không phải số đo từ thiết bị được kết nối.',
+  paymentTitle: 'Thanh toán & nghiệm thu',
+  total: 'Tổng chi phí ca trực',
+  paymentStatus: 'Tình trạng thanh toán',
+  reviewTitle: 'Đánh giá chất lượng dịch vụ',
+  reviewDescription: 'Soạn phản hồi dành cho điều dưỡng.',
+  ratingLabel: 'Mức độ hài lòng với điều dưỡng',
+  ratingOption: '{{count}} sao',
+  feedback: 'Góp ý & lời nhắn cho điều dưỡng',
+  feedbackPlaceholder: 'Chia sẻ trải nghiệm của bạn về ca chăm sóc…',
+  submit: 'Gửi đánh giá',
+  reviewUnavailable: 'Đây là bản nháp đánh giá. Chức năng gửi đánh giá chưa khả dụng.',
+  supportTitle: 'Có thắc mắc về báo cáo?',
+  supportDescription: 'Liên hệ kênh hỗ trợ chính thức của CareConnect để trao đổi về báo cáo chăm sóc.'
+} as const

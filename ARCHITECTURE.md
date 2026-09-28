@@ -242,8 +242,9 @@ names before generation.
 
 ### Localization as a source boundary
 
-`app/shared/i18n/resources.ts` is the source of truth for Vietnamese and English UI
-copy. i18next is initialized with Vietnamese as the deterministic build/hydration
+`app/shared/i18n/resources.ts` assembles the typed Vietnamese and English UI
+resources, including feature-sized resource modules such as `care-report-resources.ts`.
+i18next is initialized with Vietnamese as the deterministic build/hydration
 fallback; after mounting, a stored choice or supported browser language is applied.
 The switch updates i18next, `<html lang>`, and browser storage.
 

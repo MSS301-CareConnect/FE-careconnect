@@ -328,7 +328,7 @@ export const BookingDepositPaymentWidget = ({
             </p>
             <div className='flex flex-col sm:flex-row gap-3 w-full'>
               <Link
-                to='/customer/booking'
+                to='/customer/bookings'
                 className='flex-1 py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition-colors text-center'
               >
                 {t('customer.bookingDeposit.payment.viewBookingsBtn')}

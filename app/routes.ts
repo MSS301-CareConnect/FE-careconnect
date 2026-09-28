@@ -6,6 +6,9 @@ export default [
     layout('routes/customer/layout.tsx', [
       route('caregivers', 'routes/customer/caregivers.tsx'),
       route('booking', 'routes/customer/booking.tsx'),
+      route('bookings', 'routes/customer/bookings.tsx'),
+      route('bookings/:code', 'routes/customer/booking-detail.tsx'),
+      route('bookings/:code/report', 'routes/customer/care-report.tsx'),
       route('booking/deposit', 'routes/customer/booking-deposit.tsx'),
       route('my-profile', 'routes/customer/my-profile.tsx'),
       route('patient-profiles', 'routes/customer/patient-profiles.tsx'),

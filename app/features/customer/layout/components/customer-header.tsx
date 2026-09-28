@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router'
 
@@ -9,6 +10,7 @@ const AVATAR_URL =
 
 export function CustomerHeader() {
   const { t } = useTranslation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <header className='fixed top-0 left-0 z-50 w-full bg-surface-container-lowest/90 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl'>
@@ -87,6 +89,16 @@ export function CustomerHeader() {
         </div>
 
         <div className='flex items-center gap-3'>
+          <button
+            type='button'
+            aria-label={t('customer.nav.menu')}
+            aria-expanded={mobileMenuOpen}
+            aria-controls='customer-mobile-menu'
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className='rounded-lg p-2 text-on-surface-variant hover:bg-surface-container lg:hidden'
+          >
+            <Icon name={mobileMenuOpen ? 'close' : 'menu'} />
+          </button>
           <LanguageSwitch />
 
           <button
@@ -118,6 +130,33 @@ export function CustomerHeader() {
           </Link>
         </div>
       </div>
+      {mobileMenuOpen && (
+        <nav
+          id='customer-mobile-menu'
+          aria-label={t('customer.nav.menu')}
+          className='border-t border-slate-100 bg-white px-4 py-3 shadow-lg lg:hidden'
+        >
+          {[
+            { to: '/', label: t('customer.nav.home') },
+            { to: '/customer/caregivers', label: t('customer.nav.findCaregivers') },
+            { to: '/customer/bookings', label: t('customer.nav.myBookings') },
+            { to: '/customer/patient-profiles', label: t('customer.nav.familyProfiles') },
+            { to: '/customer/messages', label: t('customer.nav.messages') }
+          ].map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `block rounded-lg px-4 py-2.5 text-sm font-medium ${isActive ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container'}`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
     </header>
   )
 }
