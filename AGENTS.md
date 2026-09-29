@@ -104,6 +104,16 @@ providers --------------------------+
   explicitly models a translation key.
 - Add the key to both `resources.vi` and `resources.en` in the same change. Do not use
   an English string as a translation key.
+- Organize translation resources by portal and feature under
+  `app/shared/i18n/<role>/<feature>-resources.ts`. Each module exports both `vi`
+  and `en` objects with matching key structures; update them together. Shared
+  application copy belongs in `app/shared/i18n/common-resources.ts`; portal menu
+  and footer copy belongs in that portal's `layout-resources.ts`.
+- Keep `resources.ts` as the explicit composition entry point and source of
+  `SupportedLanguage`, without inline translation copy. Resource modules contain
+  static data, never import features/entities/routes, and never import the
+  composition entry point. Preserve existing translation keys when reorganizing
+  files and retain typed i18next resources. Create role folders only when needed.
 - `project/no-hardcoded-ui-text` blocks literal JSX and accessibility copy. The rule
   is a guardrail, not permission to hide literals in variables; reviews must reject
   user-visible copy outside the i18n layer.

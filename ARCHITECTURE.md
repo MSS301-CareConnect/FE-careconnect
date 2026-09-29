@@ -66,11 +66,13 @@ app/
   routes/                  thin route modules grouped by role/portal
     auth/                  login, sso-callback, forbidden
     customer/              customer portal routes (layout, dashboard, caregivers, bookings...)
+    caregiver/             limited caregiver web portal (layout, dashboard)
     center-manager/        center manager portal routes (layout, caregivers, services, bookings...)
     admin/                 admin portal routes (layout, centers, customers, services, policies...)
   providers/               root-only framework providers
   features/                business capabilities grouped by role/portal
     customer/              customer features (layout, search-caregivers, bookings, care-reports...)
+    caregiver/             caregiver-specific layout and dashboard
     center-manager/        center manager features (layout, caregiver-management, booking-management...)
     admin/                 admin features (layout, center-management, service-catalog, policies...)
     shared/                cross-role features (auth, profile-settings, notifications)
@@ -117,6 +119,17 @@ A lower layer cannot import a higher layer:
 
 1. **Dedicated Role Layouts**: Each role has its own layout shell (e.g., `features/customer/layout/customer-layout.tsx` for Customer, `features/admin/layout/admin-layout.tsx` for Admin). This ensures navigation items, headers, and quick actions are role-tailored without complex conditional logic in a single monolith layout.
 2. **Layout-Level Route Guards**: Access control checks (e.g. verifying role permissions) run at the parent layout route module in `routes/<role>/layout.tsx`. Unauthorized users are intercepted before child route screens mount.
+
+The current `/caregiver/dashboard` is a UI preview with a dedicated Caregiver shell;
+`/caregiver` redirects there. The Caregiver layout does not import Customer features.
+Until the backend session/permission contract is available, this preview has no real
+role guard and contains only explicitly labeled sample data. The parent Caregiver
+layout route is the future guard boundary; URL separation does not grant or enforce
+authorization. Availability is ephemeral preview state. Reports, care completion,
+SOS, directions, medical records, credentials and earnings require backend contracts;
+unimplemented actions are disabled. Dashboard navigation links target existing
+sections rather than inventing unfinished screens. No live GPS, VNeID verification,
+clinical completion, report submission or payment result is simulated.
 
 ### Feature-internal organization
 
@@ -243,7 +256,40 @@ names before generation.
 ### Localization as a source boundary
 
 `app/shared/i18n/resources.ts` assembles the typed Vietnamese and English UI
-resources, including feature-sized resource modules such as `care-report-resources.ts`.
+resources through explicit imports; it contains composition and the exported
+`SupportedLanguage` type, without inline translation copy. Translation modules are
+grouped by portal and feature, mirroring the multi-role source organization:
+
+```text
+app/shared/i18n/
+  i18n.ts                         initialization and language lifecycle
+  types.d.ts                      i18next key typing
+  resources.ts                    explicit vi/en composition entry point
+  common-resources.ts              shared application, language and error copy
+  customer/
+    layout-resources.ts             Customer navigation and footer
+    bookings-resources.ts           booking list copy
+    booking-detail-resources.ts     booking detail copy
+    care-report-resources.ts        care report copy
+    booking-review-resources.ts     review modal copy
+    <feature>-resources.ts          other existing Customer feature copy
+  caregiver/
+    layout-resources.ts             Caregiver navigation, identity and footer
+    dashboard-resources.ts          Caregiver dashboard copy
+```
+
+Each resource module exports both language objects with matching key structures so
+Vietnamese and English can be updated together. Portal layouts own portal-specific
+shell copy; shared application copy belongs in `common-resources.ts`. Create other
+portal directories only when actual translations exist. These modules contain
+static data and depend only within the i18n layer; they must not import feature,
+entity, route modules or `resources.ts`. The composition entry point imports the
+modules directly, keeping dependencies acyclic and the public resource shape
+visible. Reorganizing files must preserve the existing `translation` namespace,
+translation key paths, content, `SupportedLanguage` and i18next key typing. This
+organization uses the existing eager initialization without adding lazy loading or
+changing language persistence.
+
 i18next is initialized with Vietnamese as the deterministic build/hydration
 fallback; after mounting, a stored choice or supported browser language is applied.
 The switch updates i18next, `<html lang>`, and browser storage.
@@ -342,7 +388,7 @@ does not require creating empty packages.
 - Form, table, chart, and component libraries should be chosen from real screens and
   accessibility requirements, not installed as architecture placeholders.
 - A shared Web/Mobile package is deferred. Web is the MVP for Customer, Center Manager,
-  and Admin; the Caregiver mobile app shares the API contract and domain language
+  and Admin, with a limited Caregiver dashboard preview; the Caregiver mobile app shares the API contract and domain language
   before sharing UI.
 
 ## Official references

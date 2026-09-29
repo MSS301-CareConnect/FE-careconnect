@@ -2,6 +2,12 @@ import { type RouteConfig, index, layout, prefix, route } from '@react-router/de
 
 export default [
   index('routes/home.tsx'),
+  ...prefix('caregiver', [
+    layout('routes/caregiver/layout.tsx', [
+      index('routes/caregiver/index.tsx'),
+      route('dashboard', 'routes/caregiver/dashboard.tsx')
+    ])
+  ]),
   ...prefix('customer', [
     layout('routes/customer/layout.tsx', [
       route('caregivers', 'routes/customer/caregivers.tsx'),
