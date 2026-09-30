@@ -12,6 +12,7 @@ function renderPortal() {
       <Routes>
         <Route element={<CaregiverLayout />}>
           <Route path='/caregiver/dashboard' element={<CaregiverDashboardPage />} />
+          <Route path='*' element={<div />} />
         </Route>
       </Routes>
     </MemoryRouter>
@@ -31,7 +32,7 @@ describe('Caregiver dashboard portal', () => {
     expect(screen.getByRole('heading', { name: 'Cụ Nguyễn Văn B' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Bà Trần Thị C' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Lịch trực' })).toHaveAttribute('href', '/caregiver/dashboard#schedule')
+    expect(screen.getByRole('link', { name: 'Lịch trực' })).toHaveAttribute('href', '/caregiver/schedule')
   })
 
   it('toggles preview availability without persisting a server status', () => {

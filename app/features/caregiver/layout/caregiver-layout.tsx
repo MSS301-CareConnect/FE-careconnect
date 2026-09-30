@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet } from 'react-router'
+import { Link, Outlet, useLocation } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
@@ -8,46 +8,41 @@ import { LanguageSwitch } from '~/shared/ui/language-switch'
 import { CaregiverFooter } from './components/caregiver-footer'
 
 const navigation = [
-  { key: 'home', hash: '' },
-  { key: 'schedule', hash: '#schedule' },
-  { key: 'shifts', hash: '#active-session' },
-  { key: 'earnings', hash: '#earnings' },
-  { key: 'resources', hash: '#tools' }
+  { key: 'home', path: '/caregiver/dashboard' },
+  { key: 'schedule', path: '/caregiver/schedule' },
+  { key: 'shifts', path: '/caregiver/shifts' },
+  { key: 'earnings', path: '/caregiver/dashboard#earnings' },
+  { key: 'resources', path: '/caregiver/dashboard#tools' },
+  { key: 'history', path: '/caregiver/history' },
+  { key: 'profile', path: '/caregiver/profile' }
 ] as const
 
 export function CaregiverLayout() {
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const location = useLocation()
 
   function renderNavigation() {
     return (
       <>
-        {navigation.map(({ key, hash }) => (
+        {navigation.map(({ key, path }) => (
           <Link
-            aria-current={key === 'home' ? 'page' : undefined}
-            className={`rounded-md px-2 py-3 text-sm font-semibold transition hover:bg-secondary-container hover:text-primary ${key === 'home' ? 'text-primary' : 'text-on-surface-variant'}`}
+            aria-current={location.pathname + location.hash === path ? 'page' : undefined}
+            className={`rounded-md px-2 py-3 text-sm font-semibold transition hover:bg-secondary-container hover:text-primary ${location.pathname + location.hash === path ? 'bg-secondary-container text-primary' : 'text-on-surface-variant'}`}
             key={key}
             onClick={() => setMenuOpen(false)}
-            to={`/caregiver/dashboard${hash}`}
+            to={path}
           >
             {t(`caregiver.nav.${key}`)}
           </Link>
         ))}
-        <button
-          className='px-2 py-3 text-sm text-outline disabled:cursor-not-allowed'
-          disabled
-          title={t('caregiver.unavailable')}
-          type='button'
-        >
-          {t('caregiver.nav.profile')}
-        </button>
       </>
     )
   }
 
   return (
     <div className='min-h-screen bg-surface text-on-surface'>
-      <header className='fixed inset-x-0 top-0 z-40 border-b border-outline-variant/20 bg-white/95 backdrop-blur-md'>
+      <header className='fixed inset-x-0 top-0 z-40 border-b border-outline-variant/20 bg-white/95 backdrop-blur-md print:hidden'>
         <div className='mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-12'>
           <Link className='text-lg font-extrabold tracking-tight text-primary sm:text-2xl' to='/caregiver/dashboard'>
             {t('common.brand')}
@@ -67,7 +62,7 @@ export function CaregiverLayout() {
               <Icon name='notifications' />
               <span className='absolute right-1 top-1 h-2 w-2 rounded-full bg-error ring-2 ring-white' />
             </Link>
-            <div className='hidden border-l border-outline-variant/30 pl-4 text-right sm:block'>
+            <div className='hidden border-l border-outline-variant/30 pl-4 text-right sm:block xl:hidden'>
               <p className='text-sm font-bold'>{t('caregiver.identity.name')}</p>
               <p className='mt-0.5 text-xs text-outline'>{t('caregiver.identity.license')}</p>
             </div>
@@ -96,10 +91,12 @@ export function CaregiverLayout() {
           </nav>
         )}
       </header>
-      <main className='pt-20'>
+      <main className='pt-20 print:pt-0'>
         <Outlet />
       </main>
-      <CaregiverFooter />
+      <div className='print:hidden'>
+        <CaregiverFooter />
+      </div>
     </div>
   )
 }

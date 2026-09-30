@@ -3,15 +3,15 @@ export const caregiverDashboardEn = {
   demo: 'Preview • Sample data. Live schedules, earnings, GPS and medical orders are not connected.',
   stats: {
     shifts: 'Sessions today',
-    shiftsValue: '{{count}} sessions',
-    active: '({{count}} active)',
+    shiftsValue: '{{count, number}} sessions',
+    active: '({{count, number}} active)',
     completed: '{{percent}} of target completed',
     hours: 'Care hours',
     hoursValue: '{{done}} / {{total}} hours',
     income: 'Earnings today',
     growth: '+{{percent}} vs. weekly average',
     quality: 'Service quality',
-    reviews: 'Based on {{count}} reviews',
+    reviews: 'Based on {{count, number}} reviews',
     rating: '{{score}} / {{max}}'
   },
   active: {
@@ -83,15 +83,15 @@ export const caregiverDashboardVi = {
   demo: 'Bản xem thử • Dữ liệu mẫu. Chưa kết nối lịch trực, thu nhập, GPS và y lệnh thực tế.',
   stats: {
     shifts: 'Số ca hôm nay',
-    shiftsValue: '{{count}} ca',
-    active: '({{count}} đang trực)',
+    shiftsValue: '{{count, number}} ca',
+    active: '({{count, number}} đang trực)',
     completed: 'Hoàn thành {{percent}} chỉ tiêu',
     hours: 'Giờ chăm sóc',
     hoursValue: '{{done}} / {{total}} giờ',
     income: 'Thu nhập hôm nay',
     growth: '+{{percent}} so với TB tuần',
     quality: 'Chất lượng dịch vụ',
-    reviews: 'Dựa trên {{count}} lượt đánh giá',
+    reviews: 'Dựa trên {{count, number}} lượt đánh giá',
     rating: '{{score}} / {{max}}'
   },
   active: {

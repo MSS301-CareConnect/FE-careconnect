@@ -1,3 +1,7 @@
+import type { resources } from '~/shared/i18n/resources'
+
+type CaregiverCopy = (typeof resources)['vi']['translation']['customer']['caregivers']['results']
+
 export type CaregiverGender = 'female' | 'male'
 export type CaregiverSortOption = 'highestRating' | 'mostExperience' | 'priceAsc' | 'closest'
 export type CaregiverViewMode = 'list' | 'grid'
@@ -9,8 +13,8 @@ export interface Caregiver {
   name: string
   avatarUrl: string
   verified: boolean
-  badgePrimary: string
-  badgeSecondary: string
+  badgePrimary: keyof CaregiverCopy['badges']
+  badgeSecondary: keyof CaregiverCopy['badges']
   badgeSecondaryType: 'success' | 'amber'
   hourlyRate: number
   hourlyRateFormatted: string
@@ -23,9 +27,9 @@ export interface Caregiver {
   age: number
   districts: string
   experienceYears: number
-  bioKey: string
-  skillKeys: string[]
-  availabilityKey: string
+  bioKey: keyof CaregiverCopy['bios']
+  skillKeys: (keyof CaregiverCopy['cardSkills'])[]
+  availabilityKey: keyof CaregiverCopy['availability']
 }
 
 export interface CaregiverFilterState {

@@ -2,10 +2,26 @@ import { type RouteConfig, index, layout, prefix, route } from '@react-router/de
 
 export default [
   index('routes/home.tsx'),
+  ...prefix('center-manager', [
+    layout('routes/center-manager/layout.tsx', [
+      index('routes/center-manager/index.tsx'),
+      route('caregivers', 'routes/center-manager/caregivers.tsx'),
+      route('caregivers/:id', 'routes/center-manager/caregiver-detail.tsx'),
+      route('bookings', 'routes/center-manager/bookings.tsx'),
+      route('bookings/:id', 'routes/center-manager/booking-detail.tsx')
+    ])
+  ]),
   ...prefix('caregiver', [
     layout('routes/caregiver/layout.tsx', [
       index('routes/caregiver/index.tsx'),
-      route('dashboard', 'routes/caregiver/dashboard.tsx')
+      route('dashboard', 'routes/caregiver/dashboard.tsx'),
+      route('schedule', 'routes/caregiver/schedule.tsx'),
+      route('history', 'routes/caregiver/history.tsx'),
+      route('profile', 'routes/caregiver/profile.tsx'),
+      route('shifts/:id/report', 'routes/caregiver/care-report.tsx'),
+      route('shifts/:id?', 'routes/caregiver/shift-detail.tsx'),
+      route('shifts/:id/active', 'routes/caregiver/shift-active.tsx'),
+      route('active-session', 'routes/caregiver/active-session.tsx')
     ])
   ]),
   ...prefix('customer', [

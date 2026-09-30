@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 
@@ -106,15 +107,13 @@ export function CareSessions() {
       <section className='scroll-mt-28' id='schedule'>
         <div className='mb-5 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-bold'>{t('caregiver.schedule.heading')}</h2>
-          <button
-            className='flex items-center gap-1 text-xs font-bold text-primary disabled:cursor-not-allowed disabled:opacity-50'
-            disabled
-            title={t('caregiver.unavailable')}
-            type='button'
+          <Link
+            className='flex items-center gap-1 text-xs font-bold text-primary hover:underline'
+            to='/caregiver/schedule'
           >
             {t('caregiver.schedule.all')}
             <Icon className='text-base' name='arrow_forward' />
-          </button>
+          </Link>
         </div>
         <div className='rounded-2xl border border-outline-variant/20 bg-white p-6 shadow-sm'>
           <div className='flex flex-wrap items-center justify-between gap-3'>

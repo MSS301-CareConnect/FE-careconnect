@@ -76,4 +76,18 @@ body {
     break-inside: avoid;
     box-shadow: none;
   }
+
+  .caregiver-print-page {
+    max-width: none;
+    padding: 0;
+    background: white;
+  }
+
+  .caregiver-print-page section {
+    box-shadow: none;
+  }
+
+  .caregiver-print-page article {
+    break-inside: avoid;
+  }
 }

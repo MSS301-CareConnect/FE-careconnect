@@ -13,6 +13,18 @@ import { careReportEn, careReportVi } from './customer/care-report-resources'
 import { bookingReviewEn, bookingReviewVi } from './customer/booking-review-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
 import { caregiverDashboardEn, caregiverDashboardVi } from './caregiver/dashboard-resources'
+import { caregiverScheduleEn, caregiverScheduleVi } from './caregiver/schedule-resources'
+import { caregiverShiftDetailEn, caregiverShiftDetailVi } from './caregiver/shift-detail-resources'
+import { caregiverActiveSessionEn, caregiverActiveSessionVi } from './caregiver/active-session-resources'
+import { caregiverRecordsEn, caregiverRecordsVi } from './caregiver/care-record-resources'
+import { caregiverReportEn, caregiverReportVi } from './caregiver/care-report-resources'
+import { caregiverHistoryEn, caregiverHistoryVi } from './caregiver/care-history-resources'
+import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
+import { managerLayoutEn, managerLayoutVi } from './center-manager/layout-resources'
+import { managerManagementEn, managerManagementVi } from './center-manager/management-resources'
+import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
+import { managerBookingManagementEn, managerBookingManagementVi } from './center-manager/booking-management-resources'
+import { managerBookingDetailEn, managerBookingDetailVi } from './center-manager/booking-detail-resources'
 
 export const resources = {
   en: {
@@ -32,7 +44,24 @@ export const resources = {
         careReport: careReportEn,
         bookingReview: bookingReviewEn
       },
-      caregiver: { ...caregiverLayoutEn, ...caregiverDashboardEn }
+      caregiver: {
+        ...caregiverLayoutEn,
+        ...caregiverDashboardEn,
+        schedulePage: caregiverScheduleEn,
+        shiftDetail: caregiverShiftDetailEn,
+        activeSession: caregiverActiveSessionEn,
+        careRecords: caregiverRecordsEn,
+        careReport: caregiverReportEn,
+        careHistory: caregiverHistoryEn,
+        profile: caregiverProfileEn
+      },
+      centerManager: {
+        ...managerLayoutEn,
+        management: managerManagementEn,
+        detail: managerDetailEn,
+        bookingManagement: managerBookingManagementEn,
+        bookingDetail: managerBookingDetailEn
+      }
     }
   },
   vi: {
@@ -52,7 +81,24 @@ export const resources = {
         careReport: careReportVi,
         bookingReview: bookingReviewVi
       },
-      caregiver: { ...caregiverLayoutVi, ...caregiverDashboardVi }
+      caregiver: {
+        ...caregiverLayoutVi,
+        ...caregiverDashboardVi,
+        schedulePage: caregiverScheduleVi,
+        shiftDetail: caregiverShiftDetailVi,
+        activeSession: caregiverActiveSessionVi,
+        careRecords: caregiverRecordsVi,
+        careReport: caregiverReportVi,
+        careHistory: caregiverHistoryVi,
+        profile: caregiverProfileVi
+      },
+      centerManager: {
+        ...managerLayoutVi,
+        management: managerManagementVi,
+        detail: managerDetailVi,
+        bookingManagement: managerBookingManagementVi,
+        bookingDetail: managerBookingDetailVi
+      }
     }
   }
 } as const

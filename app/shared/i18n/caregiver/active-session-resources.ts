@@ -1,0 +1,398 @@
+export const caregiverActiveSessionVi = {
+  meta: {
+    title: 'Ca trực đang diễn ra #BK-8821 | CareConnect'
+  },
+  breadcrumb: {
+    home: 'Trang chủ',
+    shifts: 'Ca trực',
+    currentSession: 'Ca trực đang diễn ra #{{code}}'
+  },
+  sync: {
+    realTime: 'Đồng bộ dữ liệu thời gian thực'
+  },
+  hero: {
+    liveGps: 'CA TRỰC ĐANG DIỄN RA • LIVE GPS',
+    orderCode: 'Mã đơn: #CC-BK-882194',
+    title: 'Ca sáng: Chăm sóc phục hồi sau tai biến',
+    timeSlot: 'Khung giờ: 08:00 - 12:00',
+    checkIn: 'Check-in định vị: 08:30 (Đúng địa điểm)',
+    verified: 'Đã xác minh vân tay/hình ảnh',
+    elapsedTitle: 'Thời gian đã thực hiện',
+    elapsedProgress: '44%',
+    maxTime: '/ 04:00',
+    completedInfo: 'Đã hoàn thành: 01h 45m',
+    remainingInfo: 'Còn: 02h 15m',
+    sosBtn: 'SOS KHẨN CẤP',
+    supervisorBtn: 'Trưởng ca: 1900 6868'
+  },
+  patient: {
+    name: 'Cụ Nguyễn Văn A',
+    age: '78 tuổi',
+    code: 'Mã BN #882',
+    condition: 'Phục hồi di chứng đột quỵ • Tai biến thiếu máu cục bộ nhẹ',
+    address: 'Phòng 804, Tháp C, Chung cư Sunrise City, Nguyễn Hữu Thọ, P. Tân Hưng, Q.7, TP.HCM',
+    mapBtn: 'Bản đồ',
+    guardianLabel: 'Người giám hộ bảo trợ',
+    guardianName: 'Anh Nguyễn Bình',
+    guardianRelation: 'Con trai ruột (0903 ••• 456)',
+    callTitle: 'Gọi điện thoại',
+    chatTitle: 'Nhắn tin',
+    restingStatus: 'Đang trong phòng nghỉ',
+    warningTitle: 'LƯU Ý Y KHOA ĐẶC BIỆT & KHUYẾN CÁO ĐIỀU DƯỠNG',
+    warningBadge: 'Cảnh báo đỏ',
+    warningText:
+      'Bệnh nhân mắc Tăng huyết áp độ 2 kết hợp tiền sử dị ứng nặng với kháng sinh Penicillin. Mục tiêu huyết áp an toàn duy trì < 140/90 mmHg. Tuyệt đối không để cụ đứng dậy đột ngột. Báo cáo ngay nếu huyết áp tâm thu vượt 160 mmHg hoặc SpO2 dưới 95%.'
+  },
+  carePlan: {
+    title: 'Kế hoạch chăm sóc hôm nay',
+    subtitle: 'Thực hiện và xác thực từng quy trình điều dưỡng theo chuẩn',
+    progress: '{{completed}}/{{total}} Hoàn thành',
+    addTaskBtn: '+ Nhiệm vụ phát sinh',
+    completedBadge: 'Đã xong lúc {{time}}',
+    withPhoto: 'Kèm ảnh',
+    medCount: '{{count}} mục thuốc',
+    inProgressBadge: 'Đang tiến hành',
+    markDoneBtn: 'Đánh dấu đã hoàn tất',
+    addPhotoBtn: 'Thêm ảnh minh chứng',
+    expectedTime: 'Dự kiến {{time}}',
+    task1Title: '1. Cho ăn sáng dinh dưỡng & Hỗ trợ nuốt an toàn',
+    task1Desc:
+      'Cháo yến mạch thịt nạc bằm hâm ấm. Cụ ăn hết trọn 1 bát nhỏ, phản xạ nuốt tốt, không bị sặc, đã uống 150ml nước ấm tráng miệng.',
+    task2Title: '2. Cho uống thuốc theo toa bác sĩ',
+    task2Desc:
+      'Amlodipine 5mg (hạ áp) + 01 gói men vi sinh dạng bột pha nước ấm. Đã đối chiếu 5 đúng trong điều dưỡng.',
+    task3Title: '3. Vệ sinh cá nhân, chăm sóc da & Xoa bóp chống loét',
+    task3Desc:
+      'Lau người bằng nước ấm, thay quần áo cotton mềm sạch, thoa kem dưỡng ẩm chống loét tì đè vùng xương cụt và hai bên hông.',
+    task4Title: '4. Phục hồi chức năng vận động & Đi lại nhẹ nhàng',
+    task4Desc:
+      'Tập co duỗi thụ động khớp vai và khớp gối bên trái 10 lần. Dìu cụ đi dạo trong hành lang phòng khách 15-20 phút có nạng trợ lực.',
+    task5Title: '5. Kiểm tra sinh hiệu cuối ca & Bàn giao người thân',
+    task5Desc:
+      'Đo lại toàn bộ chỉ số Huyết áp, SpO2, Mạch, cập nhật nhật ký điện tử và bàn giao cùng gia đình có chữ ký xác nhận số hóa.'
+  },
+  nursingNotes: {
+    title: 'Nhật ký diễn tiến điều dưỡng',
+    subtitle: 'Ghi chép lâm sàng đồng bộ tức thì cho Bác sĩ gia đình và Người thân',
+    autoSaved: 'Đã tự động lưu 1 phút trước',
+    label: 'Nội dung ghi nhận lâm sàng:',
+    placeholder: 'Nhập chi tiết tình trạng thể trạng, tinh thần và các biến cố nếu có...',
+    defaultText:
+      'Cụ A tỉnh táo, tiếp xúc tốt, hợp tác ăn hết 1 bát cháo. Huyết áp đầu ca ổn định (128/82 mmHg). Cụ hơi mỏi vai trái, chuẩn bị tiến hành xoa bóp và vệ sinh cá nhân. Không thấy dấu hiệu khó thở hay tê bì tăng thêm.',
+    nurseInCharge: 'Chịu trách nhiệm chuyên môn: ĐĐ. Nguyễn Mai',
+    wordCount: '{{count}} / 1000 từ',
+    voiceRecord: 'Ghi âm diễn tiến',
+    photoProof: 'Ảnh minh chứng (1 ảnh đã lưu)',
+    attachFile: 'Đính kèm tệp',
+    saveDraft: 'Lưu bản nháp',
+    updateProgress: 'Cập nhật diễn tiến',
+    draftSavedToast: 'Đã lưu bản nháp nhật ký thành công!',
+    updatedToast: 'Đã cập nhật diễn tiến điều dưỡng vào bệnh án điện tử!'
+  },
+  vitals: {
+    title: 'Chỉ số sinh hiệu',
+    lastMeasured: 'Lần đo gần nhất: {{time}}',
+    reMeasure: 'Đo lại',
+    bpLabel: 'Huyết áp (HA)',
+    bpUnit: 'mmHg',
+    bpStatus: 'Ổn định',
+    spo2Label: 'Nồng độ SpO2',
+    spo2Unit: 'Oxy máu ngoại vi',
+    spo2Status: 'Bão hòa tốt',
+    pulseLabel: 'Nhịp tim',
+    pulseUnit: 'lần/phút (bpm)',
+    pulseStatus: 'Đều, rõ',
+    tempLabel: 'Thân nhiệt',
+    tempUnit: 'Độ C (°C)',
+    tempStatus: 'Thân nhiệt chuẩn',
+    trendLabel: 'Xu hướng huyết áp 3 ca gần nhất:',
+    trendStatus: 'Biên độ ổn định (±5%)',
+    reMeasureAlert: 'Đã kết nối máy đo Omron và ghi nhận sinh hiệu mới.'
+  },
+  commandCenter: {
+    title: 'Kiểm soát an toàn ca trực',
+    subtitle: 'Bảo vệ quyền lợi và an toàn y đức',
+    gpsTitle: 'GPS kết nối liên tục',
+    gpsDesc: 'Tọa độ khớp địa chỉ bệnh nhân (Sai số < 5m)',
+    completeBtn: 'HOÀN TẤT & KÝ NHẬN CA TRỰC',
+    breakBtn: 'Nghỉ giữa ca (15 phút)',
+    incidentBtn: 'Báo cáo sự cố y tế / Cần hỗ trợ khẩn',
+    breakActiveNotice: 'Đang trong thời gian nghỉ 15 phút giữa ca.',
+    completeSuccess: 'Ca trực đã hoàn tất và lưu chữ ký số vào hệ thống!'
+  },
+  equipment: {
+    title: 'Thiết bị y tế tại nhà',
+    readyCount: '4 thiết bị sẵn sàng',
+    eq1: 'Máy đo HA điện tử Omron HEM-7120',
+    eq1Status: 'Pin tốt',
+    eq2: 'Máy SpO2 kẹp ngón Yuwell',
+    eq2Status: 'Chuẩn hóa',
+    eq3: 'Giường y tế tay quay đa năng',
+    eq3Status: 'Tại phòng ngủ',
+    eq4: 'Hộp thuốc gia đình 7 ngày',
+    eq4Status: 'Đã chia liều',
+    insuranceBadge:
+      'Ca trực được bảo vệ bởi Bảo hiểm trách nhiệm nghề nghiệp CareProtect lên tới 500.000.000đ cho mỗi điều dưỡng viên tại gia đình.'
+  },
+  modals: {
+    sosTitle: 'XÁC NHẬN KÍCH HOẠT SOS KHẨN CẤP',
+    sosDesc:
+      'Tín hiệu SOS sẽ kích hoạt chuông cảnh báo tới Điều phối viên trưởng, Trung tâm cấp cứu 115 và gia đình bệnh nhân kèm tọa độ GPS trực tiếp.',
+    sosConfirm: 'KÍCH HOẠT NGAY',
+    sosAlertSuccess: 'Đã phát tín hiệu SOS! Đội cấp cứu và điều phối viên đang liên hệ trong 60 giây.',
+    signTitle: 'Ký nhận & Hoàn tất ca trực #BK-8821',
+    signDesc: 'Xác nhận toàn bộ quy trình chăm sóc đã hoàn tất. Ký tên điện tử xác thực bàn giao cùng gia đình.',
+    nurseSignLabel: 'Chữ ký số Điều dưỡng viên:',
+    nurseName: 'ĐĐ. Nguyễn Mai',
+    shaVerified: 'Xác thực SHA-256',
+    signConfirm: 'Xác nhận hoàn tất ca trực',
+    addTaskTitle: 'Thêm nhiệm vụ phát sinh trong ca',
+    taskTitlePlaceholder: 'Tên nhiệm vụ phát sinh (ví dụ: Thay băng vết thương nhẹ)',
+    taskDescPlaceholder: 'Mô tả chi tiết quy trình thực hiện...',
+    addTaskConfirm: 'Thêm nhiệm vụ',
+    cancel: 'Hủy'
+  },
+  endCareModal: {
+    badgeCompleted: 'Hoàn tất chăm sóc',
+    codeLabel: 'Mã #{{code}}',
+    title: 'Xác nhận Kết thúc Ca trực & Lập Báo cáo',
+    subtitle: 'Ca sáng: Chăm sóc phục hồi sau tai biến • Cụ Nguyễn Văn A (78 tuổi)',
+    closeAria: 'Đóng cửa sổ',
+    statsTitle: 'Thông số xác thực ca trực',
+    planCompletedBadge: 'Đạt 100% kế hoạch y khoa',
+    scheduleLabel: 'Khung giờ quy định',
+    scheduleVal: '08:00 – 12:00',
+    scheduleSub: 'Ca sáng tiêu chuẩn (4h)',
+    checkInOutLabel: 'Check-in / Check-out',
+    checkInOutVal: '08:30 • 12:00',
+    gpsVerifiedSub: 'Đúng định vị GPS tại nhà',
+    totalDurationLabel: 'Tổng thời lượng tích lũy',
+    totalDurationVal: '4 giờ 00 phút',
+    totalDurationSub: 'Đủ 240 phút chăm sóc',
+    checklistTitle: 'Hạng mục điều dưỡng & bàn giao đã hoàn tất',
+    checklistCount: '5 / 5 Hạng mục',
+    item1Title: 'Đo sinh hiệu đầu & cuối ca trực',
+    item1Tag: 'Bình thường • Ổn định',
+    item1Desc: 'Huyết áp 128/82 mmHg, SpO2 98%, Mạch 76 bpm, Thân nhiệt 36.6°C ghi nhận an toàn.',
+    item2Title: 'Cho ăn & Cho uống thuốc theo y lệnh bác sĩ',
+    item2Tag: 'Đúng đơn y khoa',
+    item2Desc: 'Cụ đã hoàn thành 1 phần cháo yến mạch dinh dưỡng, uống đúng 03 loại thuốc tim mạch lúc 09:15.',
+    item3Title: 'Vệ sinh thân thể & Xoa bóp phục hồi chi yếu',
+    item3Tag: 'Phòng chống loét',
+    item3Desc:
+      'Lau người, thay áo quần sạch sẽ, tập thụ động 30 phút khớp gối và vai trái theo bài tập phục hồi chức năng.',
+    item4Title: 'Bàn giao trực tiếp cho người thân giám hộ',
+    item4Tag: 'Anh Nguyễn Bình',
+    item4Desc: 'Người nhà đã nắm rõ tình trạng ăn uống, biểu hiện tinh thần tỉnh táo và lịch cữ thuốc chiều.',
+    item5Title: 'Thu dọn & Kiểm kê trang thiết bị gia đình',
+    item5Tag: 'Nguyên vẹn',
+    item5Desc: 'Máy đo HA điện tử Omron, kẹp SpO2, thanh chắn giường bệnh đã được khử khuẩn và hoàn trả đúng vị trí.',
+    dispatchNoticeTitle: 'Quy trình bàn giao điện tử CareConnect:',
+    dispatchNoticeDesc:
+      'Hệ thống sẽ chuyển tiếp sang màn hình Báo cáo chăm sóc ca trực (Care Report) để bạn ký số xác thực và gửi đồng bộ ngay lập tức tới ứng dụng của gia đình và Bác sĩ bảo trợ chuyên môn theo quy chuẩn BYT.',
+    backBtn: 'Quay lại kiểm tra thêm',
+    confirmBtn: 'XÁC NHẬN KẾT THÚC & LẬP BÁO CÁO',
+    syncingBtn: 'Đang đồng bộ dữ liệu lâm sàng...',
+    successAlert:
+      'Xác nhận thành công! Đang chuyển tiếp sang trang Ký Báo cáo chăm sóc (Care Report) và chuyển 350.000đ vào Ví CarePay.'
+  }
+}
+
+export const caregiverActiveSessionEn = {
+  meta: {
+    title: 'Active Care Session #BK-8821 | CareConnect'
+  },
+  breadcrumb: {
+    home: 'Home',
+    shifts: 'Shifts',
+    currentSession: 'Active Care Session #{{code}}'
+  },
+  sync: {
+    realTime: 'Real-time data synchronized'
+  },
+  hero: {
+    liveGps: 'ACTIVE CARE SESSION • LIVE GPS',
+    orderCode: 'Order Code: #CC-BK-882194',
+    title: 'Morning Shift: Stroke Recovery & Rehabilitation Care',
+    timeSlot: 'Schedule: 08:00 - 12:00',
+    checkIn: 'GPS Check-in: 08:30 (On Location)',
+    verified: 'Verified with fingerprint & photo ID',
+    elapsedTitle: 'Elapsed session time',
+    elapsedProgress: '44%',
+    maxTime: '/ 04:00',
+    completedInfo: 'Completed: 01h 45m',
+    remainingInfo: 'Remaining: 02h 15m',
+    sosBtn: 'EMERGENCY SOS',
+    supervisorBtn: 'Supervisor: 1900 6868'
+  },
+  patient: {
+    name: 'Mr. Nguyen Van A',
+    age: '78 years old',
+    code: 'Patient ID #882',
+    condition: 'Stroke recovery rehabilitation • Mild cerebral ischemia sequelae',
+    address: 'Room 804, Tower C, Sunrise City, Nguyen Huu Tho, Tan Hung Ward, Dist. 7, HCMC',
+    mapBtn: 'Map',
+    guardianLabel: 'Legal Guardian',
+    guardianName: 'Mr. Nguyen Binh',
+    guardianRelation: 'Son (0903 ••• 456)',
+    callTitle: 'Call Guardian',
+    chatTitle: 'Message',
+    restingStatus: 'Resting in room',
+    warningTitle: 'CRITICAL MEDICAL WARNING & NURSING ADVISORY',
+    warningBadge: 'Red Alert',
+    warningText:
+      'Patient has Grade 2 Hypertension with severe allergy history to Penicillin antibiotics. Maintain target blood pressure < 140/90 mmHg. Do not allow patient to stand up abruptly. Immediately report if systolic BP exceeds 160 mmHg or SpO2 drops below 95%.'
+  },
+  carePlan: {
+    title: "Today's Care Plan",
+    subtitle: 'Execute and verify standard clinical nursing interventions',
+    progress: '{{completed}}/{{total}} Completed',
+    addTaskBtn: '+ Add Ad-hoc Task',
+    completedBadge: 'Done at {{time}}',
+    withPhoto: 'Photo attached',
+    medCount: '{{count}} medicines',
+    inProgressBadge: 'In Progress',
+    markDoneBtn: 'Mark as Completed',
+    addPhotoBtn: 'Add Proof Photo',
+    expectedTime: 'Expected {{time}}',
+    task1Title: '1. Nutritious breakfast & safe swallowing assistance',
+    task1Desc:
+      'Warm oatmeal porridge with minced pork. Patient finished 1 small bowl with good swallow reflex, no choking, drank 150ml warm water.',
+    task2Title: '2. Administer prescribed medications',
+    task2Desc:
+      'Amlodipine 5mg (anti-hypertensive) + 01 sachet probiotics mixed with warm water. Cross-checked 5 nursing rights.',
+    task3Title: '3. Personal hygiene, skincare & anti-bedsore massage',
+    task3Desc:
+      'Warm water sponge bath, fresh cotton clothing, anti-bedsore moisturizer applied to coccyx and both hip regions.',
+    task4Title: '4. Physical rehabilitation & gentle walking',
+    task4Desc:
+      'Passive flexion/extension of left shoulder and knee joints x10. Guided 15-20 min walk in living room hallway with walking aid.',
+    task5Title: '5. Final vitals check & handover to family',
+    task5Desc:
+      'Re-measure all BP, SpO2, and pulse vitals, update digital records, and handover with digitized electronic signature.'
+  },
+  nursingNotes: {
+    title: 'Nursing Progress Log',
+    subtitle: 'Synchronized clinical notes for family physician and relatives',
+    autoSaved: 'Auto-saved 1 minute ago',
+    label: 'Clinical observation notes:',
+    placeholder: 'Enter physical condition, mental alertness, and any incidents...',
+    defaultText:
+      'Patient alert and responsive, ate 1 bowl of porridge cooperatively. Initial BP stable (128/82 mmHg). Left shoulder slightly fatigued, preparing for massage and hygiene. No signs of dyspnea or increased numbness.',
+    nurseInCharge: 'Clinical Lead: RN. Nguyen Mai',
+    wordCount: '{{count}} / 1000 words',
+    voiceRecord: 'Record Audio',
+    photoProof: 'Proof Photo (1 saved)',
+    attachFile: 'Attach File',
+    saveDraft: 'Save Draft',
+    updateProgress: 'Update Progress',
+    draftSavedToast: 'Draft log saved successfully!',
+    updatedToast: 'Nursing progress updated to digital health record!'
+  },
+  vitals: {
+    title: 'Vital Signs',
+    lastMeasured: 'Last measured: {{time}}',
+    reMeasure: 'Re-measure',
+    bpLabel: 'Blood Pressure (BP)',
+    bpUnit: 'mmHg',
+    bpStatus: 'Stable',
+    spo2Label: 'SpO2 Oxygen',
+    spo2Unit: 'Peripheral oxygen',
+    spo2Status: 'Optimal',
+    pulseLabel: 'Heart Rate',
+    pulseUnit: 'bpm',
+    pulseStatus: 'Regular, clear',
+    tempLabel: 'Temperature',
+    tempUnit: 'Celsius (°C)',
+    tempStatus: 'Normal',
+    trendLabel: 'BP trend over last 3 sessions:',
+    trendStatus: 'Stable range (±5%)',
+    reMeasureAlert: 'Omron BP monitor connected and new vitals recorded.'
+  },
+  commandCenter: {
+    title: 'Session Safety & Protocol Control',
+    subtitle: 'Protecting professional practice and ethical care',
+    gpsTitle: 'GPS Continuously Connected',
+    gpsDesc: 'Coordinates match patient residence (Tolerance < 5m)',
+    completeBtn: 'COMPLETE & SIGN-OFF SESSION',
+    breakBtn: 'Take Shift Break (15 min)',
+    incidentBtn: 'Report Medical Incident / Request Urgent Support',
+    breakActiveNotice: 'Currently on a 15-minute shift break.',
+    completeSuccess: 'Care session completed and digitally signed in the system!'
+  },
+  equipment: {
+    title: 'Home Medical Equipment',
+    readyCount: '4 equipment units ready',
+    eq1: 'Omron HEM-7120 Digital BP Monitor',
+    eq1Status: 'Battery good',
+    eq2: 'Yuwell Fingertip Pulse Oximeter',
+    eq2Status: 'Calibrated',
+    eq3: 'Multi-functional Crank Hospital Bed',
+    eq3Status: 'In bedroom',
+    eq4: '7-day Pill Organizer Box',
+    eq4Status: 'Pre-portioned',
+    insuranceBadge:
+      'Protected by CareProtect Professional Liability Insurance up to 500,000,000 VND for each home caregiver.'
+  },
+  modals: {
+    sosTitle: 'CONFIRM EMERGENCY SOS ACTIVATION',
+    sosDesc:
+      'SOS signal will immediately trigger alerts to Chief Dispatcher, 115 Emergency Services, and family members with real-time GPS coordinates.',
+    sosConfirm: 'TRIGGER NOW',
+    sosAlertSuccess: 'SOS signal transmitted! Emergency team and dispatcher are contacting within 60 seconds.',
+    signTitle: 'Sign-off & Complete Session #BK-8821',
+    signDesc: 'Confirm that all standard care procedures are completed. Provide digital signature for family handover.',
+    nurseSignLabel: 'Registered Nurse Signature:',
+    nurseName: 'RN. Nguyen Mai',
+    shaVerified: 'SHA-256 Verified',
+    signConfirm: 'Confirm Session Completion',
+    addTaskTitle: 'Add Ad-hoc Care Task',
+    taskTitlePlaceholder: 'Task title (e.g., Minor wound dressing change)',
+    taskDescPlaceholder: 'Detailed execution procedure...',
+    addTaskConfirm: 'Add Task',
+    cancel: 'Cancel'
+  },
+  endCareModal: {
+    badgeCompleted: 'Care Completed',
+    codeLabel: 'Code #{{code}}',
+    title: 'Confirm Shift Completion & Generate Report',
+    subtitle: 'Morning Shift: Stroke Recovery & Rehabilitation • Mr. Nguyen Van A (78 yrs)',
+    closeAria: 'Close modal',
+    statsTitle: 'Shift Authentication Metrics',
+    planCompletedBadge: '100% Medical Plan Achieved',
+    scheduleLabel: 'Scheduled Time',
+    scheduleVal: '08:00 – 12:00',
+    scheduleSub: 'Standard Morning Shift (4h)',
+    checkInOutLabel: 'Check-in / Check-out',
+    checkInOutVal: '08:30 • 12:00',
+    gpsVerifiedSub: 'GPS home location verified',
+    totalDurationLabel: 'Cumulative Duration',
+    totalDurationVal: '4 hours 00 minutes',
+    totalDurationSub: 'Full 240 mins care delivered',
+    checklistTitle: 'Completed Nursing & Handover Procedures',
+    checklistCount: '5 / 5 Items',
+    item1Title: 'Initial & concluding vitals assessment',
+    item1Tag: 'Normal • Stable',
+    item1Desc: 'BP 128/82 mmHg, SpO2 98%, Pulse 76 bpm, Temp 36.6°C safely recorded.',
+    item2Title: 'Assisted meal & administered prescribed medication',
+    item2Tag: 'Order Verified',
+    item2Desc: 'Patient finished 1 portion warm oatmeal porridge, took 3 cardiac medications at 09:15.',
+    item3Title: 'Personal hygiene & limbs rehabilitation massage',
+    item3Tag: 'Bedsore Prevention',
+    item3Desc: 'Sponge bath, fresh clothing, 30-min passive knee and left shoulder physio exercises.',
+    item4Title: 'Direct handover to family guardian',
+    item4Tag: 'Mr. Nguyen Binh',
+    item4Desc: 'Family briefed on nutrition intake, alertness status, and afternoon medication schedule.',
+    item5Title: 'Tidying up & household medical equipment check',
+    item5Tag: 'Intact',
+    item5Desc: 'Omron BP monitor, SpO2 clip, and bed rails sanitized and stored in designated places.',
+    dispatchNoticeTitle: 'CareConnect Electronic Handover Protocol:',
+    dispatchNoticeDesc:
+      'The system will transition to the Care Report screen for digital signature verification and instant sync to family and supervising physician apps per MOH standards.',
+    backBtn: 'Back to Review',
+    confirmBtn: 'CONFIRM COMPLETION & SUBMIT REPORT',
+    syncingBtn: 'Synchronizing clinical records...',
+    successAlert:
+      'Confirmation successful! Transitioning to Care Report signing and crediting 350,000 VND to CarePay wallet.'
+  }
+}

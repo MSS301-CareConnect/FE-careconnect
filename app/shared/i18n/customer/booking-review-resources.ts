@@ -5,7 +5,13 @@ export const bookingReviewEn = {
   caregiver: 'Assigned caregiver',
   satisfaction: 'How satisfied are you with {{caregiver}}?',
   score: '{{score}} / 5 · {{description}}',
-  descriptions: { 1: 'Very dissatisfied', 2: 'Dissatisfied', 3: 'Acceptable', 4: 'Good', 5: 'Excellent and attentive' },
+  descriptions: {
+    '1': 'Very dissatisfied',
+    '2': 'Dissatisfied',
+    '3': 'Acceptable',
+    '4': 'Good',
+    '5': 'Excellent and attentive'
+  },
   highlights: 'What would you like to praise?',
   tags: {
     punctual: 'Punctual and professional',
@@ -35,11 +41,11 @@ export const bookingReviewVi = {
   satisfaction: 'Bạn hài lòng về {{caregiver}} như thế nào?',
   score: '{{score}} / 5 · {{description}}',
   descriptions: {
-    1: 'Rất không hài lòng',
-    2: 'Không hài lòng',
-    3: 'Tạm hài lòng',
-    4: 'Hài lòng',
-    5: 'Xuất sắc & rất tận tâm'
+    '1': 'Rất không hài lòng',
+    '2': 'Không hài lòng',
+    '3': 'Tạm hài lòng',
+    '4': 'Hài lòng',
+    '5': 'Xuất sắc & rất tận tâm'
   },
   highlights: 'Điểm nổi bật bạn muốn khen ngợi',
   tags: {

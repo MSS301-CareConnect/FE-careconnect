@@ -120,16 +120,72 @@ A lower layer cannot import a higher layer:
 1. **Dedicated Role Layouts**: Each role has its own layout shell (e.g., `features/customer/layout/customer-layout.tsx` for Customer, `features/admin/layout/admin-layout.tsx` for Admin). This ensures navigation items, headers, and quick actions are role-tailored without complex conditional logic in a single monolith layout.
 2. **Layout-Level Route Guards**: Access control checks (e.g. verifying role permissions) run at the parent layout route module in `routes/<role>/layout.tsx`. Unauthorized users are intercepted before child route screens mount.
 
-The current `/caregiver/dashboard` is a UI preview with a dedicated Caregiver shell;
+The current Caregiver routes are UI previews with a dedicated Caregiver shell;
 `/caregiver` redirects there. The Caregiver layout does not import Customer features.
 Until the backend session/permission contract is available, this preview has no real
 role guard and contains only explicitly labeled sample data. The parent Caregiver
 layout route is the future guard boundary; URL separation does not grant or enforce
 authorization. Availability is ephemeral preview state. Reports, care completion,
 SOS, directions, medical records, credentials and earnings require backend contracts;
-unimplemented actions are disabled. Dashboard navigation links target existing
-sections rather than inventing unfinished screens. No live GPS, VNeID verification,
+unimplemented actions are disabled. Schedule navigation targets `/caregiver/schedule`;
+other dashboard navigation links target existing sections rather than unfinished
+screens. The Schedule feature owns its static preview fixtures and URL state for
+date/month, date scope, status, patient search and list/calendar view. Its sample
+reference day is 2026-09-20; the initial overview shows that day and the next day.
+The displayed sample week spans September 19–25, with weekdays formatted from the
+actual dates; other periods use Monday-based weeks. It does not claim an ISO week
+number. Session and weekly completion counts derive from the same preview fixtures.
+Accepting open sessions, requesting leave, reporting, contact and navigation actions
+remain disabled until backend contracts exist. No live GPS, VNeID verification,
 clinical completion, report submission or payment result is simulated.
+
+Caregiver report (`/caregiver/shifts/:id/report`), history (`/caregiver/history`)
+and profile (`/caregiver/profile`) use the same shell and portal translations.
+Thin route modules compose independent `care-report`, `care-history`, and `profile`
+features. `entities/care-session` owns the deterministic record metadata shared by
+history and reports, plus the in-memory draft handoff from the active-session
+feature. Confirming the end-care modal prepares a report and navigates; it does not
+submit a report, complete a backend session, or perform a digital signature.
+Actual task completion flags, custom tasks, nursing notes and measured vitals carry
+over to the draft. Unknown report IDs show a not-found state unless an active-session
+draft exists. Clinical content from one sample record is not reused for other history
+records. The report editor and profile editor own local form state. Patient notes and
+selected files are never persisted to localStorage; saved report drafts last only
+for the current SPA session and profile edits last only while the page is mounted.
+File previews use revocable object URLs without uploads. Profile verification,
+report submission, signatures and payments await backend contracts. History filters
+and pagination use URL search parameters; exports contain the filtered sample rows.
+`shared/ui/section-card` provides the generic section presentation used by these
+features; it has no portal or domain imports.
+
+The Center Manager preview has its own `/center-manager` layout and translations,
+with list and detail routes at `/center-manager/caregivers` and
+`/center-manager/caregivers/:id`. Both screens share role-local preview fixtures in
+`features/center-manager/caregivers/`; they do not import Customer or Caregiver
+features. Search, filters, sort and pagination use URL parameters, while CSV export
+contains the filtered sample rows. Each detail route resolves its own caregiver ID;
+the extensive clinical sections from the supplied example appear only for the
+matching sample person. Management mutations, credential decisions, document
+downloads, notifications and shift assignment remain unavailable until the NestJS
+contract and manager authorization are implemented. The manager layout route is
+the future authorization boundary; it currently displays clearly labeled sample
+data and does not establish role access by itself.
+
+The Center Manager booking list lives at `/center-manager/bookings` and uses
+role-local fixtures under `features/center-manager/booking-management/`. It is a
+dated sample snapshot while the backend booking contract is unavailable. Search,
+service/status/area/period filters, sorting, pagination, and the selected booking
+preview are represented in URL search parameters. CSV export uses the filtered
+sample rows. Assignment, cancellation, emergency creation, receipts, reports,
+and the live map remain disabled until authorized backend operations exist.
+The Manager detail route `/center-manager/bookings/:id` resolves the same booking
+fixture by ID. The supplied clinical timeline and financial breakdown belong only
+to `BK-8821`; other sample bookings show their available summary without borrowing
+that patient's details. The finance example calculates a consistent discounted
+total, deposit, and balance from the design numbers. GPS and payments are labeled
+as sample or unavailable. The cancellation dialog cannot submit; dispatch notes
+remain local drafts. The booking list links to this route and retains its quick
+preview dialog.
 
 ### Feature-internal organization
 
@@ -289,6 +345,11 @@ visible. Reorganizing files must preserve the existing `translation` namespace,
 translation key paths, content, `SupportedLanguage` and i18next key typing. This
 organization uses the existing eager initialization without adding lazy loading or
 changing language persistence.
+
+The i18next augmentation in `types.d.ts` uses `(typeof resources)['vi']`, including
+the `translation` namespace, to type translation keys and results. Dynamic keys
+must use finite resource-key unions. The reserved `count` option is numeric;
+`{{count, number}}` uses i18next's Intl formatter for localized display.
 
 i18next is initialized with Vietnamese as the deterministic build/hydration
 fallback; after mounting, a stored choice or supported browser language is applied.

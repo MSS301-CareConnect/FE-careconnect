@@ -10,8 +10,8 @@ export function DashboardStats() {
     {
       key: 'shifts',
       icon: 'event_available',
-      value: t('caregiver.stats.shiftsValue', { count: number(2) }),
-      extra: t('caregiver.stats.active', { count: number(1) }),
+      value: t('caregiver.stats.shiftsValue', { count: 2 }),
+      extra: t('caregiver.stats.active', { count: 1 }),
       detail: t('caregiver.stats.completed', { percent: percent(0.5) })
     },
     {
@@ -33,7 +33,7 @@ export function DashboardStats() {
       icon: 'star',
       value: t('caregiver.stats.rating', { score: number(4.98), max: number(5) }),
       extra: '',
-      detail: t('caregiver.stats.reviews', { count: number(98) })
+      detail: t('caregiver.stats.reviews', { count: 98 })
     }
   ] as const
   return (
