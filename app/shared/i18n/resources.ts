@@ -25,6 +25,15 @@ import { managerManagementEn, managerManagementVi } from './center-manager/manag
 import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
 import { managerBookingManagementEn, managerBookingManagementVi } from './center-manager/booking-management-resources'
 import { managerBookingDetailEn, managerBookingDetailVi } from './center-manager/booking-detail-resources'
+import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
+import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
+import { adminCustomersEn, adminCustomersVi } from './admin/customers-resources'
+import { adminCentersEn, adminCentersVi } from './admin/centers-resources'
+import { adminRevenueEn, adminRevenueVi } from './admin/revenue-resources'
+import { adminServicesEn, adminServicesVi } from './admin/services-resources'
+import { adminPoliciesEn, adminPoliciesVi } from './admin/policies-resources'
+import { adminQualityEn, adminQualityVi } from './admin/quality-resources'
+import { adminReviewsComplaintsEn, adminReviewsComplaintsVi } from './admin/reviews-complaints-resources'
 
 export const resources = {
   en: {
@@ -61,6 +70,17 @@ export const resources = {
         detail: managerDetailEn,
         bookingManagement: managerBookingManagementEn,
         bookingDetail: managerBookingDetailEn
+      },
+      admin: {
+        ...adminLayoutEn,
+        dashboardPage: adminDashboardEn,
+        revenuePage: adminRevenueEn,
+        customersPage: adminCustomersEn,
+        servicesPage: adminServicesEn,
+        centersPage: adminCentersEn,
+        policiesPage: adminPoliciesEn,
+        qualityPage: adminQualityEn,
+        reviewsComplaintsPage: adminReviewsComplaintsEn
       }
     }
   },
@@ -98,6 +118,17 @@ export const resources = {
         detail: managerDetailVi,
         bookingManagement: managerBookingManagementVi,
         bookingDetail: managerBookingDetailVi
+      },
+      admin: {
+        ...adminLayoutVi,
+        dashboardPage: adminDashboardVi,
+        revenuePage: adminRevenueVi,
+        customersPage: adminCustomersVi,
+        servicesPage: adminServicesVi,
+        centersPage: adminCentersVi,
+        policiesPage: adminPoliciesVi,
+        qualityPage: adminQualityVi,
+        reviewsComplaintsPage: adminReviewsComplaintsVi
       }
     }
   }

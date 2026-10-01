@@ -187,6 +187,50 @@ as sample or unavailable. The cancellation dialog cannot submit; dispatch notes
 remain local drafts. The booking list links to this route and retains its quick
 preview dialog.
 
+The Admin preview has its own `/admin` layout, VI/EN menu resources, and child
+routes `/admin/dashboard`, `/admin/revenue`, `/admin/customers`,
+`/admin/customers/:id`, `/admin/services`, `/admin/centers`,
+`/admin/policies`, `/admin/quality`, and `/admin/reviews-complaints`.
+The last route is the separate Admin review and complaint workspace;
+`/admin` redirects to its dashboard.
+It does not import feature internals from the other roles. Both pages use distinct,
+dated September 2026 design snapshots because the supplied KPI totals describe
+different examples. They are not combined into a platform ledger or presented as
+live data. Dashboard charts are static sample visuals. The revenue list owns its
+sample transactions and URL-based search, filters, pagination, and selected-row
+preview; CSV export includes the filtered sample rows. Bank reconciliation,
+payout approval, invoices, live gateway status, refresh, and unimplemented Admin
+menu destinations await backend contracts. The Admin parent layout is the future
+authorization boundary; the preview itself does not enforce role access.
+The customer list and detail use a separate role-local October 2026 design snapshot,
+not the dashboard or revenue totals. List search, status/booking volume/region
+filters, sorting, and pagination live in URL search parameters. Its CSV export
+contains only filtered sample rows. Detail resolves the same customer fixture by
+ID; patient histories, payment methods, bookings, and audit entries from the
+supplied detailed example appear only for `CUST-1024`. Customer creation,
+account suspension/reactivation, password resets, notifications, clinical record
+access, and note persistence await a backend contract and Admin authorization.
+The Admin service catalog and partner center screens use separate role-local,
+dated design snapshots, not the dashboard or revenue totals. Their search,
+tabs, and filters are URL search parameters; the selected service or center
+opens a read-only URL-addressable preview. Center CSV export contains only
+filtered sample rows. Pricing edits, catalog changes, onboarding approvals,
+center suspension/reactivation, account creation, and legal verification remain
+unavailable until backend contracts and Admin authorization are implemented.
+The policy and caregiver quality pages use independent, dated Admin design snapshots.
+Policy deposit and payout cycle controls update a local simulation only; no values
+are saved or presented as active financial rules. Quality list filters and tabs
+use URL search parameters, and a selected caregiver opens a read-only sample
+profile. Sample OCR, license, legal, clinical, payment and risk data are not
+live verification results. Policy publication, caregiver approval/rejection,
+license checking and clinical calls await backend contracts and authorization.
+The review and complaint workspace uses an independent illustrative design snapshot.
+Tabs, search, severity/status filters and the selected complaint live in URL search
+parameters. The CSAT export contains only the sample feedback shown on this page.
+Complaint decisions, refunds, caregiver replacement/discipline, medical records,
+SOS escalation, escrow and live review moderation require backend contracts and
+Admin authorization. No sample case is treated as a real medical or payment result.
+
 ### Feature-internal organization
 
 Each feature is self-contained. When a feature screen grows beyond a comfortable size, split it into focused files inside that feature folder:

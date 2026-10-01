@@ -1,0 +1,160 @@
+export const adminCentersVi = {
+  documentTitle: 'Quản lý trung tâm đối tác | CareConnect Admin',
+  title: 'Quản lý Trung tâm Chăm sóc Đối tác',
+  subtitle: 'Thẩm định hồ sơ trung tâm mới và theo dõi trạng thái tài khoản đối tác trên toàn quốc.',
+  breadcrumb: 'Đối tác y tế',
+  sample: 'Dữ liệu minh họa theo bản thiết kế tháng 10/2025; chưa kết nối hệ thống.',
+  history: 'Lịch sử kiểm duyệt & khóa',
+  export: 'Xuất CSV mẫu',
+  add: 'Thêm trung tâm thủ công',
+  unavailable: 'Cần API và quyền Admin để thực hiện thao tác này',
+  metrics: {
+    total: 'Tổng trung tâm đối tác',
+    pending: 'Chờ duyệt Onboard',
+    suspended: 'Bị tạm khóa / cảnh cáo',
+    staff: 'Điều dưỡng trực thuộc'
+  },
+  metricHints: {
+    total: '42 trung tâm hoạt động',
+    pending: 'Cần thẩm định hồ sơ',
+    suspended: '3 tài khoản trong mẫu',
+    staff: '92,4% ca sẵn sàng trực'
+  },
+  safety: 'Quy chuẩn an toàn tài khoản đối tác',
+  safetyHint:
+    'Việc khóa hoặc mở khóa trung tâm phải được backend xác thực và xử lý thông báo, điều phối ca theo quy trình chính thức.',
+  tabs: {
+    all: 'Tất cả trung tâm',
+    pending: 'Chờ duyệt Onboard',
+    active: 'Đang hoạt động',
+    suspended: 'Tạm khóa / đình chỉ'
+  },
+  search: 'Tìm tên trung tâm, mã đối tác, GPKD hoặc người đại diện',
+  region: 'Khu vực',
+  status: 'Trạng thái',
+  accreditation: 'Phân hạng y tế',
+  all: 'Tất cả',
+  regions: { HN: 'Hà Nội', HCM: 'TP. Hồ Chí Minh', DN: 'Đà Nẵng', CT: 'Cần Thơ', BD: 'Bình Dương' },
+  statuses: { pending: 'Chờ duyệt Onboard', active: 'Đang hoạt động', suspended: 'Đã tạm khóa' },
+  accreditations: { BYT: 'Chuẩn GPHĐ Bộ Y tế', CLINIC: 'Phòng khám đa khoa', PRIVATE: 'Trung tâm điều dưỡng tư nhân' },
+  columns: {
+    center: 'Thông tin trung tâm & mã',
+    legal: 'Pháp lý & giấy phép',
+    scale: 'Quy mô & hiệu suất',
+    status: 'Trạng thái',
+    actions: 'Thao tác quản trị'
+  },
+  businessLicense: 'GPKD',
+  operationLicense: 'GPHĐ',
+  representative: 'Đại diện chuyên môn',
+  nurses: '{{count}} điều dưỡng',
+  bookings: '{{count}} ca hoàn tất',
+  rating: '{{value}} / 5 · {{count}} đánh giá',
+  results: '{{count}} trung tâm trong mẫu',
+  empty: 'Không tìm thấy trung tâm phù hợp.',
+  details: 'Xem hồ sơ',
+  approve: 'Duyệt Onboard',
+  request: 'Yêu cầu bổ sung',
+  lock: 'Khóa tài khoản',
+  unlock: 'Mở khóa',
+  previous: 'Trang trước',
+  next: 'Trang sau',
+  page: 'Trang {{page}} / {{pages}}',
+  close: 'Đóng',
+  detailTitle: 'Hồ sơ trung tâm đối tác',
+  recordHint: 'Thông tin hồ sơ trong bản thiết kế; chưa có xác minh trực tiếp từ backend.',
+  process: 'Quy trình thẩm định & Onboard 4 bước',
+  processHint: 'Lộ trình minh họa cho trung tâm mới',
+  steps: {
+    first: 'Tiếp nhận hồ sơ & GPKD',
+    second: 'Kiểm tra CCHN & danh mục kỹ thuật',
+    third: 'Ký quỹ & cam kết bảo hiểm',
+    fourth: 'Bàn giao tài khoản quản trị Portal'
+  },
+  notes: {
+    anNhien: 'Hồ sơ chờ thẩm định chuyên môn.',
+    senVang: 'Hồ sơ cần bổ sung danh mục kỹ thuật.',
+    saiGon: 'Trung tâm đang nhận lịch chăm sóc.',
+    thuDo: 'Trung tâm đang nhận lịch chăm sóc.',
+    songHan: 'Trung tâm đang nhận lịch chăm sóc.',
+    phucAn: 'Mẫu thiết kế ghi nhận chứng chỉ chuyên môn cần gia hạn.'
+  }
+} as const
+
+export const adminCentersEn = {
+  documentTitle: 'Partner care centers | CareConnect Admin',
+  title: 'Partner care center management',
+  subtitle: 'Review new center applications and monitor partner account status nationwide.',
+  breadcrumb: 'Healthcare partners',
+  sample: 'Illustrative October 2025 design data; not connected to the platform.',
+  history: 'Review & suspension history',
+  export: 'Export sample CSV',
+  add: 'Add center manually',
+  unavailable: 'Requires the backend API and Admin authorization',
+  metrics: {
+    total: 'Partner centers',
+    pending: 'Pending onboarding',
+    suspended: 'Suspended / warned',
+    staff: 'Affiliated caregivers'
+  },
+  metricHints: {
+    total: '42 active centers',
+    pending: 'Application review required',
+    suspended: '3 sample accounts',
+    staff: '92.4% shift readiness'
+  },
+  safety: 'Partner account safety protocol',
+  safetyHint:
+    'Center suspension and reactivation require backend authorization, notifications and official shift coordination.',
+  tabs: { all: 'All centers', pending: 'Pending onboarding', active: 'Active', suspended: 'Suspended' },
+  search: 'Search center name, partner ID, business license or representative',
+  region: 'Region',
+  status: 'Status',
+  accreditation: 'Medical accreditation',
+  all: 'All',
+  regions: { HN: 'Hanoi', HCM: 'Ho Chi Minh City', DN: 'Da Nang', CT: 'Can Tho', BD: 'Binh Duong' },
+  statuses: { pending: 'Pending onboarding', active: 'Active', suspended: 'Suspended' },
+  accreditations: { BYT: 'Ministry of Health licensed', CLINIC: 'General clinic', PRIVATE: 'Private nursing center' },
+  columns: {
+    center: 'Center & ID',
+    legal: 'Licenses & legal',
+    scale: 'Scale & performance',
+    status: 'Status',
+    actions: 'Admin actions'
+  },
+  businessLicense: 'Business license',
+  operationLicense: 'Operating license',
+  representative: 'Clinical representative',
+  nurses: '{{count}} caregivers',
+  bookings: '{{count}} completed shifts',
+  rating: '{{value}} / 5 · {{count}} reviews',
+  results: '{{count}} sample centers',
+  empty: 'No matching centers.',
+  details: 'View application',
+  approve: 'Approve onboarding',
+  request: 'Request documents',
+  lock: 'Suspend account',
+  unlock: 'Reactivate',
+  previous: 'Previous page',
+  next: 'Next page',
+  page: 'Page {{page}} / {{pages}}',
+  close: 'Close',
+  detailTitle: 'Partner center application',
+  recordHint: 'Application details from the design; not verified against the backend.',
+  process: 'Four-step center onboarding',
+  processHint: 'Illustrative process for new centers',
+  steps: {
+    first: 'Receive application & business license',
+    second: 'Review credentials & service catalog',
+    third: 'Deposit & insurance commitment',
+    fourth: 'Hand over portal admin account'
+  },
+  notes: {
+    anNhien: 'Application awaits clinical review.',
+    senVang: 'Application needs a supplementary procedure catalog.',
+    saiGon: 'Center is accepting care bookings.',
+    thuDo: 'Center is accepting care bookings.',
+    songHan: 'Center is accepting care bookings.',
+    phucAn: 'The design marks a clinical credential as due for renewal.'
+  }
+} as const

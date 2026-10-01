@@ -1,0 +1,196 @@
+export const adminServicesVi = {
+  documentTitle: 'Danh mục & bảng giá | CareConnect Admin',
+  title: 'Quản lý Danh mục & Bảng giá Dịch vụ Trung tâm',
+  subtitle: 'Theo dõi danh mục chuẩn, dịch vụ trung tâm cung cấp và đơn giá theo từng hình thức chăm sóc.',
+  sample: 'Dữ liệu minh họa theo bản thiết kế Q4/2024; chưa đồng bộ hệ thống.',
+  badge: 'Dịch vụ Y tế Tiêu chuẩn',
+  priceVersion: 'Biểu phí mẫu Q4/2024',
+  history: 'Lịch sử thay đổi biểu phí',
+  importExport: 'Nhập / Xuất Excel',
+  add: 'Thêm dịch vụ mới',
+  unavailable: 'Cần hợp đồng API và quyền Admin để thay đổi dữ liệu',
+  metrics: {
+    total: 'Tổng dịch vụ chuẩn',
+    centers: 'Trung tâm mở bán',
+    average: 'Giá TB theo ca 4 giờ',
+    fee: 'Phí nền tảng'
+  },
+  metricHints: {
+    total: '14 đang hoạt động · 2 tạm dừng',
+    centers: '12 / 14 trung tâm khả dụng',
+    average: 'Tăng 4,2% trong mẫu',
+    fee: 'Điều dưỡng nhận 85% trong mẫu'
+  },
+  tabs: {
+    center: 'Dịch vụ trung tâm & bảng giá',
+    master: 'Danh mục chuẩn toàn hệ thống',
+    surcharge: 'Phụ phí & quy chuẩn ca trực'
+  },
+  search: 'Tìm theo tên dịch vụ hoặc mã SKU',
+  group: 'Nhóm chuyên môn',
+  status: 'Trạng thái',
+  unit: 'Hình thức',
+  all: 'Tất cả',
+  groups: {
+    elderly: 'Người cao tuổi',
+    rehab: 'Phục hồi chức năng',
+    surgery: 'Hậu phẫu',
+    chronic: 'Bệnh mãn tính',
+    mother: 'Mẹ & bé'
+  },
+  statuses: { active: 'Đang mở', paused: 'Tạm dừng', disabled: 'Vô hiệu hóa' },
+  units: { hour: 'Theo giờ', shift: 'Theo ca', daily: 'Lưu trú 24/24' },
+  reset: 'Đặt lại bộ lọc',
+  results: '{{count}} dịch vụ trong mẫu',
+  empty: 'Không có dịch vụ phù hợp.',
+  columns: {
+    service: 'Dịch vụ & SKU',
+    category: 'Chuẩn phân loại',
+    price: 'Cấu hình đơn giá',
+    allocation: 'Phân bổ thù lao',
+    bookings: 'Lượt đặt & đánh giá',
+    status: 'Trạng thái',
+    actions: 'Hành động'
+  },
+  certified: 'Chuẩn Bộ Y tế trong mẫu',
+  sku: 'Mã SKU',
+  required: 'Yêu cầu chứng chỉ chuyên môn',
+  caregiverShare: 'Điều dưỡng: 85%',
+  platformShare: 'Phí sàn: 15%',
+  bookingCount: '{{count}} ca',
+  ratingCount: '{{count}} đánh giá',
+  edit: 'Xem cấu hình bảng giá',
+  previous: 'Trang trước',
+  next: 'Trang sau',
+  page: 'Trang {{page}} / {{pages}}',
+  priceDetails: 'Bảng giá & điều kiện phục vụ',
+  detailHint: 'Các mức giá trong mẫu chỉ dùng để xem trước. Thao tác lưu đang chờ API.',
+  close: 'Đóng',
+  priceLabels: {
+    four: 'Ca 4 giờ',
+    eight: 'Ca 8 giờ',
+    daily: 'Lưu trú 24/24',
+    hour: 'Theo giờ',
+    package: 'Gói dịch vụ',
+    visit: 'Theo lượt'
+  },
+  masterHint: 'Danh mục chuẩn minh họa được nhóm theo chuyên môn chăm sóc.',
+  masterCount: '{{count}} dịch vụ',
+  allocation: 'Phân bổ hình thức đặt ca',
+  allocationHint: 'Ca 4 giờ 45% · Ca 8 giờ 30% · Lưu trú 24/24 25% trong mẫu.',
+  surcharge: 'Quy chuẩn phụ phí ca đặc biệt',
+  surchargeItems: { night: 'Ca đêm (22:00–06:00)', holiday: 'Ngày lễ, Tết', senior: 'Điều dưỡng trưởng / chuyên khoa' },
+  medical: 'Tiêu chuẩn giám sát y khoa',
+  medicalHint:
+    'Thông tin chứng chỉ, định mức vật tư và bảo hiểm trong bản thiết kế cần xác minh từ hệ thống trước khi áp dụng.',
+  policy: 'Chính sách quản lý giá dịch vụ',
+  policyHint: 'Biểu phí và điều kiện phê duyệt hiển thị ở đây là dữ liệu minh họa, chưa phải chính sách vận hành.',
+  serviceNames: {
+    elderly: 'Chăm sóc người cao tuổi & sa sút trí tuệ',
+    rehab: 'Vật lý trị liệu & phục hồi sau tai biến',
+    surgery: 'Thay băng, cắt chỉ & chăm sóc vết mổ',
+    sonde: 'Chăm sóc ống Sonde dạ dày / Sonde tiểu',
+    chronic: 'Chăm sóc toàn diện bệnh nhân mãn tính',
+    mother: 'Chăm sóc mẹ và bé sơ sinh'
+  }
+} as const
+
+export const adminServicesEn = {
+  documentTitle: 'Service catalog & pricing | CareConnect Admin',
+  title: 'Center service catalog & pricing',
+  subtitle: 'Review standard services, center availability and rates for each care format.',
+  sample: 'Illustrative Q4/2024 design data; not synced with the platform.',
+  badge: 'Standard healthcare services',
+  priceVersion: 'Sample Q4/2024 pricing',
+  history: 'Pricing change history',
+  importExport: 'Import / export Excel',
+  add: 'Add service',
+  unavailable: 'Requires an API contract and Admin permission to change data',
+  metrics: {
+    total: 'Standard services',
+    centers: 'Centers offering services',
+    average: 'Average 4-hour shift price',
+    fee: 'Platform fee'
+  },
+  metricHints: {
+    total: '14 active · 2 paused',
+    centers: '12 / 14 available centers',
+    average: 'Up 4.2% in sample',
+    fee: 'Caregiver receives 85% in sample'
+  },
+  tabs: {
+    center: 'Center services & prices',
+    master: 'Platform master catalog',
+    surcharge: 'Surcharges & shift rules'
+  },
+  search: 'Search service name or SKU',
+  group: 'Specialty group',
+  status: 'Status',
+  unit: 'Care format',
+  all: 'All',
+  groups: {
+    elderly: 'Older adult care',
+    rehab: 'Rehabilitation',
+    surgery: 'Postoperative care',
+    chronic: 'Chronic conditions',
+    mother: 'Mother & baby'
+  },
+  statuses: { active: 'Available', paused: 'Paused', disabled: 'Disabled' },
+  units: { hour: 'Hourly', shift: 'Per shift', daily: 'Live-in 24/7' },
+  reset: 'Reset filters',
+  results: '{{count}} sample services',
+  empty: 'No matching services.',
+  columns: {
+    service: 'Service & SKU',
+    category: 'Classification',
+    price: 'Price configuration',
+    allocation: 'Compensation split',
+    bookings: 'Bookings & rating',
+    status: 'Status',
+    actions: 'Actions'
+  },
+  certified: 'Ministry of Health standard in sample',
+  sku: 'SKU',
+  required: 'Professional certification required',
+  caregiverShare: 'Caregiver: 85%',
+  platformShare: 'Platform: 15%',
+  bookingCount: '{{count}} bookings',
+  ratingCount: '{{count}} reviews',
+  edit: 'View price configuration',
+  previous: 'Previous page',
+  next: 'Next page',
+  page: 'Page {{page}} / {{pages}}',
+  priceDetails: 'Pricing & service conditions',
+  detailHint: 'Sample prices are read-only. Saving requires the backend API.',
+  close: 'Close',
+  priceLabels: {
+    four: '4-hour shift',
+    eight: '8-hour shift',
+    daily: 'Live-in 24/7',
+    hour: 'Hourly',
+    package: 'Service package',
+    visit: 'Per visit'
+  },
+  masterHint: 'Illustrative master services grouped by care specialty.',
+  masterCount: '{{count}} services',
+  allocation: 'Booking format distribution',
+  allocationHint: '4-hour shifts 45% · 8-hour shifts 30% · live-in care 25% in sample.',
+  surcharge: 'Special shift surcharges',
+  surchargeItems: {
+    night: 'Night shift (22:00–06:00)',
+    holiday: 'Public holidays',
+    senior: 'Lead / specialist caregiver'
+  },
+  medical: 'Medical oversight standards',
+  medicalHint: 'Certification, supplies and insurance details in the design require platform verification before use.',
+  policy: 'Service pricing policy',
+  policyHint: 'The rates and approval conditions here are illustrative, not an active platform policy.',
+  serviceNames: {
+    elderly: 'Older adult & dementia care',
+    rehab: 'Physical therapy & stroke rehabilitation',
+    surgery: 'Dressing changes, suture removal & wound care',
+    sonde: 'Gastric / urinary catheter care',
+    chronic: 'Comprehensive chronic condition care',
+    mother: 'Postnatal mother & newborn care'
+  }
+} as const
