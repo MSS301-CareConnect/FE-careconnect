@@ -1,31 +1,417 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
-  title: CareConnect API
-  version: 0.1.0
-  description: >-
-    Committed frontend snapshot of the backend contract. Replace this bootstrap
-    document with the OpenAPI export produced by NestJS when Swagger is enabled.
+  title: CareConnect IdentityService
+  version: 0.0.1
+  description: Reviewed frontend snapshot of web authentication, customer registration,
+    and current-user endpoints from IdentityService.
 servers:
-  - url: http://localhost:3000
+  - url: /api
 tags:
-  - name: System
-    description: Bootstrap and health-style endpoints
+  - name: Authentication
+  - name: Account
 paths:
-  /:
+  /auth/csrf:
     get:
-      operationId: getApiStatus
-      summary: Read the current backend bootstrap response
       tags:
-        - System
+        - Authentication
+      operationId: getCsrfToken
       responses:
         '200':
-          description: Backend is reachable
+          description: Success
           content:
-            text/plain:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ApiStatusResponse'
+                $ref: '#/components/schemas/CsrfResponse'
+        '400': &a1
+          $ref: '#/components/responses/400'
+        '401': &a2
+          $ref: '#/components/responses/401'
+        '403': &a3
+          $ref: '#/components/responses/403'
+        '500': &a4
+          $ref: '#/components/responses/500'
+        '503': &a5
+          $ref: '#/components/responses/503'
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      operationId: loginWeb
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      operationId: refreshWebSession
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      operationId: logoutWebSession
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /users/me:
+    get:
+      tags:
+        - Account
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /users/register:
+    post:
+      tags:
+        - Account
+      operationId: registerCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: OTP sent to the supplied email; no account is created yet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '429':
+          description: OTP resend cooldown is active.
+        '500': *a4
+        '503': *a5
+  /users/register/verify:
+    post:
+      tags:
+        - Account
+      operationId: verifyCustomerRegistration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRegistrationRequest'
+      responses:
+        '200':
+          description: Email verified and customer account created; sign in separately.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyRegistrationResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /users/register/resend-otp:
+    post:
+      tags:
+        - Account
+      operationId: resendRegistrationOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationEmailRequest'
+      responses:
+        '200':
+          description: A new OTP was sent for a pending registration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendRegistrationOtpResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '429':
+          description: OTP resend cooldown is active.
+        '500': *a4
+        '503': *a5
 components:
+  responses:
+    '400':
+      description: HTTP 400; business endpoints return APIResponse
+    '401':
+      description: HTTP 401; business endpoints return APIResponse
+    '403':
+      description: HTTP 403; business endpoints return APIResponse
+    '500':
+      description: HTTP 500; business endpoints return APIResponse
+    '503':
+      description: HTTP 503; business endpoints return APIResponse
   schemas:
-    ApiStatusResponse:
-      type: string
-      example: Hello World!
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - fullName
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+          description: Must include lowercase, uppercase, digit, and special character; UTF-8 encoding must be at most 72 bytes.
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phoneNumber:
+          type: string
+          pattern: '^[0-9]{10,11}$'
+    VerifyRegistrationRequest:
+      type: object
+      required:
+        - email
+        - otpCode
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        otpCode:
+          type: string
+          pattern: '^[0-9]{6}$'
+    RegistrationEmailRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+    RegistrationOtp:
+      type: object
+      required:
+        - email
+        - expiresInSeconds
+        - resendAfterSeconds
+      properties:
+        email:
+          type: string
+          format: email
+        expiresInSeconds:
+          type: integer
+          format: int64
+        resendAfterSeconds:
+          type: integer
+          format: int64
+    RegisterResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RegistrationOtp'
+    ResendRegistrationOtpResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RegistrationOtp'
+    VerifyRegistrationResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/UserResponse'
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - email
+        - password
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - LOCKED
+        centerId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        permissions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        createdAt:
+          type: string
+          format: date-time
+    CsrfToken:
+      type: object
+      required:
+        - token
+        - headerName
+      properties:
+        token:
+          type: string
+        headerName:
+          type: string
+          example: X-XSRF-TOKEN
+    AuthenticationResult:
+      type: object
+      required:
+        - authenticated
+        - csrfToken
+        - expiresInSeconds
+      properties:
+        authenticated:
+          type: boolean
+        csrfToken:
+          type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+    CsrfResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CsrfToken'
+    AuthSessionResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/AuthenticationResult'
+    LogoutResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: 'null'
+    CurrentUserResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/UserResponse'

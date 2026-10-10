@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
+import { SignOutButton } from '~/features/shared/auth/sign-out-button'
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 
 const menu = [
   { key: 'dashboard', to: '/admin/dashboard', icon: 'dashboard' },
@@ -18,6 +20,7 @@ const menu = [
 ] as const
 
 export function AdminLayout() {
+  const authUser = useAuthUser()
   const { t } = useTranslation()
   const location = useLocation()
   const [open, setOpen] = useState(false)
@@ -116,6 +119,7 @@ export function AdminLayout() {
             </button>
           </div>
           <div className='flex shrink-0 items-center gap-2'>
+            <SignOutButton />
             <div className='[&_button]:px-2'>
               <LanguageSwitch />
             </div>
@@ -137,7 +141,7 @@ export function AdminLayout() {
                 {t('admin.managerShort')}
               </span>
               <span className='hidden text-xs lg:block'>
-                <strong className='block'>{t('admin.manager')}</strong>
+                <strong className='block'>{authUser?.fullName || authUser?.email || t('admin.manager')}</strong>
                 <span className='text-outline'>{t('admin.role')}</span>
               </span>
             </div>

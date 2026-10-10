@@ -3,8 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
+import { SignOutButton } from '~/features/shared/auth/sign-out-button'
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 
 export function CenterManagerLayout() {
+  const authUser = useAuthUser()
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const location = useLocation()
@@ -53,6 +56,7 @@ export function CenterManagerLayout() {
             {navigation}
           </nav>
           <div className='flex items-center gap-2'>
+            <SignOutButton />
             <div className='[&_button]:px-2'>
               <LanguageSwitch />
             </div>
@@ -74,7 +78,7 @@ export function CenterManagerLayout() {
                 {t('centerManager.managerShort')}
               </span>
               <div className='hidden text-xs md:block'>
-                <strong className='block'>{t('centerManager.manager')}</strong>
+                <strong className='block'>{authUser?.fullName || authUser?.email || t('centerManager.manager')}</strong>
                 <span className='text-outline'>{t('centerManager.role')}</span>
               </div>
             </div>

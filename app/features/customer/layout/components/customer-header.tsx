@@ -4,11 +4,14 @@ import { Link, NavLink } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
+import { SignOutButton } from '~/features/shared/auth/sign-out-button'
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCOwlf-ropD0XzVPucNjZeyxWfHNYpZLLHO2tA1QIuWfZ33VlxhbzZTIB1YcbZ-rwHFz13i956cRk1gpsZ5cVjIOynvR4Gd4LbdRVa3Ef_NT-ET7V8rZN8V8yMzP5Cg8PfibQW0z9t2RpWlbRfADs2Dkv0NrgxUMMGgnfxRundX7EQUrkPQPXvOi09tDoRqfnJqaCo_VxeS0EBCgou4W0BpxNDZYLe95AOHSs04kmU1O5nEy0vYKnKE8A'
 
 export function CustomerHeader() {
+  const authUser = useAuthUser()
   const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -89,6 +92,7 @@ export function CustomerHeader() {
         </div>
 
         <div className='flex items-center gap-3'>
+          <SignOutButton />
           <button
             type='button'
             aria-label={t('customer.nav.menu')}
@@ -122,7 +126,9 @@ export function CustomerHeader() {
               className='h-9 w-9 rounded-full object-cover ring-2 ring-primary/20 transition-all hover:ring-primary'
             />
             <div className='hidden text-left sm:flex sm:flex-col'>
-              <span className='text-xs font-semibold leading-tight text-on-surface'>{t('customer.nav.userName')}</span>
+              <span className='text-xs font-semibold leading-tight text-on-surface'>
+                {authUser?.fullName || authUser?.email || t('customer.nav.userName')}
+              </span>
               <span className='text-[11px] leading-tight text-on-surface-variant'>
                 {t('customer.nav.customerRole')}
               </span>

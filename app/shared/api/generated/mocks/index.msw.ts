@@ -1,1 +1,2 @@
-export { getSystemMock } from './system/system.msw'
+export { getAccountMock } from './account/account.msw'
+export { getAuthenticationMock } from './authentication/authentication.msw'

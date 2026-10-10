@@ -26,12 +26,48 @@ Browser
           -> feature UI/workflow
               -> generated TanStack Query hook
                   -> fetch /api/*
-                      -> NestJS REST API
+                      -> CareConnect backend REST API
 ```
 
-The browser owns presentation, navigation, and ephemeral interaction state. NestJS
-owns validation, authorization, workflow transitions, audit trails, persistence,
-and all decisions that affect money or access.
+The browser owns presentation, navigation, and ephemeral interaction state. Backend
+services own validation, authorization, workflow transitions, audit trails,
+persistence, and all decisions that affect money or access.
+
+### Web authentication and portal access
+
+IdentityService on local port 8081 owns the web session. The browser sends its
+HttpOnly access and refresh cookies to the same-origin `/api` prefix. The frontend
+fetches a CSRF token before login, refresh, and logout and sends it in the header
+specified by `/auth/csrf`; it never stores access or refresh tokens in browser
+storage. After login, `/users/me` supplies the authenticated user and roles. A 401
+from `/users/me` triggers one refresh attempt and a retry; another 401 means the
+session has ended. Other API failures show a retry state instead of treating the
+user as signed out.
+
+Each portal parent route wraps its layout with a TanStack Query session guard.
+The guard renders children only after `/users/me` confirms an active user with the
+required backend role. It redirects anonymous users to `/login` with an internal
+return path and shows an access-denied state for the wrong role. The backend remains
+authoritative for every data and mutation endpoint; these guards only prevent
+incorrect UI access. Portal headers use the `/users/me` identity while business
+screens remain labeled previews. Login routes users to the first available built-in portal in
+the order ADMIN, CENTER_MANAGER, CAREGIVER, CUSTOMER. A safe return path takes
+priority when it belongs to one of the user's roles. Logout clears the backend
+cookies and reloads `/login` to drop the in-memory query cache.
+
+Public customer registration uses `/users/register` to send an email OTP. The
+account is created only after `/users/register/verify` succeeds; verification
+does not create a web session, so the user signs in separately. The registration
+screen can request `/users/register/resend-otp` after the cooldown returned by
+the backend. All three mutations fetch a fresh CSRF token and use the same-origin
+`/api` proxy with credentials, so registration also works when an existing web
+cookie is present. The UI never persists the password or OTP.
+
+The committed OpenAPI snapshot currently covers this reviewed IdentityService
+authentication, customer registration, and current-user slice. It corrects the live Swagger's generic
+`ApiResponse.result` and spurious CSRF query parameter using the backend DTOs and
+the observed `/auth/csrf` response. Other IdentityService operations will be added
+as their frontend features are implemented. Generated files are never hand-edited.
 
 ## Key decisions
 
@@ -40,12 +76,12 @@ and all decisions that affect money or access.
 `react-router.config.ts` sets `ssr: false`. Framework Mode remains valuable for
 typed route modules, route discovery, code splitting, metadata, and loader/action
 orchestration. SSR is not needed for the authenticated MVP, and a single
-NestJS backend avoids splitting authorization and operational ownership across two
+backend avoids splitting authorization and operational ownership across two
 servers.
 
 The SPA build is `build/client/`. Every static host must fall back unknown document
 requests to `index.html`; `nginx.conf` contains this rule. `/api` must be routed to
-NestJS by the deployment ingress/reverse proxy. Vite supplies the equivalent proxy
+the backend by the deployment ingress/reverse proxy. Vite supplies the equivalent proxy
 in local development.
 
 ### Feature-oriented source tree (Multi-Role Architecture)
@@ -166,7 +202,7 @@ features. Search, filters, sort and pagination use URL parameters, while CSV exp
 contains the filtered sample rows. Each detail route resolves its own caregiver ID;
 the extensive clinical sections from the supplied example appear only for the
 matching sample person. Management mutations, credential decisions, document
-downloads, notifications and shift assignment remain unavailable until the NestJS
+downloads, notifications and shift assignment remain unavailable until the backend
 contract and manager authorization are implemented. The manager layout route is
 the future authorization boundary; it currently displays clearly labeled sample
 data and does not establish role access by itself.
@@ -308,8 +344,8 @@ introduced so Router and Query do not become competing caches.
 ### Contract-first client generation
 
 `openapi/openapi.yaml` is a versioned snapshot consumed by `orval.config.ts`.
-The current bootstrap operation mirrors the existing NestJS root controller; once
-Swagger is enabled in the backend, the backend export replaces this bootstrap file.
+It contains the reviewed IdentityService operations currently consumed by the web
+client; the backend OpenAPI export is authoritative for subsequent additions.
 
 ```text
 openapi/openapi.yaml
@@ -424,7 +460,7 @@ Contract update workflow:
 
 - `VITE_API_BASE_URL` is public and defaults to `/api`.
 - `API_PROXY_TARGET` is read only by the Vite development server and defaults to
-  `http://localhost:3000`.
+  `http://localhost:8081` for the local IdentityService.
 - Vite statically replaces browser environment values during the build. A changed
   production API prefix therefore requires a rebuild unless the deployment keeps the
   stable `/api` ingress contract.
@@ -457,7 +493,7 @@ different adapters:
 
 - Docker/VPS: the final image copies `build/client` into Nginx. `nginx.conf` serves
   static assets and uses `try_files ... /index.html` so a hard refresh on a client
-  route still boots React Router. A deployment ingress must route `/api` to NestJS,
+  route still boots React Router. A deployment ingress must route `/api` to the backend,
   or the frontend must be built with a public absolute API URL.
 - Vercel: Nginx and `nginx.conf` are not used. `react-router.config.ts` contains the
   official Vercel preset and keeps `ssr: false`; Vercel supports React Router SPA
@@ -488,8 +524,8 @@ does not require creating empty packages.
 
 ## Deferred decisions
 
-- Authentication/session storage awaits the backend OIDC contract. Do not store
-  long-lived tokens in local storage by default.
+- Web authentication uses IdentityService HttpOnly cookies and CSRF. Do not store
+  access or refresh tokens in local storage.
 - Form, table, chart, and component libraries should be chosen from real screens and
   accessibility requirements, not installed as architecture placeholders.
 - A shared Web/Mobile package is deferred. Web is the MVP for Customer, Center Manager,

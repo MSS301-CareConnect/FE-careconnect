@@ -16,8 +16,8 @@ in this repository. Read `ARCHITECTURE.md` before changing structure or data flo
   reports — primarily via mobile), and **Admin** (manage centers, customers,
   global service catalog, platform policies, escalated complaints, and
   system-wide statistics).
-- NestJS owns business rules, authorization, persistence, jobs, and the
-  authoritative OpenAPI contract.
+- CareConnect backend services own business rules, authorization, persistence,
+  jobs, and the authoritative OpenAPI contract. IdentityService is Spring Boot.
 
 ## Stack
 

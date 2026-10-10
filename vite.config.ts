@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: environment.API_PROXY_TARGET ?? 'http://localhost:3000',
+          target: environment.API_PROXY_TARGET ?? 'http://localhost:8081',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         }

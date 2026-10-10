@@ -18,6 +18,7 @@ export const commonEn = {
     notFoundTitle: '404'
   },
   home: {
+    signIn: 'Sign in',
     description:
       'React Router owns routing, TanStack Query owns server state, and Orval keeps the client synchronized with the API contract.',
     foundationHeading: 'Architecture foundations',
@@ -67,6 +68,7 @@ export const commonVi = {
     notFoundTitle: '404'
   },
   home: {
+    signIn: 'Đăng nhập',
     description:
       'React Router quản lý route, TanStack Query quản lý server state và Orval giữ client đồng bộ với hợp đồng API.',
     foundationHeading: 'Các nền tảng kiến trúc',

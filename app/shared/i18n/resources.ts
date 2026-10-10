@@ -1,4 +1,6 @@
 import { commonEn, commonVi } from './common-resources'
+import { authEn, authVi } from './auth/login-resources'
+import { registrationEn, registrationVi } from './auth/registration-resources'
 import { customerLayoutEn, customerLayoutVi } from './customer/layout-resources'
 import { bookingDetailEn, bookingDetailVi } from './customer/booking-detail-resources'
 import { bookingsEn, bookingsVi } from './customer/bookings-resources'
@@ -39,6 +41,7 @@ export const resources = {
   en: {
     translation: {
       ...commonEn,
+      auth: { ...authEn, registration: registrationEn },
       customer: {
         ...customerLayoutEn,
         bookingDetail: bookingDetailEn,
@@ -87,6 +90,7 @@ export const resources = {
   vi: {
     translation: {
       ...commonVi,
+      auth: { ...authVi, registration: registrationVi },
       customer: {
         ...customerLayoutVi,
         bookingDetail: bookingDetailVi,

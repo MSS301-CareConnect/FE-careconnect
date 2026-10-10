@@ -9,8 +9,11 @@ export function HomePage() {
 
   return (
     <main className='mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16 lg:px-8'>
-      <div className='mb-10 flex justify-end'>
+      <div className='mb-10 flex items-center justify-end gap-4'>
         <LanguageSwitch />
+        <a className='rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white' href='/login'>
+          {t('home.signIn')}
+        </a>
       </div>
       <div className='max-w-3xl'>
         <p className='text-sm font-semibold tracking-[0.2em] text-teal-700 uppercase'>{t('common.brand')}</p>
