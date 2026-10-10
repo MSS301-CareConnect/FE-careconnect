@@ -20,7 +20,7 @@ export const BookingDepositHero = ({ formattedTime, isExpired }: BookingDepositH
       <div className='max-w-7xl mx-auto px-4 sm:px-6'>
         {/* Breadcrumb */}
         <nav aria-label={ARIA_BREADCRUMB} className='flex items-center gap-1.5 text-sm text-slate-500 mb-4 flex-wrap'>
-          <Link to='/' className='hover:text-emerald-700 transition-colors flex items-center gap-1'>
+          <Link to='/customer' className='hover:text-emerald-700 transition-colors flex items-center gap-1'>
             <span className='material-symbols-outlined text-[18px]'>{ICON_HOME}</span>
             {t('customer.bookingDeposit.breadcrumb.home')}
           </Link>

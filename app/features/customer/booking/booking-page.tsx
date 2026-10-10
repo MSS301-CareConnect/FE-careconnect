@@ -45,7 +45,7 @@ export function CustomerBookingPage() {
             aria-label={t('customer.booking.breadcrumb.current')}
             className='mb-4 flex items-center gap-2 text-xs text-on-surface-variant sm:text-sm'
           >
-            <Link className='transition-colors hover:text-primary' to='/'>
+            <Link className='transition-colors hover:text-primary' to='/customer'>
               {t('customer.booking.breadcrumb.home')}
             </Link>
             <span className='material-symbols-outlined text-[16px] text-outline'>{ICON_CHEVRON_RIGHT}</span>

@@ -10,6 +10,7 @@ import type { RequestHandlerOptions } from 'msw'
 
 import type {
   CurrentUserResponse,
+  PasswordResetActionResponse,
   RegisterResponse,
   ResendRegistrationOtpResponse,
   VerifyRegistrationResponse
@@ -18,12 +19,18 @@ import type {
 import {
   getGetCurrentUserResponseMock,
   getRegisterCustomerResponseMock,
+  getRequestPasswordResetResponseMock,
   getResendRegistrationOtpResponseMock,
+  getResetPasswordResponseMock,
+  getUpdateMyProfileResponseMock,
   getVerifyCustomerRegistrationResponseMock
 } from './account.faker'
 
 export {
   getGetCurrentUserResponseMock,
+  getUpdateMyProfileResponseMock,
+  getRequestPasswordResetResponseMock,
+  getResetPasswordResponseMock,
   getRegisterCustomerResponseMock,
   getVerifyCustomerRegistrationResponseMock,
   getResendRegistrationOtpResponseMock
@@ -46,6 +53,82 @@ export const getGetCurrentUserMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getGetCurrentUserResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdateMyProfileMockHandler = (
+  overrideResponse?:
+    | CurrentUserResponse
+    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CurrentUserResponse> | CurrentUserResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/users/me',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateMyProfileResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getRequestPasswordResetMockHandler = (
+  overrideResponse?:
+    | PasswordResetActionResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<PasswordResetActionResponse> | PasswordResetActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/users/forgot-password',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getRequestPasswordResetResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getResetPasswordMockHandler = (
+  overrideResponse?:
+    | PasswordResetActionResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<PasswordResetActionResponse> | PasswordResetActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/users/reset-password',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getResetPasswordResponseMock(),
         { status: 200 }
       )
     },
@@ -130,6 +213,9 @@ export const getResendRegistrationOtpMockHandler = (
 }
 export const getAccountMock = () => [
   getGetCurrentUserMockHandler(),
+  getUpdateMyProfileMockHandler(),
+  getRequestPasswordResetMockHandler(),
+  getResetPasswordMockHandler(),
   getRegisterCustomerMockHandler(),
   getVerifyCustomerRegistrationMockHandler(),
   getResendRegistrationOtpMockHandler()

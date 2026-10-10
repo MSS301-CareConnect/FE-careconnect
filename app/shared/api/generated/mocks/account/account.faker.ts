@@ -9,6 +9,7 @@ import { faker } from '@faker-js/faker'
 
 import type {
   CurrentUserResponse,
+  PasswordResetActionResponse,
   RegisterResponse,
   ResendRegistrationOtpResponse,
   VerifyRegistrationResponse
@@ -22,6 +23,33 @@ export const getGetCurrentUserResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getUserResponseMock() },
+  ...overrideResponse
+})
+
+export const getUpdateMyProfileResponseMock = (
+  overrideResponse: Partial<Extract<CurrentUserResponse, object>> = {}
+): CurrentUserResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getUserResponseMock() },
+  ...overrideResponse
+})
+
+export const getRequestPasswordResetResponseMock = (
+  overrideResponse: Partial<Extract<PasswordResetActionResponse, object>> = {}
+): PasswordResetActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getResetPasswordResponseMock = (
+  overrideResponse: Partial<Extract<PasswordResetActionResponse, object>> = {}
+): PasswordResetActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
   ...overrideResponse
 })
 

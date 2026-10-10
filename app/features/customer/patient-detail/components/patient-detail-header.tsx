@@ -22,7 +22,7 @@ export function PatientDetailHeader({ data, isEditMode, onToggleEditMode, onSave
         aria-label={t('customer.patientDetail.breadcrumb.title')}
         className='flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant'
       >
-        <Link to='/' className='transition-colors hover:text-primary'>
+        <Link to='/customer' className='transition-colors hover:text-primary'>
           {t('customer.patientDetail.breadcrumb.home')}
         </Link>
         <Icon name='chevron_right' className='text-xs text-outline-variant' />

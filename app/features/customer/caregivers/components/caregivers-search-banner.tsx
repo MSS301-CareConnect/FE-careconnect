@@ -38,7 +38,7 @@ export function CaregiversSearchBanner({
           aria-label={t('customer.caregivers.breadcrumb.current')}
           className='mb-4 flex items-center gap-2 text-sm text-on-surface-variant'
         >
-          <Link className='transition-colors hover:text-primary' to='/'>
+          <Link className='transition-colors hover:text-primary' to='/customer'>
             {t('customer.caregivers.breadcrumb.home')}
           </Link>
           <span className='material-symbols-outlined text-[18px] text-outline'>{ICON_CHEVRON_RIGHT}</span>

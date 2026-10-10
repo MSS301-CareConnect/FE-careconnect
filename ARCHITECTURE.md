@@ -55,6 +55,11 @@ the order ADMIN, CENTER_MANAGER, CAREGIVER, CUSTOMER. A safe return path takes
 priority when it belongs to one of the user's roles. Logout clears the backend
 cookies and reloads `/login` to drop the in-memory query cache.
 
+The Customer portal has its own guarded index at `/customer`. Its home screen
+links to existing care search, booking, and family profile screens without
+inventing remote data. The Customer header and in-portal home breadcrumbs point
+there; the account menu contains the profile link and session sign-out action.
+
 Public customer registration uses `/users/register` to send an email OTP. The
 account is created only after `/users/register/verify` succeeds; verification
 does not create a web session, so the user signs in separately. The registration
@@ -64,7 +69,14 @@ the backend. All three mutations fetch a fresh CSRF token and use the same-origi
 cookie is present. The UI never persists the password or OTP.
 
 The committed OpenAPI snapshot currently covers this reviewed IdentityService
-authentication, customer registration, and current-user slice. It corrects the live Swagger's generic
+authentication, customer registration, password recovery, and current-user slice. The public
+`/forgot-password` screen requests an emailed OTP and submits it with a new password;
+both mutations use a fresh CSRF token. Its request result is deliberately neutral
+about whether an account exists. The customer `/customer/my-profile` screen reads
+the guarded `/users/me` user and saves only `fullName` and `phoneNumber` through
+`PUT /users/me`; a successful response replaces the session query data. Email is
+read-only because the backend profile update contract does not accept it.
+The snapshot corrects the live Swagger's generic
 `ApiResponse.result` and spurious CSRF query parameter using the backend DTOs and
 the observed `/auth/csrf` response. Other IdentityService operations will be added
 as their frontend features are implemented. Generated files are never hand-edited.

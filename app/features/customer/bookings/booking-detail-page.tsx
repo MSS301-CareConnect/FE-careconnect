@@ -49,7 +49,7 @@ export function CustomerBookingDetailPage({ code }: CustomerBookingDetailPagePro
           aria-label={t('customer.bookingDetail.breadcrumb')}
           className='flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant'
         >
-          <Link to='/' className='hover:text-primary'>
+          <Link to='/customer' className='hover:text-primary'>
             {t('customer.nav.home')}
           </Link>
           <Icon name='chevron_right' className='text-base' />

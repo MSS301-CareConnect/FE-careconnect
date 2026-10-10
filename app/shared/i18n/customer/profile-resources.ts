@@ -1,4 +1,13 @@
 export const profileEn = {
+  live: {
+    description: 'Update the account details used by CareConnect.',
+    accountEmail: 'Account email',
+    emailReadOnly: 'Your account email cannot be changed here.',
+    passwordHelp: 'Need to set a new password?',
+    invalidName: 'Enter a name of up to 255 characters.',
+    invalidPhone: 'Enter a phone number with 10 or 11 digits.',
+    saveFailed: 'Unable to save your profile. Please try again.'
+  },
   documentTitle: 'My Profile | CareConnect',
   breadcrumb: {
     home: 'Home',
@@ -96,6 +105,15 @@ export const profileEn = {
 } as const
 
 export const profileVi = {
+  live: {
+    description: 'Cập nhật thông tin tài khoản CareConnect của bạn.',
+    accountEmail: 'Email tài khoản',
+    emailReadOnly: 'Chưa thể đổi email tài khoản tại đây.',
+    passwordHelp: 'Bạn cần đặt mật khẩu mới?',
+    invalidName: 'Nhập họ tên tối đa 255 ký tự.',
+    invalidPhone: 'Nhập số điện thoại gồm 10 hoặc 11 chữ số.',
+    saveFailed: 'Không thể lưu hồ sơ. Vui lòng thử lại.'
+  },
   documentTitle: 'Hồ sơ cá nhân | CareConnect',
   breadcrumb: {
     home: 'Trang chủ',

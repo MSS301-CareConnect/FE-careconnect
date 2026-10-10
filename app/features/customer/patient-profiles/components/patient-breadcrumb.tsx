@@ -11,7 +11,7 @@ export function PatientBreadcrumb() {
       aria-label={t('customer.patientProfiles.breadcrumb.title')}
       className='mb-6 flex items-center gap-1.5 text-xs text-on-surface-variant'
     >
-      <Link to='/' className='flex items-center gap-1 transition-colors hover:text-primary'>
+      <Link to='/customer' className='flex items-center gap-1 transition-colors hover:text-primary'>
         <Icon name='home' className='text-sm' />
         <span>{t('customer.patientProfiles.breadcrumb.home')}</span>
       </Link>

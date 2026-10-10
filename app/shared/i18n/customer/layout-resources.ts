@@ -9,7 +9,8 @@ export const customerLayoutEn = {
     notifications: 'Notifications',
     customerRole: 'Customer',
     userName: 'Nguyen Mai Anh',
-    myProfile: 'My Profile'
+    myProfile: 'My Profile',
+    accountMenu: 'Account menu'
   },
   footer: {
     tagline: '© 2024 CareConnect. Trusted and dedicated caregiver platform.',
@@ -30,7 +31,8 @@ export const customerLayoutVi = {
     notifications: 'Thông báo',
     customerRole: 'Khách hàng',
     userName: 'Nguyễn Mai Anh',
-    myProfile: 'Hồ sơ của tôi'
+    myProfile: 'Hồ sơ của tôi',
+    accountMenu: 'Menu tài khoản'
   },
   footer: {
     tagline: '© 2024 CareConnect. Nền tảng kết nối người chăm sóc uy tín và tận tâm.',

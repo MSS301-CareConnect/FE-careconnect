@@ -20,7 +20,7 @@ export function CreatePatientHeader({ onCancel, onSaveDraft, onSubmit }: CreateP
           aria-label={t('customer.patientCreate.breadcrumb.current')}
           className='flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant'
         >
-          <Link to='/' className='transition-colors hover:text-primary'>
+          <Link to='/customer' className='transition-colors hover:text-primary'>
             {t('customer.patientCreate.breadcrumb.home')}
           </Link>
           <Icon name='chevron_right' className='text-xs text-outline-variant' />

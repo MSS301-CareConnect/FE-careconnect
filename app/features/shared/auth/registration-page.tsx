@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { PasswordField } from './password-field'
+import { validPassword } from './password-validation'
 import { beginRegistration, registrationErrorKey, resendOtp, verifyRegistration } from './registration-api'
 
 const inputClass =
@@ -21,17 +22,6 @@ type ValidationKey =
 
 function validEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
-
-function validPassword(value: string) {
-  return (
-    value.length >= 8 &&
-    new TextEncoder().encode(value).length <= 72 &&
-    /[a-z]/.test(value) &&
-    /[A-Z]/.test(value) &&
-    /[0-9]/.test(value) &&
-    /[^A-Za-z0-9]/.test(value)
-  )
 }
 
 export function RegistrationPage() {

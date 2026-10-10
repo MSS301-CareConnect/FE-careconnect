@@ -4,6 +4,7 @@ export default [
   index('routes/home.tsx'),
   route('login', 'routes/login.tsx'),
   route('register', 'routes/register.tsx'),
+  route('forgot-password', 'routes/forgot-password.tsx'),
   ...prefix('admin', [
     layout('routes/admin/layout.tsx', [
       index('routes/admin/index.tsx'),
@@ -42,6 +43,7 @@ export default [
   ]),
   ...prefix('customer', [
     layout('routes/customer/layout.tsx', [
+      index('routes/customer/index.tsx'),
       route('caregivers', 'routes/customer/caregivers.tsx'),
       route('booking', 'routes/customer/booking.tsx'),
       route('bookings', 'routes/customer/bookings.tsx'),

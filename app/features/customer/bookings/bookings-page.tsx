@@ -58,7 +58,7 @@ export function CustomerBookingsPage() {
               aria-label={t('customer.myBookings.breadcrumb')}
               className='mb-3 flex items-center gap-1.5 text-xs text-on-surface-variant'
             >
-              <Link to='/' className='hover:text-primary'>
+              <Link to='/customer' className='hover:text-primary'>
                 {t('customer.nav.home')}
               </Link>
               <Icon name='chevron_right' className='text-base' />

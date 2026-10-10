@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router'
 
@@ -14,12 +14,34 @@ export function CustomerHeader() {
   const authUser = useAuthUser()
   const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
+  const accountButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!accountMenuOpen) return
+    function closeOnOutsideClick(event: PointerEvent) {
+      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountMenuOpen(false)
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setAccountMenuOpen(false)
+        accountButtonRef.current?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [accountMenuOpen])
 
   return (
     <header className='fixed top-0 left-0 z-50 w-full bg-surface-container-lowest/90 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl'>
       <div className='mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-6'>
         <div className='flex items-center gap-6'>
-          <Link to='/' className='flex items-center gap-2'>
+          <Link to='/customer' className='flex items-center gap-2'>
             <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm'>
               <Icon name='health_and_safety' className='text-2xl' />
             </div>
@@ -28,7 +50,7 @@ export function CustomerHeader() {
 
           <nav className='hidden items-center gap-1 lg:flex'>
             <NavLink
-              to='/'
+              to='/customer'
               end
               className={({ isActive }) =>
                 `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
@@ -92,7 +114,6 @@ export function CustomerHeader() {
         </div>
 
         <div className='flex items-center gap-3'>
-          <SignOutButton />
           <button
             type='button'
             aria-label={t('customer.nav.menu')}
@@ -114,26 +135,50 @@ export function CustomerHeader() {
             <span className='absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-error ring-2 ring-surface-container-lowest' />
           </button>
 
-          <Link
-            to='/customer/my-profile'
-            title={t('customer.nav.myProfile')}
-            aria-label={t('customer.nav.myProfile')}
-            className='flex items-center gap-2 rounded-xl p-1 transition-colors hover:bg-surface-container'
-          >
-            <img
-              src={AVATAR_URL}
-              alt={t('customer.profile.overview.avatarAlt')}
-              className='h-9 w-9 rounded-full object-cover ring-2 ring-primary/20 transition-all hover:ring-primary'
-            />
-            <div className='hidden text-left sm:flex sm:flex-col'>
-              <span className='text-xs font-semibold leading-tight text-on-surface'>
-                {authUser?.fullName || authUser?.email || t('customer.nav.userName')}
+          <div className='relative' ref={accountMenuRef}>
+            <button
+              ref={accountButtonRef}
+              aria-controls='customer-account-menu'
+              aria-expanded={accountMenuOpen}
+              aria-haspopup='true'
+              aria-label={t('customer.nav.accountMenu')}
+              className='flex items-center gap-2 rounded-xl p-1 transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary'
+              onClick={() => setAccountMenuOpen((open) => !open)}
+              type='button'
+            >
+              <img
+                src={AVATAR_URL}
+                alt=''
+                className='h-9 w-9 rounded-full object-cover ring-2 ring-primary/20 transition-all hover:ring-primary'
+              />
+              <span className='hidden text-left sm:flex sm:flex-col'>
+                <span className='text-xs font-semibold leading-tight text-on-surface'>
+                  {authUser?.fullName || authUser?.email || t('customer.nav.userName')}
+                </span>
+                <span className='text-[11px] leading-tight text-on-surface-variant'>
+                  {t('customer.nav.customerRole')}
+                </span>
               </span>
-              <span className='text-[11px] leading-tight text-on-surface-variant'>
-                {t('customer.nav.customerRole')}
-              </span>
-            </div>
-          </Link>
+              <Icon name='expand_more' className='hidden text-base text-on-surface-variant sm:block' />
+            </button>
+            {accountMenuOpen && (
+              <nav
+                aria-label={t('customer.nav.accountMenu')}
+                className='absolute top-full right-0 z-10 mt-2 w-52 rounded-xl border border-outline-variant/40 bg-white p-2 shadow-lg'
+                id='customer-account-menu'
+              >
+                <Link
+                  className='block rounded-lg px-3 py-2.5 text-sm font-semibold text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary'
+                  onClick={() => setAccountMenuOpen(false)}
+                  to='/customer/my-profile'
+                >
+                  {t('customer.nav.myProfile')}
+                </Link>
+                <div className='my-1 border-t border-outline-variant/40' />
+                <SignOutButton appearance='menu' />
+              </nav>
+            )}
+          </div>
         </div>
       </div>
       {mobileMenuOpen && (
@@ -143,7 +188,7 @@ export function CustomerHeader() {
           className='border-t border-slate-100 bg-white px-4 py-3 shadow-lg lg:hidden'
         >
           {[
-            { to: '/', label: t('customer.nav.home') },
+            { to: '/customer', label: t('customer.nav.home') },
             { to: '/customer/caregivers', label: t('customer.nav.findCaregivers') },
             { to: '/customer/bookings', label: t('customer.nav.myBookings') },
             { to: '/customer/patient-profiles', label: t('customer.nav.familyProfiles') },
@@ -152,7 +197,7 @@ export function CustomerHeader() {
             <NavLink
               key={to}
               to={to}
-              end={to === '/'}
+              end={to === '/customer'}
               onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) =>
                 `block rounded-lg px-4 py-2.5 text-sm font-medium ${isActive ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container'}`

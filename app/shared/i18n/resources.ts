@@ -1,7 +1,9 @@
 import { commonEn, commonVi } from './common-resources'
 import { authEn, authVi } from './auth/login-resources'
 import { registrationEn, registrationVi } from './auth/registration-resources'
+import { recoveryEn, recoveryVi } from './auth/password-recovery-resources'
 import { customerLayoutEn, customerLayoutVi } from './customer/layout-resources'
+import { customerHomeEn, customerHomeVi } from './customer/home-resources'
 import { bookingDetailEn, bookingDetailVi } from './customer/booking-detail-resources'
 import { bookingsEn, bookingsVi } from './customer/bookings-resources'
 import { profileEn, profileVi } from './customer/profile-resources'
@@ -41,9 +43,10 @@ export const resources = {
   en: {
     translation: {
       ...commonEn,
-      auth: { ...authEn, registration: registrationEn },
+      auth: { ...authEn, registration: registrationEn, recovery: recoveryEn },
       customer: {
         ...customerLayoutEn,
+        home: customerHomeEn,
         bookingDetail: bookingDetailEn,
         myBookings: bookingsEn,
         profile: profileEn,
@@ -90,9 +93,10 @@ export const resources = {
   vi: {
     translation: {
       ...commonVi,
-      auth: { ...authVi, registration: registrationVi },
+      auth: { ...authVi, registration: registrationVi, recovery: recoveryVi },
       customer: {
         ...customerLayoutVi,
+        home: customerHomeVi,
         bookingDetail: bookingDetailVi,
         myBookings: bookingsVi,
         profile: profileVi,

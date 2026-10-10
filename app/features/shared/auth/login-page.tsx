@@ -95,6 +95,11 @@ export function LoginPage() {
             onChange={setPassword}
             value={password}
           />
+          <div className='text-right text-sm'>
+            <Link className='font-semibold text-primary underline-offset-4 hover:underline' to='/forgot-password'>
+              {t('auth.recovery.title')}
+            </Link>
+          </div>
           {login.data && !homeForUser(login.data) && (
             <p className='rounded-xl bg-error/10 p-3 text-sm text-error' role='alert'>
               {t('auth.noPortal')}

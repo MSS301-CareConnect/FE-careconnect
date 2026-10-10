@@ -15,15 +15,49 @@ import type {
   CurrentUserResponse,
   LoginRequest,
   LogoutResponse,
+  PasswordResetActionResponse,
+  PasswordResetEmailRequest,
   RegisterRequest,
   RegisterResponse,
   RegistrationEmailRequest,
   RegistrationOtp,
   ResendRegistrationOtpResponse,
+  ResetPasswordRequest,
+  UpdateProfileRequest,
   UserResponse,
   VerifyRegistrationRequest,
   VerifyRegistrationResponse
 } from '.'
+
+export const getUpdateProfileRequestMock = (
+  overrideResponse: Partial<UpdateProfileRequest> = {}
+): UpdateProfileRequest => ({
+  fullName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 1, max: 255 } }), undefined]),
+  phoneNumber: faker.helpers.arrayElement([faker.helpers.fromRegExp('^[0-9]{10,11}$'), undefined]),
+  ...overrideResponse
+})
+
+export const getPasswordResetEmailRequestMock = (
+  overrideResponse: Partial<PasswordResetEmailRequest> = {}
+): PasswordResetEmailRequest => ({ email: faker.internet.email(), ...overrideResponse })
+
+export const getResetPasswordRequestMock = (
+  overrideResponse: Partial<ResetPasswordRequest> = {}
+): ResetPasswordRequest => ({
+  email: faker.internet.email(),
+  otpCode: faker.helpers.fromRegExp('^[0-9]{6}$'),
+  newPassword: faker.string.alpha({ length: { min: 8, max: 72 } }),
+  ...overrideResponse
+})
+
+export const getPasswordResetActionResponseMock = (
+  overrideResponse: Partial<PasswordResetActionResponse> = {}
+): PasswordResetActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
 
 export const getRegisterRequestMock = (overrideResponse: Partial<RegisterRequest> = {}): RegisterRequest => ({
   email: faker.internet.email(),

@@ -106,6 +106,72 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
+    put:
+      tags:
+        - Account
+      operationId: updateMyProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Updated current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /users/forgot-password:
+    post:
+      tags:
+        - Account
+      operationId: requestPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetEmailRequest'
+      responses:
+        '200':
+          description: Neutral response whether or not the email belongs to an account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetActionResponse'
+        '400': *a1
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /users/reset-password:
+    post:
+      tags:
+        - Account
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset using the emailed OTP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetActionResponse'
+        '400': *a1
+        '403': *a3
+        '500': *a4
+        '503': *a5
   /users/register:
     post:
       tags:
@@ -192,6 +258,56 @@ components:
     '503':
       description: HTTP 503; business endpoints return APIResponse
   schemas:
+    UpdateProfileRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phoneNumber:
+          type: string
+          pattern: '^[0-9]{10,11}$'
+    PasswordResetEmailRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - otpCode
+        - newPassword
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        otpCode:
+          type: string
+          pattern: '^[0-9]{6}$'
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 72
+          description: Must include lowercase, uppercase, digit, and special character; UTF-8 encoding must be at most 72 bytes.
+    PasswordResetActionResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: 'null'
     RegisterRequest:
       type: object
       required:

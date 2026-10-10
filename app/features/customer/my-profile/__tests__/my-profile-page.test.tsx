@@ -1,85 +1,75 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
+import { sessionQueryKey } from '~/features/shared/auth/session-api'
+import type { UserResponse } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { MyProfilePage } from '../my-profile-page'
+import { saveMyProfile } from '../profile-api'
+
+vi.mock('../profile-api', () => ({ saveMyProfile: vi.fn() }))
+
+const user: UserResponse = {
+  id: '42',
+  email: 'family@example.com',
+  fullName: 'Family Member',
+  phoneNumber: '0912345678',
+  roles: ['CUSTOMER']
+}
+
+function renderPage() {
+  const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+  client.setQueryData(sessionQueryKey, user)
+  render(
+    <QueryClientProvider client={client}>
+      <AuthUserContext value={user}>
+        <MemoryRouter>
+          <MyProfilePage />
+        </MemoryRouter>
+      </AuthUserContext>
+    </QueryClientProvider>
+  )
+  return client
+}
+
+beforeEach(async () => {
+  vi.mocked(saveMyProfile).mockReset()
+  await setAppLanguage('en', false)
+})
 
 describe('MyProfilePage', () => {
-  beforeEach(async () => {
-    localStorage.clear()
-    await setAppLanguage('vi', false)
+  it('shows account data and keeps email read-only', () => {
+    renderPage()
+    expect(screen.getByLabelText('Full Name')).toHaveValue('Family Member')
+    expect(screen.getByLabelText('Mobile Phone Number')).toHaveValue('0912345678')
+    expect(screen.getByLabelText('Account email')).toHaveValue('family@example.com')
+    expect(screen.getByLabelText('Account email')).toHaveAttribute('readonly')
   })
 
-  it('renders customer profile information and stats in Vietnamese', () => {
-    render(
-      <MemoryRouter>
-        <MyProfilePage />
-      </MemoryRouter>
+  it('saves supported fields and updates session cache', async () => {
+    vi.mocked(saveMyProfile).mockResolvedValue({ ...user, fullName: 'Updated Member' })
+    const client = renderPage()
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Updated Member' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+    await waitFor(() =>
+      expect(saveMyProfile).toHaveBeenCalledWith(
+        { fullName: 'Updated Member', phoneNumber: '0912345678' },
+        expect.anything()
+      )
     )
-
-    expect(screen.getByRole('heading', { level: 1, name: 'Hồ sơ cá nhân' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: 'Nguyễn Mai Anh' })).toBeInTheDocument()
-    expect(screen.getByText('Tài khoản đã xác minh')).toBeInTheDocument()
-    expect(screen.getByText('CC-KH8842')).toBeInTheDocument()
-    expect(screen.getByText('Người thân chăm sóc')).toBeInTheDocument()
-    expect(screen.getByText('Ca hoàn thành')).toBeInTheDocument()
-    expect(screen.getByText('Đổi mật khẩu tài khoản')).toBeInTheDocument()
+    expect(await screen.findByRole('status')).toHaveTextContent('Profile changes saved successfully!')
+    expect(client.getQueryData(sessionQueryKey)).toEqual({ ...user, fullName: 'Updated Member' })
   })
 
-  it('switches content to English when language is switched', async () => {
-    render(
-      <MemoryRouter>
-        <MyProfilePage />
-      </MemoryRouter>
-    )
-
-    await setAppLanguage('en', false)
-
-    expect(await screen.findByRole('heading', { level: 1, name: 'Personal Profile' })).toBeInTheDocument()
-    expect(screen.getByText('Verified Account')).toBeInTheDocument()
-    expect(screen.getByText('Change Account Password')).toBeInTheDocument()
-    expect(document.documentElement).toHaveAttribute('lang', 'en')
-  })
-
-  it('updates form fields and triggers save flow', async () => {
-    render(
-      <MemoryRouter>
-        <MyProfilePage />
-      </MemoryRouter>
-    )
-
-    const nameInput = screen.getByLabelText(/Họ và tên/i)
-    fireEvent.change(nameInput, { target: { value: 'Nguyễn Mai Anh Updated' } })
-    expect(nameInput).toHaveValue('Nguyễn Mai Anh Updated')
-
-    const saveButtons = screen.getAllByRole('button', { name: /Lưu thay đổi/i })
-    fireEvent.click(saveButtons[0])
-
-    await waitFor(() => {
-      expect(screen.getByText('Thay đổi hồ sơ vừa được lưu thành công!')).toBeInTheDocument()
-    })
-  })
-
-  it('allows toggling password visibility in security section', () => {
-    render(
-      <MemoryRouter>
-        <MyProfilePage />
-      </MemoryRouter>
-    )
-
-    const currentPwdInput = screen.getByLabelText('Mật khẩu hiện tại')
-    expect(currentPwdInput).toHaveAttribute('type', 'password')
-
-    const toggleButtons = screen.getAllByRole('button')
-    // Find the toggle button near password
-    const visibilityBtn = toggleButtons.find(
-      (btn) => btn.querySelector('.material-symbols-outlined')?.textContent === 'visibility'
-    )
-    if (visibilityBtn) {
-      fireEvent.click(visibilityBtn)
-      expect(currentPwdInput).toHaveAttribute('type', 'text')
-    }
+  it('rejects an invalid phone before calling the API', () => {
+    renderPage()
+    fireEvent.change(screen.getByLabelText('Mobile Phone Number'), { target: { value: '123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a phone number with 10 or 11 digits.')
+    expect(saveMyProfile).not.toHaveBeenCalled()
   })
 })

@@ -7,11 +7,15 @@
  */
 
 export * from './currentUserResponse'
+export * from './passwordResetActionResponse'
+export * from './passwordResetEmailRequest'
 export * from './registerRequest'
 export * from './registerResponse'
 export * from './registrationEmailRequest'
 export * from './registrationOtp'
 export * from './resendRegistrationOtpResponse'
+export * from './resetPasswordRequest'
+export * from './updateProfileRequest'
 export * from './userResponse'
 export * from './userResponseStatus'
 export * from './verifyRegistrationRequest'

@@ -28,10 +28,14 @@ import type {
   N403Response,
   N500Response,
   N503Response,
+  PasswordResetActionResponse,
+  PasswordResetEmailRequest,
   RegisterRequest,
   RegisterResponse,
   RegistrationEmailRequest,
   ResendRegistrationOtpResponse,
+  ResetPasswordRequest,
+  UpdateProfileRequest,
   VerifyRegistrationRequest,
   VerifyRegistrationResponse
 } from '../../contracts'
@@ -231,6 +235,388 @@ export function useGetCurrentUser<
   return withQueryKey(query, queryOptions.queryKey)
 }
 
+export type updateMyProfileResponse200 = {
+  data: CurrentUserResponse
+  status: 200
+}
+
+export type updateMyProfileResponse400 = {
+  data: N400Response
+  status: 400
+}
+
+export type updateMyProfileResponse401 = {
+  data: N401Response
+  status: 401
+}
+
+export type updateMyProfileResponse403 = {
+  data: N403Response
+  status: 403
+}
+
+export type updateMyProfileResponse500 = {
+  data: N500Response
+  status: 500
+}
+
+export type updateMyProfileResponse503 = {
+  data: N503Response
+  status: 503
+}
+
+export type updateMyProfileResponseSuccess = updateMyProfileResponse200 & {
+  headers: Headers
+}
+export type updateMyProfileResponseError = (
+  | updateMyProfileResponse400
+  | updateMyProfileResponse401
+  | updateMyProfileResponse403
+  | updateMyProfileResponse500
+  | updateMyProfileResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateMyProfileUrl = () => {
+  return `${env.API_BASE_URL}/users/me`
+}
+
+export const updateMyProfile = async (
+  updateProfileRequest: UpdateProfileRequest,
+  options?: RequestInit
+): Promise<updateMyProfileResponseSuccess> => {
+  const res = await fetch(getUpdateMyProfileUrl(), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateProfileRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateMyProfileResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateMyProfileResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateMyProfileResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateMyProfileResponseSuccess
+}
+
+export const getUpdateMyProfileMutationOptions = <
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMyProfile>>,
+    TError,
+    { data: UpdateProfileRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMyProfile>>,
+  TError,
+  { data: UpdateProfileRequest },
+  TContext
+> => {
+  const mutationKey = ['updateMyProfile']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMyProfile>>, { data: UpdateProfileRequest }> = (
+    props
+  ) => {
+    const { data } = props ?? {}
+
+    return updateMyProfile(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateMyProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateMyProfile>>>
+export type UpdateMyProfileMutationBody = UpdateProfileRequest
+export type UpdateMyProfileMutationError = globalThis.Error & {
+  info?: N400Response | N401Response | N403Response | N500Response | N503Response
+  status?: number
+}
+
+export const useUpdateMyProfile = <
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateMyProfile>>,
+      TError,
+      { data: UpdateProfileRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof updateMyProfile>>, TError, { data: UpdateProfileRequest }, TContext> => {
+  return useMutation(getUpdateMyProfileMutationOptions(options), queryClient)
+}
+export type requestPasswordResetResponse200 = {
+  data: PasswordResetActionResponse
+  status: 200
+}
+
+export type requestPasswordResetResponse400 = {
+  data: N400Response
+  status: 400
+}
+
+export type requestPasswordResetResponse403 = {
+  data: N403Response
+  status: 403
+}
+
+export type requestPasswordResetResponse500 = {
+  data: N500Response
+  status: 500
+}
+
+export type requestPasswordResetResponse503 = {
+  data: N503Response
+  status: 503
+}
+
+export type requestPasswordResetResponseSuccess = requestPasswordResetResponse200 & {
+  headers: Headers
+}
+export type requestPasswordResetResponseError = (
+  | requestPasswordResetResponse400
+  | requestPasswordResetResponse403
+  | requestPasswordResetResponse500
+  | requestPasswordResetResponse503
+) & {
+  headers: Headers
+}
+
+export const getRequestPasswordResetUrl = () => {
+  return `${env.API_BASE_URL}/users/forgot-password`
+}
+
+export const requestPasswordReset = async (
+  passwordResetEmailRequest: PasswordResetEmailRequest,
+  options?: RequestInit
+): Promise<requestPasswordResetResponseSuccess> => {
+  const res = await fetch(getRequestPasswordResetUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(passwordResetEmailRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: requestPasswordResetResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: requestPasswordResetResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: requestPasswordResetResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as requestPasswordResetResponseSuccess
+}
+
+export const getRequestPasswordResetMutationOptions = <
+  TError = globalThis.Error & { info?: N400Response | N403Response | N500Response | N503Response; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestPasswordReset>>,
+    TError,
+    { data: PasswordResetEmailRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestPasswordReset>>,
+  TError,
+  { data: PasswordResetEmailRequest },
+  TContext
+> => {
+  const mutationKey = ['requestPasswordReset']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestPasswordReset>>,
+    { data: PasswordResetEmailRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return requestPasswordReset(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type RequestPasswordResetMutationResult = NonNullable<Awaited<ReturnType<typeof requestPasswordReset>>>
+export type RequestPasswordResetMutationBody = PasswordResetEmailRequest
+export type RequestPasswordResetMutationError = globalThis.Error & {
+  info?: N400Response | N403Response | N500Response | N503Response
+  status?: number
+}
+
+export const useRequestPasswordReset = <
+  TError = globalThis.Error & { info?: N400Response | N403Response | N500Response | N503Response; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof requestPasswordReset>>,
+      TError,
+      { data: PasswordResetEmailRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof requestPasswordReset>>,
+  TError,
+  { data: PasswordResetEmailRequest },
+  TContext
+> => {
+  return useMutation(getRequestPasswordResetMutationOptions(options), queryClient)
+}
+export type resetPasswordResponse200 = {
+  data: PasswordResetActionResponse
+  status: 200
+}
+
+export type resetPasswordResponse400 = {
+  data: N400Response
+  status: 400
+}
+
+export type resetPasswordResponse403 = {
+  data: N403Response
+  status: 403
+}
+
+export type resetPasswordResponse500 = {
+  data: N500Response
+  status: 500
+}
+
+export type resetPasswordResponse503 = {
+  data: N503Response
+  status: 503
+}
+
+export type resetPasswordResponseSuccess = resetPasswordResponse200 & {
+  headers: Headers
+}
+export type resetPasswordResponseError = (
+  resetPasswordResponse400 | resetPasswordResponse403 | resetPasswordResponse500 | resetPasswordResponse503
+) & {
+  headers: Headers
+}
+
+export const getResetPasswordUrl = () => {
+  return `${env.API_BASE_URL}/users/reset-password`
+}
+
+export const resetPassword = async (
+  resetPasswordRequest: ResetPasswordRequest,
+  options?: RequestInit
+): Promise<resetPasswordResponseSuccess> => {
+  const res = await fetch(getResetPasswordUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(resetPasswordRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: resetPasswordResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: resetPasswordResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: resetPasswordResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as resetPasswordResponseSuccess
+}
+
+export const getResetPasswordMutationOptions = <
+  TError = globalThis.Error & { info?: N400Response | N403Response | N500Response | N503Response; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof resetPassword>>,
+    TError,
+    { data: ResetPasswordRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError, { data: ResetPasswordRequest }, TContext> => {
+  const mutationKey = ['resetPassword']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPassword>>, { data: ResetPasswordRequest }> = (
+    props
+  ) => {
+    const { data } = props ?? {}
+
+    return resetPassword(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof resetPassword>>>
+export type ResetPasswordMutationBody = ResetPasswordRequest
+export type ResetPasswordMutationError = globalThis.Error & {
+  info?: N400Response | N403Response | N500Response | N503Response
+  status?: number
+}
+
+export const useResetPassword = <
+  TError = globalThis.Error & { info?: N400Response | N403Response | N500Response | N503Response; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof resetPassword>>,
+      TError,
+      { data: ResetPasswordRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof resetPassword>>, TError, { data: ResetPasswordRequest }, TContext> => {
+  return useMutation(getResetPasswordMutationOptions(options), queryClient)
+}
 export type registerCustomerResponse200 = {
   data: RegisterResponse
   status: 200
