@@ -5,6 +5,7 @@ export default [
   route('login', 'routes/login.tsx'),
   route('register', 'routes/register.tsx'),
   route('forgot-password', 'routes/forgot-password.tsx'),
+  route('account/security', 'routes/account/security.tsx'),
   ...prefix('admin', [
     layout('routes/admin/layout.tsx', [
       index('routes/admin/index.tsx'),
@@ -16,7 +17,10 @@ export default [
       route('quality', 'routes/admin/quality.tsx'),
       route('reviews-complaints', 'routes/admin/reviews-complaints.tsx'),
       route('customers', 'routes/admin/customers.tsx'),
-      route('customers/:id', 'routes/admin/customer-detail.tsx')
+      route('customers/:id', 'routes/admin/customer-detail.tsx'),
+      route('accounts', 'routes/admin/accounts.tsx'),
+      route('accounts/:id', 'routes/admin/account-detail.tsx'),
+      route('roles', 'routes/admin/roles.tsx')
     ])
   ]),
   ...prefix('center-manager', [

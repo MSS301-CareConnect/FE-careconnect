@@ -9,6 +9,9 @@ import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 const menu = [
   { key: 'dashboard', to: '/admin/dashboard', icon: 'dashboard' },
   { key: 'customers', to: '/admin/customers', icon: 'groups' },
+  { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
+  { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },
+  { key: 'security', to: '/account/security', icon: 'lock' },
   { key: 'caregivers', icon: 'medical_services' },
   { key: 'centers', to: '/admin/centers', icon: 'apartment' },
   { key: 'bookings', icon: 'calendar_month' },

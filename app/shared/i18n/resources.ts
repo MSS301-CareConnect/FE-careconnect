@@ -2,6 +2,7 @@ import { commonEn, commonVi } from './common-resources'
 import { authEn, authVi } from './auth/login-resources'
 import { registrationEn, registrationVi } from './auth/registration-resources'
 import { recoveryEn, recoveryVi } from './auth/password-recovery-resources'
+import { securityEn, securityVi } from './auth/security-resources'
 import { customerLayoutEn, customerLayoutVi } from './customer/layout-resources'
 import { customerHomeEn, customerHomeVi } from './customer/home-resources'
 import { bookingDetailEn, bookingDetailVi } from './customer/booking-detail-resources'
@@ -38,12 +39,13 @@ import { adminServicesEn, adminServicesVi } from './admin/services-resources'
 import { adminPoliciesEn, adminPoliciesVi } from './admin/policies-resources'
 import { adminQualityEn, adminQualityVi } from './admin/quality-resources'
 import { adminReviewsComplaintsEn, adminReviewsComplaintsVi } from './admin/reviews-complaints-resources'
+import { identityEn, identityVi } from './admin/identity-resources'
 
 export const resources = {
   en: {
     translation: {
       ...commonEn,
-      auth: { ...authEn, registration: registrationEn, recovery: recoveryEn },
+      auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn },
       customer: {
         ...customerLayoutEn,
         home: customerHomeEn,
@@ -86,14 +88,15 @@ export const resources = {
         centersPage: adminCentersEn,
         policiesPage: adminPoliciesEn,
         qualityPage: adminQualityEn,
-        reviewsComplaintsPage: adminReviewsComplaintsEn
+        reviewsComplaintsPage: adminReviewsComplaintsEn,
+        identity: identityEn
       }
     }
   },
   vi: {
     translation: {
       ...commonVi,
-      auth: { ...authVi, registration: registrationVi, recovery: recoveryVi },
+      auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi },
       customer: {
         ...customerLayoutVi,
         home: customerHomeVi,
@@ -136,7 +139,8 @@ export const resources = {
         centersPage: adminCentersVi,
         policiesPage: adminPoliciesVi,
         qualityPage: adminQualityVi,
-        reviewsComplaintsPage: adminReviewsComplaintsVi
+        reviewsComplaintsPage: adminReviewsComplaintsVi,
+        identity: identityVi
       }
     }
   }

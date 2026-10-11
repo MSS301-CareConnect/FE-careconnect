@@ -68,8 +68,8 @@ the backend. All three mutations fetch a fresh CSRF token and use the same-origi
 `/api` proxy with credentials, so registration also works when an existing web
 cookie is present. The UI never persists the password or OTP.
 
-The committed OpenAPI snapshot currently covers this reviewed IdentityService
-authentication, customer registration, password recovery, and current-user slice. The public
+The committed OpenAPI snapshot covers reviewed IdentityService web authentication,
+registration, recovery, current-user security, and account administration. The public
 `/forgot-password` screen requests an emailed OTP and submits it with a new password;
 both mutations use a fresh CSRF token. Its request result is deliberately neutral
 about whether an account exists. The customer `/customer/my-profile` screen reads
@@ -78,8 +78,24 @@ the guarded `/users/me` user and saves only `fullName` and `phoneNumber` through
 read-only because the backend profile update contract does not accept it.
 The snapshot corrects the live Swagger's generic
 `ApiResponse.result` and spurious CSRF query parameter using the backend DTOs and
-the observed `/auth/csrf` response. Other IdentityService operations will be added
-as their frontend features are implemented. Generated files are never hand-edited.
+the observed `/auth/csrf` response. Generated files are never hand-edited.
+
+### Identity administration and account security
+
+The reviewed IdentityService snapshot also includes the remaining 14 web operations
+for account administration, roles, permissions, password change, and global session
+logout. `/admin/accounts` lists and provisions real accounts; `/admin/accounts/:id`
+edits profile fields, status, and role assignments; `/admin/roles` manages custom
+roles and their permission sets. These screens stay separate from the illustrative
+Admin customer screens. TanStack Query caches reads and invalidates affected lists
+and details after mutations. The backend enforces all permissions; the UI hides
+actions based on `/users/me` permissions and renders denied/error states.
+
+`/account/security` is available to every active web user. Password change and
+sign-out on every device use CSRF-protected cookie requests, then reload `/login`
+to clear in-memory session state. Admin provisioning offers Customer and Center
+Manager accounts; the latter requires a center ID. New accounts set their password
+through the existing email OTP recovery flow.
 
 ## Key decisions
 

@@ -57,6 +57,9 @@ export function CenterManagerLayout() {
           </nav>
           <div className='flex items-center gap-2'>
             <SignOutButton />
+            <Link className='rounded-lg px-2 py-2 text-sm font-semibold text-primary' to='/account/security'>
+              {t('auth.security.title')}
+            </Link>
             <div className='[&_button]:px-2'>
               <LanguageSwitch />
             </div>

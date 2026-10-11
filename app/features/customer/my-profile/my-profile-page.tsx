@@ -159,6 +159,12 @@ export function MyProfilePage() {
           {t('auth.recovery.title')}
         </Link>
       </p>
+      <Link
+        className='mt-4 inline-block font-semibold text-primary underline-offset-4 hover:underline'
+        to='/account/security'
+      >
+        {t('auth.security.title')}
+      </Link>
     </main>
   )
 }
