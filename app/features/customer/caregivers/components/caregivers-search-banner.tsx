@@ -19,6 +19,7 @@ interface CaregiversSearchBannerProps {
   onSearchChange: (value: string) => void
   onLocationChange: (value: string) => void
   onTagToggle: (tag: string) => void
+  catalogMode?: boolean
 }
 
 export function CaregiversSearchBanner({
@@ -27,7 +28,8 @@ export function CaregiversSearchBanner({
   selectedTags,
   onSearchChange,
   onLocationChange,
-  onTagToggle
+  onTagToggle,
+  catalogMode = false
 }: CaregiversSearchBannerProps) {
   const { t } = useTranslation()
 
@@ -49,7 +51,9 @@ export function CaregiversSearchBanner({
           <div className='max-w-3xl'>
             <div className='mb-2 inline-flex items-center gap-1.5 rounded-full bg-surface-container-low px-3 py-1 text-xs font-semibold text-primary'>
               <span className='material-symbols-outlined text-[16px]'>{ICON_VERIFIED_USER}</span>
-              <span>{t('customer.caregivers.banner.verifiedBadge')}</span>
+              <span>
+                {t(catalogMode ? 'customer.provider.catalogBadge' : 'customer.caregivers.banner.verifiedBadge')}
+              </span>
             </div>
             <h1 className='text-2xl font-bold tracking-tight text-on-surface sm:text-3xl md:text-4xl'>
               {t('customer.caregivers.banner.title')}
@@ -62,8 +66,13 @@ export function CaregiversSearchBanner({
             <div className='relative flex flex-1 items-center rounded-xl bg-surface-container-lowest px-4 shadow-inner'>
               <span className='material-symbols-outlined mr-3 select-none text-[24px] text-primary'>{ICON_SEARCH}</span>
               <input
+                aria-label={t(
+                  catalogMode ? 'customer.provider.searchPlaceholder' : 'customer.caregivers.banner.searchPlaceholder'
+                )}
                 className='w-full bg-transparent py-3.5 text-base text-on-surface placeholder:text-outline focus:outline-none'
-                placeholder={t('customer.caregivers.banner.searchPlaceholder')}
+                placeholder={t(
+                  catalogMode ? 'customer.provider.searchPlaceholder' : 'customer.caregivers.banner.searchPlaceholder'
+                )}
                 type='text'
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
@@ -81,23 +90,25 @@ export function CaregiversSearchBanner({
             </div>
 
             <div className='flex items-center gap-3'>
-              <div className='relative hidden min-w-[200px] items-center rounded-xl bg-surface-container-lowest px-4 sm:flex'>
-                <span className='material-symbols-outlined mr-2 text-[20px] text-outline'>{ICON_LOCATION}</span>
-                <select
-                  className='w-full cursor-pointer appearance-none bg-transparent py-3.5 pr-8 text-sm text-on-surface focus:outline-none'
-                  value={location}
-                  onChange={(e) => onLocationChange(e.target.value)}
-                >
-                  {LOCATIONS.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {t(`customer.caregivers.banner.locations.${loc}`)}
-                    </option>
-                  ))}
-                </select>
-                <span className='pointer-events-none absolute right-3 material-symbols-outlined text-[18px] text-outline'>
-                  {ICON_EXPAND_MORE}
-                </span>
-              </div>
+              {!catalogMode && (
+                <div className='relative hidden min-w-[200px] items-center rounded-xl bg-surface-container-lowest px-4 sm:flex'>
+                  <span className='material-symbols-outlined mr-2 text-[20px] text-outline'>{ICON_LOCATION}</span>
+                  <select
+                    className='w-full cursor-pointer appearance-none bg-transparent py-3.5 pr-8 text-sm text-on-surface focus:outline-none'
+                    value={location}
+                    onChange={(e) => onLocationChange(e.target.value)}
+                  >
+                    {LOCATIONS.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {t(`customer.caregivers.banner.locations.${loc}`)}
+                      </option>
+                    ))}
+                  </select>
+                  <span className='pointer-events-none absolute right-3 material-symbols-outlined text-[18px] text-outline'>
+                    {ICON_EXPAND_MORE}
+                  </span>
+                </div>
+              )}
 
               <button
                 className='flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container sm:w-auto'
@@ -109,29 +120,31 @@ export function CaregiversSearchBanner({
             </div>
           </form>
 
-          <div className='mt-3 flex flex-wrap items-center gap-2 pt-1'>
-            <span className='mr-1 text-xs font-medium text-on-surface-variant'>
-              {t('customer.caregivers.banner.suggestionsLabel')}
-            </span>
-            {SUGGESTION_TAGS.map((tag) => {
-              const isSelected = selectedTags.includes(tag)
-              return (
-                <button
-                  key={tag}
-                  className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-colors ${
-                    isSelected
-                      ? 'bg-surface-container-lowest font-medium text-primary shadow-xs'
-                      : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high'
-                  }`}
-                  type='button'
-                  onClick={() => onTagToggle(tag)}
-                >
-                  <span>{t(`customer.caregivers.banner.tags.${tag}`)}</span>
-                  {isSelected ? <span className='material-symbols-outlined text-[14px]'>{ICON_DONE}</span> : null}
-                </button>
-              )
-            })}
-          </div>
+          {!catalogMode && (
+            <div className='mt-3 flex flex-wrap items-center gap-2 pt-1'>
+              <span className='mr-1 text-xs font-medium text-on-surface-variant'>
+                {t('customer.caregivers.banner.suggestionsLabel')}
+              </span>
+              {SUGGESTION_TAGS.map((tag) => {
+                const isSelected = selectedTags.includes(tag)
+                return (
+                  <button
+                    key={tag}
+                    className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-colors ${
+                      isSelected
+                        ? 'bg-surface-container-lowest font-medium text-primary shadow-xs'
+                        : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high'
+                    }`}
+                    type='button'
+                    onClick={() => onTagToggle(tag)}
+                  >
+                    <span>{t(`customer.caregivers.banner.tags.${tag}`)}</span>
+                    {isSelected ? <span className='material-symbols-outlined text-[14px]'>{ICON_DONE}</span> : null}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </section>

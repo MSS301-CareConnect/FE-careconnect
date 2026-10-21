@@ -1,6 +1,18 @@
 export const commonEn = {
   common: {
     brand: 'CareConnect',
+    accountMenu: 'Account menu',
+    providerMedia: {
+      title: 'Files and images',
+      empty: 'No files yet.',
+      loading: 'Loading files…',
+      error: 'Unable to load files.',
+      upload: 'Upload files',
+      remove: 'Remove file',
+      open: 'Open file',
+      actionError: 'Unable to update files.',
+      confirmRemove: 'Remove this file?'
+    },
     language: {
       english: 'English',
       englishShort: 'EN',
@@ -51,6 +63,18 @@ export const commonEn = {
 export const commonVi = {
   common: {
     brand: 'CareConnect',
+    accountMenu: 'Menu tài khoản',
+    providerMedia: {
+      title: 'Tệp và hình ảnh',
+      empty: 'Chưa có tệp.',
+      loading: 'Đang tải tệp…',
+      error: 'Không thể tải tệp.',
+      upload: 'Tải tệp lên',
+      remove: 'Xóa tệp',
+      open: 'Mở tệp',
+      actionError: 'Không thể cập nhật tệp.',
+      confirmRemove: 'Xóa tệp này?'
+    },
     language: {
       english: 'Tiếng Anh',
       englishShort: 'EN',

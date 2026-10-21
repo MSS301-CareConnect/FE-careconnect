@@ -1,50 +1,71 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { changeCenterStatus, fetchCenter, fetchCenters } from '~/entities/provider/provider-api'
+import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AdminCentersPage } from '../admin-centers-page'
 
-function Location() {
-  const location = useLocation()
-  return <output data-testid='location'>{location.pathname + location.search}</output>
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchCenters: vi.fn(),
+  fetchCenter: vi.fn(),
+  changeCenterStatus: vi.fn()
+}))
+
+const center: ProviderCenterRecord = {
+  id: 'center-1',
+  centerName: 'Care One',
+  centerStatus: 'PENDING',
+  address: 'Main Street',
+  email: 'center@example.com',
+  version: 2
 }
 
-function renderPage(path = '/admin/centers') {
+function renderPage() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route element={<AdminCentersPage />} path='/admin/centers' />
-      </Routes>
-      <Location />
-    </MemoryRouter>
+    <QueryClientProvider client={client}>
+      <MemoryRouter>
+        <AdminCentersPage />
+      </MemoryRouter>
+    </QueryClientProvider>
   )
 }
 
-describe('Admin partner centers preview', () => {
-  beforeEach(async () => {
-    await setAppLanguage('vi', false)
+beforeEach(async () => {
+  vi.mocked(fetchCenters).mockReset()
+  vi.mocked(fetchCenter).mockReset()
+  vi.mocked(changeCenterStatus).mockReset()
+  await setAppLanguage('en', false)
+})
+
+describe('Admin provider centers', () => {
+  it('loads centers, opens the real detail, and sends its version when updating status', async () => {
+    vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
+    vi.mocked(fetchCenter).mockResolvedValue(center)
+    vi.mocked(changeCenterStatus).mockResolvedValue({ ...center, centerStatus: 'ACTIVE', version: 3 })
+    renderPage()
+
+    expect(await screen.findByText('Care One')).toBeInTheDocument()
+    expect(fetchCenters).toHaveBeenCalledWith({ page: 0, size: 20, status: undefined, keyword: undefined })
+    fireEvent.click(screen.getByRole('button', { name: 'Center details' }))
+    expect(await screen.findByText('center@example.com')).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Update status' }))
+    await waitFor(() =>
+      expect(changeCenterStatus).toHaveBeenCalledWith('center-1', { status: 'ACTIVE', reason: undefined, version: 2 })
+    )
   })
 
-  it('filters pending centers, previews the selected application and blocks approval', () => {
+  it('shows a retry state when the center list fails', async () => {
+    vi.mocked(fetchCenters)
+      .mockRejectedValueOnce(new Error('Unavailable'))
+      .mockResolvedValueOnce({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
     renderPage()
-    fireEvent.click(screen.getByRole('tab', { name: 'Chờ duyệt Onboard' }))
-    expect(screen.getByText('2 trung tâm trong mẫu')).toBeInTheDocument()
-    expect(screen.getByTestId('location')).toHaveTextContent('tab=pending')
-    const table = screen.getByRole('table')
-    expect(within(table).getByText('TT Chăm sóc Y tế Gia đình An Nhiên')).toBeInTheDocument()
-    expect(within(table).queryByText('TT Điều dưỡng & CS Tại nhà Sài Gòn Care')).not.toBeInTheDocument()
-    fireEvent.click(within(table).getByText('TT Chăm sóc Y tế Gia đình An Nhiên'))
-    expect(screen.getByRole('dialog', { name: 'Hồ sơ trung tâm đối tác' })).toHaveTextContent('0317894521')
-    expect(screen.getAllByRole('button', { name: 'Duyệt Onboard' })[0]).toBeDisabled()
-  })
-
-  it('uses region filtering and English resources', async () => {
-    renderPage()
-    fireEvent.change(screen.getByLabelText('Khu vực'), { target: { value: 'DN' } })
-    expect(screen.getByText('1 trung tâm trong mẫu')).toBeInTheDocument()
-    expect(screen.getByTestId('location')).toHaveTextContent('region=DN')
-    await act(() => setAppLanguage('en', false))
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Partner care center management')
-    expect(screen.getByText('1 sample centers')).toBeInTheDocument()
+    expect(await screen.findByText('Unable to load centers.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+    expect(await screen.findByText('No matching centers found.')).toBeInTheDocument()
   })
 })

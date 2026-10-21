@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MemoryRouter } from 'react-router'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { RolesPage } from '../roles-page'
@@ -19,7 +20,9 @@ function renderPage() {
       client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}
     >
       <AuthUserContext value={{ id: 'admin', roles: ['ADMIN'], status: 'ACTIVE', permissions: ['role:manage'] }}>
-        <RolesPage />
+        <MemoryRouter>
+          <RolesPage />
+        </MemoryRouter>
       </AuthUserContext>
     </QueryClientProvider>
   )
@@ -42,6 +45,15 @@ beforeEach(async () => {
 })
 
 describe('RolesPage', () => {
+  it('shows role metrics and filters custom roles', async () => {
+    renderPage()
+    expect(await screen.findByRole('button', { name: /Admin \(ADMIN\)/ })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Roles and permissions overview' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
+    expect(screen.queryByRole('button', { name: /Admin \(ADMIN\)/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Auditor \(AUDITOR\)/ })).toBeInTheDocument()
+  })
+
   it('keeps built-in roles read-only and replaces custom role permissions with selected IDs', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     vi.mocked(saveRolePermissions).mockResolvedValue({})

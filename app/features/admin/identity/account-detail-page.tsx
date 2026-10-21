@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
+import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { Icon } from '~/shared/ui/icon'
 import {
   addUserRole,
   changeUserStatus,
@@ -15,7 +17,8 @@ import {
 } from './identity-api'
 
 const builtIn = ['CUSTOMER', 'CAREGIVER', 'CENTER_MANAGER', 'ADMIN']
-const inputClass = 'w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
+const inputClass =
+  'mt-1 block w-full rounded-lg bg-surface-container-low px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30'
 
 export function AccountDetailPage() {
   const { t } = useTranslation()
@@ -90,6 +93,7 @@ export function AccountDetailPage() {
   const canManage = authUser?.permissions?.includes('user:manage')
   const canManageRoles = authUser?.permissions?.includes('role:manage')
   const isSelf = authUser?.id === id
+  useDocumentTitle(t('admin.identity.detail'))
   function submit(event: FormEvent) {
     event.preventDefault()
     setMessage('')
@@ -100,28 +104,58 @@ export function AccountDetailPage() {
     update.mutate()
   }
   return (
-    <div className='mx-auto max-w-4xl space-y-6 p-5 sm:p-8'>
-      <Link className='text-primary underline' to='/admin/accounts'>
-        {t('admin.identity.back')}
-      </Link>
-      <h1 className='text-2xl font-bold'>{t('admin.identity.detail')}</h1>
+    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
+      <nav aria-label={t('admin.menu')} className='flex items-center gap-2 text-xs text-outline'>
+        <Link to='/admin/dashboard'>{t('admin.dashboard')}</Link>
+        <Icon className='text-sm' name='chevron_right' />
+        <Link to='/admin/accounts'>{t('admin.identity.accountsTitle')}</Link>
+        <Icon className='text-sm' name='chevron_right' />
+        <span className='text-primary'>{t('admin.identity.detail')}</span>
+      </nav>
+      <header className='flex flex-wrap items-center gap-4'>
+        <span className='flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-container text-2xl font-bold text-primary'>
+          {user.data?.fullName
+            ?.split(' ')
+            .slice(-2)
+            .map((part) => part[0])
+            .join('') || <Icon name='person' />}
+        </span>
+        <div>
+          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
+            {user.data?.fullName || t('admin.identity.detail')}
+          </h1>
+          <p className='mt-1 text-sm text-on-surface-variant'>
+            {user.data?.email || t('admin.identity.accountDetailSubtitle')}
+          </p>
+        </div>
+      </header>
       {message && (
         <p role='status' className='rounded-lg bg-surface-container p-3'>
           {message}
         </p>
       )}
       {user.isPending ? (
-        <p role='status'>{t('admin.identity.loading')}</p>
+        <p className='rounded-xl bg-white p-8' role='status'>
+          {t('admin.identity.loading')}
+        </p>
       ) : user.isError ? (
-        <div role='alert'>
+        <div className='rounded-xl bg-white p-8' role='alert'>
           <p>{t(isForbiddenError(user.error) ? 'admin.identity.forbidden' : 'admin.identity.error')}</p>
-          <button onClick={() => void user.refetch()} type='button'>
+          <button
+            className='mt-2 font-semibold text-primary underline'
+            onClick={() => void user.refetch()}
+            type='button'
+          >
             {t('admin.identity.retry')}
           </button>
         </div>
       ) : (
-        <>
-          <section className='space-y-3 rounded-xl border border-outline-variant bg-white p-5'>
+        <div className='grid items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]'>
+          <section className='space-y-5 rounded-xl bg-white p-6 shadow-sm'>
+            <div className='flex items-center gap-3 border-b border-outline-variant/20 pb-4'>
+              <Icon className='text-xl text-primary' name='badge' />
+              <h2 className='text-lg font-bold'>{t('admin.identity.accountInformation')}</h2>
+            </div>
             <p>
               <strong>{t('admin.identity.email')}:</strong> {user.data.email}
             </p>
@@ -135,7 +169,7 @@ export function AccountDetailPage() {
               </p>
             )}
             {canManage && (
-              <form className='grid gap-3 sm:grid-cols-2' onSubmit={submit}>
+              <form className='grid gap-4 border-t border-outline-variant/20 pt-5 sm:grid-cols-2' onSubmit={submit}>
                 <label>
                   {t('admin.identity.fullName')}
                   <input
@@ -156,7 +190,7 @@ export function AccountDetailPage() {
                   />
                 </label>
                 <button
-                  className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
+                  className='rounded-lg bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50 sm:col-span-2 sm:justify-self-start'
                   disabled={update.isPending}
                   type='submit'
                 >
@@ -165,9 +199,9 @@ export function AccountDetailPage() {
               </form>
             )}
             {canManage && !isSelf && (
-              <div className='flex flex-wrap gap-3'>
+              <div className='flex flex-wrap gap-3 border-t border-outline-variant/20 pt-5'>
                 <button
-                  className='rounded-lg border px-4 py-2 disabled:opacity-50'
+                  className='rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold disabled:opacity-50'
                   disabled={status.isPending}
                   onClick={() => {
                     if (window.confirm(t('admin.identity.confirmLock')))
@@ -178,7 +212,7 @@ export function AccountDetailPage() {
                   {t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')}
                 </button>
                 <button
-                  className='rounded-lg border border-error px-4 py-2 text-error disabled:opacity-50'
+                  className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
                   disabled={deletion.isPending}
                   onClick={() => {
                     if (window.confirm(t('admin.identity.confirmDelete'))) deletion.mutate()
@@ -190,13 +224,19 @@ export function AccountDetailPage() {
               </div>
             )}
           </section>
-          <section className='space-y-4 rounded-xl border border-outline-variant bg-white p-5'>
-            <h2 className='text-lg font-semibold'>{t('admin.identity.role')}</h2>
+          <section className='space-y-5 rounded-xl bg-white p-6 shadow-sm'>
+            <div className='flex items-center gap-3 border-b border-outline-variant/20 pb-4'>
+              <Icon className='text-xl text-primary' name='admin_panel_settings' />
+              <h2 className='text-lg font-bold'>{t('admin.identity.role')}</h2>
+            </div>
             {user.data.roles?.length ? (
               <ul className='space-y-2'>
                 {user.data.roles.map((code) => (
-                  <li className='flex items-center justify-between gap-3 border-b py-2' key={code}>
-                    <span>{code}</span>
+                  <li
+                    className='flex items-center justify-between gap-3 rounded-lg bg-surface-container-low px-3 py-3'
+                    key={code}
+                  >
+                    <span className='font-semibold text-primary'>{code}</span>
                     {canManageRoles && !isSelf && roles.data?.find((role) => role.roleCode === code)?.id && (
                       <button
                         className='text-error underline disabled:opacity-50'
@@ -223,10 +263,10 @@ export function AccountDetailPage() {
               ) : roles.isError ? (
                 <p role='alert'>{t('admin.identity.rolesUnavailable')}</p>
               ) : (
-                <div className='flex flex-wrap gap-2'>
+                <div className='flex flex-wrap gap-2 border-t border-outline-variant/20 pt-5'>
                   <select
                     aria-label={t('admin.identity.role')}
-                    className={inputClass}
+                    className={`${inputClass} min-w-[180px] flex-1`}
                     value={roleId}
                     onChange={(e) => setRoleId(e.target.value)}
                   >
@@ -246,7 +286,7 @@ export function AccountDetailPage() {
                       ))}
                   </select>
                   <button
-                    className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
+                    className='rounded-lg bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50'
                     disabled={!roleId || assignment.isPending}
                     onClick={() => assignment.mutate(roleId)}
                     type='button'
@@ -256,8 +296,8 @@ export function AccountDetailPage() {
                 </div>
               ))}
           </section>
-        </>
+        </div>
       )}
-    </div>
+    </main>
   )
 }

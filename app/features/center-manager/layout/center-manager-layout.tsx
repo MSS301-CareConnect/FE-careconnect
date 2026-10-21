@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
-import { SignOutButton } from '~/features/shared/auth/sign-out-button'
-import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
 
 export function CenterManagerLayout() {
-  const authUser = useAuthUser()
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const location = useLocation()
@@ -28,6 +26,22 @@ export function CenterManagerLayout() {
         to='/center-manager/bookings'
       >
         {t('centerManager.bookings')}
+      </Link>
+      <Link
+        aria-current={location.pathname.startsWith('/center-manager/work-shifts') ? 'page' : undefined}
+        className={`rounded-lg px-4 py-2.5 text-sm font-semibold ${location.pathname.startsWith('/center-manager/work-shifts') ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
+        onClick={() => setOpen(false)}
+        to='/center-manager/work-shifts'
+      >
+        {t('centerManager.provider.shiftsTitle')}
+      </Link>
+      <Link
+        aria-current={location.pathname.startsWith('/center-manager/schedules') ? 'page' : undefined}
+        className={`rounded-lg px-4 py-2.5 text-sm font-semibold ${location.pathname.startsWith('/center-manager/schedules') ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
+        onClick={() => setOpen(false)}
+        to='/center-manager/schedules'
+      >
+        {t('centerManager.schedules.title')}
       </Link>
       <button
         className='cursor-not-allowed rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-on-surface-variant opacity-60'
@@ -56,10 +70,6 @@ export function CenterManagerLayout() {
             {navigation}
           </nav>
           <div className='flex items-center gap-2'>
-            <SignOutButton />
-            <Link className='rounded-lg px-2 py-2 text-sm font-semibold text-primary' to='/account/security'>
-              {t('auth.security.title')}
-            </Link>
             <div className='[&_button]:px-2'>
               <LanguageSwitch />
             </div>
@@ -73,18 +83,7 @@ export function CenterManagerLayout() {
               <Icon name='notifications' />
               <span className='absolute right-1 top-1 h-2 w-2 rounded-full bg-error' />
             </button>
-            <div className='hidden items-center gap-2 border-l border-outline-variant/30 pl-3 sm:flex'>
-              <span
-                aria-hidden='true'
-                className='flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white'
-              >
-                {t('centerManager.managerShort')}
-              </span>
-              <div className='hidden text-xs md:block'>
-                <strong className='block'>{authUser?.fullName || authUser?.email || t('centerManager.manager')}</strong>
-                <span className='text-outline'>{t('centerManager.role')}</span>
-              </div>
-            </div>
+            <PortalAccountMenu fallbackName={t('centerManager.manager')} roleLabel={t('centerManager.role')} />
             <button
               aria-controls='manager-mobile-menu'
               aria-expanded={open}

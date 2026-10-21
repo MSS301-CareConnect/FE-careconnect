@@ -44,6 +44,8 @@ beforeEach(async () => {
 describe('MyProfilePage', () => {
   it('shows account data and keeps email read-only', () => {
     renderPage()
+    expect(screen.getByRole('region', { name: 'Account overview' })).toHaveTextContent('Family Member')
+    expect(screen.getByRole('navigation', { name: 'Account Management' })).toBeInTheDocument()
     expect(screen.getByLabelText('Full Name')).toHaveValue('Family Member')
     expect(screen.getByLabelText('Mobile Phone Number')).toHaveValue('0912345678')
     expect(screen.getByLabelText('Account email')).toHaveValue('family@example.com')

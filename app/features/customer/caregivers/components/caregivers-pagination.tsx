@@ -10,15 +10,30 @@ const LAST_PAGE = 6
 interface CaregiversPaginationProps {
   currentPage: number
   onPageChange: (page: number) => void
+  totalPages?: number
+  totalElements?: number
 }
 
-export function CaregiversPagination({ currentPage, onPageChange }: CaregiversPaginationProps) {
+export function CaregiversPagination({
+  currentPage,
+  onPageChange,
+  totalPages,
+  totalElements
+}: CaregiversPaginationProps) {
   const { t } = useTranslation()
+  const lastPage = totalPages ?? LAST_PAGE
+  const pages = totalPages ? Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1) : PAGES
 
   return (
     <div className='flex flex-col items-center justify-between gap-4 rounded-2xl bg-surface-container-lowest p-4 shadow-sm sm:flex-row'>
       <span className='text-xs text-on-surface-variant sm:text-sm'>
-        {t('customer.caregivers.results.paginationText')}
+        {totalElements === undefined
+          ? t('customer.caregivers.results.paginationText')
+          : t('customer.provider.pageSummary', {
+              page: currentPage,
+              pages: Math.max(1, lastPage),
+              total: totalElements
+            })}
       </span>
 
       <div className='flex items-center gap-1.5'>
@@ -32,7 +47,7 @@ export function CaregiversPagination({ currentPage, onPageChange }: CaregiversPa
           <span className='material-symbols-outlined text-[20px]'>{ICON_CHEVRON_LEFT}</span>
         </button>
 
-        {PAGES.map((p) => {
+        {pages.map((p) => {
           const isActive = currentPage === p
           return (
             <button
@@ -50,21 +65,24 @@ export function CaregiversPagination({ currentPage, onPageChange }: CaregiversPa
           )
         })}
 
-        <span className='px-1.5 text-xs text-outline'>{ELLIPSIS}</span>
+        {lastPage > pages.length ? <span className='px-1.5 text-xs text-outline'>{ELLIPSIS}</span> : null}
 
-        <button
-          className='flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container text-xs font-semibold text-on-surface hover:bg-surface-container-high sm:text-sm'
-          type='button'
-          onClick={() => onPageChange(LAST_PAGE)}
-        >
-          {LAST_PAGE}
-        </button>
+        {lastPage > pages.length ? (
+          <button
+            className='flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container text-xs font-semibold text-on-surface hover:bg-surface-container-high sm:text-sm'
+            type='button'
+            onClick={() => onPageChange(lastPage)}
+          >
+            {lastPage}
+          </button>
+        ) : null}
 
         <button
           aria-label={t('customer.caregivers.results.nextPage')}
-          className='flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high'
+          className='flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high disabled:opacity-40'
+          disabled={currentPage >= lastPage}
           type='button'
-          onClick={() => onPageChange(Math.min(LAST_PAGE, currentPage + 1))}
+          onClick={() => onPageChange(Math.min(lastPage, currentPage + 1))}
         >
           <span className='material-symbols-outlined text-[20px]'>{ICON_CHEVRON_RIGHT}</span>
         </button>

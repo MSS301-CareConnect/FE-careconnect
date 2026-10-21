@@ -4,15 +4,14 @@ import { Link, Outlet, useLocation } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
-import { SignOutButton } from '~/features/shared/auth/sign-out-button'
-import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
 
 import { CaregiverFooter } from './components/caregiver-footer'
 
 const navigation = [
   { key: 'home', path: '/caregiver/dashboard' },
   { key: 'schedule', path: '/caregiver/schedule' },
-  { key: 'shifts', path: '/caregiver/shifts' },
+  { key: 'shifts', path: '/caregiver/work-shifts' },
   { key: 'earnings', path: '/caregiver/dashboard#earnings' },
   { key: 'resources', path: '/caregiver/dashboard#tools' },
   { key: 'history', path: '/caregiver/history' },
@@ -20,7 +19,6 @@ const navigation = [
 ] as const
 
 export function CaregiverLayout() {
-  const authUser = useAuthUser()
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -54,10 +52,6 @@ export function CaregiverLayout() {
             {renderNavigation()}
           </nav>
           <div className='flex shrink-0 items-center gap-1.5 sm:gap-3'>
-            <SignOutButton />
-            <Link className='rounded-lg px-2 py-2 text-sm font-semibold text-primary' to='/account/security'>
-              {t('auth.security.title')}
-            </Link>
             <div className='[&_button]:px-2 sm:[&_button]:px-3'>
               <LanguageSwitch />
             </div>
@@ -69,15 +63,11 @@ export function CaregiverLayout() {
               <Icon name='notifications' />
               <span className='absolute right-1 top-1 h-2 w-2 rounded-full bg-error ring-2 ring-white' />
             </Link>
-            <div className='hidden border-l border-outline-variant/30 pl-4 text-right sm:block xl:hidden'>
-              <p className='text-sm font-bold'>
-                {authUser?.fullName || authUser?.email || t('caregiver.identity.name')}
-              </p>
-              <p className='mt-0.5 text-xs text-outline'>{t('caregiver.identity.license')}</p>
-            </div>
-            <span className='hidden h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-primary ring-2 ring-white sm:flex'>
-              <Icon name='clinical_notes' />
-            </span>
+            <PortalAccountMenu
+              avatarIcon='clinical_notes'
+              fallbackName={t('caregiver.identity.name')}
+              roleLabel={t('caregiver.identity.license')}
+            />
             <button
               aria-controls='caregiver-mobile-menu'
               aria-expanded={menuOpen}

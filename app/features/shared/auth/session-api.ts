@@ -1,11 +1,9 @@
 import { getCurrentUser } from '~/shared/api/generated/api/account/account'
-import {
-  getCsrfToken,
-  loginWeb,
-  logoutWebSession,
-  refreshWebSession
-} from '~/shared/api/generated/api/authentication/authentication'
+import { loginWeb, logoutWebSession, refreshWebSession } from '~/shared/api/generated/api/authentication/authentication'
 import type { LoginRequest, UserResponse } from '~/shared/api/generated/contracts'
+import { csrfHeaders } from '~/shared/api/csrf'
+
+export { csrfHeaders } from '~/shared/api/csrf'
 
 export const sessionQueryKey = ['auth', 'current-user'] as const
 
@@ -16,12 +14,6 @@ function statusOf(error: unknown): number | undefined {
 
 function requireSuccess(code: number) {
   if (code !== 200) throw new Error(`IdentityService returned code ${code}`)
-}
-
-export async function csrfHeaders(): Promise<HeadersInit> {
-  const response = await getCsrfToken({ credentials: 'include' })
-  requireSuccess(response.data.code)
-  return { [response.data.result.headerName]: response.data.result.token }
 }
 
 async function currentUser(): Promise<UserResponse> {

@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: CareConnect IdentityService
+  title: CareConnect gateway frontend snapshot
   version: 0.0.1
-  description: Reviewed frontend snapshot of IdentityService web authentication,
-    current-user security, account administration, roles, and permissions.
+  description: Reviewed frontend snapshot of IdentityService and ProviderService
+    operations consumed through the API gateway.
 servers:
   - url: /api
 tags:
@@ -11,8 +11,13 @@ tags:
   - name: Account
   - name: Role
   - name: Permission
+  - name: ProviderCenter
+  - name: ProviderCaregiver
+  - name: ProviderCertificate
+  - name: ProviderWorkShift
+  - name: ProviderMedia
 paths:
-  /auth/csrf:
+  /v1/auth/csrf:
     get:
       tags:
         - Authentication
@@ -34,7 +39,7 @@ paths:
           $ref: '#/components/responses/500'
         '503': &a5
           $ref: '#/components/responses/503'
-  /auth/login:
+  /v1/auth/login:
     post:
       tags:
         - Authentication
@@ -57,7 +62,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /auth/refresh:
+  /v1/auth/refresh:
     post:
       tags:
         - Authentication
@@ -74,7 +79,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /auth/logout:
+  /v1/auth/logout:
     post:
       tags:
         - Authentication
@@ -91,7 +96,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /auth/logout-all:
+  /v1/auth/logout-all:
     post:
       tags:
         - Authentication
@@ -107,7 +112,46 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/me:
+  /v1/auth/sessions:
+    get:
+      tags:
+        - Authentication
+      operationId: listWebSessions
+      responses:
+        '200':
+          description: Active sessions for the current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionListResponse'
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /v1/auth/sessions/{sessionId}:
+    delete:
+      tags:
+        - Authentication
+      operationId: revokeWebSession
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The selected session was revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /v1/users/me:
     get:
       tags:
         - Account
@@ -146,7 +190,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/me/change-password:
+  /v1/users/me/change-password:
     post:
       tags:
         - Account
@@ -169,7 +213,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users:
+  /v1/users:
     get:
       tags:
         - Account
@@ -222,7 +266,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/{id}:
+  /v1/users/{id}:
     parameters:
       - &userIdParameter
         name: id
@@ -284,7 +328,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/{id}/status:
+  /v1/users/{id}/status:
     patch:
       tags:
         - Account
@@ -309,7 +353,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/{id}/roles/{roleId}:
+  /v1/users/{id}/roles/{roleId}:
     parameters:
       - *userIdParameter
       - name: roleId
@@ -350,7 +394,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /roles:
+  /v1/roles:
     get:
       tags:
         - Role
@@ -388,7 +432,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /roles/{id}/permissions:
+  /v1/roles/{id}/permissions:
     put:
       tags:
         - Role
@@ -418,7 +462,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /permissions:
+  /v1/permissions:
     get:
       tags:
         - Permission
@@ -434,7 +478,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/forgot-password:
+  /v1/auth/forgot-password:
     post:
       tags:
         - Account
@@ -456,7 +500,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/reset-password:
+  /v1/auth/reset-password:
     post:
       tags:
         - Account
@@ -478,7 +522,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/register:
+  /v1/auth/register:
     post:
       tags:
         - Account
@@ -503,7 +547,7 @@ paths:
           description: OTP resend cooldown is active.
         '500': *a4
         '503': *a5
-  /users/register/verify:
+  /v1/auth/register/verify:
     post:
       tags:
         - Account
@@ -526,7 +570,7 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
-  /users/register/resend-otp:
+  /v1/auth/register/resend-otp:
     post:
       tags:
         - Account
@@ -551,6 +595,1514 @@ paths:
           description: OTP resend cooldown is active.
         '500': *a4
         '503': *a5
+  /v1/care-centers:
+    get:
+      tags:
+        - ProviderCenter
+      operationId: listProviderCenters
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - ACTIVE
+              - INACTIVE
+              - SUSPENDED
+              - REJECTED
+              - ARCHIVED
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: includeDeleted
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    post:
+      tags:
+        - ProviderCenter
+      operationId: createProviderCenter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/care-centers/{centerId}:
+    get:
+      tags:
+        - ProviderCenter
+      operationId: getProviderCenter
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    put:
+      tags:
+        - ProviderCenter
+      operationId: updateProviderCenter
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    delete:
+      tags:
+        - ProviderCenter
+      operationId: archiveProviderCenter
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/care-centers/{centerId}/status:
+    patch:
+      tags:
+        - ProviderCenter
+      operationId: setProviderCenterStatus
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterStatusUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/centers/{centerId}:
+    get:
+      tags:
+        - ProviderCaregiver
+      operationId: listCenterCaregivers
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: verification
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - VERIFIED
+              - REJECTED
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ACTIVE
+              - INACTIVE
+              - SUSPENDED
+              - ARCHIVED
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    post:
+      tags:
+        - ProviderCaregiver
+      operationId: createProviderCaregiver
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}:
+    get:
+      tags:
+        - ProviderCaregiver
+      operationId: getProviderCaregiver
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    put:
+      tags:
+        - ProviderCaregiver
+      operationId: updateProviderCaregiver
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    delete:
+      tags:
+        - ProviderCaregiver
+      operationId: archiveProviderCaregiver
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{id}/verification:
+    patch:
+      tags:
+        - ProviderCaregiver
+      operationId: verifyProviderCaregiver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/certificates/caregivers/{caregiverId}:
+    get:
+      tags:
+        - ProviderCertificate
+      operationId: listProviderCertificates
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificateListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    post:
+      tags:
+        - ProviderCertificate
+      operationId: createProviderCertificate
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificateResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/certificates/{id}:
+    put:
+      tags:
+        - ProviderCertificate
+      operationId: updateProviderCertificate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificateResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    delete:
+      tags:
+        - ProviderCertificate
+      operationId: archiveProviderCertificate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/certificates/{id}/verification:
+    patch:
+      tags:
+        - ProviderCertificate
+      operationId: verifyProviderCertificate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificateResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/work-shifts:
+    get:
+      tags:
+        - ProviderWorkShift
+      operationId: listProviderWorkShifts
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - DRAFT
+              - OPEN
+              - CLOSED
+              - CANCELLED
+              - COMPLETED
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/work-shifts/{id}:
+    get:
+      tags:
+        - ProviderWorkShift
+      operationId: getProviderWorkShift
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    put:
+      tags:
+        - ProviderWorkShift
+      operationId: updateProviderWorkShift
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkShiftRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    delete:
+      tags:
+        - ProviderWorkShift
+      operationId: archiveProviderWorkShift
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/work-shifts/centers/{centerId}:
+    post:
+      tags:
+        - ProviderWorkShift
+      operationId: createProviderWorkShift
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkShiftRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/work-shifts/{id}/registrations:
+    get:
+      tags:
+        - ProviderWorkShift
+      operationId: listProviderShiftRegistrations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderShiftRegistrationPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    post:
+      tags:
+        - ProviderWorkShift
+      summary: Caregiver đăng ký ca làm việc
+      operationId: registerProviderShift
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftRegistrationRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderShiftRegistrationResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/work-shifts/registrations/{id}/review:
+    patch:
+      tags:
+        - ProviderWorkShift
+      operationId: reviewProviderShiftRegistration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationReviewRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderShiftRegistrationResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/work-shifts/registrations/me:
+    get:
+      tags:
+        - ProviderWorkShift
+      summary: Danh sách đăng ký ca của tôi (Caregiver)
+      operationId: listMyProviderShiftRegistrations
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderShiftRegistrationPageResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+  /v1/work-shifts/registrations/{id}:
+    delete:
+      tags:
+        - ProviderWorkShift
+      summary: Hủy đăng ký ca đang chờ duyệt (Caregiver)
+      operationId: cancelProviderShiftRegistration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/provider-media/{ownerType}/{ownerId}:
+    get:
+      tags:
+        - ProviderMedia
+      summary: Xem các file và URL tải tạm thời
+      operationId: listProviderMedia
+      parameters:
+        - name: ownerType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - CARE_CENTER
+              - CAREGIVER_PROFILE
+              - CERTIFICATE
+        - name: ownerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderMediaListResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+    post:
+      tags:
+        - ProviderMedia
+      summary: Upload nhiều file cho một owner
+      operationId: uploadProviderMedia
+      parameters:
+        - name: ownerType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - CARE_CENTER
+              - CAREGIVER_PROFILE
+              - CERTIFICATE
+        - name: ownerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProviderMediaUploadRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderMediaListResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/provider-media/{ownerType}/{ownerId}/{mediaFileId}:
+    delete:
+      tags:
+        - ProviderMedia
+      summary: Xóa một file khỏi owner và khỏi R2
+      operationId: deleteProviderMedia
+      parameters:
+        - name: ownerType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - CARE_CENTER
+              - CAREGIVER_PROFILE
+              - CERTIFICATE
+        - name: ownerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: mediaFileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/caregivers/schedules/{id}/status:
+    patch:
+      tags:
+        - ProviderCaregiver
+      summary: Bắt đầu hoặc hoàn thành lịch làm việc (Caregiver / Manager / Admin)
+      operationId: updateProviderCaregiverScheduleStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleStatusRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderScheduleResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/care-centers/schedules/{id}/status:
+    patch:
+      tags:
+        - ProviderCenter
+      summary: Cập nhật hoặc hủy lịch người chăm sóc từ phía trung tâm
+      operationId: updateProviderCenterScheduleStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleStatusRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderScheduleResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/certificates/caregivers/{caregiverId}/verified:
+    get:
+      tags:
+        - ProviderCertificate
+      summary: Xem danh sách chứng chỉ đã xác minh của caregiver (Catalog public)
+      operationId: listVerifiedProviderCertificates
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificateListResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+  /v1/caregivers:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Tìm kiếm caregiver đang hoạt động (Catalog)
+      operationId: catalogProviderCaregivers
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverPageResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+  /v1/caregivers/me:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Hồ sơ caregiver của tôi
+      operationId: getMyProviderCaregiverProfile
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+  /v1/caregivers/me/schedules:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Lịch làm việc của tôi (Caregiver)
+      operationId: listMyProviderCaregiverSchedules
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderSchedulePageResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+  /v1/caregivers/by-user/{userId}:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Tra cứu hồ sơ caregiver theo userId tài khoản Identity (public /
+        inter-service)
+      operationId: getProviderCaregiverByUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
+  /v1/care-centers/{centerId}/schedules:
+    get:
+      tags:
+        - ProviderCenter
+      summary: Danh sách lịch người chăm sóc của trung tâm
+      operationId: listProviderCenterSchedules
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderSchedulePageResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: ProviderService error
 components:
   responses:
     '400':
@@ -564,6 +2116,727 @@ components:
     '503':
       description: HTTP 503; business endpoints return APIResponse
   schemas:
+    ProviderCenterRecord:
+      type: object
+      required:
+        - id
+        - centerName
+        - centerStatus
+        - version
+      properties:
+        id: &a1
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        centerName:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        operatingHours:
+          type: string
+        centerStatus:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+            - REJECTED
+            - ARCHIVED
+        statusReason:
+          type: string
+        managerUserId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProviderCaregiverRecord:
+      type: object
+      required:
+        - id
+        - centerId
+        - fullName
+        - caregiverStatus
+        - verificationStatus
+        - version
+      properties:
+        id: *a1
+        caregiverId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        centerName:
+          type: string
+        fullName:
+          type: string
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        dateOfBirth:
+          type: string
+          format: date
+        experienceYears:
+          type: integer
+        bio:
+          type: string
+        ratingAverage:
+          type: number
+        ratingCount:
+          type: integer
+        verificationStatus:
+          type: string
+          enum:
+            - PENDING
+            - VERIFIED
+            - REJECTED
+        caregiverStatus:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+            - ARCHIVED
+        verificationReason:
+          type: string
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProviderCertificateRecord:
+      type: object
+      required:
+        - id
+        - caregiverId
+        - certificateName
+        - issuedBy
+        - verificationStatus
+        - version
+      properties:
+        id: *a1
+        caregiverId:
+          type: string
+          format: uuid
+        certificateName:
+          type: string
+        issuedBy:
+          type: string
+        credentialNumber:
+          type: string
+        issuedDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+        verificationStatus:
+          type: string
+          enum:
+            - PENDING
+            - VERIFIED
+            - REJECTED
+        verificationReason:
+          type: string
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    ProviderWorkShiftRecord:
+      type: object
+      required:
+        - id
+        - centerId
+        - workDate
+        - startTime
+        - endTime
+        - shiftType
+        - shiftStatus
+        - capacity
+        - version
+      properties:
+        id: *a1
+        centerId:
+          type: string
+          format: uuid
+        centerName:
+          type: string
+        workDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        shiftType:
+          type: string
+        shiftStatus:
+          type: string
+          enum:
+            - DRAFT
+            - OPEN
+            - CLOSED
+            - CANCELLED
+            - COMPLETED
+        capacity:
+          type: integer
+        approvedCount:
+          type: integer
+        registrationDeadline:
+          type: string
+          format: date-time
+        note:
+          type: string
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    ProviderShiftRegistrationRecord:
+      type: object
+      required:
+        - id
+        - workShiftId
+        - caregiverId
+        - registrationStatus
+        - version
+      properties:
+        id: *a1
+        workShiftId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        caregiverName:
+          type: string
+        registrationStatus:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - REJECTED
+            - CANCELLED
+        caregiverNote:
+          type: string
+        rejectionReason:
+          type: string
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    ProviderCenterPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCenterRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderCaregiverPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCaregiverRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderWorkShiftPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkShiftRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderShiftRegistrationPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderShiftRegistrationRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderCenterPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCenterPage'
+    ProviderCaregiverPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCaregiverPage'
+    ProviderWorkShiftPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderWorkShiftPage'
+    ProviderShiftRegistrationPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderShiftRegistrationPage'
+    ProviderCenterResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCenterRecord'
+    ProviderCaregiverResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCaregiverRecord'
+    ProviderCertificateResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCertificateRecord'
+    ProviderWorkShiftResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderWorkShiftRecord'
+    ProviderShiftRegistrationResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderShiftRegistrationRecord'
+    ProviderCertificateListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCertificateRecord'
+    CenterCreateRequest:
+      type: object
+      properties:
+        centerName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        phoneNumber:
+          type: string
+          pattern: ^$|^[0-9]{10,15}$
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          minLength: 0
+        address:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        operatingHours:
+          type: string
+          maxLength: 500
+          minLength: 0
+        managerUserId:
+          type: string
+          format: uuid
+      required:
+        - address
+        - centerName
+        - email
+    CenterUpdateRequest:
+      type: object
+      properties:
+        centerName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        phoneNumber:
+          type: string
+          pattern: ^$|^[0-9]{10,15}$
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          minLength: 0
+        address:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        operatingHours:
+          type: string
+          maxLength: 500
+          minLength: 0
+        managerUserId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+      required:
+        - address
+        - centerName
+        - email
+        - version
+    CenterStatusUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+            - REJECTED
+            - ARCHIVED
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+      required:
+        - status
+        - version
+    CaregiverCreateRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        dateOfBirth:
+          type: string
+          format: date
+        experienceYears:
+          type: integer
+          format: int32
+          maximum: 80
+          minimum: 0
+        bio:
+          type: string
+          maxLength: 5000
+          minLength: 0
+      required:
+        - experienceYears
+        - fullName
+        - userId
+    CaregiverUpdateRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        dateOfBirth:
+          type: string
+          format: date
+        experienceYears:
+          type: integer
+          format: int32
+          maximum: 80
+          minimum: 0
+        bio:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        caregiverStatus:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+            - ARCHIVED
+        version:
+          type: integer
+          format: int64
+      required:
+        - caregiverStatus
+        - experienceYears
+        - fullName
+        - version
+    VerificationRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - VERIFIED
+            - REJECTED
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+      required:
+        - status
+        - version
+    CertificateRequest:
+      type: object
+      properties:
+        certificateName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        issuedBy:
+          type: string
+          maxLength: 255
+          minLength: 0
+        credentialNumber:
+          type: string
+          maxLength: 255
+          minLength: 0
+        issuedDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+        version:
+          type: integer
+          format: int64
+      required:
+        - certificateName
+        - issuedBy
+    WorkShiftRequest:
+      type: object
+      properties:
+        workDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        shiftType:
+          type: string
+          maxLength: 50
+          minLength: 0
+        shiftStatus:
+          type: string
+          enum:
+            - DRAFT
+            - OPEN
+            - CLOSED
+            - CANCELLED
+            - COMPLETED
+        capacity:
+          type: integer
+          format: int32
+          maximum: 1000
+          minimum: 1
+        registrationDeadline:
+          type: string
+          format: date-time
+        note:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+      required:
+        - capacity
+        - endTime
+        - shiftStatus
+        - shiftType
+        - startTime
+        - workDate
+    RegistrationReviewRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - REJECTED
+            - CANCELLED
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+        scheduleNote:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+      required:
+        - status
+        - version
     ChangePasswordRequest:
       type: object
       required: [currentPassword, newPassword]
@@ -593,7 +2866,7 @@ components:
           pattern: '^[0-9]{10,11}$'
         roleCode:
           type: string
-          enum: [CUSTOMER, CAREGIVER, CENTER_MANAGER]
+          enum: [CUSTOMER, CAREGIVER, CENTER_MANAGER, ADMIN]
         centerId:
           type: string
           format: uuid
@@ -652,6 +2925,38 @@ components:
           type: string
         description:
           type: string
+    SessionRecord:
+      type: object
+      required: [sessionId, isCurrent]
+      properties:
+        sessionId:
+          type: string
+        deviceId:
+          type: [string, 'null']
+        userAgent:
+          type: [string, 'null']
+        ip:
+          type: [string, 'null']
+        createdAt:
+          type: [string, 'null']
+          format: date-time
+        lastActiveAt:
+          type: [string, 'null']
+          format: date-time
+        isCurrent:
+          type: boolean
+    SessionListResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionRecord'
     UserListResponse:
       type: object
       required: [code, message, result]
@@ -981,3 +3286,175 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/UserResponse'
+    ShiftRegistrationRequest:
+      type: object
+      properties:
+        caregiverNote:
+          type: string
+          maxLength: 2000
+          minLength: 0
+    ScheduleStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - SCHEDULED
+            - IN_PROGRESS
+            - COMPLETED
+            - CANCELLED
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+      required:
+        - status
+        - version
+    ProviderMediaUploadRequest:
+      type: object
+      required:
+        - files
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+    ProviderScheduleRecord:
+      type: object
+      required:
+        - id
+        - caregiverId
+        - workShiftId
+        - centerId
+        - workDate
+        - startTime
+        - endTime
+        - scheduleStatus
+        - version
+      properties:
+        id: &a1
+          type: string
+          format: uuid
+        registrationId: *a1
+        caregiverId: *a1
+        caregiverName:
+          type: string
+        workShiftId: *a1
+        centerId: *a1
+        workDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        scheduleStatus:
+          type: string
+          enum:
+            - SCHEDULED
+            - IN_PROGRESS
+            - COMPLETED
+            - CANCELLED
+        assignedBy: *a1
+        assignedAt: &a2
+          type: string
+          format: date-time
+        note:
+          type: string
+        cancellationReason:
+          type: string
+        cancelledAt: *a2
+        version:
+          type: integer
+        createdAt: *a2
+        updatedAt: *a2
+    ProviderSchedulePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderScheduleRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderScheduleResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderScheduleRecord'
+    ProviderSchedulePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderSchedulePage'
+    ProviderMediaRecord:
+      type: object
+      required:
+        - mediaFileId
+        - mediaFileType
+      properties:
+        mediaFileId: *a1
+        mediaFileType:
+          type: string
+          enum:
+            - IMAGE
+            - VIDEO
+            - DOCUMENT
+        originalFileName:
+          type: string
+        contentType:
+          type: string
+        fileSize:
+          type: integer
+        displayOrder:
+          type: integer
+        downloadUrl:
+          type: string
+        downloadUrlExpiresAt: *a2
+    ProviderMediaListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderMediaRecord'

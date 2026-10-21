@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
@@ -30,6 +30,20 @@ beforeEach(async () => {
 })
 
 describe('AccountsPage', () => {
+  it('shows API account data in the customer management layout and filters the loaded page', async () => {
+    vi.mocked(fetchUsers).mockResolvedValue([
+      { id: 'one', fullName: 'Mai Anh', email: 'mai@example.com', status: 'ACTIVE', roles: ['CUSTOMER'] },
+      { id: 'two', fullName: 'Bao Ngoc', email: 'bao@example.com', status: 'LOCKED', roles: ['CENTER_MANAGER'] }
+    ])
+    renderPage(['user:read'])
+    expect(await screen.findByRole('link', { name: 'Mai Anh' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Account overview' })).toBeInTheDocument()
+    expect(screen.getAllByRole('row')).toHaveLength(3)
+    fireEvent.change(screen.getByRole('searchbox', { name: /Search by name/ }), { target: { value: 'Bao' } })
+    expect(screen.queryByRole('link', { name: 'Mai Anh' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Bao Ngoc' })).toBeInTheDocument()
+  })
+
   it('shows an explicit empty state and hides creation without permission', async () => {
     renderPage(['user:read'])
     expect(await screen.findByText('No data yet.')).toBeInTheDocument()
@@ -42,7 +56,9 @@ describe('AccountsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }))
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'manager@example.com' } })
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Manager' } })
-    fireEvent.change(screen.getByLabelText('Role'), { target: { value: 'CENTER_MANAGER' } })
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText('Role'), {
+      target: { value: 'CENTER_MANAGER' }
+    })
     fireEvent.click(screen.getAllByRole('button', { name: 'Create account' })[1])
     expect(screen.getByRole('status')).toHaveTextContent('Center ID is required')
     expect(addUser).not.toHaveBeenCalled()

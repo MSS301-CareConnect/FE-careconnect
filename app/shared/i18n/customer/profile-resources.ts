@@ -1,5 +1,13 @@
 export const profileEn = {
   live: {
+    customerAccount: 'Customer account',
+    overviewTitle: 'Account overview',
+    memberSince: 'Member since {{date}}',
+    notProvided: 'Not provided',
+    formHint: 'Your name and phone number are saved to your CareConnect account.',
+    securityHint: 'Manage your password and active sessions.',
+    openSecurity: 'Open security settings',
+    familyHint: 'View and manage the care profiles of your family members.',
     description: 'Update the account details used by CareConnect.',
     accountEmail: 'Account email',
     emailReadOnly: 'Your account email cannot be changed here.',
@@ -106,6 +114,14 @@ export const profileEn = {
 
 export const profileVi = {
   live: {
+    customerAccount: 'Tài khoản khách hàng',
+    overviewTitle: 'Tổng quan tài khoản',
+    memberSince: 'Thành viên từ {{date}}',
+    notProvided: 'Chưa cung cấp',
+    formHint: 'Họ tên và số điện thoại được lưu vào tài khoản CareConnect của bạn.',
+    securityHint: 'Quản lý mật khẩu và các phiên đăng nhập.',
+    openSecurity: 'Mở cài đặt bảo mật',
+    familyHint: 'Xem và quản lý hồ sơ chăm sóc của người thân.',
     description: 'Cập nhật thông tin tài khoản CareConnect của bạn.',
     accountEmail: 'Email tài khoản',
     emailReadOnly: 'Chưa thể đổi email tài khoản tại đây.',

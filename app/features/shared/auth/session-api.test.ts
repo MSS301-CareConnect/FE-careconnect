@@ -32,11 +32,15 @@ describe('web session API', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await expect(signIn({ email: user.email, password: 'secret' })).resolves.toMatchObject(user)
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/api/auth/csrf', '/api/auth/login', '/api/users/me'])
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/login',
+      '/api/v1/users/me'
+    ])
     expect(fetchMock.mock.calls[1][1]).toMatchObject({
       credentials: 'include',
       method: 'POST',
-      headers: { 'X-XSRF-TOKEN': 'csrf-value' }
+      headers: { 'X-XSRF-TOKEN': 'csrf-value', 'X-Client-Type': 'web' }
     })
   })
 
@@ -57,11 +61,14 @@ describe('web session API', () => {
 
     await expect(loadSession()).resolves.toMatchObject(user)
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/users/me',
-      '/api/auth/csrf',
-      '/api/auth/refresh',
-      '/api/users/me'
+      '/api/v1/users/me',
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/refresh',
+      '/api/v1/users/me'
     ])
+    expect(fetchMock.mock.calls[2][1]).toMatchObject({
+      headers: { 'X-XSRF-TOKEN': 'csrf-value', 'X-Client-Type': 'web' }
+    })
   })
 
   it('treats rejected refresh as signed out, but preserves server failures', async () => {
@@ -84,10 +91,10 @@ describe('web session API', () => {
       .mockResolvedValueOnce(reply(200, { code: 200, message: 'Success', result: null }))
     vi.stubGlobal('fetch', fetchMock)
     await signOut()
-    expect(fetchMock.mock.calls[1][0]).toBe('/api/auth/logout')
+    expect(fetchMock.mock.calls[1][0]).toBe('/api/v1/auth/logout')
     expect(fetchMock.mock.calls[1][1]).toMatchObject({
       credentials: 'include',
-      headers: { 'X-XSRF-TOKEN': 'csrf-value' }
+      headers: { 'X-XSRF-TOKEN': 'csrf-value', 'X-Client-Type': 'web' }
     })
   })
 })

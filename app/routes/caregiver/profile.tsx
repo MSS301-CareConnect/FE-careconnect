@@ -1,5 +1,5 @@
-import { CaregiverProfilePage } from '~/features/caregiver/profile/caregiver-profile-page'
+import { CaregiverProviderProfilePage } from '~/features/caregiver/provider/caregiver-provider-pages'
 
 export default function CaregiverProfileRoute() {
-  return <CaregiverProfilePage />
+  return <CaregiverProviderProfilePage />
 }

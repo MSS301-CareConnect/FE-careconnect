@@ -29,18 +29,18 @@ describe('registration API', () => {
     await expect(verifyRegistration({ email: otp.email, otpCode: '123456' })).resolves.toBeUndefined()
 
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/auth/csrf',
-      '/api/users/register',
-      '/api/auth/csrf',
-      '/api/users/register/resend-otp',
-      '/api/auth/csrf',
-      '/api/users/register/verify'
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/register',
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/register/resend-otp',
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/register/verify'
     ])
     for (const index of [1, 3, 5]) {
       expect(fetchMock.mock.calls[index][1]).toMatchObject({
         method: 'POST',
         credentials: 'include',
-        headers: { 'X-XSRF-TOKEN': 'csrf-value' }
+        headers: { 'X-XSRF-TOKEN': 'csrf-value', 'X-Client-Type': 'web' }
       })
     }
   })

@@ -35,21 +35,24 @@ persistence, and all decisions that affect money or access.
 
 ### Web authentication and portal access
 
-IdentityService on local port 8081 owns the web session. The browser sends its
-HttpOnly access and refresh cookies to the same-origin `/api` prefix. The frontend
-fetches a CSRF token before login, refresh, and logout and sends it in the header
-specified by `/auth/csrf`; it never stores access or refresh tokens in browser
-storage. After login, `/users/me` supplies the authenticated user and roles. A 401
-from `/users/me` triggers one refresh attempt and a retry; another 401 means the
+IdentityService owns the web session behind the API gateway on local port 8080.
+The browser sends its HttpOnly access and refresh cookies to the same-origin `/api`
+prefix. The frontend fetches a CSRF token before login, refresh, and logout and
+sends it in the header specified by `/api/v1/auth/csrf`. Cookie-based web mutations
+also send `X-Client-Type: web` so IdentityService issues and clears session cookies.
+The frontend never stores access or refresh tokens in browser storage. After login,
+`/api/v1/users/me` supplies the
+authenticated user and roles. A 401 from `/api/v1/users/me` triggers one refresh
+attempt and a retry; another 401 means the
 session has ended. Other API failures show a retry state instead of treating the
 user as signed out.
 
 Each portal parent route wraps its layout with a TanStack Query session guard.
-The guard renders children only after `/users/me` confirms an active user with the
+The guard renders children only after `/api/v1/users/me` confirms an active user with the
 required backend role. It redirects anonymous users to `/login` with an internal
 return path and shows an access-denied state for the wrong role. The backend remains
 authoritative for every data and mutation endpoint; these guards only prevent
-incorrect UI access. Portal headers use the `/users/me` identity while business
+incorrect UI access. Portal headers use the `/api/v1/users/me` identity while business
 screens remain labeled previews. Login routes users to the first available built-in portal in
 the order ADMIN, CENTER_MANAGER, CAREGIVER, CUSTOMER. A safe return path takes
 priority when it belongs to one of the user's roles. Logout clears the backend
@@ -60,10 +63,10 @@ links to existing care search, booking, and family profile screens without
 inventing remote data. The Customer header and in-portal home breadcrumbs point
 there; the account menu contains the profile link and session sign-out action.
 
-Public customer registration uses `/users/register` to send an email OTP. The
-account is created only after `/users/register/verify` succeeds; verification
+Public customer registration uses `/api/v1/auth/register` to send an email OTP. The
+account is created only after `/api/v1/auth/register/verify` succeeds; verification
 does not create a web session, so the user signs in separately. The registration
-screen can request `/users/register/resend-otp` after the cooldown returned by
+screen can request `/api/v1/auth/register/resend-otp` after the cooldown returned by
 the backend. All three mutations fetch a fresh CSRF token and use the same-origin
 `/api` proxy with credentials, so registration also works when an existing web
 cookie is present. The UI never persists the password or OTP.
@@ -73,27 +76,30 @@ registration, recovery, current-user security, and account administration. The p
 `/forgot-password` screen requests an emailed OTP and submits it with a new password;
 both mutations use a fresh CSRF token. Its request result is deliberately neutral
 about whether an account exists. The customer `/customer/my-profile` screen reads
-the guarded `/users/me` user and saves only `fullName` and `phoneNumber` through
-`PUT /users/me`; a successful response replaces the session query data. Email is
+the guarded `/api/v1/users/me` user and saves only `fullName` and `phoneNumber` through
+`PUT /api/v1/users/me`; a successful response replaces the session query data. Email is
 read-only because the backend profile update contract does not accept it.
 The snapshot corrects the live Swagger's generic
 `ApiResponse.result` and spurious CSRF query parameter using the backend DTOs and
-the observed `/auth/csrf` response. Generated files are never hand-edited.
+the observed `/api/v1/auth/csrf` response. Generated files are never hand-edited.
 
 ### Identity administration and account security
 
-The reviewed IdentityService snapshot also includes the remaining 14 web operations
-for account administration, roles, permissions, password change, and global session
-logout. `/admin/accounts` lists and provisions real accounts; `/admin/accounts/:id`
+The reviewed IdentityService snapshot includes 14 web operations for account
+administration, roles, permissions, password change, and global session logout,
+plus two operations for individual session management. `/admin/accounts` lists and provisions real accounts; `/admin/accounts/:id`
 edits profile fields, status, and role assignments; `/admin/roles` manages custom
 roles and their permission sets. These screens stay separate from the illustrative
 Admin customer screens. TanStack Query caches reads and invalidates affected lists
 and details after mutations. The backend enforces all permissions; the UI hides
-actions based on `/users/me` permissions and renders denied/error states.
+actions based on `/api/v1/users/me` permissions and renders denied/error states.
 
 `/account/security` is available to every active web user. Password change and
 sign-out on every device use CSRF-protected cookie requests, then reload `/login`
-to clear in-memory session state. Admin provisioning offers Customer and Center
+to clear in-memory session state. The same screen lists active web sessions through
+`GET /api/v1/auth/sessions` and revokes a selected session through the CSRF-protected
+`DELETE /api/v1/auth/sessions/{sessionId}`. Revoking the current session reloads
+`/login`; revoking another session refreshes the session list. Admin provisioning offers Customer and Center
 Manager accounts; the latter requires a center ID. New accounts set their password
 through the existing email OTP recovery flow.
 
@@ -184,56 +190,57 @@ A lower layer cannot import a higher layer:
 1. **Dedicated Role Layouts**: Each role has its own layout shell (e.g., `features/customer/layout/customer-layout.tsx` for Customer, `features/admin/layout/admin-layout.tsx` for Admin). This ensures navigation items, headers, and quick actions are role-tailored without complex conditional logic in a single monolith layout.
 2. **Layout-Level Route Guards**: Access control checks (e.g. verifying role permissions) run at the parent layout route module in `routes/<role>/layout.tsx`. Unauthorized users are intercepted before child route screens mount.
 
-The current Caregiver routes are UI previews with a dedicated Caregiver shell;
-`/caregiver` redirects there. The Caregiver layout does not import Customer features.
-Until the backend session/permission contract is available, this preview has no real
-role guard and contains only explicitly labeled sample data. The parent Caregiver
-layout route is the future guard boundary; URL separation does not grant or enforce
-authorization. Availability is ephemeral preview state. Reports, care completion,
-SOS, directions, medical records, credentials and earnings require backend contracts;
-unimplemented actions are disabled. Schedule navigation targets `/caregiver/schedule`;
-other dashboard navigation links target existing sections rather than unfinished
-screens. The Schedule feature owns its static preview fixtures and URL state for
-date/month, date scope, status, patient search and list/calendar view. Its sample
-reference day is 2026-09-20; the initial overview shows that day and the next day.
-The displayed sample week spans September 19–25, with weekdays formatted from the
-actual dates; other periods use Monday-based weeks. It does not claim an ISO week
-number. Session and weekly completion counts derive from the same preview fixtures.
-Accepting open sessions, requesting leave, reporting, contact and navigation actions
-remain disabled until backend contracts exist. No live GPS, VNeID verification,
-clinical completion, report submission or payment result is simulated.
+The Caregiver portal uses its own role guarded shell. `/caregiver/profile` reads the
+caregiver's ProviderService profile and manages its media; `/caregiver/schedule` reads
+assigned schedules and updates their status with the backend version and a required
+cancellation reason. `/caregiver/work-shifts` lists open shifts for the caregiver's
+center, registers for shifts, lists the caregiver's registrations, and cancels pending
+registrations. The dashboard and other Caregiver screens still contain dated sample
+data. Reports, SOS, directions, medical records, credentials, and earnings require
+separate backend contracts; their sample actions remain disabled.
+No live GPS, clinical completion, report submission, or payment result is simulated.
 
-Caregiver report (`/caregiver/shifts/:id/report`), history (`/caregiver/history`)
-and profile (`/caregiver/profile`) use the same shell and portal translations.
-Thin route modules compose independent `care-report`, `care-history`, and `profile`
-features. `entities/care-session` owns the deterministic record metadata shared by
+Caregiver report (`/caregiver/shifts/:id/report`) and history (`/caregiver/history`)
+use the same shell and portal translations. Thin route modules compose independent
+`care-report` and `care-history` features. `entities/care-session` owns the
+deterministic record metadata shared by
 history and reports, plus the in-memory draft handoff from the active-session
 feature. Confirming the end-care modal prepares a report and navigates; it does not
 submit a report, complete a backend session, or perform a digital signature.
 Actual task completion flags, custom tasks, nursing notes and measured vitals carry
 over to the draft. Unknown report IDs show a not-found state unless an active-session
 draft exists. Clinical content from one sample record is not reused for other history
-records. The report editor and profile editor own local form state. Patient notes and
-selected files are never persisted to localStorage; saved report drafts last only
-for the current SPA session and profile edits last only while the page is mounted.
-File previews use revocable object URLs without uploads. Profile verification,
+records. The report editor owns local form state. Patient notes and selected report
+files are never persisted to localStorage; saved report drafts last only for the
+current SPA session. Report file previews use revocable object URLs without uploads. Profile verification,
 report submission, signatures and payments await backend contracts. History filters
 and pagination use URL search parameters; exports contain the filtered sample rows.
 `shared/ui/section-card` provides the generic section presentation used by these
 features; it has no portal or domain imports.
 
-The Center Manager preview has its own `/center-manager` layout and translations,
-with list and detail routes at `/center-manager/caregivers` and
-`/center-manager/caregivers/:id`. Both screens share role-local preview fixtures in
-`features/center-manager/caregivers/`; they do not import Customer or Caregiver
-features. Search, filters, sort and pagination use URL parameters, while CSV export
-contains the filtered sample rows. Each detail route resolves its own caregiver ID;
-the extensive clinical sections from the supplied example appear only for the
-matching sample person. Management mutations, credential decisions, document
-downloads, notifications and shift assignment remain unavailable until the backend
-contract and manager authorization are implemented. The manager layout route is
-the future authorization boundary; it currently displays clearly labeled sample
-data and does not establish role access by itself.
+The Center Manager caregiver list and detail routes read ProviderService through the
+gateway. Identity `/users/me` supplies the assigned `centerId`; the manager UI does
+not issue center-scoped requests without it. The list uses backend pagination and
+filters; detail, edits, archive, and certificate management use backend versions for
+concurrency control. The UI checks the returned `centerId` before showing management
+controls, and ProviderService enforces ownership and authorization. Admins review
+caregivers and certificates from `/admin/centers/:id/caregivers`. Provider operations
+use cookie credentials and fetch a fresh Identity CSRF token before mutations.
+
+`/center-manager/work-shifts` lists and creates ProviderService work shifts for the
+assigned center. Its detail route edits or archives a shift and reviews registration
+requests. The displayed rows come from ProviderService; no assignment or booking
+data is inferred from them. Both list and detail show loading, empty, error, and
+access-denied states. No Provider mutation runs from sample fixtures.
+
+`/center-manager/schedules` reads the assigned center's ProviderService schedules and
+updates their status. Customer `/customer/caregivers` reads the ProviderService
+catalog; its detail route resolves a caregiver by Identity user ID and lists only
+verified certificates. Shared `entities/provider` code owns gateway request wrappers,
+schedule workflows, and owner scoped media upload/list/delete for centers, caregiver
+profiles, and certificates. Multipart Faker factories are generated with a Blob
+override in `orval.config.ts` so the generated test data matches the browser file
+contract.
 
 The Center Manager booking list lives at `/center-manager/bookings` and uses
 role-local fixtures under `features/center-manager/booking-management/`. It is a
@@ -251,9 +258,10 @@ as sample or unavailable. The cancellation dialog cannot submit; dispatch notes
 remain local drafts. The booking list links to this route and retains its quick
 preview dialog.
 
-The Admin preview has its own `/admin` layout, VI/EN menu resources, and child
+The Admin portal has its own `/admin` layout, VI/EN menu resources, and child
 routes `/admin/dashboard`, `/admin/revenue`, `/admin/customers`,
 `/admin/customers/:id`, `/admin/services`, `/admin/centers`,
+`/admin/centers/:id/caregivers`,
 `/admin/policies`, `/admin/quality`, and `/admin/reviews-complaints`.
 The last route is the separate Admin review and complaint workspace;
 `/admin` redirects to its dashboard.
@@ -264,8 +272,8 @@ live data. Dashboard charts are static sample visuals. The revenue list owns its
 sample transactions and URL-based search, filters, pagination, and selected-row
 preview; CSV export includes the filtered sample rows. Bank reconciliation,
 payout approval, invoices, live gateway status, refresh, and unimplemented Admin
-menu destinations await backend contracts. The Admin parent layout is the future
-authorization boundary; the preview itself does not enforce role access.
+menu destinations await backend contracts. The Admin parent layout checks the
+Identity ADMIN role; each backend operation enforces its own authorization.
 The customer list and detail use a separate role-local October 2026 design snapshot,
 not the dashboard or revenue totals. List search, status/booking volume/region
 filters, sorting, and pagination live in URL search parameters. Its CSV export
@@ -274,13 +282,12 @@ ID; patient histories, payment methods, bookings, and audit entries from the
 supplied detailed example appear only for `CUST-1024`. Customer creation,
 account suspension/reactivation, password resets, notifications, clinical record
 access, and note persistence await a backend contract and Admin authorization.
-The Admin service catalog and partner center screens use separate role-local,
-dated design snapshots, not the dashboard or revenue totals. Their search,
-tabs, and filters are URL search parameters; the selected service or center
-opens a read-only URL-addressable preview. Center CSV export contains only
-filtered sample rows. Pricing edits, catalog changes, onboarding approvals,
-center suspension/reactivation, account creation, and legal verification remain
-unavailable until backend contracts and Admin authorization are implemented.
+The Admin service catalog remains a dated design snapshot. `/admin/centers` now
+uses ProviderService for backend-paginated centers, detail, create, edit, status
+change, and archive. URL search parameters hold the keyword, status, page, and
+selected center. The Admin caregiver review route uses the selected center ID and
+ProviderService for caregiver and certificate verification. Identity account
+provisioning remains a separate workflow at `/admin/accounts`.
 The policy and caregiver quality pages use independent, dated Admin design snapshots.
 Policy deposit and payout cycle controls update a local simulation only; no values
 are saved or presented as active financial rules. Quality list filters and tabs
@@ -488,7 +495,8 @@ Contract update workflow:
 
 - `VITE_API_BASE_URL` is public and defaults to `/api`.
 - `API_PROXY_TARGET` is read only by the Vite development server and defaults to
-  `http://localhost:8081` for the local IdentityService.
+  `http://localhost:8080` for the local API gateway. The Vite `/api` proxy preserves
+  the full `/api/v1/*` path; all browser API calls reach services through that gateway.
 - Vite statically replaces browser environment values during the build. A changed
   production API prefix therefore requires a rebuild unless the deployment keeps the
   stable `/api` ingress contract.

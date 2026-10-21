@@ -1,5 +1,5 @@
 import type { Route } from './+types/caregivers'
-import { CustomerCaregiversPage } from '~/features/customer/caregivers/caregivers-page'
+import { CustomerProviderCatalogPage } from '~/features/customer/caregivers/customer-provider-pages'
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,5 +12,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function CustomerCaregiversRoute() {
-  return <CustomerCaregiversPage />
+  return <CustomerProviderCatalogPage />
 }

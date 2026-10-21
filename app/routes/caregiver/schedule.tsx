@@ -1,5 +1,5 @@
-import { CaregiverSchedulePage } from '~/features/caregiver/schedule/caregiver-schedule-page'
+import { ProviderSchedulePage } from '~/entities/provider/provider-schedule-page'
 
 export default function CaregiverScheduleRoute() {
-  return <CaregiverSchedulePage />
+  return <ProviderSchedulePage />
 }

@@ -7,6 +7,7 @@ import { validPassword } from './password-validation'
 import { homeForUser } from './role-path'
 import { isForbiddenError, loadSession, sessionQueryKey } from './session-api'
 import { changePassword, signOutEverywhere } from './security-api'
+import { SecuritySessions } from './security-sessions'
 
 export function SecurityPage() {
   const { t } = useTranslation()
@@ -104,6 +105,7 @@ export function SecurityPage() {
           {change.isPending ? t('auth.security.processing') : t('auth.security.changePassword')}
         </button>
       </form>
+      <SecuritySessions />
       <button
         className='rounded-lg border border-error px-4 py-2 font-semibold text-error disabled:opacity-50'
         disabled={logout.isPending || change.isPending}

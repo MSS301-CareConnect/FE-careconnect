@@ -13,6 +13,7 @@ interface CaregiversToolbarProps {
   viewMode: CaregiverViewMode
   onSortChange: (sort: CaregiverSortOption) => void
   onViewModeChange: (mode: CaregiverViewMode) => void
+  catalogMode?: boolean
 }
 
 export function CaregiversToolbar({
@@ -20,7 +21,8 @@ export function CaregiversToolbar({
   sortOption,
   viewMode,
   onSortChange,
-  onViewModeChange
+  onViewModeChange,
+  catalogMode = false
 }: CaregiversToolbarProps) {
   const { t } = useTranslation()
 
@@ -43,7 +45,7 @@ export function CaregiversToolbar({
               value={sortOption}
               onChange={(e) => onSortChange(e.target.value as CaregiverSortOption)}
             >
-              {SORT_OPTIONS.map((opt) => (
+              {(catalogMode ? SORT_OPTIONS.slice(0, 2) : SORT_OPTIONS).map((opt) => (
                 <option key={opt} value={opt}>
                   {t(`customer.caregivers.results.sortOptions.${opt}`)}
                 </option>

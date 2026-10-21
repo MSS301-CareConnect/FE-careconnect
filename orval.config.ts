@@ -41,6 +41,15 @@ export default defineConfig({
       override: {
         fetch: {
           forceSuccessResponse: true
+        },
+        mock: {
+          schemas: {
+            ProviderMediaUploadRequest: {
+              properties: {
+                files: () => [new Blob([new Uint8Array(8)])]
+              }
+            }
+          }
         }
       },
       schemas: {

@@ -12,6 +12,7 @@ import { patientProfilesEn, patientProfilesVi } from './customer/patient-profile
 import { patientDetailEn, patientDetailVi } from './customer/patient-detail-resources'
 import { patientCreateEn, patientCreateVi } from './customer/patient-create-resources'
 import { caregiversEn, caregiversVi } from './customer/caregivers-resources'
+import { customerProviderEn, customerProviderVi } from './customer/provider-resources'
 import { bookingEn, bookingVi } from './customer/booking-resources'
 import { bookingDepositEn, bookingDepositVi } from './customer/booking-deposit-resources'
 import { careReportEn, careReportVi } from './customer/care-report-resources'
@@ -25,11 +26,14 @@ import { caregiverRecordsEn, caregiverRecordsVi } from './caregiver/care-record-
 import { caregiverReportEn, caregiverReportVi } from './caregiver/care-report-resources'
 import { caregiverHistoryEn, caregiverHistoryVi } from './caregiver/care-history-resources'
 import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
+import { caregiverProviderEn, caregiverProviderVi } from './caregiver/provider-resources'
 import { managerLayoutEn, managerLayoutVi } from './center-manager/layout-resources'
 import { managerManagementEn, managerManagementVi } from './center-manager/management-resources'
 import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
 import { managerBookingManagementEn, managerBookingManagementVi } from './center-manager/booking-management-resources'
 import { managerBookingDetailEn, managerBookingDetailVi } from './center-manager/booking-detail-resources'
+import { managerProviderEn, managerProviderVi } from './center-manager/provider-resources'
+import { managerScheduleEn, managerScheduleVi } from './center-manager/schedule-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
 import { adminCustomersEn, adminCustomersVi } from './admin/customers-resources'
@@ -40,6 +44,7 @@ import { adminPoliciesEn, adminPoliciesVi } from './admin/policies-resources'
 import { adminQualityEn, adminQualityVi } from './admin/quality-resources'
 import { adminReviewsComplaintsEn, adminReviewsComplaintsVi } from './admin/reviews-complaints-resources'
 import { identityEn, identityVi } from './admin/identity-resources'
+import { adminProviderEn, adminProviderVi } from './admin/provider-resources'
 
 export const resources = {
   en: {
@@ -56,6 +61,7 @@ export const resources = {
         patientDetail: patientDetailEn,
         patientCreate: patientCreateEn,
         caregivers: caregiversEn,
+        provider: customerProviderEn,
         booking: bookingEn,
         bookingDeposit: bookingDepositEn,
         careReport: careReportEn,
@@ -70,14 +76,17 @@ export const resources = {
         careRecords: caregiverRecordsEn,
         careReport: caregiverReportEn,
         careHistory: caregiverHistoryEn,
-        profile: caregiverProfileEn
+        profile: caregiverProfileEn,
+        provider: caregiverProviderEn
       },
       centerManager: {
         ...managerLayoutEn,
         management: managerManagementEn,
         detail: managerDetailEn,
         bookingManagement: managerBookingManagementEn,
-        bookingDetail: managerBookingDetailEn
+        bookingDetail: managerBookingDetailEn,
+        provider: managerProviderEn,
+        schedules: managerScheduleEn
       },
       admin: {
         ...adminLayoutEn,
@@ -89,7 +98,8 @@ export const resources = {
         policiesPage: adminPoliciesEn,
         qualityPage: adminQualityEn,
         reviewsComplaintsPage: adminReviewsComplaintsEn,
-        identity: identityEn
+        identity: identityEn,
+        provider: adminProviderEn
       }
     }
   },
@@ -107,6 +117,7 @@ export const resources = {
         patientDetail: patientDetailVi,
         patientCreate: patientCreateVi,
         caregivers: caregiversVi,
+        provider: customerProviderVi,
         booking: bookingVi,
         bookingDeposit: bookingDepositVi,
         careReport: careReportVi,
@@ -121,14 +132,17 @@ export const resources = {
         careRecords: caregiverRecordsVi,
         careReport: caregiverReportVi,
         careHistory: caregiverHistoryVi,
-        profile: caregiverProfileVi
+        profile: caregiverProfileVi,
+        provider: caregiverProviderVi
       },
       centerManager: {
         ...managerLayoutVi,
         management: managerManagementVi,
         detail: managerDetailVi,
         bookingManagement: managerBookingManagementVi,
-        bookingDetail: managerBookingDetailVi
+        bookingDetail: managerBookingDetailVi,
+        provider: managerProviderVi,
+        schedules: managerScheduleVi
       },
       admin: {
         ...adminLayoutVi,
@@ -140,7 +154,8 @@ export const resources = {
         policiesPage: adminPoliciesVi,
         qualityPage: adminQualityVi,
         reviewsComplaintsPage: adminReviewsComplaintsVi,
-        identity: identityVi
+        identity: identityVi,
+        provider: adminProviderVi
       }
     }
   }
