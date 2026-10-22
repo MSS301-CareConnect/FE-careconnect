@@ -70,7 +70,7 @@ export const adminRevenueVi = {
   booking: 'Mã ca & dịch vụ',
   party: 'Bên thanh toán / nhận tiền',
   method: 'Phương thức',
-  amount: 'Số tiền',
+  amount: 'Số tiền (VND)',
   actions: 'Thao tác',
   noBooking: 'Không gắn booking',
   services: {
@@ -170,7 +170,7 @@ export const adminRevenueEn = {
   booking: 'Booking & service',
   party: 'Payer / recipient',
   method: 'Method',
-  amount: 'Amount',
+  amount: 'Amount (VND)',
   actions: 'Actions',
   noBooking: 'No linked booking',
   services: {

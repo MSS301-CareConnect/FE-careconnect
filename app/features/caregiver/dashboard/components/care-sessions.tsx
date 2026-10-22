@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 
-export function CareSessions() {
+export function CareSessions({ previewDate }: { previewDate: Date }) {
   const { t, i18n } = useTranslation()
   const number = (value: number) => new Intl.NumberFormat(i18n.resolvedLanguage).format(value)
   const time = (hour: number) =>
@@ -12,13 +12,14 @@ export function CareSessions() {
       minute: '2-digit',
       hourCycle: 'h23',
       timeZone: 'Asia/Ho_Chi_Minh'
-    }).format(new Date(`2025-10-24T${String(hour).padStart(2, '0')}:00:00+07:00`))
+    }).format(new Date(`2026-09-20T${String(hour).padStart(2, '0')}:00:00+07:00`))
   const tomorrow = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
+    year: 'numeric',
     timeZone: 'Asia/Ho_Chi_Minh'
-  }).format(new Date('2025-10-25T08:00:00+07:00'))
+  }).format(new Date(previewDate.getTime() + 24 * 60 * 60 * 1000))
   return (
     <div className='space-y-8'>
       <section

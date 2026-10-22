@@ -39,6 +39,8 @@ describe('Admin revenue preview', () => {
   it('filters transactions in the URL, previews a row, and keeps financial actions unavailable', () => {
     renderRevenue()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Quản lý Giao dịch & Doanh thu')
+    expect(screen.getAllByText(/1[.,]482[.,]500[.,]000\s*₫/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/324[.,]000\s*₫/).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('row')).toHaveLength(7)
     expect(screen.getByRole('button', { name: 'Xử lý lệnh payout' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Chờ payout (1)' }))
@@ -69,6 +71,8 @@ describe('Admin revenue preview', () => {
       reader.readAsText(create.mock.calls[0][0])
     })
     expect(csv).toContain('TXN-904128')
+    expect(csv).toContain('Số tiền (VND)')
+    expect(csv).toContain('324000')
     expect(csv).not.toContain('TXN-904115')
     expect(csv.split('\r\n')).toHaveLength(2)
     expect(click).toHaveBeenCalledOnce()

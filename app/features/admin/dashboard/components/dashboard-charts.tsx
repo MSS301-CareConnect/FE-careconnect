@@ -10,7 +10,7 @@ export function DashboardCharts() {
   const locale = i18n.resolvedLanguage ?? 'vi'
   const number = (value: number) => new Intl.NumberFormat(locale).format(value)
   const money = (value: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
   const percentage = (value: number) =>
     new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value)
   return (
@@ -82,7 +82,7 @@ export function DashboardCharts() {
           <div>
             <h2 className='text-lg font-bold'>{t(`${key}.revenueChart`)}</h2>
             <p className='mt-1 text-sm text-outline'>
-              {t(`${key}.revenueChartHint`, { amount: money(data.monthlyRevenue) })}
+              {t(`${key}.revenueChartHint`, { amount: money(data.monthlyGmv) })}
             </p>
           </div>
           <Link
@@ -110,7 +110,7 @@ export function DashboardCharts() {
               <div className='mb-1 flex justify-between gap-3 text-xs'>
                 <span>{t(`${key}.services.${service.key}`)}</span>
                 <strong className='text-primary'>
-                  {percentage(service.share)} · {money(data.monthlyRevenue * service.share)}
+                  {percentage(service.share)} · {money(data.monthlyGmv * service.share)}
                 </strong>
               </div>
               <div className='h-2 overflow-hidden rounded-full bg-surface-container'>

@@ -1,11 +1,13 @@
-// Independent September 2026 design snapshot; these values are not live platform metrics.
+import { adminFinancialPreview } from '../financial-preview'
+
+// September 2026 design snapshot; these values are not live platform metrics.
 export const adminDashboardPreview = {
   customers: 1240,
   caregivers: 210,
   verifiedCaregivers: 198,
   activeBookings: 86,
-  monthlyRevenue: 12430,
-  platformFeeRate: 0.2,
+  monthlyGmv: adminFinancialPreview.gmv,
+  platformFeeRate: adminFinancialPreview.platformFeeRate,
   completedBookings: 642,
   ongoingBookings: 86,
   cancelledBookings: 18,

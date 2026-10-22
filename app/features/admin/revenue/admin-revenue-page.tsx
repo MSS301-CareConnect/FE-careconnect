@@ -19,7 +19,7 @@ export function AdminRevenuePage() {
   const { t } = useTranslation()
   const list = useRevenueList()
   const money = (value: number) =>
-    new Intl.NumberFormat(list.locale, { style: 'currency', currency: 'USD' }).format(value)
+    new Intl.NumberFormat(list.locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
   const selected = data.transactions.find((transaction) => transaction.id === list.get('transaction'))
   const stats = [
     { key: 'gmv', icon: 'payments', value: money(data.gmv) },

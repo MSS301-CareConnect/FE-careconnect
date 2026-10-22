@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { CaregiverLayout } from '../../layout/caregiver-layout'
@@ -33,6 +33,18 @@ describe('Caregiver dashboard portal', () => {
     expect(screen.getByRole('heading', { name: 'Bà Trần Thị C' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Lịch trực' })).toHaveAttribute('href', '/caregiver/schedule')
+  })
+
+  it('keeps the sample schedule date relative to the day the page opens', () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(new Date('2027-03-01T02:00:00Z'))
+      renderPortal()
+      expect(screen.getByText(/Lịch mẫu:.*2027/)).toBeInTheDocument()
+      expect(screen.getByText(/02\/03\/2027/)).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('toggles preview availability without persisting a server status', () => {

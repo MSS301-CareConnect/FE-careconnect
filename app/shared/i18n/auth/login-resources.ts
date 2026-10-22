@@ -1,4 +1,5 @@
 export const authEn = {
+  backHome: 'Back to home',
   email: 'Email address',
   forbiddenDescription: 'Your account cannot access this portal.',
   forbiddenTitle: 'Access denied',
@@ -23,6 +24,7 @@ export const authEn = {
 } as const
 
 export const authVi = {
+  backHome: 'Về trang chủ',
   email: 'Địa chỉ email',
   forbiddenDescription: 'Tài khoản của bạn không có quyền vào khu vực này.',
   forbiddenTitle: 'Không có quyền truy cập',

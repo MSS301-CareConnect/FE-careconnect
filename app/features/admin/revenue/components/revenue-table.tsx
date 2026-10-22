@@ -18,7 +18,7 @@ export function RevenueTable({ list, onView }: { list: RevenueList; onView: (id:
   const { t } = useTranslation()
   const number = (value: number) => new Intl.NumberFormat(list.locale).format(value)
   const money = (value: number) =>
-    new Intl.NumberFormat(list.locale, { style: 'currency', currency: 'USD' }).format(value)
+    new Intl.NumberFormat(list.locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
   const date = (value: string) =>
     new Intl.DateTimeFormat(list.locale, {
       day: '2-digit',

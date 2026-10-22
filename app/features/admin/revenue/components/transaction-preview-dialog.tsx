@@ -18,7 +18,9 @@ export function TransactionPreviewDialog({
     dialog.current?.showModal()
   }, [])
   const locale = i18n.resolvedLanguage ?? 'vi'
-  const money = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(transaction.amount)
+  const money = new Intl.NumberFormat(locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(
+    transaction.amount
+  )
   const date = new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: '2-digit',

@@ -12,12 +12,14 @@ export function CaregiverDashboardPage() {
   const { t, i18n } = useTranslation()
   const [ready, setReady] = useState(true)
   useDocumentTitle(t('caregiver.title'))
+  const previewDate = new Date()
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',
+    year: 'numeric',
     timeZone: 'Asia/Ho_Chi_Minh'
-  }).format(new Date('2025-10-24T08:00:00+07:00'))
+  }).format(previewDate)
   return (
     <div className='mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-12'>
       <p className='flex items-start gap-2 rounded-lg bg-secondary-container px-4 py-3 text-xs leading-5 text-primary'>
@@ -99,7 +101,7 @@ export function CaregiverDashboardPage() {
       <DashboardStats />
       <div className='grid items-start gap-8 lg:grid-cols-12'>
         <div className='lg:col-span-7'>
-          <CareSessions />
+          <CareSessions previewDate={previewDate} />
         </div>
         <div className='lg:col-span-5'>
           <CareTools />

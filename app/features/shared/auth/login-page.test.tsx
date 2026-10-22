@@ -39,7 +39,8 @@ describe('login page', () => {
       </QueryClientProvider>
     )
 
-    fireEvent.change(await screen.findByLabelText('Địa chỉ email'), { target: { value: 'admin@careconnect.test' } })
+    expect(await screen.findByRole('link', { name: 'Về trang chủ' })).toHaveAttribute('href', '/')
+    fireEvent.change(screen.getByLabelText('Địa chỉ email'), { target: { value: 'admin@careconnect.test' } })
     fireEvent.change(screen.getByLabelText('Mật khẩu'), { target: { value: 'secret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }))
 

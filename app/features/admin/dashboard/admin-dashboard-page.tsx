@@ -12,7 +12,7 @@ export function AdminDashboardPage() {
   const locale = i18n.resolvedLanguage ?? 'vi'
   const number = (value: number) => new Intl.NumberFormat(locale).format(value)
   const money = (value: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
   const stats = [
     { key: 'customers', icon: 'diversity_1', value: number(data.customers), hint: t(`${key}.stats.customersHint`) },
     {
@@ -30,8 +30,8 @@ export function AdminDashboardPage() {
     {
       key: 'revenue',
       icon: 'account_balance_wallet',
-      value: money(data.monthlyRevenue),
-      hint: t(`${key}.stats.revenueHint`, { amount: money(data.monthlyRevenue * data.platformFeeRate) })
+      value: money(data.monthlyGmv),
+      hint: t(`${key}.stats.revenueHint`, { amount: money(data.monthlyGmv * data.platformFeeRate) })
     }
   ] as const
   useDocumentTitle(t(`${key}.documentTitle`))
@@ -88,7 +88,11 @@ export function AdminDashboardPage() {
                 <Icon name={stat.icon} />
               </span>
             </div>
-            <p className='mt-4 text-3xl font-extrabold'>{stat.value}</p>
+            <p
+              className={`mt-4 font-extrabold ${stat.key === 'revenue' ? 'break-words text-xl sm:text-2xl' : 'text-3xl'}`}
+            >
+              {stat.value}
+            </p>
             <p className='mt-2 text-xs text-outline'>{stat.hint}</p>
           </section>
         ))}

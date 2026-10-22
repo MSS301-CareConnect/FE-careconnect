@@ -10,7 +10,7 @@ export function CareTools() {
     minute: '2-digit',
     hourCycle: 'h23',
     timeZone: 'Asia/Ho_Chi_Minh'
-  }).format(new Date('2025-10-24T10:00:00+07:00'))
+  }).format(new Date('2026-09-20T10:00:00+07:00'))
   return (
     <div className='space-y-8'>
       <section className='scroll-mt-28 rounded-2xl bg-white shadow-sm' id='reminders'>

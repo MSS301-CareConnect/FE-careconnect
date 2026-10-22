@@ -1,3 +1,5 @@
+import { adminFinancialPreview } from '../financial-preview'
+
 export type RevenueType = 'deposit' | 'settlement' | 'payout' | 'refund' | 'fee'
 export type RevenueStatus = 'escrow' | 'settled' | 'pending' | 'refunded' | 'reconciled' | 'failed'
 export type RevenueGateway = 'visa' | 'vietqr' | 'bank' | 'system'
@@ -17,14 +19,14 @@ export interface RevenueTransaction {
   status: RevenueStatus
 }
 
-// Independent illustrative September 2026 snapshot; none of these entries verifies a payment.
+// Illustrative September 2026 transactions; none of these entries verifies a payment.
 export const revenuePreview = {
   period: '2026-09',
-  gmv: 148250,
-  platformRate: 0.15,
-  escrow: 34680,
-  payoutPending: 12450,
-  averageDaily: 741.25,
+  gmv: adminFinancialPreview.gmv,
+  platformRate: adminFinancialPreview.platformFeeRate,
+  escrow: 346_800_000,
+  payoutPending: 124_500_000,
+  averageDaily: 7_412_500,
   refundRate: 0.008,
   averageReconciliationHours: 1.8,
   split: [
@@ -44,7 +46,7 @@ export const revenuePreview = {
       method: 'Visa ****4589',
       party: 'Chị Nguyễn Mai Anh',
       counterparty: null,
-      amount: 32.4,
+      amount: 324_000,
       status: 'escrow'
     },
     {
@@ -57,7 +59,7 @@ export const revenuePreview = {
       method: 'VietQR',
       party: 'Chị Phạm Thanh Hà',
       counterparty: 'ĐD. Vũ Mai Linh',
-      amount: -42,
+      amount: -420_000,
       status: 'settled'
     },
     {
@@ -70,7 +72,7 @@ export const revenuePreview = {
       method: 'MB Bank',
       party: 'ĐD. Trần Thùy Dương',
       counterparty: null,
-      amount: -350,
+      amount: -3_500_000,
       status: 'pending'
     },
     {
@@ -83,7 +85,7 @@ export const revenuePreview = {
       method: 'Mastercard',
       party: 'Chị Lê Thu Trang',
       counterparty: null,
-      amount: -32.4,
+      amount: -324_000,
       status: 'refunded'
     },
     {
@@ -96,7 +98,7 @@ export const revenuePreview = {
       method: 'CareConnect',
       party: 'CareConnect',
       counterparty: null,
-      amount: 63,
+      amount: 630_000,
       status: 'reconciled'
     },
     {
@@ -109,7 +111,7 @@ export const revenuePreview = {
       method: 'VietQR',
       party: 'Bác Vũ Đình Trọng',
       counterparty: 'KTV. Hoàng Minh Tuấn',
-      amount: -68,
+      amount: -680_000,
       status: 'settled'
     }
   ] satisfies RevenueTransaction[]

@@ -7,8 +7,8 @@ const key = 'admin.revenuePage' as const
 export function RevenueAnalytics() {
   const { t, i18n } = useTranslation()
   const locale = i18n.resolvedLanguage ?? 'vi'
-  const money = (value: number, digits = 0) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: digits }).format(value)
+  const money = (value: number) =>
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
   const percentage = (value: number) =>
     new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value)
   const decimal = (value: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value)
@@ -87,7 +87,7 @@ export function RevenueAnalytics() {
         </div>
         <div className='mt-5 grid gap-3 rounded-lg bg-surface-container-low p-4 sm:grid-cols-3'>
           {[
-            { key: 'average' as const, value: money(data.averageDaily, 2) },
+            { key: 'average' as const, value: money(data.averageDaily) },
             { key: 'refundRate' as const, value: percentage(data.refundRate) },
             {
               key: 'reconciliationTime' as const,

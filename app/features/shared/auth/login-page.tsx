@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 
+import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { PasswordField } from './password-field'
@@ -50,13 +51,19 @@ export function LoginPage() {
         <div className='max-w-md text-center'>
           <h1 className='text-2xl font-bold'>{t('auth.unavailableTitle')}</h1>
           <p className='mt-3 text-on-surface-variant'>{t('auth.unavailableDescription')}</p>
-          <button
-            className='mt-5 rounded-xl bg-primary px-5 py-3 font-semibold text-white'
-            onClick={() => void session.refetch()}
-            type='button'
-          >
-            {t('auth.retry')}
-          </button>
+          <div className='mt-5 flex flex-wrap items-center justify-center gap-4'>
+            <Link className='inline-flex items-center gap-2 font-semibold text-primary hover:underline' to='/'>
+              <Icon name='arrow_back' />
+              {t('auth.backHome')}
+            </Link>
+            <button
+              className='rounded-xl bg-primary px-5 py-3 font-semibold text-white'
+              onClick={() => void session.refetch()}
+              type='button'
+            >
+              {t('auth.retry')}
+            </button>
+          </div>
         </div>
       </main>
     )
@@ -71,7 +78,14 @@ export function LoginPage() {
           </Link>
           <LanguageSwitch />
         </div>
-        <h1 className='mt-8 text-3xl font-bold tracking-tight'>{t('auth.loginTitle')}</h1>
+        <Link
+          className='mt-8 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          to='/'
+        >
+          <Icon className='text-lg' name='arrow_back' />
+          {t('auth.backHome')}
+        </Link>
+        <h1 className='mt-5 text-3xl font-bold tracking-tight'>{t('auth.loginTitle')}</h1>
         <p className='mt-2 text-sm text-on-surface-variant'>{t('auth.loginDescription')}</p>
         <form className='mt-7 space-y-5' onSubmit={handleSubmit}>
           <div>

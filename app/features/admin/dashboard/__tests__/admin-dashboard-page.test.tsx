@@ -56,9 +56,12 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('heading', { name: 'Thống kê lịch hẹn' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Đội ngũ điều dưỡng & CCHN' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Xem báo cáo doanh thu' })).toHaveAttribute('href', '/admin/revenue')
+    expect(screen.getAllByText(/1[.,]482[.,]500[.,]000\s*₫/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Phí nền tảng mẫu \(15%\):.*222[.,]375[.,]000\s*₫/)).toBeInTheDocument()
+    expect(screen.getByText(/dữ liệu minh họa tháng 09\/2026/)).toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Platform overview')
-    expect(screen.getByRole('heading', { name: 'Revenue by service' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'GMV by service' })).toBeInTheDocument()
   })
 
   it('groups the sidebar menu and shows the current page in the topbar breadcrumb', () => {
