@@ -63,6 +63,20 @@ links to existing care search, booking, and family profile screens without
 inventing remote data. The Customer header and in-portal home breadcrumbs point
 there; the account menu contains the profile link and session sign-out action.
 
+Customer `/customer/patient-profiles` and `/customer/patient-profiles/:id` read
+CareRecipientService through `entities/care-recipient`, which owns the gateway
+wrappers and query keys. The list keeps keyword, status and page in URL search
+parameters and uses backend pagination; its sidebar shows the `/users/me` identity
+and the unfiltered profile count. Detail edits send the whole profile with the
+backend `version` because the PUT contract clears omitted fields; a 409 asks the
+user to reload. Medications and emergency contacts use their own endpoints, and
+medication activity changes only through the `active` PATCH. Edit and delete
+controls follow the returned `myAccessLevel` (EDITOR/OWNER edit, OWNER deletes,
+which archives), while the backend enforces access. Assigned caregivers, care
+session history, attached documents, identity/insurance numbers and attending
+doctors have no CareRecipient contract and are not shown. Profile creation at
+`/customer/patient-profiles/new` remains a local preview.
+
 Public customer registration uses `/api/v1/auth/register` to send an email OTP. The
 account is created only after `/api/v1/auth/register/verify` succeeds; verification
 does not create a web session, so the user signs in separately. The registration
@@ -381,6 +395,17 @@ introduced so Router and Query do not become competing caches.
 `openapi/openapi.yaml` is a versioned snapshot consumed by `orval.config.ts`.
 It contains the reviewed IdentityService operations currently consumed by the web
 client; the backend OpenAPI export is authoritative for subsequent additions.
+
+The snapshot also covers CareCatalogService (`CatalogItem`, `CenterOffering`,
+`PricePlan` tags) and CareRecipientService (`CareRecipient` tag) through the gateway.
+Their live Swagger declares one generic `ApiResponse` whose `result` points to a
+single DTO, so the snapshot types each operation's envelope from the backend
+controller return types (`*Record` payloads, `*Response`/`*ListResponse`/
+`*PageResponse` envelopes, `EmptyActionResponse` for `Void`). Backend path aliases
+(`/v1/care-services`, `/v1/price-plans/center-service/{id}`) are omitted in favor of
+`/v1/catalog-items` and `/v1/price-plans/center-offering/{id}`. Mutations still need
+the Identity CSRF header and `X-Client-Type: web` like ProviderService calls; the
+backend enforces ADMIN, CENTER_MANAGER, CUSTOMER, and CAREGIVER access per operation.
 
 ```text
 openapi/openapi.yaml
