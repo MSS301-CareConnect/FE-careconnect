@@ -1,19 +1,39 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import type { CareRecipientDetailRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
-import type { PatientDetailData } from '../types'
+import type { ProfileDraftError } from '../profile-draft'
+
+const SAVE_ERROR_KEYS = {
+  nameRequired: 'customer.patientDetail.banner.nameRequired',
+  phoneInvalid: 'customer.patientDetail.banner.phoneInvalid',
+  conflict: 'customer.patientDetail.banner.conflictError',
+  save: 'customer.patientDetail.banner.saveError'
+} as const
 
 export interface PatientDetailHeaderProps {
-  data: PatientDetailData
+  detail: CareRecipientDetailRecord
+  canEdit: boolean
   isEditMode: boolean
+  isSaving: boolean
+  saveError?: ProfileDraftError | 'conflict' | 'save'
   onToggleEditMode: () => void
   onSave: () => void
 }
 
-export function PatientDetailHeader({ data, isEditMode, onToggleEditMode, onSave }: PatientDetailHeaderProps) {
+export function PatientDetailHeader({
+  detail,
+  canEdit,
+  isEditMode,
+  isSaving,
+  saveError,
+  onToggleEditMode,
+  onSave
+}: PatientDetailHeaderProps) {
   const { t } = useTranslation()
+  const { profile, myAccessLevel } = detail
 
   return (
     <div className='flex flex-col gap-6'>
@@ -49,68 +69,84 @@ export function PatientDetailHeader({ data, isEditMode, onToggleEditMode, onSave
               <span>{t('customer.patientDetail.banner.back')}</span>
             </Link>
             <span className='inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-0.5 text-xs font-semibold text-primary'>
-              <span className='h-2 w-2 animate-pulse rounded-full bg-primary' />
-              <span>{t('customer.patientDetail.banner.activeCareSession')}</span>
+              <span className='h-2 w-2 rounded-full bg-primary' />
+              <span>{t(`customer.careRecipient.status.${profile.status}`)}</span>
             </span>
           </div>
 
           <div className='mt-1 flex flex-wrap items-baseline gap-2'>
             <h1 className='text-2xl font-bold text-on-surface'>
-              <span>{t('customer.patientDetail.banner.titlePrefix')}</span>
-              <span>{data.name}</span>
+              {t('customer.patientDetail.banner.title', { name: profile.fullName })}
             </h1>
-            <span className='text-sm text-on-surface-variant'>
-              ({data.relationshipLabel} - {data.code})
-            </span>
+            {myAccessLevel ? (
+              <span className='text-sm text-on-surface-variant'>
+                {t('customer.patientDetail.banner.yourAccess', {
+                  level: t(`customer.careRecipient.access.${myAccessLevel}`)
+                })}
+              </span>
+            ) : null}
           </div>
         </div>
 
         {/* Action Toolbar */}
         <div className='flex flex-wrap items-center gap-3'>
-          {/* Edit Mode Toggle Switch */}
-          <div className='flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2'>
-            <span
-              className={`text-xs font-medium ${isEditMode ? 'font-semibold text-primary' : 'text-on-surface-variant'}`}
-            >
-              {isEditMode ? t('customer.patientDetail.banner.editMode') : t('customer.patientDetail.banner.viewMode')}
-            </span>
-            <button
-              type='button'
-              role='switch'
-              aria-checked={isEditMode}
-              onClick={onToggleEditMode}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-                isEditMode ? 'bg-primary' : 'bg-outline-variant'
-              }`}
-            >
+          {canEdit ? (
+            <div className='flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2'>
               <span
-                className={`pointer-events-none mt-0.5 inline-block h-5 w-5 transform rounded-full bg-surface-container-lowest shadow ring-0 transition duration-200 ease-in-out ${
-                  isEditMode ? 'translate-x-5' : 'translate-x-0.5'
+                className={`text-xs font-medium ${isEditMode ? 'font-semibold text-primary' : 'text-on-surface-variant'}`}
+              >
+                {isEditMode ? t('customer.patientDetail.banner.editMode') : t('customer.patientDetail.banner.viewMode')}
+              </span>
+              <button
+                type='button'
+                role='switch'
+                aria-checked={isEditMode}
+                aria-label={t('customer.patientDetail.banner.editToggle')}
+                onClick={onToggleEditMode}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+                  isEditMode ? 'bg-primary' : 'bg-outline-variant'
                 }`}
-              />
-            </button>
-          </div>
+              >
+                <span
+                  className={`pointer-events-none mt-0.5 inline-block h-5 w-5 transform rounded-full bg-surface-container-lowest shadow ring-0 transition duration-200 ease-in-out ${
+                    isEditMode ? 'translate-x-5' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </div>
+          ) : null}
 
           {isEditMode && (
             <button
               type='button'
               onClick={onSave}
-              className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container'
+              disabled={isSaving}
+              className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container disabled:opacity-60'
             >
               <Icon name='save' className='text-lg' />
-              <span>{t('customer.patientDetail.banner.saveUpdate')}</span>
+              <span>
+                {isSaving ? t('customer.patientDetail.banner.saving') : t('customer.patientDetail.banner.saveUpdate')}
+              </span>
             </button>
           )}
 
-          <Link
-            to='/caregivers'
-            className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container'
-          >
-            <Icon name='calendar_add_on' className='text-lg' />
-            <span>{t('customer.patientDetail.banner.bookNewCare')}</span>
-          </Link>
+          {profile.status === 'ACTIVE' ? (
+            <Link
+              to='/customer/caregivers'
+              className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container'
+            >
+              <Icon name='calendar_add_on' className='text-lg' />
+              <span>{t('customer.patientDetail.banner.bookNewCare')}</span>
+            </Link>
+          ) : null}
         </div>
       </div>
+
+      {saveError ? (
+        <p role='alert' className='rounded-lg bg-error-container/40 p-3 text-xs text-error'>
+          {t(SAVE_ERROR_KEYS[saveError])}
+        </p>
+      ) : null}
     </div>
   )
 }

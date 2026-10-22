@@ -28,7 +28,7 @@ describe('CustomerLayout', () => {
     expect(screen.getAllByText('CareConnect')[0]).toBeInTheDocument()
     expect(screen.getByText('Tìm người chăm sóc')).toBeInTheDocument()
     expect(screen.getByText('Lịch đặt của tôi')).toBeInTheDocument()
-    expect(screen.getByText('Hồ sơ người thân')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Hồ sơ người thân' })).not.toBeInTheDocument()
     expect(screen.getByText('Customer Content')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Lịch đặt của tôi' })).toHaveAttribute('href', '/customer/bookings')
     expect(screen.getByText('Chính sách bảo mật')).toBeInTheDocument()
@@ -38,7 +38,7 @@ describe('CustomerLayout', () => {
     expect(screen.queryByRole('button', { name: 'Đăng xuất' })).not.toBeInTheDocument()
   })
 
-  it('opens the avatar menu with profile and sign-out actions, then closes on Escape', () => {
+  it('opens the avatar menu with profile, family profiles and sign-out actions, then closes on Escape', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
@@ -55,12 +55,36 @@ describe('CustomerLayout', () => {
     expect(accountButton).toHaveAttribute('aria-expanded', 'true')
     expect(accountMenu).toContainElement(screen.getByRole('link', { name: 'Hồ sơ của tôi' }))
     expect(screen.getByRole('link', { name: 'Hồ sơ của tôi' })).toHaveAttribute('href', '/customer/my-profile')
+    const familyProfiles = screen.getByRole('link', { name: 'Hồ sơ người thân' })
+    expect(accountMenu).toContainElement(familyProfiles)
+    expect(familyProfiles).toHaveAttribute('href', '/customer/patient-profiles')
     expect(accountMenu).toContainElement(screen.getByRole('button', { name: 'Đăng xuất' }))
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(accountButton).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
     expect(accountButton).toHaveFocus()
+  })
+
+  it('navigates to family profiles from the avatar menu and closes it', () => {
+    const familyProfilesPage = 'Family profiles page'
+
+    render(
+      <MemoryRouter initialEntries={['/customer']}>
+        <Routes>
+          <Route element={<CustomerLayout />}>
+            <Route path='/customer' element={<div />} />
+            <Route path='/customer/patient-profiles' element={<div>{familyProfilesPage}</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Menu tài khoản' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Hồ sơ người thân' }))
+
+    expect(screen.getByText(familyProfilesPage)).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
   })
 
   it('opens the customer menu with a bookings link on small screens', () => {
@@ -82,5 +106,6 @@ describe('CustomerLayout', () => {
       screen.getAllByRole('link', { name: 'Lịch đặt của tôi' })[1]
     )
     expect(screen.getAllByRole('link', { name: 'Trang chủ' })[1]).toHaveAttribute('href', '/customer')
+    expect(screen.queryByRole('link', { name: 'Hồ sơ người thân' })).not.toBeInTheDocument()
   })
 })

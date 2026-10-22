@@ -1,46 +1,62 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import type { BmiResult, BmiStatus, MedicationItem, PatientCreateFormData } from '../types'
+import {
+  careRecipientErrorCode,
+  careRecipientErrorStatus,
+  careRecipientKeys,
+  createRecipientProfile
+} from '~/entities/care-recipient/care-recipient-api'
 
-const DEFAULT_AVATAR =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDFS3GAEtnT_oHmkrBJpi8s81GsKQ2bZ-7iafOegibpMGnTFFPpH0W4DezPQtRYIpzW-_FcLevEWkqCrREXrDtZQ4--hM_qcJMpkpo_BwY9G2B4VWj8mnK4rbxAAkXnIrC4BKObPLFywNhVz1FztJSSo2yR0q4jpEil-0H1cNWrxOJCj04GKH3VHlyWXqRK_rql3smKWiDcQQ3at56KziRs-A1oCnoBOhEF7A3mnqC-UWijpaBZiXBrvQ'
+import {
+  fieldErrorsFromServerCode,
+  localIsoDate,
+  MAX_MEDICATIONS,
+  medicationField,
+  toCareRecipientCreateRequest,
+  validatePatientCreate,
+  type ChronicKey,
+  type PatientCreateErrors,
+  type PatientCreateField
+} from '../patient-create-request'
+import type { BmiResult, BmiStatus, EmergencyContactDraft, MedicationItem, PatientCreateFormData } from '../types'
 
 export const INITIAL_FORM_DATA: PatientCreateFormData = {
-  avatar: DEFAULT_AVATAR,
-  fullName: 'Nguyễn Văn An',
-  relationship: 'father',
-  birthDate: '1956-08-14',
-  gender: 'male',
-  idNumber: '079056012499',
-  bhytNumber: 'GD4797931405928',
-  height: 168,
-  weight: 65,
-  bloodType: 'O+',
-  chronicIllnesses: ['hypertension', 'diabetes', 'osteoarthritis'],
+  fullName: '',
+  relationship: '',
+  birthDate: '',
+  gender: '',
+  height: '',
+  weight: '',
+  bloodType: '',
+  chronicIllnesses: [],
   otherChronic: '',
-  allergies: ['Kháng sinh nhóm Penicillin', 'Aspirin & NSAIDs', 'Tôm & Cua biển'],
-  surgeryHistory: 'Thay khớp gối nhân tạo chân phải (Năm 2021, Bệnh viện Chợ Rẫy); Mổ sỏi túi mật nội soi (Năm 2018)',
-  doctorName: 'BS.CK2 Lê Hoàng Nam - BV Thống Nhất',
-  doctorContact: '0912 345 678',
-  medications: [
-    {
-      id: 'med-1',
-      name: 'Amlodipine 5mg',
-      category: 'Hạ huyết áp',
-      dosage: '1 viên / ngày',
-      time: 'Sáng (07:00) - Sau ăn',
-      instructions: 'Đo huyết áp trước khi cho uống'
-    },
-    {
-      id: 'med-2',
-      name: 'Metformin 850mg',
-      category: 'Kiểm soát đường huyết',
-      dosage: '2 viên / ngày (chia 2 lần)',
-      time: 'Sáng - Tối (Cùng bữa ăn)',
-      instructions: 'Uống nguyên viên với nhiều nước'
-    }
-  ]
+  allergies: [],
+  surgeryHistory: '',
+  emergencyContact: { fullName: '', relationship: '', phoneNumber: '' },
+  medications: []
 }
+
+/** Form keys edited through updateField that own an error message of the same name. */
+const FIELD_KEYS: readonly (keyof PatientCreateFormData & PatientCreateField)[] = [
+  'fullName',
+  'relationship',
+  'birthDate',
+  'gender',
+  'height',
+  'weight',
+  'otherChronic',
+  'surgeryHistory'
+]
+
+const EMERGENCY_FIELDS: Record<keyof EmergencyContactDraft, PatientCreateField> = {
+  fullName: 'emergencyName',
+  relationship: 'emergencyRelationship',
+  phoneNumber: 'emergencyPhone'
+}
+
+export type PatientCreateFormError = 'submitInvalid' | 'submitFailed'
 
 export function computeBmi(height: number | '', weight: number | ''): BmiResult {
   if (!height || !weight || height <= 0 || weight <= 0) {
@@ -66,18 +82,54 @@ export function computeBmi(height: number | '', weight: number | ''): BmiResult 
 }
 
 export function usePatientCreate() {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const [formData, setFormData] = useState<PatientCreateFormData>(INITIAL_FORM_DATA)
-  const [draftNoticeTime, setDraftNoticeTime] = useState<string | null>(null)
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [newAllergyText, setNewAllergyText] = useState('')
+  const [errors, setErrors] = useState<PatientCreateErrors>({})
+  const [formError, setFormError] = useState<PatientCreateFormError | null>(null)
+  // Incremented on every failed submit so the page moves focus to the first invalid control again.
+  const [focusRequest, setFocusRequest] = useState(0)
 
   const bmi = computeBmi(formData.height, formData.weight)
+  const chronicLabel = (key: ChronicKey) => t(`customer.patientCreate.section2.chronicOptions.${key}`)
+
+  const create = useMutation({
+    mutationFn: createRecipientProfile,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: careRecipientKeys.all }),
+    onError: (error) => {
+      const fieldErrors = fieldErrorsFromServerCode(careRecipientErrorCode(error))
+      if (fieldErrors) {
+        setErrors(fieldErrors)
+        setFocusRequest((count) => count + 1)
+      } else {
+        setFormError(careRecipientErrorStatus(error) === 400 ? 'submitInvalid' : 'submitFailed')
+      }
+    }
+  })
+
+  const clearErrors = (...fields: PatientCreateField[]) => {
+    setErrors((prev) => {
+      if (!fields.some((field) => field in prev)) return prev
+      const next = { ...prev }
+      for (const field of fields) delete next[field]
+      return next
+    })
+  }
 
   const updateField = <K extends keyof PatientCreateFormData>(field: K, value: PatientCreateFormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    const errorField = FIELD_KEYS.find((key) => key === field)
+    if (errorField) clearErrors(errorField)
+  }
+
+  const updateEmergencyContact = (partial: Partial<EmergencyContactDraft>) => {
+    setFormData((prev) => ({ ...prev, emergencyContact: { ...prev.emergencyContact, ...partial } }))
+    clearErrors(...Object.keys(partial).map((key) => EMERGENCY_FIELDS[key as keyof EmergencyContactDraft]))
   }
 
   const handleToggleChronic = (illnessKey: string) => {
+    clearErrors('otherChronic')
     setFormData((prev) => {
       const exists = prev.chronicIllnesses.includes(illnessKey)
       const chronicIllnesses = exists
@@ -91,6 +143,7 @@ export function usePatientCreate() {
     const trimmed = newAllergyText.trim()
     if (!trimmed) return
     if (!formData.allergies.includes(trimmed)) {
+      clearErrors('allergies')
       setFormData((prev) => ({
         ...prev,
         allergies: [...prev.allergies, trimmed]
@@ -100,6 +153,7 @@ export function usePatientCreate() {
   }
 
   const handleRemoveAllergy = (allergyToRemove: string) => {
+    clearErrors('allergies')
     setFormData((prev) => ({
       ...prev,
       allergies: prev.allergies.filter((a) => a !== allergyToRemove)
@@ -107,13 +161,14 @@ export function usePatientCreate() {
   }
 
   const handleAddMedicine = () => {
-    const newId = `med-${Date.now()}`
+    if (formData.medications.length >= MAX_MEDICATIONS) return
     const newItem: MedicationItem = {
-      id: newId,
+      id: `med-${Date.now()}`,
       name: '',
       dosage: '',
       time: '',
-      instructions: ''
+      instructions: '',
+      startDate: localIsoDate()
     }
     setFormData((prev) => ({
       ...prev,
@@ -122,6 +177,8 @@ export function usePatientCreate() {
   }
 
   const handleUpdateMedicine = (id: string, partial: Partial<MedicationItem>) => {
+    if ('name' in partial) clearErrors(medicationField(id, 'name'))
+    if ('startDate' in partial) clearErrors(medicationField(id, 'startDate'))
     setFormData((prev) => ({
       ...prev,
       medications: prev.medications.map((item) => (item.id === id ? { ...item, ...partial } : item))
@@ -129,34 +186,29 @@ export function usePatientCreate() {
   }
 
   const handleDeleteMedicine = (id: string) => {
+    clearErrors(medicationField(id, 'name'), medicationField(id, 'startDate'))
     setFormData((prev) => ({
       ...prev,
       medications: prev.medications.filter((item) => item.id !== id)
     }))
   }
 
-  const handleSaveDraft = () => {
-    const now = new Date()
-    const hours = String(now.getHours()).padStart(2, '0')
-    const mins = String(now.getMinutes()).padStart(2, '0')
-    setDraftNoticeTime(`${hours}:${mins}`)
-  }
-
-  const handleDismissDraftNotice = () => {
-    setDraftNoticeTime(null)
-  }
-
   const handleSubmit = () => {
-    setIsSuccessModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsSuccessModalOpen(false)
+    if (create.isPending) return
+    const nextErrors = validatePatientCreate(formData, chronicLabel, localIsoDate())
+    setErrors(nextErrors)
+    setFormError(null)
+    if (Object.keys(nextErrors).length > 0) {
+      setFocusRequest((count) => count + 1)
+      return
+    }
+    create.mutate(toCareRecipientCreateRequest(formData, chronicLabel))
   }
 
   return {
     formData,
     updateField,
+    updateEmergencyContact,
     bmi,
     handleToggleChronic,
     newAllergyText,
@@ -166,11 +218,12 @@ export function usePatientCreate() {
     handleAddMedicine,
     handleUpdateMedicine,
     handleDeleteMedicine,
-    draftNoticeTime,
-    handleSaveDraft,
-    handleDismissDraftNotice,
-    isSuccessModalOpen,
+    errors,
+    formError,
+    focusRequest,
+    isSubmitting: create.isPending,
+    createdProfile: create.data?.profile,
     handleSubmit,
-    handleCloseModal
+    handleCloseModal: create.reset
   }
 }

@@ -1,155 +1,126 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { canEditCareRecipient, formatRecipientDate } from '~/entities/care-recipient/care-recipient-format'
+import type { CareRecipientSummaryRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
-import type { PatientProfile } from '../types'
-
-export interface PatientCardProps {
-  patient: PatientProfile
-  onDelete: (id: string) => void
+const STATUS_STYLES: Record<CareRecipientSummaryRecord['status'], { badge: string; dot: string }> = {
+  ACTIVE: { badge: 'bg-secondary-container/50 text-on-secondary-container', dot: 'bg-primary' },
+  INACTIVE: { badge: 'bg-amber-50 text-amber-700', dot: 'bg-amber-500' },
+  ARCHIVED: { badge: 'bg-surface-container text-on-surface-variant', dot: 'bg-outline' }
 }
 
-export function PatientCard({ patient, onDelete }: PatientCardProps) {
-  const { t } = useTranslation()
+export interface PatientCardProps {
+  patient: CareRecipientSummaryRecord
+  onDelete: (id: string) => void
+  isDeleting: boolean
+  deleteFailed: boolean
+}
 
-  const getStatusBadge = () => {
-    switch (patient.status) {
-      case 'in-care':
-        return (
-          <span className='inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700'>
-            <span className='h-2 w-2 rounded-full bg-blue-600' />
-            <span>{t('customer.patientProfiles.card.statusInCare')}</span>
-          </span>
-        )
-      case 'stable':
-        return (
-          <span className='inline-flex items-center gap-1.5 rounded-full bg-secondary-container/50 px-3 py-1 text-xs font-bold text-on-secondary-container'>
-            <span className='h-2 w-2 rounded-full bg-primary' />
-            <span>{t('customer.patientProfiles.card.statusStable')}</span>
-          </span>
-        )
-      case 'post-op':
-        return (
-          <span className='inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700'>
-            <span className='h-2 w-2 rounded-full bg-amber-500' />
-            <span>{t('customer.patientProfiles.card.statusPostOp')}</span>
-          </span>
-        )
-    }
-  }
-
-  const getDiagnosesTitle = () => {
-    switch (patient.diagnosesTitleType) {
-      case 'diagnoses':
-        return t('customer.patientProfiles.card.diagnoses')
-      case 'primary':
-        return t('customer.patientProfiles.card.primaryDiagnosis')
-      case 'current':
-        return t('customer.patientProfiles.card.currentStatus')
-    }
-  }
-
-  const getInstructionsTitle = () => {
-    switch (patient.instructionsTitleType) {
-      case 'special':
-        return t('customer.patientProfiles.card.specialInstructions')
-      case 'rehab':
-        return t('customer.patientProfiles.card.rehabInstructions')
-      case 'diet':
-        return t('customer.patientProfiles.card.dietInstructions')
-    }
-  }
+export function PatientCard({ patient, onDelete, isDeleting, deleteFailed }: PatientCardProps) {
+  const { t, i18n } = useTranslation()
+  const [confirming, setConfirming] = useState(false)
+  const canEdit = canEditCareRecipient(patient.myAccessLevel) && patient.status !== 'ARCHIVED'
+  const canDelete = patient.myAccessLevel === 'OWNER' && patient.status !== 'ARCHIVED'
+  const location = [patient.district, patient.province].filter(Boolean).join(', ')
+  const birthDate = formatRecipientDate(patient.dateOfBirth, i18n.language)
+  const createdAt = formatRecipientDate(patient.createdAt, i18n.language)
+  const status = STATUS_STYLES[patient.status]
 
   return (
     <article className='group relative flex flex-col gap-4 rounded-xl bg-surface-container-lowest p-6 shadow-sm transition-all hover:shadow-md'>
       <div className='flex flex-col justify-between gap-4 sm:flex-row sm:items-center'>
         <div className='flex items-center gap-4'>
-          <div className='relative shrink-0'>
+          {patient.avatarUrl ? (
             <img
-              src={patient.avatar}
-              alt={patient.name}
-              className='h-16 w-16 rounded-full object-cover shadow-sm ring-2 ring-primary/20 sm:h-20 sm:w-20'
+              src={patient.avatarUrl}
+              alt={t('customer.patientProfiles.card.avatarAlt', { name: patient.fullName })}
+              className='h-16 w-16 shrink-0 rounded-full object-cover shadow-sm ring-2 ring-primary/20 sm:h-20 sm:w-20'
             />
-            <span
-              title={t('customer.patientProfiles.card.readyTooltip')}
-              className='absolute right-0 bottom-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-on-primary ring-2 ring-surface-container-lowest'
-            >
-              <Icon name='done' className='text-xs' />
+          ) : (
+            <span className='flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-secondary-container text-primary ring-2 ring-primary/20 sm:h-20 sm:w-20'>
+              <Icon name='person' className='text-4xl' />
             </span>
-          </div>
+          )}
 
           <div className='flex flex-col'>
             <div className='flex flex-wrap items-center gap-2'>
-              <h3 className='text-lg font-bold text-on-surface'>{patient.name}</h3>
-              <span className='rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-semibold text-primary'>
-                {patient.relationshipLabel}
-              </span>
+              <h3 className='text-lg font-bold text-on-surface'>{patient.fullName}</h3>
             </div>
 
-            {/* Basic Vitals Grid */}
+            {/* Basic Info Line */}
             <div className='mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-on-surface-variant'>
-              <span className='font-semibold text-on-surface'>
-                {t('customer.patientProfiles.card.yearsOld', { age: patient.age })}
-              </span>
-              <span className='text-outline-variant'>•</span>
-              <span>
-                {t('customer.patientProfiles.card.genderLabel')}{' '}
-                <strong className='font-semibold text-on-surface'>
-                  {patient.gender === 'male'
-                    ? t('customer.patientProfiles.card.genderMale')
-                    : t('customer.patientProfiles.card.genderFemale')}
-                </strong>
-              </span>
-              <span className='text-outline-variant'>•</span>
-              <span className='inline-flex items-center gap-1 font-semibold text-error'>
-                <Icon name='water_drop' className='text-sm' />
-                <span>{patient.bloodType}</span>
-              </span>
-              <span className='text-outline-variant'>•</span>
-              <span>{patient.weight}</span>
-              <span className='text-outline-variant'>•</span>
-              <span>{patient.height}</span>
+              {patient.age !== undefined ? (
+                <span className='font-semibold text-on-surface'>
+                  {t('customer.careRecipient.yearsOld', { age: patient.age })}
+                </span>
+              ) : null}
+              {patient.gender ? (
+                <span>
+                  {t('customer.patientProfiles.card.genderLabel')}{' '}
+                  <strong className='font-semibold text-on-surface'>
+                    {t(`customer.careRecipient.gender.${patient.gender}`)}
+                  </strong>
+                </span>
+              ) : null}
+              {birthDate ? <span>{t('customer.patientProfiles.card.birthDate', { date: birthDate })}</span> : null}
+              {location ? (
+                <span className='inline-flex items-center gap-1'>
+                  <Icon name='location_on' className='text-sm text-primary' />
+                  <span>{location}</span>
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
 
         {/* Status Pill */}
-        <div className='self-start sm:self-center'>{getStatusBadge()}</div>
+        <span
+          className={`inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-xs font-bold sm:self-center ${status.badge}`}
+        >
+          <span className={`h-2 w-2 rounded-full ${status.dot}`} />
+          <span>{t(`customer.careRecipient.status.${patient.status}`)}</span>
+        </span>
       </div>
 
-      {/* Medical Alert & Care Notes Panel */}
-      <div className='grid grid-cols-1 gap-3 rounded-xl bg-surface-container-low/60 p-4 md:grid-cols-12'>
-        {/* Diagnoses */}
-        <div className={`${patient.attendingDoctor ? 'md:col-span-5' : 'md:col-span-6'} flex flex-col gap-1`}>
-          <span className='flex items-center gap-1 text-[11px] font-bold tracking-wider text-on-surface-variant uppercase'>
-            <Icon name='emergency' className='text-sm text-error' />
-            <span>{getDiagnosesTitle()}</span>
-          </span>
-          <p className='text-xs font-medium text-on-surface leading-relaxed'>{patient.diagnoses}</p>
-        </div>
+      {createdAt ? (
+        <p className='text-[11px] text-on-surface-variant'>
+          {t('customer.patientProfiles.card.createdAt', { date: createdAt })}
+        </p>
+      ) : null}
 
-        {/* Instructions */}
-        <div className={`${patient.attendingDoctor ? 'md:col-span-4' : 'md:col-span-6'} flex flex-col gap-1`}>
-          <span className='flex items-center gap-1 text-[11px] font-bold tracking-wider text-on-surface-variant uppercase'>
-            <Icon name='assignment_late' className='text-sm text-primary' />
-            <span>{getInstructionsTitle()}</span>
-          </span>
-          <p className='text-xs text-on-surface leading-relaxed'>{patient.instructions}</p>
-        </div>
-
-        {/* Attending Doctor (if present) */}
-        {patient.attendingDoctor && (
-          <div className='flex flex-col gap-1 md:col-span-3'>
-            <span className='flex items-center gap-1 text-[11px] font-bold tracking-wider text-on-surface-variant uppercase'>
-              <Icon name='medical_services' className='text-sm text-primary' />
-              <span>{t('customer.patientProfiles.card.attendingDoctor')}</span>
-            </span>
-            <p className='text-xs font-semibold text-on-surface'>{patient.attendingDoctor.name}</p>
-            <span className='text-[11px] text-on-surface-variant'>{patient.attendingDoctor.hospital}</span>
+      {confirming ? (
+        <div className='flex flex-col gap-3 rounded-lg bg-error-container/30 p-3 sm:flex-row sm:items-center sm:justify-between'>
+          <p className='text-xs text-on-surface'>{t('customer.patientProfiles.card.confirmDelete')}</p>
+          <div className='flex shrink-0 gap-2'>
+            <button
+              type='button'
+              disabled={isDeleting}
+              onClick={() => onDelete(patient.id)}
+              className='rounded-lg bg-error px-3 py-2 text-xs font-semibold text-on-error disabled:opacity-60'
+            >
+              {isDeleting
+                ? t('customer.patientProfiles.card.deleting')
+                : t('customer.patientProfiles.card.confirmDeleteButton')}
+            </button>
+            <button
+              type='button'
+              disabled={isDeleting}
+              onClick={() => setConfirming(false)}
+              className='rounded-lg bg-surface-container-lowest px-3 py-2 text-xs font-medium text-on-surface'
+            >
+              {t('customer.patientProfiles.card.cancelDelete')}
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      ) : null}
+      {deleteFailed ? (
+        <p role='alert' className='text-xs text-error'>
+          {t('customer.patientProfiles.card.deleteError')}
+        </p>
+      ) : null}
 
       {/* Action Buttons Toolbar */}
       <div className='flex flex-wrap items-center justify-between gap-3 pt-1'>
@@ -161,34 +132,36 @@ export function PatientCard({ patient, onDelete }: PatientCardProps) {
             <Icon name='visibility' className='text-base' />
             <span>{t('customer.patientProfiles.card.viewDetails')}</span>
           </Link>
-          <Link
-            to={`/customer/patient-profiles/${patient.id}?mode=edit`}
-            className='inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low px-3 py-2 text-xs font-medium text-on-surface transition-colors hover:bg-surface-container'
-          >
-            <Icon name='edit' className='text-base' />
-            <span>{t('customer.patientProfiles.card.edit')}</span>
-          </Link>
-          <button
-            type='button'
-            onClick={() => onDelete(patient.id)}
-            className='inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-error transition-colors hover:bg-error-container/40'
-          >
-            <Icon name='delete' className='text-base' />
-            <span>{t('customer.patientProfiles.card.delete')}</span>
-          </button>
+          {canEdit ? (
+            <Link
+              to={`/customer/patient-profiles/${patient.id}?mode=edit`}
+              className='inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low px-3 py-2 text-xs font-medium text-on-surface transition-colors hover:bg-surface-container'
+            >
+              <Icon name='edit' className='text-base' />
+              <span>{t('customer.patientProfiles.card.edit')}</span>
+            </Link>
+          ) : null}
+          {canDelete && !confirming ? (
+            <button
+              type='button'
+              onClick={() => setConfirming(true)}
+              className='inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-error transition-colors hover:bg-error-container/40'
+            >
+              <Icon name='delete' className='text-base' />
+              <span>{t('customer.patientProfiles.card.delete')}</span>
+            </button>
+          ) : null}
         </div>
 
-        <Link
-          to={`/customer/bookings/new?patientId=${patient.id}`}
-          className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow'
-        >
-          <Icon name='event_available' className='text-base' />
-          <span>
-            {patient.status === 'in-care'
-              ? t('customer.patientProfiles.card.bookCareNow')
-              : t('customer.patientProfiles.card.bookCare')}
-          </span>
-        </Link>
+        {patient.status === 'ACTIVE' ? (
+          <Link
+            to={`/customer/booking?patientId=${patient.id}`}
+            className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow'
+          >
+            <Icon name='event_available' className='text-base' />
+            <span>{t('customer.patientProfiles.card.bookCare')}</span>
+          </Link>
+        ) : null}
       </div>
     </article>
   )

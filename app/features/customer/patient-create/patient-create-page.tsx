@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
@@ -12,14 +13,29 @@ import { MedicalHistorySection } from './components/medical-history-section'
 import { MedicationsSection } from './components/medications-section'
 import { usePatientCreate } from './hooks/use-patient-create'
 
+/** Moves focus to the first control marked invalid, in page order, and brings it into view. */
+function focusFirstInvalid(root: HTMLElement | null) {
+  const invalid = root?.querySelector<HTMLElement>('[aria-invalid="true"]')
+  if (!invalid) return
+  // A radio group is not focusable itself; its first option is.
+  const target = invalid.matches('input, select, textarea')
+    ? invalid
+    : (invalid.querySelector<HTMLElement>('input, select, textarea') ?? invalid)
+  target.focus({ preventScroll: true })
+  target.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+}
+
 export function PatientCreatePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const formRef = useRef<HTMLDivElement>(null)
+  const alertRef = useRef<HTMLDivElement>(null)
   useDocumentTitle(t('customer.patientCreate.documentTitle'))
 
   const {
     formData,
     updateField,
+    updateEmergencyContact,
     bmi,
     handleToggleChronic,
     newAllergyText,
@@ -29,13 +45,22 @@ export function PatientCreatePage() {
     handleAddMedicine,
     handleUpdateMedicine,
     handleDeleteMedicine,
-    draftNoticeTime,
-    handleSaveDraft,
-    handleDismissDraftNotice,
-    isSuccessModalOpen,
+    errors,
+    formError,
+    focusRequest,
+    isSubmitting,
+    createdProfile,
     handleSubmit,
     handleCloseModal
   } = usePatientCreate()
+
+  useEffect(() => {
+    if (focusRequest > 0) focusFirstInvalid(formRef.current)
+  }, [focusRequest])
+
+  useEffect(() => {
+    if (formError) alertRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+  }, [formError])
 
   const handleCancel = () => {
     navigate('/customer/patient-profiles')
@@ -44,44 +69,33 @@ export function PatientCreatePage() {
   return (
     <div className='mx-auto max-w-7xl px-6 py-8'>
       <div className='flex flex-col gap-8'>
-        <CreatePatientHeader onCancel={handleCancel} onSaveDraft={handleSaveDraft} onSubmit={handleSubmit} />
+        <CreatePatientHeader onCancel={handleCancel} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
 
         <div className='grid grid-cols-1 items-start gap-8 lg:grid-cols-12'>
           {/* Left Column (4 cols) */}
-          <CreatePatientSidebar
-            avatarUrl={formData.avatar}
-            onAvatarChange={(newUrl) => updateField('avatar', newUrl)}
-          />
+          <CreatePatientSidebar />
 
           {/* Right Main Form Column (8 cols) */}
-          <div className='flex flex-col gap-8 lg:col-span-8'>
-            {/* Draft Saved Alert Notice */}
-            {draftNoticeTime && (
-              <div className='flex items-center justify-between rounded-xl bg-secondary-container/40 p-4 shadow-sm'>
-                <div className='flex items-center gap-3'>
-                  <Icon name='cloud_done' className='text-xl text-on-secondary-container' />
-                  <p className='text-xs font-semibold text-on-secondary-container'>
-                    {t('customer.patientCreate.draftNotice.text', {
-                      time: draftNoticeTime
-                    })}
-                  </p>
-                </div>
-                <button
-                  type='button'
-                  onClick={handleDismissDraftNotice}
-                  aria-label={t('customer.patientCreate.draftNotice.close')}
-                  className='text-on-secondary-container transition-opacity hover:opacity-75'
-                >
-                  <Icon name='close' className='text-lg' />
-                </button>
+          <div ref={formRef} className='flex flex-col gap-8 lg:col-span-8'>
+            {/* Only server failures that cannot be tied to a field are reported here. */}
+            {formError ? (
+              <div
+                ref={alertRef}
+                role='alert'
+                className='flex items-center gap-3 rounded-xl bg-error-container/60 p-4 text-on-error-container shadow-sm'
+              >
+                <Icon name='error' className='text-xl text-error' />
+                <p className='text-xs font-semibold'>{t(`customer.patientCreate.${formError}`)}</p>
               </div>
-            )}
+            ) : null}
 
-            <BasicInfoSection formData={formData} bmi={bmi} onUpdate={updateField} />
+            <BasicInfoSection formData={formData} bmi={bmi} errors={errors} onUpdate={updateField} />
 
             <MedicalHistorySection
               formData={formData}
+              errors={errors}
               onUpdate={updateField}
+              onEmergencyContactChange={updateEmergencyContact}
               onToggleChronic={handleToggleChronic}
               newAllergyText={newAllergyText}
               onNewAllergyChange={setNewAllergyText}
@@ -91,18 +105,19 @@ export function PatientCreatePage() {
 
             <MedicationsSection
               medications={formData.medications}
+              errors={errors}
               onAddMedicine={handleAddMedicine}
               onUpdateMedicine={handleUpdateMedicine}
               onDeleteMedicine={handleDeleteMedicine}
               onCancel={handleCancel}
-              onSaveDraft={handleSaveDraft}
               onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
             />
           </div>
         </div>
       </div>
 
-      <CreateSuccessModal isOpen={isSuccessModalOpen} patientName={formData.fullName} onClose={handleCloseModal} />
+      <CreateSuccessModal profile={createdProfile} onClose={handleCloseModal} />
     </div>
   )
 }

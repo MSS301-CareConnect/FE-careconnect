@@ -1,35 +1,43 @@
-export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'O+' | 'O-' | 'AB+' | 'unknown'
+import type {
+  CareRecipientCreateRequestBloodType,
+  CareRecipientCreateRequestGender
+} from '~/shared/api/generated/contracts'
 
-export type Gender = 'male' | 'female' | 'other'
+export type BloodType = CareRecipientCreateRequestBloodType
 
+export type Gender = CareRecipientCreateRequestGender
+
+/** How the care recipient relates to the signed-in customer, as worded on the form. */
 export type Relationship = 'father' | 'mother' | 'spouse' | 'child' | 'grandparent' | 'sibling' | 'other'
 
 export interface MedicationItem {
   id: string
   name: string
-  category?: string
   dosage: string
   time: string
   instructions: string
+  startDate: string
+}
+
+export interface EmergencyContactDraft {
+  fullName: string
+  relationship: string
+  phoneNumber: string
 }
 
 export interface PatientCreateFormData {
-  avatar: string
   fullName: string
-  relationship: Relationship
+  relationship: Relationship | ''
   birthDate: string
-  gender: Gender
-  idNumber: string
-  bhytNumber: string
+  gender: Gender | ''
   height: number | ''
   weight: number | ''
-  bloodType: BloodType
+  bloodType: BloodType | ''
   chronicIllnesses: string[]
   otherChronic: string
   allergies: string[]
   surgeryHistory: string
-  doctorName: string
-  doctorContact: string
+  emergencyContact: EmergencyContactDraft
   medications: MedicationItem[]
 }
 

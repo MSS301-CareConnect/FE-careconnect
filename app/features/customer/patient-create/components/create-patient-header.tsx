@@ -5,11 +5,11 @@ import { Icon } from '~/shared/ui/icon'
 
 export interface CreatePatientHeaderProps {
   onCancel: () => void
-  onSaveDraft: () => void
   onSubmit: () => void
+  isSubmitting: boolean
 }
 
-export function CreatePatientHeader({ onCancel, onSaveDraft, onSubmit }: CreatePatientHeaderProps) {
+export function CreatePatientHeader({ onCancel, onSubmit, isSubmitting }: CreatePatientHeaderProps) {
   const { t } = useTranslation()
 
   return (
@@ -69,18 +69,14 @@ export function CreatePatientHeader({ onCancel, onSaveDraft, onSubmit }: CreateP
           </button>
           <button
             type='button'
-            onClick={onSaveDraft}
-            className='rounded-lg bg-surface-container-low px-4 py-2.5 text-xs font-semibold text-primary transition-colors hover:bg-surface-container'
-          >
-            {t('customer.patientCreate.header.saveDraft')}
-          </button>
-          <button
-            type='button'
             onClick={onSubmit}
-            className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow'
+            disabled={isSubmitting}
+            className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow disabled:opacity-60'
           >
             <Icon name='verified' className='text-base' />
-            <span>{t('customer.patientCreate.header.saveProfile')}</span>
+            <span>
+              {isSubmitting ? t('customer.patientCreate.submitting') : t('customer.patientCreate.header.saveProfile')}
+            </span>
           </button>
         </div>
       </div>

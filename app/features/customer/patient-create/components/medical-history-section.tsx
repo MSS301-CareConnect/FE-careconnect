@@ -3,11 +3,15 @@ import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
 
-import type { PatientCreateFormData } from '../types'
+import { CHRONIC_KEYS, type PatientCreateErrors } from '../patient-create-request'
+import type { EmergencyContactDraft, PatientCreateFormData } from '../types'
+import { FieldError, fieldErrorProps, invalidClassName } from './field-error'
 
 export interface MedicalHistorySectionProps {
   formData: PatientCreateFormData
+  errors: PatientCreateErrors
   onUpdate: <K extends keyof PatientCreateFormData>(field: K, value: PatientCreateFormData[K]) => void
+  onEmergencyContactChange: (partial: Partial<EmergencyContactDraft>) => void
   onToggleChronic: (illnessKey: string) => void
   newAllergyText: string
   onNewAllergyChange: (value: string) => void
@@ -15,22 +19,14 @@ export interface MedicalHistorySectionProps {
   onRemoveAllergy: (allergy: string) => void
 }
 
-const CHRONIC_KEYS = [
-  'hypertension',
-  'diabetes',
-  'strokeHistory',
-  'heartDisease',
-  'dementia',
-  'osteoarthritis',
-  'kidneyDisease',
-  'copd'
-] as const
-
 const SECTION_STEP = '2'
+const inputClass = `h-11 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`
 
 export function MedicalHistorySection({
   formData,
+  errors,
   onUpdate,
+  onEmergencyContactChange,
   onToggleChronic,
   newAllergyText,
   onNewAllergyChange,
@@ -97,14 +93,18 @@ export function MedicalHistorySection({
             })}
           </div>
 
-          <div className='mt-1'>
+          <div className='mt-1 flex flex-col gap-1.5'>
             <input
               type='text'
+              maxLength={1000}
               value={formData.otherChronic}
               onChange={(e) => onUpdate('otherChronic', e.target.value)}
+              aria-label={t('customer.patientCreate.section2.otherChronicPlaceholder')}
               placeholder={t('customer.patientCreate.section2.otherChronicPlaceholder')}
-              className='h-10 w-full rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none'
+              {...fieldErrorProps('otherChronic', errors)}
+              className={`h-10 w-full rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
             />
+            <FieldError field='otherChronic' errors={errors} />
           </div>
         </div>
 
@@ -149,11 +149,14 @@ export function MedicalHistorySection({
           <div className='mt-2 flex items-center gap-3'>
             <input
               type='text'
+              maxLength={255}
               value={newAllergyText}
               onChange={(e) => onNewAllergyChange(e.target.value)}
               onKeyDown={handleAllergyKeyDown}
+              aria-label={t('customer.patientCreate.section2.allergyInputPlaceholder')}
               placeholder={t('customer.patientCreate.section2.allergyInputPlaceholder')}
-              className='h-10 flex-1 rounded-lg bg-surface-container-lowest px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:ring-2 focus:ring-error focus:outline-none'
+              {...fieldErrorProps('allergies', errors)}
+              className={`h-10 flex-1 rounded-lg bg-surface-container-lowest px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:ring-2 focus:ring-error focus:outline-none ${invalidClassName}`}
             />
             <button
               type='button'
@@ -163,6 +166,7 @@ export function MedicalHistorySection({
               {t('customer.patientCreate.section2.addAllergyBtn')}
             </button>
           </div>
+          <FieldError field='allergies' errors={errors} />
         </div>
 
         {/* Surgical History */}
@@ -173,41 +177,77 @@ export function MedicalHistorySection({
           <textarea
             id='surgeryHistoryTextarea'
             rows={3}
+            maxLength={5000}
             value={formData.surgeryHistory}
             onChange={(e) => onUpdate('surgeryHistory', e.target.value)}
             placeholder={t('customer.patientCreate.section2.surgeryHistoryPlaceholder')}
-            className='rounded-lg bg-surface-container-low p-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all resize-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none'
+            {...fieldErrorProps('surgeryHistory', errors)}
+            className={`rounded-lg bg-surface-container-low p-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all resize-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
           />
+          <FieldError field='surgeryHistory' errors={errors} />
         </div>
 
-        {/* Doctor and Contact */}
-        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-          <div className='flex flex-col gap-1.5'>
-            <label htmlFor='doctorNameInput' className='text-xs font-semibold text-on-surface'>
-              {t('customer.patientCreate.section2.doctorNameLabel')}
-            </label>
-            <input
-              id='doctorNameInput'
-              type='text'
-              value={formData.doctorName}
-              onChange={(e) => onUpdate('doctorName', e.target.value)}
-              placeholder={t('customer.patientCreate.section2.doctorNamePlaceholder')}
-              className='h-11 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none'
-            />
+        {/* Primary emergency contact (optional) */}
+        <div className='flex flex-col gap-3'>
+          <div>
+            <h3 className='flex items-center gap-1.5 text-xs font-semibold text-on-surface'>
+              <Icon name='e911_emergency' className='text-base text-error' />
+              <span>{t('customer.patientCreate.section2.emergencyTitle')}</span>
+            </h3>
+            <p className='mt-1 text-[11px] text-on-surface-variant'>
+              {t('customer.patientCreate.section2.emergencyDesc')}
+            </p>
           </div>
-
-          <div className='flex flex-col gap-1.5'>
-            <label htmlFor='doctorContactInput' className='text-xs font-semibold text-on-surface'>
-              {t('customer.patientCreate.section2.doctorContactLabel')}
-            </label>
-            <input
-              id='doctorContactInput'
-              type='tel'
-              value={formData.doctorContact}
-              onChange={(e) => onUpdate('doctorContact', e.target.value)}
-              placeholder={t('customer.patientCreate.section2.doctorContactPlaceholder')}
-              className='h-11 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none'
-            />
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
+            <div className='flex flex-col gap-1.5'>
+              <label htmlFor='emergencyNameInput' className='text-xs font-semibold text-on-surface'>
+                {t('customer.patientCreate.section2.emergencyNameLabel')}
+              </label>
+              <input
+                id='emergencyNameInput'
+                type='text'
+                maxLength={255}
+                value={formData.emergencyContact.fullName}
+                onChange={(e) => onEmergencyContactChange({ fullName: e.target.value })}
+                placeholder={t('customer.patientCreate.section2.emergencyNamePlaceholder')}
+                {...fieldErrorProps('emergencyName', errors)}
+                className={inputClass}
+              />
+              <FieldError field='emergencyName' errors={errors} />
+            </div>
+            <div className='flex flex-col gap-1.5'>
+              <label htmlFor='emergencyRelationshipInput' className='text-xs font-semibold text-on-surface'>
+                {t('customer.patientCreate.section2.emergencyRelationshipLabel')}
+              </label>
+              <input
+                id='emergencyRelationshipInput'
+                type='text'
+                maxLength={100}
+                value={formData.emergencyContact.relationship}
+                onChange={(e) => onEmergencyContactChange({ relationship: e.target.value })}
+                placeholder={t('customer.patientCreate.section2.emergencyRelationshipPlaceholder')}
+                {...fieldErrorProps('emergencyRelationship', errors)}
+                className={inputClass}
+              />
+              <FieldError field='emergencyRelationship' errors={errors} />
+            </div>
+            <div className='flex flex-col gap-1.5'>
+              <label htmlFor='emergencyPhoneInput' className='text-xs font-semibold text-on-surface'>
+                {t('customer.patientCreate.section2.emergencyPhoneLabel')}
+              </label>
+              <input
+                id='emergencyPhoneInput'
+                type='tel'
+                inputMode='numeric'
+                maxLength={15}
+                value={formData.emergencyContact.phoneNumber}
+                onChange={(e) => onEmergencyContactChange({ phoneNumber: e.target.value })}
+                placeholder={t('customer.patientCreate.section2.emergencyPhonePlaceholder')}
+                {...fieldErrorProps('emergencyPhone', errors)}
+                className={inputClass}
+              />
+              <FieldError field='emergencyPhone' errors={errors} />
+            </div>
           </div>
         </div>
       </div>

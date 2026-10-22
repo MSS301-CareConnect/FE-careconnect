@@ -1,27 +1,5 @@
-export type RelationshipFilter = 'all' | 'parents' | 'grandparents' | 'children'
-export type HealthStatusFilter = 'all' | 'special' | 'monitoring' | 'rehab'
+import { ListCareRecipientsStatus } from '~/shared/api/generated/contracts'
 
-export interface AttendingDoctor {
-  name: string
-  hospital: string
-}
+export type StatusFilter = 'ALL' | ListCareRecipientsStatus
 
-export interface PatientProfile {
-  id: string
-  name: string
-  avatar: string
-  relationship: 'parents' | 'grandparents' | 'children'
-  relationshipLabel: string
-  age: number
-  gender: 'male' | 'female'
-  bloodType: string
-  weight: string
-  height: string
-  status: 'in-care' | 'stable' | 'post-op'
-  statusCategory: 'special' | 'monitoring' | 'rehab'
-  diagnosesTitleType: 'diagnoses' | 'primary' | 'current'
-  diagnoses: string
-  instructionsTitleType: 'special' | 'rehab' | 'diet'
-  instructions: string
-  attendingDoctor?: AttendingDoctor
-}
+export const STATUS_OPTIONS = Object.values(ListCareRecipientsStatus)

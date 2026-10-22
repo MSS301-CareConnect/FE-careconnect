@@ -1,94 +1,16 @@
-import { type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
 
-export interface CreatePatientSidebarProps {
-  avatarUrl: string
-  onAvatarChange: (newUrl: string) => void
-}
-
 const STEP_2 = '2'
 const STEP_3 = '3'
 
-export function CreatePatientSidebar({ avatarUrl, onAvatarChange }: CreatePatientSidebarProps) {
+export function CreatePatientSidebar() {
   const { t } = useTranslation()
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          onAvatarChange(event.target.result as string)
-        }
-      }
-      reader.readAsDataURL(e.target.files[0])
-    }
-  }
 
   return (
     <aside className='sticky top-24 flex flex-col gap-6 lg:col-span-4'>
-      {/* 1. Patient Avatar Upload Card */}
-      <div className='rounded-xl bg-surface-container-lowest p-6 shadow-sm'>
-        <div className='mb-4 flex items-center gap-3'>
-          <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-container/30 text-primary'>
-            <Icon name='badge' className='text-lg' />
-          </div>
-          <div>
-            <h2 className='text-sm font-bold text-on-surface'>
-              {t('customer.patientCreate.sidebar.avatarCard.title')}
-            </h2>
-            <p className='text-xs text-on-surface-variant'>{t('customer.patientCreate.sidebar.avatarCard.subtitle')}</p>
-          </div>
-        </div>
-
-        <div className='flex flex-col items-center justify-center rounded-xl bg-surface-container-low/60 p-4'>
-          <div className='group relative mb-3 cursor-pointer'>
-            <div className='flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-surface-container-high shadow-inner'>
-              <img
-                src={avatarUrl}
-                alt={t('customer.patientCreate.sidebar.avatarCard.title')}
-                className='h-full w-full object-cover'
-              />
-            </div>
-            <label
-              htmlFor='patientAvatarInput'
-              className='absolute inset-0 flex cursor-pointer flex-col items-center justify-center rounded-full bg-inverse-surface/40 text-on-primary opacity-0 transition-opacity group-hover:opacity-100'
-            >
-              <Icon name='photo_camera' className='text-2xl' />
-              <span className='mt-1 text-[11px] font-medium'>
-                {t('customer.patientCreate.sidebar.avatarCard.changePhoto')}
-              </span>
-            </label>
-            <input
-              id='patientAvatarInput'
-              type='file'
-              accept='image/png, image/jpeg'
-              className='hidden'
-              onChange={handleFileChange}
-            />
-            <span className='absolute right-1 bottom-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-on-primary shadow-md'>
-              <Icon name='upload' className='text-sm' />
-            </span>
-          </div>
-
-          <p className='text-center text-xs font-semibold text-on-surface'>
-            {t('customer.patientCreate.sidebar.avatarCard.uploadLabel')}
-          </p>
-          <p className='mt-1 text-center text-[11px] text-on-surface-variant'>
-            {t('customer.patientCreate.sidebar.avatarCard.uploadHint')}
-          </p>
-
-          <div className='mt-3 flex w-full items-start gap-2 rounded-lg bg-surface-container-lowest p-3'>
-            <Icon name='info' className='mt-0.5 shrink-0 text-sm text-primary' />
-            <p className='text-[11px] text-on-surface-variant leading-relaxed'>
-              {t('customer.patientCreate.sidebar.avatarCard.uploadNote')}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Form Stepper Indicator */}
+      {/* Form Stepper Indicator */}
       <div className='rounded-xl bg-surface-container-lowest p-6 shadow-sm'>
         <div className='mb-4 flex items-center justify-between'>
           <h2 className='text-sm font-bold text-on-surface'>{t('customer.patientCreate.sidebar.stepper.title')}</h2>

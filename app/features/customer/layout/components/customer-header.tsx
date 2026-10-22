@@ -87,18 +87,6 @@ export function CustomerHeader() {
               {t('customer.nav.myBookings')}
             </NavLink>
             <NavLink
-              to='/customer/patient-profiles'
-              className={({ isActive }) =>
-                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                }`
-              }
-            >
-              {t('customer.nav.familyProfiles')}
-            </NavLink>
-            <NavLink
               to='/customer/messages'
               className={({ isActive }) =>
                 `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
@@ -174,6 +162,13 @@ export function CustomerHeader() {
                 >
                   {t('customer.nav.myProfile')}
                 </Link>
+                <Link
+                  className='block rounded-lg px-3 py-2.5 text-sm font-semibold text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary'
+                  onClick={() => setAccountMenuOpen(false)}
+                  to='/customer/patient-profiles'
+                >
+                  {t('customer.nav.familyProfiles')}
+                </Link>
                 <div className='my-1 border-t border-outline-variant/40' />
                 <SignOutButton appearance='menu' />
               </nav>
@@ -191,7 +186,6 @@ export function CustomerHeader() {
             { to: '/customer', label: t('customer.nav.home') },
             { to: '/customer/caregivers', label: t('customer.nav.findCaregivers') },
             { to: '/customer/bookings', label: t('customer.nav.myBookings') },
-            { to: '/customer/patient-profiles', label: t('customer.nav.familyProfiles') },
             { to: '/customer/messages', label: t('customer.nav.messages') }
           ].map(({ to, label }) => (
             <NavLink

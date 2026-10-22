@@ -12,43 +12,44 @@ export const patientProfilesEn = {
     addPatient: '+ Add family profile'
   },
   toolbar: {
-    searchPlaceholder: 'Search by name, ID or health insurance number...',
-    filterRelationship: {
-      all: 'Relationship: All',
-      parents: 'Parents',
-      grandparents: 'Grandparents',
-      children: 'Children'
-    },
+    searchLabel: 'Search profiles',
+    searchPlaceholder: 'Search by full name...',
+    searchButton: 'Search',
+    filterStatusLabel: 'Profile status',
     filterStatus: {
-      all: 'Status: All',
-      special: 'Special care needed',
-      monitoring: 'Periodic monitoring',
-      rehab: 'Rehabilitation'
+      all: 'Status: All'
     },
-    activeCount: '{{count}} active profiles'
+    totalCount: '{{count, number}} profiles'
   },
   card: {
-    yearsOld: '{{age}} yrs',
     genderLabel: 'Gender:',
-    genderMale: 'Male',
-    genderFemale: 'Female',
-    statusInCare: 'Active care session',
-    statusStable: 'Stable health',
-    statusPostOp: 'Post-op recovery monitoring',
-    diagnoses: 'Conditions & Complications',
-    primaryDiagnosis: 'Primary condition',
-    currentStatus: 'Current condition',
-    specialInstructions: 'Special instructions',
-    rehabInstructions: 'Recovery & Medication notes',
-    dietInstructions: 'Dietary & Warnings',
-    attendingDoctor: 'Attending doctor',
+    birthDate: 'Born {{date}}',
+    createdAt: 'Created {{date}}',
     viewDetails: 'View details',
     edit: 'Edit',
     delete: 'Delete',
-    bookCareNow: 'Book care now',
+    confirmDelete: 'This profile will be archived and hidden from your list. Continue?',
+    confirmDeleteButton: 'Confirm delete',
+    cancelDelete: 'Cancel',
+    deleting: 'Deleting...',
+    deleteError: 'Unable to delete this profile. Please try again.',
     bookCare: 'Book care session',
-    readyTooltip: 'Ready for care',
-    activeTooltip: 'Active profile'
+    avatarAlt: 'Profile photo of {{name}}'
+  },
+  states: {
+    loading: 'Loading care recipient profiles...',
+    error: 'Unable to load care recipient profiles.',
+    forbidden: 'Your account is not allowed to view these profiles.',
+    retry: 'Try again',
+    emptyTitle: 'No family profiles yet',
+    emptyDescription: 'Create a profile so caregivers know the medical needs of your loved one.',
+    noResults: 'No profiles match the current search or filter.'
+  },
+  pagination: {
+    label: 'Profile pages',
+    previous: 'Previous',
+    next: 'Next',
+    pageOf: 'Page {{page, number}} of {{total, number}}'
   },
   guidelines: {
     title: 'CareConnect Safe Medical Profile Guidelines',
@@ -56,18 +57,16 @@ export const patientProfilesEn = {
       'Fully updated medical records (including current prescriptions, allergy history, and doctor contacts) enable caregivers to establish accurate care plans from day one.',
     badgeHipaa: 'HIPAA Data Encryption',
     badgePrivacy: 'Medical Privacy Security',
-    badgeSync: 'Direct sync with Nurse handbook',
+    badgeSync: 'Shared with your care team',
     viewDoc: 'View documentation'
   },
   sidebar: {
-    accountCode: 'Account ID:',
-    verifiedIdentity: 'Verified identity',
-    familyMetric: 'Family',
-    shiftsMetric: 'Sessions',
-    reviewsMetric: 'Reviews',
+    accountFallback: 'CareConnect account',
+    familyMetric: 'Family profiles',
     emergencyTitle: 'Emergency Medical Hotline',
     emergencySubtitle: '24/7 Toll-free Support',
-    emergencyDesc: 'Emergency contact with lead nurse when health condition changes unexpectedly.'
+    emergencyDesc: 'Emergency contact with lead nurse when health condition changes unexpectedly.',
+    hotlineNumber: '1900 6868'
   }
 } as const
 
@@ -85,43 +84,44 @@ export const patientProfilesVi = {
     addPatient: '+ Thêm hồ sơ người thân'
   },
   toolbar: {
-    searchPlaceholder: 'Tìm theo họ tên, CCCD hoặc mã BHYT...',
-    filterRelationship: {
-      all: 'Mối quan hệ: Tất cả',
-      parents: 'Bố mẹ',
-      grandparents: 'Ông bà',
-      children: 'Con cái'
-    },
+    searchLabel: 'Tìm hồ sơ',
+    searchPlaceholder: 'Tìm theo họ tên...',
+    searchButton: 'Tìm kiếm',
+    filterStatusLabel: 'Trạng thái hồ sơ',
     filterStatus: {
-      all: 'Tình trạng: Tất cả',
-      special: 'Cần chăm sóc đặc biệt',
-      monitoring: 'Theo dõi định kỳ',
-      rehab: 'Phục hồi chức năng'
+      all: 'Trạng thái: Tất cả'
     },
-    activeCount: '{{count}} hồ sơ kích hoạt'
+    totalCount: '{{count, number}} hồ sơ'
   },
   card: {
-    yearsOld: '{{age}} tuổi',
     genderLabel: 'Giới tính:',
-    genderMale: 'Nam',
-    genderFemale: 'Nữ',
-    statusInCare: 'Đang có ca chăm sóc',
-    statusStable: 'Sức khỏe ổn định',
-    statusPostOp: 'Theo dõi phục hồi hậu phẫu',
-    diagnoses: 'Bệnh nền & Di chứng',
-    primaryDiagnosis: 'Bệnh nền chính',
-    currentStatus: 'Tình trạng hiện tại',
-    specialInstructions: 'Lưu ý đặc biệt',
-    rehabInstructions: 'Lưu ý phục hồi & Dược liệu',
-    dietInstructions: 'Chế độ dinh dưỡng & Cảnh báo',
-    attendingDoctor: 'Bác sĩ phụ trách',
+    birthDate: 'Sinh ngày {{date}}',
+    createdAt: 'Tạo ngày {{date}}',
     viewDetails: 'Xem chi tiết',
     edit: 'Chỉnh sửa',
     delete: 'Xóa',
-    bookCareNow: 'Đặt lịch chăm sóc ngay',
+    confirmDelete: 'Hồ sơ sẽ được lưu trữ và ẩn khỏi danh sách của bạn. Tiếp tục?',
+    confirmDeleteButton: 'Xác nhận xóa',
+    cancelDelete: 'Hủy',
+    deleting: 'Đang xóa...',
+    deleteError: 'Không thể xóa hồ sơ này. Vui lòng thử lại.',
     bookCare: 'Đặt lịch chăm sóc',
-    readyTooltip: 'Sẵn sàng tiếp nhận chăm sóc',
-    activeTooltip: 'Hồ sơ hoạt động'
+    avatarAlt: 'Ảnh đại diện của {{name}}'
+  },
+  states: {
+    loading: 'Đang tải hồ sơ người cần chăm sóc...',
+    error: 'Không thể tải danh sách hồ sơ.',
+    forbidden: 'Tài khoản của bạn không có quyền xem các hồ sơ này.',
+    retry: 'Thử lại',
+    emptyTitle: 'Chưa có hồ sơ người thân',
+    emptyDescription: 'Tạo hồ sơ để nhân viên chăm sóc nắm rõ nhu cầu y tế của người thân bạn.',
+    noResults: 'Không có hồ sơ phù hợp với từ khóa hoặc bộ lọc hiện tại.'
+  },
+  pagination: {
+    label: 'Phân trang hồ sơ',
+    previous: 'Trang trước',
+    next: 'Trang sau',
+    pageOf: 'Trang {{page, number}} / {{total, number}}'
   },
   guidelines: {
     title: 'Quy chuẩn cập nhật hồ sơ y tế an toàn CareConnect',
@@ -129,17 +129,15 @@ export const patientProfilesVi = {
       'Hồ sơ y tế được cập nhật đầy đủ (bao gồm toa thuốc hiện dùng, tiền sử dị ứng thuốc và số liên lạc bác sĩ điều trị) giúp Điều dưỡng viên và Chuyên viên chăm sóc xây dựng phác đồ can thiệp chuẩn xác nhất ngay từ buổi đầu tiên.',
     badgeHipaa: 'Mã hóa dữ liệu HIPAA',
     badgePrivacy: 'Bảo mật quyền riêng tư y khoa',
-    badgeSync: 'Đồng bộ trực tiếp với sổ tay Điều dưỡng',
+    badgeSync: 'Chia sẻ với đội ngũ chăm sóc',
     viewDoc: 'Xem tài liệu hướng dẫn'
   },
   sidebar: {
-    accountCode: 'Mã tài khoản:',
-    verifiedIdentity: 'Đã xác thực danh tính',
-    familyMetric: 'Người thân',
-    shiftsMetric: 'Ca xong',
-    reviewsMetric: 'Đánh giá',
+    accountFallback: 'Tài khoản CareConnect',
+    familyMetric: 'Hồ sơ người thân',
     emergencyTitle: 'Hotline Y Tế Khẩn Cấp',
     emergencySubtitle: 'Hỗ trợ 24/7 miễn cước',
-    emergencyDesc: 'Liên hệ khẩn cấp với điều dưỡng viên trưởng khi người thân có biến chuyển sức khỏe bất ngờ.'
+    emergencyDesc: 'Liên hệ khẩn cấp với điều dưỡng viên trưởng khi người thân có biến chuyển sức khỏe bất ngờ.',
+    hotlineNumber: '1900 6868'
   }
 } as const

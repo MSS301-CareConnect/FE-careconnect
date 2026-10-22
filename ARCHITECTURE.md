@@ -61,7 +61,9 @@ cookies and reloads `/login` to drop the in-memory query cache.
 The Customer portal has its own guarded index at `/customer`. Its home screen
 links to existing care search, booking, and family profile screens without
 inventing remote data. The Customer header and in-portal home breadcrumbs point
-there; the account menu contains the profile link and session sign-out action.
+there; the account menu contains the profile and family profiles links and the
+session sign-out action. Family profiles are reached from that menu rather than the
+header navigation.
 
 Customer `/customer/patient-profiles` and `/customer/patient-profiles/:id` read
 CareRecipientService through `entities/care-recipient`, which owns the gateway
@@ -74,8 +76,29 @@ medication activity changes only through the `active` PATCH. Edit and delete
 controls follow the returned `myAccessLevel` (EDITOR/OWNER edit, OWNER deletes,
 which archives), while the backend enforces access. Assigned caregivers, care
 session history, attached documents, identity/insurance numbers and attending
-doctors have no CareRecipient contract and are not shown. Profile creation at
-`/customer/patient-profiles/new` remains a local preview.
+doctors have no CareRecipient contract and are not shown.
+
+Profile creation at `/customer/patient-profiles/new` sends one CSRF-protected
+`POST /api/v1/care-recipients`; the backend stores the profile, its medications and
+an optional primary emergency contact in one transaction and makes the customer the
+OWNER. The form starts empty. It asks how the patient relates to the customer and
+maps that to the stored manager relationship (a father becomes `CHILD`). Selected
+chronic conditions and allergy tags are joined into the free-text contract fields.
+Each medication needs a name and start date. Validation errors, and backend 400 codes
+that name one field, appear under that field with `aria-invalid`/`aria-describedby`;
+each failed submit focuses and scrolls to the first invalid control. Only server
+failures without a field keep a form-level alert. The form has no national ID, insurance,
+doctor, avatar upload, prescription upload or draft fields because the contract
+cannot store them; patient data is never written to browser storage. Co-managers are
+not added here.
+
+Medication name fields on the create form and the detail medication form use
+`entities/care-recipient/medication-name-input`, an accessible combobox over the static
+`medication-catalog.constants.ts` list. Entries reuse the `MedicationRequest` fields
+`medicationName` (active ingredient and strength) and `route`; dosage, schedule and
+dates are never suggested. Matching ignores case and Vietnamese diacritics and accepts
+the start of the name or of any word in it. Free text stays allowed, and a chosen entry
+fills only an empty route field.
 
 Public customer registration uses `/api/v1/auth/register` to send an email OTP. The
 account is created only after `/api/v1/auth/register/verify` succeeds; verification
@@ -272,6 +295,12 @@ as sample or unavailable. The cancellation dialog cannot submit; dispatch notes
 remain local drafts. The booking list links to this route and retains its quick
 preview dialog.
 
+The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts` groups the
+menu into Overview, Operations, Customers and System; items without a route stay disabled.
+At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
+navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
+navigation. The topbar holds the breadcrumb derived from the active menu item, the language
+switch, notifications and the account menu.
 The Admin portal has its own `/admin` layout, VI/EN menu resources, and child
 routes `/admin/dashboard`, `/admin/revenue`, `/admin/customers`,
 `/admin/customers/:id`, `/admin/services`, `/admin/centers`,
@@ -296,7 +325,23 @@ ID; patient histories, payment methods, bookings, and audit entries from the
 supplied detailed example appear only for `CUST-1024`. Customer creation,
 account suspension/reactivation, password resets, notifications, clinical record
 access, and note persistence await a backend contract and Admin authorization.
-The Admin service catalog remains a dated design snapshot. `/admin/centers` now
+`/admin/services` reads and manages the CareCatalogService standard catalog through
+`entities/care-catalog`, which owns the gateway wrappers and query keys. The catalog
+endpoint returns every non-deleted item, so keyword, category, status and page live in
+URL search parameters and filter the cached list client-side. Create and edit send only
+the `CatalogItemRequest` fields (name, category, optional description, status). The
+category dropdown merges `service-category.constants.ts` (stable stored values with
+translated labels) with categories already in the database, removing case-insensitive
+duplicates; its final option reveals a free-text input, and an edited item whose category
+matches no option opens in that input unchanged. Missing
+or too-long values and backend codes 3101–3103 appear under their field with
+`aria-invalid`/`aria-describedby`, and each failed submit focuses and scrolls to the first
+invalid control. Only failures without a field (permission, not found, server errors)
+keep a dialog-level alert. Delete is the backend soft delete. The prices-by-center tab
+picks a ProviderService center and shows its center offerings and price plans read-only,
+paginated client-side, because the backend lets only CENTER_MANAGER create or change
+offerings and price plans. Surcharges, booking distribution and pricing policy remain
+labeled design samples. `/admin/centers` now
 uses ProviderService for backend-paginated centers, detail, create, edit, status
 change, and archive. URL search parameters hold the keyword, status, page, and
 selected center. The Admin caregiver review route uses the selected center ID and

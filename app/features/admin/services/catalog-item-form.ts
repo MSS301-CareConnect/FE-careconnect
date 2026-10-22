@@ -1,0 +1,64 @@
+import type { CatalogItemRecord, CatalogItemRequest, CatalogItemRequestStatus } from '~/shared/api/generated/contracts'
+
+/** Column limits of the CareCatalogService `catalog_items` table. */
+export const NAME_MAX_LENGTH = 255
+export const CATEGORY_MAX_LENGTH = 255
+export const DESCRIPTION_MAX_LENGTH = 1000
+
+export type CatalogItemDraft = {
+  name: string
+  category: string
+  description: string
+  status: CatalogItemRequestStatus | ''
+}
+
+export type CatalogItemField = keyof CatalogItemDraft
+export type CatalogItemFieldError =
+  'nameRequired' | 'nameTooLong' | 'categoryRequired' | 'categoryTooLong' | 'descriptionTooLong' | 'statusRequired'
+export type CatalogItemErrors = Partial<Record<CatalogItemField, CatalogItemFieldError>>
+
+export const EMPTY_CATALOG_ITEM: CatalogItemDraft = { name: '', category: '', description: '', status: 'ACTIVE' }
+
+export function draftFromRecord(record: CatalogItemRecord): CatalogItemDraft {
+  return {
+    name: record.name,
+    category: record.category,
+    description: record.description ?? '',
+    status: record.status
+  }
+}
+
+export function validateCatalogItem(draft: CatalogItemDraft): CatalogItemErrors {
+  const errors: CatalogItemErrors = {}
+  const name = draft.name.trim()
+  const category = draft.category.trim()
+  if (!name) errors.name = 'nameRequired'
+  else if (name.length > NAME_MAX_LENGTH) errors.name = 'nameTooLong'
+  if (!category) errors.category = 'categoryRequired'
+  else if (category.length > CATEGORY_MAX_LENGTH) errors.category = 'categoryTooLong'
+  if (draft.description.trim().length > DESCRIPTION_MAX_LENGTH) errors.description = 'descriptionTooLong'
+  if (!draft.status) errors.status = 'statusRequired'
+  return errors
+}
+
+/** Call only after validateCatalogItem returned no errors. */
+export function toCatalogItemRequest(draft: CatalogItemDraft): CatalogItemRequest {
+  const description = draft.description.trim()
+  return {
+    name: draft.name.trim(),
+    category: draft.category.trim(),
+    ...(description ? { description } : {}),
+    status: draft.status || 'ACTIVE'
+  }
+}
+
+/** CareCatalogService validation codes that name exactly one form field. */
+const SERVER_FIELD_ERRORS: Record<number, CatalogItemErrors> = {
+  3101: { name: 'nameRequired' },
+  3102: { category: 'categoryRequired' },
+  3103: { status: 'statusRequired' }
+}
+
+export function fieldErrorsFromServerCode(code: number | undefined): CatalogItemErrors | undefined {
+  return code === undefined ? undefined : SERVER_FIELD_ERRORS[code]
+}

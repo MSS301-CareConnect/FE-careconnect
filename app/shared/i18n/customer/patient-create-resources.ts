@@ -1,5 +1,8 @@
 export const patientCreateEn = {
   documentTitle: 'Add New Care Recipient Profile | CareConnect',
+  submitting: 'Saving profile...',
+  submitInvalid: 'Some information is not valid. Please review the fields and try again.',
+  submitFailed: 'Unable to create the profile right now. Please try again.',
   breadcrumb: {
     home: 'Home',
     myAccount: 'My Account',
@@ -13,28 +16,31 @@ export const patientCreateEn = {
     subtitle:
       'Please provide accurate medical history, underlying conditions, and daily habits so nurses and caregivers can establish the safest care plan.',
     cancel: 'Cancel',
-    saveDraft: 'Save draft',
     saveProfile: 'Save patient profile'
   },
-  draftNotice: {
-    text: 'Draft has been automatically saved to your account at {{time}}.',
-    close: 'Close notification'
+  validation: {
+    fullNameRequired: 'Please enter the patient full name.',
+    fullNameTooLong: 'The full name must be at most 255 characters.',
+    relationshipRequired: 'Please choose how the patient is related to you.',
+    birthDateRequired: 'Please enter the date of birth.',
+    birthDateFuture: 'The date of birth cannot be in the future.',
+    genderRequired: 'Please choose a gender.',
+    heightRange: 'Enter a height from 1 to 300 cm.',
+    weightRange: 'Enter a weight from 1 to 500 kg.',
+    textTooLong: 'This content exceeds 5,000 characters.',
+    medicationNameRequired: 'Enter the medication name, or delete this row.',
+    medicationStartDateRequired: 'Choose the start date.',
+    emergencyNameRequired: 'Enter the contact name, or clear the other contact fields.',
+    emergencyRelationshipRequired: 'Enter how this person is related to the patient.',
+    emergencyPhoneRequired: 'Enter the contact phone number.',
+    emergencyPhoneInvalid: 'The phone number must have 10 or 11 digits.'
   },
   sidebar: {
-    avatarCard: {
-      title: 'Patient Portrait Photo',
-      subtitle: 'Caregiver recognition',
-      uploadLabel: 'Upload portrait photo',
-      uploadHint: 'Supports JPG, PNG under 5MB.',
-      uploadNote: 'A clear face photo helps caregivers recognize the patient accurately upon arrival.',
-      changePhoto: 'Change photo',
-      uploadBtn: 'Upload photo'
-    },
     stepper: {
       title: 'Form Progress',
       status: '{{completed}}/{{total}} Completed',
       step1Title: '1. Identity & Demographics',
-      step1Subtitle: 'Name, age, National ID, blood type, BMI',
+      step1Subtitle: 'Name, date of birth, blood type, BMI',
       step2Title: '2. Physical & Pathologies',
       step2Subtitle: 'Chronic illnesses, allergy history',
       step3Title: '3. Prescriptions & Schedule',
@@ -52,7 +58,7 @@ export const patientCreateEn = {
     },
     tips: {
       title: 'Quick tips',
-      desc: 'Take a clear photo of the recent hospital prescription to upload in step 3. The system will assist in digitizing medicine names and dosages.'
+      desc: 'Copy medication names, dosages, and start dates from the most recent prescription so caregivers can remind doses accurately.'
     }
   },
   section1: {
@@ -63,6 +69,7 @@ export const patientCreateEn = {
     fullNamePlaceholder: 'E.g., NGUYEN VAN AN',
     fullNameHint: 'Enter exactly as shown on National ID or Health Insurance card',
     relationshipLabel: 'Relationship to you',
+    relationshipPlaceholder: 'Choose a relationship',
     relationshipOptions: {
       father: 'Father',
       mother: 'Mother',
@@ -74,16 +81,6 @@ export const patientCreateEn = {
     },
     birthDateLabel: 'Date of birth',
     genderLabel: 'Gender',
-    genderOptions: {
-      male: 'Male',
-      female: 'Female',
-      other: 'Other'
-    },
-    idNumberLabel: 'National ID / Citizen Identification',
-    idNumberPlaceholder: 'Enter 12-digit chip ID',
-    syncVNeID: 'Sync VNeID',
-    bhytNumberLabel: 'Health Insurance Number (BHYT)',
-    bhytNumberPlaceholder: 'Enter 15-character BHYT code',
     heightLabel: 'Height (cm)',
     weightLabel: 'Weight (kg)',
     bmiLabel: 'BMI Score:',
@@ -121,37 +118,41 @@ export const patientCreateEn = {
     surgeryHistoryLabel: 'Surgical & Intervention History',
     surgeryHistoryPlaceholder:
       'E.g., Right total knee replacement (2021, Cho Ray Hospital); Laparoscopic cholecystectomy (2018)...',
-    doctorNameLabel: 'Attending Physician / Hospital',
-    doctorNamePlaceholder: 'E.g., Dr. Tran Huu Duc - UMC Hospital',
-    doctorContactLabel: 'Doctor / Department Phone (if available)',
-    doctorContactPlaceholder: '090x xxx xxx'
+    emergencyTitle: 'Emergency contact',
+    emergencyDesc:
+      'The caregiver calls this person if something urgent happens during care. Optional; you can add more contacts later.',
+    emergencyNameLabel: 'Contact full name',
+    emergencyNamePlaceholder: 'E.g., Nguyen Mai Anh',
+    emergencyRelationshipLabel: 'Relationship to the patient',
+    emergencyRelationshipPlaceholder: 'E.g., Daughter',
+    emergencyPhoneLabel: 'Phone number',
+    emergencyPhonePlaceholder: '0901234567'
   },
   section3: {
     title: 'Current Prescriptions & Schedule',
     subtitle: 'List of medications caregivers should remind or administer',
     addMedicineBtn: '+ Add new medication',
+    empty: 'No medications added. Use "+ Add new medication" if the patient is currently taking any.',
+    medicineNameLabel: 'Medication name',
     medicineNamePlaceholder: 'Brand or generic name...',
     dosageLabel: 'Dosage',
     dosagePlaceholder: 'E.g., 1 tablet / dose...',
     timeLabel: 'Administration time',
     timePlaceholder: 'Morning / Afternoon / Evening...',
+    startDateLabel: 'Start date',
     instructionsLabel: 'Caregiver notes',
     instructionsPlaceholder: 'After meals, spaced 2h apart...',
-    deleteMedicine: 'Delete medication',
-    uploadZoneTitle: 'Upload Hospital Prescription / Medical Report',
-    uploadZoneDesc:
-      'Drag & drop image files or click to browse (Supports JPG, PNG, PDF up to 10MB). CareConnect clinical pharmacists will verify for safety.',
-    chooseFileBtn: 'Choose file from device'
+    deleteMedicine: 'Delete medication'
   },
   bottomBar: {
     securityNotice: 'Data protected with multi-layer encryption per Vietnam healthcare standards',
     cancel: 'Cancel',
-    saveDraft: 'Save draft',
     complete: 'Complete Patient Profile'
   },
   modal: {
     title: 'Profile Created Successfully!',
     desc: 'Health profile for {{name}} has been securely created and is ready for booking home care sessions now.',
+    viewProfile: 'View the new profile',
     findCaregiver: 'Find caregivers for this patient',
     backToList: 'Back to profiles list'
   }
@@ -159,6 +160,9 @@ export const patientCreateEn = {
 
 export const patientCreateVi = {
   documentTitle: 'Thêm hồ sơ người bệnh mới | CareConnect',
+  submitting: 'Đang lưu hồ sơ...',
+  submitInvalid: 'Một số thông tin chưa hợp lệ. Vui lòng kiểm tra lại các trường và thử lại.',
+  submitFailed: 'Không thể tạo hồ sơ lúc này. Vui lòng thử lại.',
   breadcrumb: {
     home: 'Trang chủ',
     myAccount: 'Tài khoản của tôi',
@@ -172,29 +176,31 @@ export const patientCreateVi = {
     subtitle:
       'Vui lòng cung cấp đầy đủ và chính xác thông tin y tế, bệnh nền và thói quen sinh hoạt để nhân viên y tế / điều dưỡng xây dựng phác đồ chăm sóc phù hợp và an toàn nhất.',
     cancel: 'Hủy bỏ',
-    saveDraft: 'Lưu nháp',
     saveProfile: 'Lưu hồ sơ người bệnh'
   },
-  draftNotice: {
-    text: 'Bản nháp đã được tự động lưu vào tài khoản của bạn lúc {{time}}.',
-    close: 'Đóng thông báo'
+  validation: {
+    fullNameRequired: 'Vui lòng nhập họ và tên người bệnh.',
+    fullNameTooLong: 'Họ tên tối đa 255 ký tự.',
+    relationshipRequired: 'Vui lòng chọn mối quan hệ của người bệnh với bạn.',
+    birthDateRequired: 'Vui lòng nhập ngày sinh.',
+    birthDateFuture: 'Ngày sinh không được ở tương lai.',
+    genderRequired: 'Vui lòng chọn giới tính.',
+    heightRange: 'Nhập chiều cao từ 1 đến 300 cm.',
+    weightRange: 'Nhập cân nặng từ 1 đến 500 kg.',
+    textTooLong: 'Nội dung vượt quá 5.000 ký tự.',
+    medicationNameRequired: 'Nhập tên thuốc hoặc xóa dòng này.',
+    medicationStartDateRequired: 'Chọn ngày bắt đầu dùng.',
+    emergencyNameRequired: 'Nhập họ tên người liên hệ, hoặc xóa các ô liên hệ còn lại.',
+    emergencyRelationshipRequired: 'Nhập quan hệ của người này với người bệnh.',
+    emergencyPhoneRequired: 'Nhập số điện thoại người liên hệ.',
+    emergencyPhoneInvalid: 'Số điện thoại phải có 10 hoặc 11 chữ số.'
   },
   sidebar: {
-    avatarCard: {
-      title: 'Ảnh chân dung người bệnh',
-      subtitle: 'Nhận diện điều dưỡng viên',
-      uploadLabel: 'Tải ảnh chụp chân dung',
-      uploadHint: 'Hỗ trợ định dạng JPG, PNG dung lượng dưới 5MB.',
-      uploadNote:
-        'Ảnh chụp rõ mặt, không đeo khẩu trang giúp điều dưỡng viên nhận diện chính xác và thân thiện khi tới chăm sóc.',
-      changePhoto: 'Đổi ảnh',
-      uploadBtn: 'Tải ảnh lên'
-    },
     stepper: {
       title: 'Tiến trình hoàn thiện',
       status: '{{completed}}/{{total}} Hoàn thành',
       step1Title: '1. Định danh & Nhân khẩu học',
-      step1Subtitle: 'Tên, tuổi, CCCD, nhóm máu, BMI',
+      step1Subtitle: 'Tên, ngày sinh, nhóm máu, BMI',
       step2Title: '2. Thể chất & Bệnh nền',
       step2Subtitle: 'Bệnh mạn tính, tiền sử dị ứng',
       step3Title: '3. Đơn thuốc & Lịch uống',
@@ -212,7 +218,7 @@ export const patientCreateVi = {
     },
     tips: {
       title: 'Mẹo nhỏ khi điền hồ sơ',
-      desc: 'Hãy chụp lại đơn thuốc gần nhất tại bệnh viện để tải lên ở mục 3. Hệ thống sẽ hỗ trợ số hóa tự động tên thuốc và liều dùng.'
+      desc: 'Hãy ghi đúng tên thuốc, liều dùng và ngày bắt đầu theo đơn thuốc gần nhất để điều dưỡng nhắc thuốc chính xác.'
     }
   },
   section1: {
@@ -223,6 +229,7 @@ export const patientCreateVi = {
     fullNamePlaceholder: 'Ví dụ: NGUYỄN VĂN AN',
     fullNameHint: 'Ghi đúng như trên thẻ Căn cước công dân hoặc Thẻ BHYT',
     relationshipLabel: 'Mối quan hệ với bạn',
+    relationshipPlaceholder: 'Chọn mối quan hệ',
     relationshipOptions: {
       father: 'Bố ruột (Cha)',
       mother: 'Mẹ ruột',
@@ -234,16 +241,6 @@ export const patientCreateVi = {
     },
     birthDateLabel: 'Ngày sinh',
     genderLabel: 'Giới tính',
-    genderOptions: {
-      male: 'Nam',
-      female: 'Nữ',
-      other: 'Khác'
-    },
-    idNumberLabel: 'Số CCCD / Mã định danh',
-    idNumberPlaceholder: 'Nhập 12 số CCCD gắn chip',
-    syncVNeID: 'Đồng bộ VNeID',
-    bhytNumberLabel: 'Số thẻ Bảo hiểm y tế (BHYT)',
-    bhytNumberPlaceholder: 'Nhập mã 15 ký tự thẻ BHYT',
     heightLabel: 'Chiều cao (cm)',
     weightLabel: 'Cân nặng (kg)',
     bmiLabel: 'Chỉ số BMI:',
@@ -282,37 +279,41 @@ export const patientCreateVi = {
     surgeryHistoryLabel: 'Tiền sử phẫu thuật & Can thiệp ngoại khoa',
     surgeryHistoryPlaceholder:
       'Ví dụ: Thay khớp gối nhân tạo chân phải (Năm 2021, Bệnh viện Chợ Rẫy); Mổ sỏi túi mật nội soi (Năm 2018)...',
-    doctorNameLabel: 'Bác sĩ / Bệnh viện theo dõi định kỳ',
-    doctorNamePlaceholder: 'Ví dụ: BS.CK2 Trần Hữu Đức - BV ĐH Y Dược',
-    doctorContactLabel: 'Số điện thoại liên hệ Bác sĩ / Khoa (nếu có)',
-    doctorContactPlaceholder: '090x xxx xxx'
+    emergencyTitle: 'Người liên hệ khẩn cấp',
+    emergencyDesc:
+      'Điều dưỡng sẽ gọi người này khi có tình huống khẩn cấp trong ca chăm sóc. Không bắt buộc, có thể bổ sung thêm sau.',
+    emergencyNameLabel: 'Họ tên người liên hệ',
+    emergencyNamePlaceholder: 'Ví dụ: Nguyễn Mai Anh',
+    emergencyRelationshipLabel: 'Quan hệ với người bệnh',
+    emergencyRelationshipPlaceholder: 'Ví dụ: Con gái',
+    emergencyPhoneLabel: 'Số điện thoại',
+    emergencyPhonePlaceholder: '0901234567'
   },
   section3: {
     title: 'Đơn thuốc đang sử dụng & Lịch uống',
     subtitle: 'Lập danh mục thuốc điều dưỡng viên cần nhắc nhở hoặc hỗ trợ cho uống',
     addMedicineBtn: '+ Thêm thuốc mới',
+    empty: 'Chưa có thuốc nào. Bấm "+ Thêm thuốc mới" nếu người bệnh đang dùng thuốc.',
+    medicineNameLabel: 'Tên thuốc',
     medicineNamePlaceholder: 'Tên biệt dược / hoạt chất...',
     dosageLabel: 'Liều lượng',
     dosagePlaceholder: 'Ví dụ: 1 viên / lần...',
     timeLabel: 'Thời điểm uống',
     timePlaceholder: 'Sáng / Trưa / Tối...',
+    startDateLabel: 'Ngày bắt đầu dùng',
     instructionsLabel: 'Lưu ý điều dưỡng',
     instructionsPlaceholder: 'Sau ăn, cách 2h...',
-    deleteMedicine: 'Xóa thuốc',
-    uploadZoneTitle: 'Tải lên ảnh chụp Đơn thuốc / Bệnh án bệnh viện',
-    uploadZoneDesc:
-      'Kéo thả tập tin ảnh hoặc bấm để duyệt từ thiết bị (Hỗ trợ JPG, PNG, PDF tối đa 10MB). Đội ngũ dược sĩ lâm sàng của CareConnect sẽ đối chiếu và rà soát an toàn.',
-    chooseFileBtn: 'Chọn tệp từ máy tính'
+    deleteMedicine: 'Xóa thuốc'
   },
   bottomBar: {
     securityNotice: 'Dữ liệu được bảo vệ đa tầng theo tiêu chuẩn Y tế Việt Nam',
     cancel: 'Hủy bỏ',
-    saveDraft: 'Lưu bản nháp',
     complete: 'Hoàn tất tạo hồ sơ người bệnh'
   },
   modal: {
     title: 'Tạo hồ sơ thành công!',
     desc: 'Hồ sơ người bệnh {{name}} đã được khởi tạo an toàn và sẵn sàng để bạn đặt lịch chăm sóc tại nhà ngay bây giờ.',
+    viewProfile: 'Xem hồ sơ vừa tạo',
     findCaregiver: 'Tìm điều dưỡng cho người bệnh này',
     backToList: 'Quay về danh sách hồ sơ'
   }

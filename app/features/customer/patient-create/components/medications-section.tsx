@@ -1,29 +1,35 @@
 import { useTranslation } from 'react-i18next'
 
+import { MedicationNameInput } from '~/entities/care-recipient/medication-name-input'
 import { Icon } from '~/shared/ui/icon'
 
+import { MAX_MEDICATIONS, medicationField, type PatientCreateErrors } from '../patient-create-request'
 import type { MedicationItem } from '../types'
+import { FieldError, fieldErrorProps, invalidClassName } from './field-error'
 
 export interface MedicationsSectionProps {
   medications: MedicationItem[]
+  errors: PatientCreateErrors
   onAddMedicine: () => void
   onUpdateMedicine: (id: string, partial: Partial<MedicationItem>) => void
   onDeleteMedicine: (id: string) => void
   onCancel: () => void
-  onSaveDraft: () => void
   onSubmit: () => void
+  isSubmitting: boolean
 }
 
 const SECTION_STEP = '3'
+const fieldClass = `mt-1 h-9 w-full rounded-md bg-surface-container-lowest px-3 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:outline-none ${invalidClassName}`
 
 export function MedicationsSection({
   medications,
+  errors,
   onAddMedicine,
   onUpdateMedicine,
   onDeleteMedicine,
   onCancel,
-  onSaveDraft,
-  onSubmit
+  onSubmit,
+  isSubmitting
 }: MedicationsSectionProps) {
   const { t } = useTranslation()
 
@@ -45,7 +51,8 @@ export function MedicationsSection({
           <button
             type='button'
             onClick={onAddMedicine}
-            className='inline-flex items-center gap-1.5 rounded-lg bg-secondary-container/40 px-3 py-2 text-xs font-semibold text-on-secondary-container transition-colors hover:bg-secondary-container'
+            disabled={medications.length >= MAX_MEDICATIONS}
+            className='inline-flex items-center gap-1.5 rounded-lg bg-secondary-container/40 px-3 py-2 text-xs font-semibold text-on-secondary-container transition-colors hover:bg-secondary-container disabled:opacity-50'
           >
             <Icon name='add' className='text-sm' />
             <span>{t('customer.patientCreate.section3.addMedicineBtn')}</span>
@@ -53,26 +60,30 @@ export function MedicationsSection({
         </div>
 
         {/* Medicine List */}
-        <div className='mb-6 flex flex-col gap-4'>
+        <div className='flex flex-col gap-4'>
+          {medications.length === 0 ? (
+            <p className='rounded-xl bg-surface-container-low/70 p-4 text-center text-xs text-on-surface-variant'>
+              {t('customer.patientCreate.section3.empty')}
+            </p>
+          ) : null}
           {medications.map((item, index) => (
             <div key={item.id} className='flex flex-col gap-3 rounded-xl bg-surface-container-low/70 p-4'>
-              <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                  <span className='flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary'>
+              <div className='flex items-start justify-between'>
+                <div className='flex items-start gap-2'>
+                  <span className='mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary'>
                     {index + 1}
                   </span>
-                  <input
-                    type='text'
-                    value={item.name}
-                    onChange={(e) => onUpdateMedicine(item.id, { name: e.target.value })}
-                    placeholder={t('customer.patientCreate.section3.medicineNamePlaceholder')}
-                    className='h-8 w-60 rounded-md bg-surface-container-lowest px-3 text-xs font-bold text-on-surface focus:ring-1 focus:ring-primary focus:outline-none'
-                  />
-                  {item.category && (
-                    <span className='rounded bg-surface-container-highest px-2 py-0.5 text-[11px] font-medium text-on-surface'>
-                      {item.category}
-                    </span>
-                  )}
+                  <div className='flex flex-col gap-1'>
+                    <MedicationNameInput
+                      value={item.name}
+                      onChange={(name) => onUpdateMedicine(item.id, { name })}
+                      aria-label={t('customer.patientCreate.section3.medicineNameLabel')}
+                      {...fieldErrorProps(medicationField(item.id, 'name'), errors)}
+                      placeholder={t('customer.patientCreate.section3.medicineNamePlaceholder')}
+                      className={`h-8 w-60 rounded-md bg-surface-container-lowest px-3 text-xs font-bold text-on-surface focus:ring-1 focus:ring-primary focus:outline-none ${invalidClassName}`}
+                    />
+                    <FieldError field={medicationField(item.id, 'name')} errors={errors} />
+                  </div>
                 </div>
 
                 <button
@@ -85,69 +96,69 @@ export function MedicationsSection({
                 </button>
               </div>
 
-              <div className='grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3'>
+              <div className='grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2 lg:grid-cols-4'>
                 <div>
-                  <label className='text-[11px] font-medium text-on-surface-variant'>
+                  <label htmlFor={`${item.id}-dosage`} className='text-[11px] font-medium text-on-surface-variant'>
                     {t('customer.patientCreate.section3.dosageLabel')}
                   </label>
                   <input
+                    id={`${item.id}-dosage`}
                     type='text'
+                    maxLength={255}
                     value={item.dosage}
                     onChange={(e) => onUpdateMedicine(item.id, { dosage: e.target.value })}
                     placeholder={t('customer.patientCreate.section3.dosagePlaceholder')}
-                    className='mt-1 h-9 w-full rounded-md bg-surface-container-lowest px-3 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:outline-none'
+                    className={fieldClass}
                   />
                 </div>
 
                 <div>
-                  <label className='text-[11px] font-medium text-on-surface-variant'>
+                  <label htmlFor={`${item.id}-time`} className='text-[11px] font-medium text-on-surface-variant'>
                     {t('customer.patientCreate.section3.timeLabel')}
                   </label>
                   <input
+                    id={`${item.id}-time`}
                     type='text'
+                    maxLength={255}
                     value={item.time}
                     onChange={(e) => onUpdateMedicine(item.id, { time: e.target.value })}
                     placeholder={t('customer.patientCreate.section3.timePlaceholder')}
-                    className='mt-1 h-9 w-full rounded-md bg-surface-container-lowest px-3 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:outline-none'
+                    className={fieldClass}
                   />
                 </div>
 
                 <div>
-                  <label className='text-[11px] font-medium text-on-surface-variant'>
+                  <label htmlFor={`${item.id}-start`} className='text-[11px] font-medium text-on-surface-variant'>
+                    {t('customer.patientCreate.section3.startDateLabel')}
+                  </label>
+                  <input
+                    id={`${item.id}-start`}
+                    type='date'
+                    value={item.startDate}
+                    onChange={(e) => onUpdateMedicine(item.id, { startDate: e.target.value })}
+                    {...fieldErrorProps(medicationField(item.id, 'startDate'), errors)}
+                    className={fieldClass}
+                  />
+                  <FieldError field={medicationField(item.id, 'startDate')} errors={errors} />
+                </div>
+
+                <div>
+                  <label htmlFor={`${item.id}-notes`} className='text-[11px] font-medium text-on-surface-variant'>
                     {t('customer.patientCreate.section3.instructionsLabel')}
                   </label>
                   <input
+                    id={`${item.id}-notes`}
                     type='text'
+                    maxLength={5000}
                     value={item.instructions}
-                    onChange={(e) =>
-                      onUpdateMedicine(item.id, {
-                        instructions: e.target.value
-                      })
-                    }
+                    onChange={(e) => onUpdateMedicine(item.id, { instructions: e.target.value })}
                     placeholder={t('customer.patientCreate.section3.instructionsPlaceholder')}
-                    className='mt-1 h-9 w-full rounded-md bg-surface-container-lowest px-3 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:outline-none'
+                    className={fieldClass}
                   />
                 </div>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Upload Prescription Banner */}
-        <div className='flex cursor-pointer flex-col items-center justify-center rounded-xl bg-surface-container-low p-6 text-center transition-colors hover:bg-surface-container'>
-          <div className='mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface-container-lowest text-primary shadow-xs'>
-            <Icon name='document_scanner' className='text-2xl' />
-          </div>
-          <h3 className='text-sm font-bold text-on-surface'>{t('customer.patientCreate.section3.uploadZoneTitle')}</h3>
-          <p className='mt-1 max-w-lg text-xs text-on-surface-variant leading-relaxed'>
-            {t('customer.patientCreate.section3.uploadZoneDesc')}
-          </p>
-          <button
-            type='button'
-            className='mt-4 rounded-lg bg-surface-container-lowest px-4 py-2 text-xs font-semibold text-primary shadow-xs transition-colors hover:bg-surface-container-high'
-          >
-            {t('customer.patientCreate.section3.chooseFileBtn')}
-          </button>
         </div>
       </section>
 
@@ -168,18 +179,14 @@ export function MedicationsSection({
           </button>
           <button
             type='button'
-            onClick={onSaveDraft}
-            className='hidden rounded-lg bg-surface-container-low px-5 py-2.5 text-xs font-semibold text-primary transition-colors hover:bg-surface-container sm:inline-block'
-          >
-            {t('customer.patientCreate.bottomBar.saveDraft')}
-          </button>
-          <button
-            type='button'
             onClick={onSubmit}
-            className='inline-flex w-1/2 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow sm:w-auto'
+            disabled={isSubmitting}
+            className='inline-flex w-1/2 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow disabled:opacity-60 sm:w-auto'
           >
             <Icon name='check_circle' className='text-lg' />
-            <span>{t('customer.patientCreate.bottomBar.complete')}</span>
+            <span>
+              {isSubmitting ? t('customer.patientCreate.submitting') : t('customer.patientCreate.bottomBar.complete')}
+            </span>
           </button>
         </div>
       </div>

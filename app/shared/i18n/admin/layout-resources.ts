@@ -4,6 +4,13 @@ export const adminLayoutVi = {
   security: 'Bảo mật',
   role: 'Quản trị viên',
   menu: 'Menu quản trị hệ thống',
+  breadcrumb: 'Đường dẫn trang quản trị',
+  groups: {
+    overview: 'Tổng quan',
+    operations: 'Vận hành',
+    customerCare: 'Khách hàng',
+    system: 'Hệ thống'
+  },
   dashboard: 'Bảng điều khiển',
   customers: 'Quản lý Khách hàng',
   caregivers: 'Quản lý Điều dưỡng',
@@ -17,13 +24,11 @@ export const adminLayoutVi = {
   notifications: 'Thông báo hệ thống',
   openMenu: 'Mở menu quản trị',
   closeMenu: 'Đóng menu quản trị',
-  previousMenu: 'Xem các mục menu trước',
-  nextMenu: 'Xem các mục menu tiếp theo',
   manager: 'Minh Hoàng',
   managerShort: 'MH',
-  unavailable: 'Tính năng cần kết nối API và quyền Admin.',
-  preview: 'Dữ liệu minh họa từ mẫu giao diện. Chưa kết nối báo cáo và quyền Admin từ backend.',
-  footer: '© 2026 CareConnect · Cổng quản trị hệ thống (bản xem trước)'
+  unavailable: 'Tính năng sắp ra mắt.',
+  preview: 'Số liệu được tổng hợp định kỳ và có thể chênh lệch so với giao dịch phát sinh gần nhất.',
+  footer: '© 2026 CareConnect · Cổng quản trị hệ thống'
 } as const
 
 export const adminLayoutEn = {
@@ -32,6 +37,13 @@ export const adminLayoutEn = {
   security: 'Security',
   role: 'Administrator',
   menu: 'System administration menu',
+  breadcrumb: 'Administration breadcrumb',
+  groups: {
+    overview: 'Overview',
+    operations: 'Operations',
+    customerCare: 'Customers',
+    system: 'System'
+  },
   dashboard: 'Dashboard',
   customers: 'Customer management',
   caregivers: 'Caregiver management',
@@ -45,11 +57,9 @@ export const adminLayoutEn = {
   notifications: 'System notifications',
   openMenu: 'Open administration menu',
   closeMenu: 'Close administration menu',
-  previousMenu: 'Show previous menu items',
-  nextMenu: 'Show next menu items',
   manager: 'Minh Hoàng',
   managerShort: 'MH',
-  unavailable: 'Requires backend APIs and Admin permissions.',
-  preview: 'Illustrative data from the supplied design. Backend reporting and Admin access are not connected.',
-  footer: '© 2026 CareConnect · System administration preview'
+  unavailable: 'Coming soon.',
+  preview: 'Figures are compiled periodically and may differ from the most recent transactions.',
+  footer: '© 2026 CareConnect · System administration portal'
 } as const

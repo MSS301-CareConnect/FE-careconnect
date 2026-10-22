@@ -16,6 +16,10 @@ tags:
   - name: ProviderCertificate
   - name: ProviderWorkShift
   - name: ProviderMedia
+  - name: CatalogItem
+  - name: CenterOffering
+  - name: PricePlan
+  - name: CareRecipient
 paths:
   /v1/auth/csrf:
     get:
@@ -2103,6 +2107,1690 @@ paths:
           description: Conflict
         '500':
           description: ProviderService error
+  /v1/catalog-items:
+    get:
+      tags:
+        - CatalogItem
+      operationId: listCatalogItems
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemListResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    post:
+      tags:
+        - CatalogItem
+      summary: ADMIN tạo dịch vụ chuẩn
+      operationId: createCatalogItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogItemRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/catalog-items/{id}:
+    get:
+      tags:
+        - CatalogItem
+      operationId: getCatalogItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    put:
+      tags:
+        - CatalogItem
+      summary: ADMIN cập nhật dịch vụ chuẩn
+      operationId: updateCatalogItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogItemRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    delete:
+      tags:
+        - CatalogItem
+      summary: ADMIN xóa dịch vụ chuẩn
+      operationId: deleteCatalogItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/center-services:
+    post:
+      tags:
+        - CenterOffering
+      summary: CENTER_MANAGER thêm dịch vụ cho trung tâm của mình
+      operationId: createCenterOffering
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterOfferingRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterOfferingResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/center-services/{id}:
+    get:
+      tags:
+        - CenterOffering
+      operationId: getCenterOffering
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterOfferingResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    put:
+      tags:
+        - CenterOffering
+      summary: CENTER_MANAGER cập nhật dịch vụ của trung tâm
+      operationId: updateCenterOffering
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterOfferingRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterOfferingResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    delete:
+      tags:
+        - CenterOffering
+      summary: CENTER_MANAGER xóa dịch vụ của trung tâm
+      operationId: deleteCenterOffering
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/center-services/center/{centerId}:
+    get:
+      tags:
+        - CenterOffering
+      operationId: listCenterOfferings
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterOfferingListResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/center-services/quote:
+    post:
+      tags:
+        - CenterOffering
+      summary: Báo giá dịch vụ trung tâm cho BookingService hoặc khách hàng đặt lịch
+      operationId: quoteCenterOfferings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceQuoteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceQuoteListResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/price-plans:
+    post:
+      tags:
+        - PricePlan
+      summary: CENTER_MANAGER tạo bảng giá cho dịch vụ trung tâm
+      operationId: createPricePlan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricePlanRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePlanResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/price-plans/{id}:
+    get:
+      tags:
+        - PricePlan
+      operationId: getPricePlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePlanResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    put:
+      tags:
+        - PricePlan
+      summary: CENTER_MANAGER cập nhật bảng giá
+      operationId: updatePricePlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricePlanRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePlanResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+    delete:
+      tags:
+        - PricePlan
+      summary: CENTER_MANAGER xóa bảng giá
+      operationId: deletePricePlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/price-plans/center-offering/{centerOfferingId}:
+    get:
+      tags:
+        - PricePlan
+      operationId: listPricePlans
+      parameters:
+        - name: centerOfferingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePlanListResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
+  /v1/care-recipients:
+    get:
+      tags:
+        - CareRecipient
+      summary: CUSTOMER xem các hồ sơ người bệnh mình quản lý
+      operationId: listCareRecipients
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ACTIVE
+              - INACTIVE
+              - ARCHIVED
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientSummaryPageResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    post:
+      tags:
+        - CareRecipient
+      operationId: createCareRecipient
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareRecipientCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientDetailResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{id}:
+    get:
+      tags:
+        - CareRecipient
+      operationId: getCareRecipient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientDetailResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    put:
+      tags:
+        - CareRecipient
+      operationId: updateCareRecipient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareRecipientUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    delete:
+      tags:
+        - CareRecipient
+      operationId: deleteCareRecipient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{id}/status:
+    patch:
+      tags:
+        - CareRecipient
+      operationId: setCareRecipientStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - ACTIVE
+              - INACTIVE
+              - ARCHIVED
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{id}/snapshot:
+    get:
+      tags:
+        - CareRecipient
+      operationId: getCareRecipientSnapshot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientSnapshotResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{id}/access:
+    get:
+      tags:
+        - CareRecipient
+      operationId: checkCareRecipientAccess
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: minLevel
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - VIEWER
+              - EDITOR
+              - OWNER
+            default: VIEWER
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientAccessResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/batch:
+    post:
+      tags:
+        - CareRecipient
+      operationId: listCareRecipientsBatch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipientBatchRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientSummaryListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/caregiver/{id}:
+    get:
+      tags:
+        - CareRecipient
+      summary: CAREGIVER xem snapshot hồ sơ người bệnh được phân công
+      operationId: getCaregiverCareRecipient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientSnapshotResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/admin:
+    get:
+      tags:
+        - CareRecipient
+      summary: ADMIN xem toàn bộ hồ sơ người bệnh
+      operationId: listAdminCareRecipients
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ACTIVE
+              - INACTIVE
+              - ARCHIVED
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: createdBy
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: includeDeleted
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientSummaryPageResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/admin/{id}:
+    get:
+      tags:
+        - CareRecipient
+      operationId: getAdminCareRecipient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareRecipientDetailResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/medications:
+    get:
+      tags:
+        - CareRecipient
+      operationId: listCareRecipientMedications
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: active
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    post:
+      tags:
+        - CareRecipient
+      operationId: createCareRecipientMedication
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/medications/{medicationId}:
+    get:
+      tags:
+        - CareRecipient
+      operationId: getCareRecipientMedication
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: medicationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    put:
+      tags:
+        - CareRecipient
+      operationId: updateCareRecipientMedication
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: medicationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    delete:
+      tags:
+        - CareRecipient
+      operationId: deleteCareRecipientMedication
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: medicationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/medications/{medicationId}/active:
+    patch:
+      tags:
+        - CareRecipient
+      operationId: setCareRecipientMedicationActive
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: medicationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: active
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/emergency-contacts:
+    get:
+      tags:
+        - CareRecipient
+      operationId: listCareRecipientEmergencyContacts
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContactListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    post:
+      tags:
+        - CareRecipient
+      operationId: createCareRecipientEmergencyContact
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyContactRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContactResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/emergency-contacts/{contactId}:
+    get:
+      tags:
+        - CareRecipient
+      operationId: getCareRecipientEmergencyContact
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContactResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    put:
+      tags:
+        - CareRecipient
+      operationId: updateCareRecipientEmergencyContact
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyContactRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContactResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    delete:
+      tags:
+        - CareRecipient
+      operationId: deleteCareRecipientEmergencyContact
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/emergency-contacts/{contactId}/primary:
+    patch:
+      tags:
+        - CareRecipient
+      operationId: assignPrimaryCareRecipientEmergencyContact
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContactResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/managers:
+    get:
+      tags:
+        - CareRecipient
+      operationId: listCareRecipientManagers
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientManagerListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    post:
+      tags:
+        - CareRecipient
+      operationId: createCareRecipientManager
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientManagerResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/managers/{managerId}:
+    patch:
+      tags:
+        - CareRecipient
+      operationId: updateCareRecipientManager
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: managerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientManagerResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    delete:
+      tags:
+        - CareRecipient
+      operationId: deleteCareRecipientManager
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: managerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/managers/{managerId}/primary:
+    patch:
+      tags:
+        - CareRecipient
+      operationId: assignPrimaryCareRecipientManager
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: managerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientManagerResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
 components:
   responses:
     '400':
@@ -3458,3 +5146,1283 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProviderMediaRecord'
+    CatalogItemRecord:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+    CenterOfferingRecord:
+      type: object
+      required:
+        - id
+        - catalogItem
+        - centerId
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        catalogItem:
+          $ref: '#/components/schemas/CatalogItemRecord'
+        centerId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+    PricePlanRecord:
+      type: object
+      required:
+        - id
+        - centerOfferingId
+        - planName
+        - pricingUnit
+        - durationMinutes
+        - basePrice
+      properties:
+        id:
+          type: string
+          format: uuid
+        centerOfferingId:
+          type: string
+          format: uuid
+        planName:
+          type: string
+        pricingUnit:
+          type: string
+          enum:
+            - HOUR
+            - DAY
+            - SHIFT
+        durationMinutes:
+          type: integer
+          format: int32
+        basePrice:
+          type: number
+        isActive:
+          type: boolean
+    ServiceQuoteRecord:
+      type: object
+      required:
+        - careServiceId
+        - active
+      properties:
+        careServiceId:
+          type: string
+          format: uuid
+        centerServiceId:
+          type: string
+          format: uuid
+        pricePlanId:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        pricingUnit:
+          type: string
+          enum:
+            - HOUR
+            - DAY
+            - SHIFT
+        durationMinutes:
+          type: integer
+          format: int32
+        basePrice:
+          type: number
+        active:
+          type: boolean
+    CatalogItemResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CatalogItemRecord'
+    CatalogItemListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogItemRecord'
+    CenterOfferingResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CenterOfferingRecord'
+    CenterOfferingListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CenterOfferingRecord'
+    PricePlanResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PricePlanRecord'
+    PricePlanListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/PricePlanRecord'
+    ServiceQuoteListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceQuoteRecord'
+    CatalogItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        category:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+      required:
+        - category
+        - name
+        - status
+    CenterOfferingRequest:
+      type: object
+      properties:
+        catalogItemId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+      required:
+        - catalogItemId
+        - status
+    PricePlanRequest:
+      type: object
+      properties:
+        centerOfferingId:
+          type: string
+          format: uuid
+        planName:
+          type: string
+          minLength: 1
+        pricingUnit:
+          type: string
+          enum:
+            - HOUR
+            - DAY
+            - SHIFT
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 1
+        basePrice:
+          type: number
+          minimum: 0
+        isActive:
+          type: boolean
+      required:
+        - basePrice
+        - centerOfferingId
+        - durationMinutes
+        - planName
+        - pricingUnit
+    ServiceQuoteItem:
+      type: object
+      properties:
+        careServiceId:
+          type: string
+          format: uuid
+        centerServiceId:
+          type: string
+          format: uuid
+        pricePlanId:
+          type: string
+          format: uuid
+      required:
+        - careServiceId
+    ServiceQuoteRequest:
+      type: object
+      properties:
+        centerId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceQuoteItem'
+          minItems: 1
+      required:
+        - centerId
+        - items
+    CareRecipientRecord:
+      type: object
+      required:
+        - id
+        - fullName
+        - status
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        phoneNumber:
+          type: string
+        avatarUrl:
+          type: string
+        addressLine:
+          type: string
+        ward:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        bloodType:
+          type: string
+          enum:
+            - A+
+            - A-
+            - B+
+            - B-
+            - AB+
+            - AB-
+            - O+
+            - O-
+            - UNKNOWN
+        heightCm:
+          type: number
+        weightKg:
+          type: number
+        medicalHistory:
+          type: string
+        chronicConditions:
+          type: string
+        allergies:
+          type: string
+        mobilityLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - NEEDS_ASSISTANCE
+            - WHEELCHAIR
+            - BEDRIDDEN
+        independenceLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - PARTIALLY_DEPENDENT
+            - FULLY_DEPENDENT
+        dietaryNotes:
+          type: string
+        sleepHabits:
+          type: string
+        behaviorNotes:
+          type: string
+        careRequirements:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - ARCHIVED
+        createdBy:
+          type: string
+          format: uuid
+        updatedBy:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CareRecipientSummaryRecord:
+      type: object
+      required:
+        - id
+        - fullName
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        age:
+          type: integer
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        avatarUrl:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - ARCHIVED
+        myAccessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+        primaryManager:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    CareRecipientSummaryPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareRecipientSummaryRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    MedicationRecord:
+      type: object
+      required:
+        - id
+        - medicationName
+        - startDate
+        - active
+      properties:
+        id:
+          type: string
+          format: uuid
+        medicationName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        timeOfDay:
+          type: array
+          items:
+            type: string
+        route:
+          type: string
+          enum:
+            - ORAL
+            - INJECTION
+            - TOPICAL
+            - INHALATION
+            - OTHER
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        prescribedBy:
+          type: string
+        usageNotes:
+          type: string
+        active:
+          type: boolean
+        updatedBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    EmergencyContactRecord:
+      type: object
+      required:
+        - id
+        - fullName
+        - relationship
+        - phoneNumber
+        - primary
+        - priority
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        relationship:
+          type: string
+        phoneNumber:
+          type: string
+        primary:
+          type: boolean
+        priority:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CareRecipientDetailRecord:
+      type: object
+      required:
+        - profile
+      properties:
+        profile:
+          $ref: '#/components/schemas/CareRecipientRecord'
+        myAccessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+        medications:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationRecord'
+        emergencyContacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyContactRecord'
+    RecipientManagerRecord:
+      type: object
+      required:
+        - id
+        - userId
+        - accessLevel
+        - primary
+        - profileAvailable
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        relationshipType:
+          type: string
+          enum:
+            - SELF
+            - CHILD
+            - SPOUSE
+            - PARENT
+            - SIBLING
+            - GRANDCHILD
+            - RELATIVE
+            - OTHER
+        accessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+        primary:
+          type: boolean
+        addedBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        profileAvailable:
+          type: boolean
+        fullName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        userStatus:
+          type: string
+    CareRecipientSnapshotRecord:
+      type: object
+      required:
+        - recipientId
+        - fullName
+        - status
+        - snapshotAt
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        age:
+          type: integer
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        phoneNumber:
+          type: string
+        addressLine:
+          type: string
+        ward:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        bloodType:
+          type: string
+          enum:
+            - A+
+            - A-
+            - B+
+            - B-
+            - AB+
+            - AB-
+            - O+
+            - O-
+            - UNKNOWN
+        mobilityLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - NEEDS_ASSISTANCE
+            - WHEELCHAIR
+            - BEDRIDDEN
+        independenceLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - PARTIALLY_DEPENDENT
+            - FULLY_DEPENDENT
+        allergies:
+          type: string
+        chronicConditions:
+          type: string
+        dietaryNotes:
+          type: string
+        behaviorNotes:
+          type: string
+        careRequirements:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - ARCHIVED
+        activeMedications:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationRecord'
+        primaryEmergencyContact:
+          $ref: '#/components/schemas/EmergencyContactRecord'
+        snapshotAt:
+          type: string
+          format: date-time
+    CareRecipientAccessRecord:
+      type: object
+      required:
+        - recipientId
+        - userId
+        - allowed
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        allowed:
+          type: boolean
+        accessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+    CareRecipientResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CareRecipientRecord'
+    CareRecipientDetailResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CareRecipientDetailRecord'
+    CareRecipientSummaryPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CareRecipientSummaryPage'
+    CareRecipientSummaryListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareRecipientSummaryRecord'
+    CareRecipientSnapshotResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CareRecipientSnapshotRecord'
+    CareRecipientAccessResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CareRecipientAccessRecord'
+    MedicationResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/MedicationRecord'
+    MedicationListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationRecord'
+    EmergencyContactResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/EmergencyContactRecord'
+    EmergencyContactListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyContactRecord'
+    RecipientManagerResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RecipientManagerRecord'
+    RecipientManagerListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipientManagerRecord'
+    MedicationRequest:
+      type: object
+      properties:
+        medicationName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        dosage:
+          type: string
+          maxLength: 255
+          minLength: 0
+        frequency:
+          type: string
+          maxLength: 255
+          minLength: 0
+        timeOfDay:
+          type: array
+          items:
+            type: string
+            pattern: ([01][0-9]|2[0-3]):[0-5][0-9]
+          maxItems: 24
+          minItems: 0
+        route:
+          type: string
+          enum:
+            - ORAL
+            - INJECTION
+            - TOPICAL
+            - INHALATION
+            - OTHER
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        prescribedBy:
+          type: string
+          maxLength: 255
+          minLength: 0
+        usageNotes:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        active:
+          type: boolean
+      required:
+        - medicationName
+        - startDate
+    EmergencyContactRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        relationship:
+          type: string
+          maxLength: 100
+          minLength: 0
+        phoneNumber:
+          type: string
+          minLength: 1
+          pattern: '[0-9]{10,11}'
+        primary:
+          type: boolean
+        priority:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 0
+      required:
+        - fullName
+        - phoneNumber
+        - relationship
+    CareRecipientCreateRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        phoneNumber:
+          type: string
+          pattern: '[0-9]{10,11}'
+        avatarUrl:
+          type: string
+          maxLength: 1000
+          minLength: 0
+          pattern: https?://\S+
+        addressLine:
+          type: string
+          maxLength: 500
+          minLength: 0
+        ward:
+          type: string
+          maxLength: 255
+          minLength: 0
+        district:
+          type: string
+          maxLength: 255
+          minLength: 0
+        province:
+          type: string
+          maxLength: 255
+          minLength: 0
+        latitude:
+          type: number
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          maximum: 180
+          minimum: -180
+        bloodType:
+          type: string
+          enum:
+            - A+
+            - A-
+            - B+
+            - B-
+            - AB+
+            - AB-
+            - O+
+            - O-
+            - UNKNOWN
+        heightCm:
+          type: number
+          maximum: 300
+          minimum: 0
+        weightKg:
+          type: number
+          maximum: 500
+          minimum: 0
+        medicalHistory:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        chronicConditions:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        allergies:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        mobilityLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - NEEDS_ASSISTANCE
+            - WHEELCHAIR
+            - BEDRIDDEN
+        independenceLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - PARTIALLY_DEPENDENT
+            - FULLY_DEPENDENT
+        dietaryNotes:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        sleepHabits:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        behaviorNotes:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        careRequirements:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        relationshipType:
+          type: string
+          enum:
+            - SELF
+            - CHILD
+            - SPOUSE
+            - PARENT
+            - SIBLING
+            - GRANDCHILD
+            - RELATIVE
+            - OTHER
+        emergencyContacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyContactRequest'
+          maxItems: 10
+          minItems: 0
+        medications:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationRequest'
+          maxItems: 50
+          minItems: 0
+      required:
+        - fullName
+        - relationshipType
+    CareRecipientUpdateRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          maxLength: 255
+          minLength: 0
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        phoneNumber:
+          type: string
+          pattern: '[0-9]{10,11}'
+        avatarUrl:
+          type: string
+          maxLength: 1000
+          minLength: 0
+          pattern: https?://\S+
+        addressLine:
+          type: string
+          maxLength: 500
+          minLength: 0
+        ward:
+          type: string
+          maxLength: 255
+          minLength: 0
+        district:
+          type: string
+          maxLength: 255
+          minLength: 0
+        province:
+          type: string
+          maxLength: 255
+          minLength: 0
+        latitude:
+          type: number
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          maximum: 180
+          minimum: -180
+        bloodType:
+          type: string
+          enum:
+            - A+
+            - A-
+            - B+
+            - B-
+            - AB+
+            - AB-
+            - O+
+            - O-
+            - UNKNOWN
+        heightCm:
+          type: number
+          maximum: 300
+          minimum: 0
+        weightKg:
+          type: number
+          maximum: 500
+          minimum: 0
+        medicalHistory:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        chronicConditions:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        allergies:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        mobilityLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - NEEDS_ASSISTANCE
+            - WHEELCHAIR
+            - BEDRIDDEN
+        independenceLevel:
+          type: string
+          enum:
+            - INDEPENDENT
+            - PARTIALLY_DEPENDENT
+            - FULLY_DEPENDENT
+        dietaryNotes:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        sleepHabits:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        behaviorNotes:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        careRequirements:
+          type: string
+          maxLength: 5000
+          minLength: 0
+        version:
+          type: integer
+          format: int64
+      required:
+        - fullName
+        - version
+    ManagerCreateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          minLength: 0
+        relationshipType:
+          type: string
+          enum:
+            - SELF
+            - CHILD
+            - SPOUSE
+            - PARENT
+            - SIBLING
+            - GRANDCHILD
+            - RELATIVE
+            - OTHER
+        accessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+      required:
+        - accessLevel
+        - email
+        - relationshipType
+    ManagerUpdateRequest:
+      type: object
+      properties:
+        accessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+        relationshipType:
+          type: string
+          enum:
+            - SELF
+            - CHILD
+            - SPOUSE
+            - PARENT
+            - SIBLING
+            - GRANDCHILD
+            - RELATIVE
+            - OTHER
+    RecipientBatchRequest:
+      type: object
+      properties:
+        recipientIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 100
+          minItems: 0
+      required:
+        - recipientIds
