@@ -2,6 +2,7 @@ export const customerLayoutEn = {
   nav: {
     home: 'Home',
     findCaregivers: 'Find Caregivers',
+    services: 'Services',
     myBookings: 'My Bookings',
     menu: 'Customer menu',
     familyProfiles: 'Family Profiles',
@@ -24,6 +25,7 @@ export const customerLayoutVi = {
   nav: {
     home: 'Trang chủ',
     findCaregivers: 'Tìm người chăm sóc',
+    services: 'Dịch vụ',
     myBookings: 'Lịch đặt của tôi',
     menu: 'Menu khách hàng',
     familyProfiles: 'Hồ sơ người thân',

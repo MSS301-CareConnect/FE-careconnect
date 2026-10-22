@@ -75,6 +75,18 @@ export function CustomerHeader() {
               {t('customer.nav.findCaregivers')}
             </NavLink>
             <NavLink
+              to='/customer/services'
+              className={({ isActive }) =>
+                `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-secondary-container font-semibold text-on-secondary-container'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+            >
+              {t('customer.nav.services')}
+            </NavLink>
+            <NavLink
               to='/customer/bookings'
               className={({ isActive }) =>
                 `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
@@ -185,6 +197,7 @@ export function CustomerHeader() {
           {[
             { to: '/customer', label: t('customer.nav.home') },
             { to: '/customer/caregivers', label: t('customer.nav.findCaregivers') },
+            { to: '/customer/services', label: t('customer.nav.services') },
             { to: '/customer/bookings', label: t('customer.nav.myBookings') },
             { to: '/customer/messages', label: t('customer.nav.messages') }
           ].map(({ to, label }) => (

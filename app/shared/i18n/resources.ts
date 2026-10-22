@@ -12,6 +12,7 @@ import { patientProfilesEn, patientProfilesVi } from './customer/patient-profile
 import { patientDetailEn, patientDetailVi } from './customer/patient-detail-resources'
 import { patientCreateEn, patientCreateVi } from './customer/patient-create-resources'
 import { careRecipientEn, careRecipientVi } from './customer/care-recipient-resources'
+import { customerServicesEn, customerServicesVi } from './customer/services-resources'
 import { caregiversEn, caregiversVi } from './customer/caregivers-resources'
 import { customerProviderEn, customerProviderVi } from './customer/provider-resources'
 import { bookingEn, bookingVi } from './customer/booking-resources'
@@ -62,6 +63,7 @@ export const resources = {
         patientDetail: patientDetailEn,
         patientCreate: patientCreateEn,
         careRecipient: careRecipientEn,
+        services: customerServicesEn,
         caregivers: caregiversEn,
         provider: customerProviderEn,
         booking: bookingEn,
@@ -119,6 +121,7 @@ export const resources = {
         patientDetail: patientDetailVi,
         patientCreate: patientCreateVi,
         careRecipient: careRecipientVi,
+        services: customerServicesVi,
         caregivers: caregiversVi,
         provider: customerProviderVi,
         booking: bookingVi,

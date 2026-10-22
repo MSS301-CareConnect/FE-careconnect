@@ -54,6 +54,7 @@ export default [
     layout('routes/customer/layout.tsx', [
       index('routes/customer/index.tsx'),
       route('caregivers', 'routes/customer/caregivers.tsx'),
+      route('services', 'routes/customer/services.tsx'),
       route('caregivers/:userId', 'routes/customer/caregiver-profile.tsx'),
       route('booking', 'routes/customer/booking.tsx'),
       route('bookings', 'routes/customer/bookings.tsx'),

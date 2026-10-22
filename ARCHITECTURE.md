@@ -65,6 +65,15 @@ there; the account menu contains the profile and family profiles links and the
 session sign-out action. Family profiles are reached from that menu rather than the
 header navigation.
 
+Customer `/customer/services` lists the care services customers can book. Customers
+cannot list ProviderService centers, so the page collects center IDs and names from the
+active caregiver catalog (up to five pages of 100), then reads each center's offerings and
+price plans through `entities/care-catalog`. Only active offerings of active catalog items
+and active price plans are shown; active catalog items no loaded center offers yet appear
+in a separate "coming soon" group. Search, center and category filters, sort (by center,
+name or lowest price) and page live in URL search parameters and work on the cached data.
+Centers without an active caregiver do not appear.
+
 Customer `/customer/patient-profiles` and `/customer/patient-profiles/:id` read
 CareRecipientService through `entities/care-recipient`, which owns the gateway
 wrappers and query keys. The list keeps keyword, status and page in URL search
