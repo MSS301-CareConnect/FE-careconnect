@@ -5,8 +5,9 @@ import {
   updateCatalogItem
 } from '~/shared/api/generated/api/catalog-item/catalog-item'
 import { listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
-import { listPricePlans } from '~/shared/api/generated/api/price-plan/price-plan'
-import type { CatalogItemRequest } from '~/shared/api/generated/contracts'
+import { createCenterOffering, updateCenterOffering } from '~/shared/api/generated/api/center-offering/center-offering'
+import { createPricePlan, listPricePlans, updatePricePlan } from '~/shared/api/generated/api/price-plan/price-plan'
+import type { CatalogItemRequest, CenterOfferingRequest, PricePlanRequest } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 
 const readOptions = { credentials: 'include' as const }
@@ -60,6 +61,18 @@ export async function removeCatalog(id: string) {
 export async function fetchCenterOfferings(centerId: string) {
   return result(await listCenterOfferings(centerId, readOptions))
 }
+export async function createOffering(request: CenterOfferingRequest) {
+  return result(await createCenterOffering(request, await writeOptions()))
+}
+export async function saveOffering(id: string, request: CenterOfferingRequest) {
+  return result(await updateCenterOffering(id, request, await writeOptions()))
+}
 export async function fetchPricePlans(centerOfferingId: string) {
   return result(await listPricePlans(centerOfferingId, readOptions))
+}
+export async function createOfferingPricePlan(request: PricePlanRequest) {
+  return result(await createPricePlan(request, await writeOptions()))
+}
+export async function saveOfferingPricePlan(id: string, request: PricePlanRequest) {
+  return result(await updatePricePlan(id, request, await writeOptions()))
 }

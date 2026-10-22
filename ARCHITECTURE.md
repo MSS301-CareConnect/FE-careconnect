@@ -236,6 +236,11 @@ A lower layer cannot import a higher layer:
 1. **Dedicated Role Layouts**: Each role has its own layout shell (e.g., `features/customer/layout/customer-layout.tsx` for Customer, `features/admin/layout/admin-layout.tsx` for Admin). This ensures navigation items, headers, and quick actions are role-tailored without complex conditional logic in a single monolith layout.
 2. **Layout-Level Route Guards**: Access control checks (e.g. verifying role permissions) run at the parent layout route module in `routes/<role>/layout.tsx`. Unauthorized users are intercepted before child route screens mount.
 
+The Center Manager shell uses a fixed sidebar on desktop and a dismissible drawer
+on smaller screens, matching the Admin portal's navigation pattern. Its topbar
+shows the current section, language switch, and account menu. Navigation closes
+on selection or Escape; the role guard remains at the parent route.
+
 The Caregiver portal uses its own role guarded shell. `/caregiver/profile` reads the
 caregiver's ProviderService profile and manages its media; `/caregiver/schedule` reads
 assigned schedules and updates their status with the backend version and a required
@@ -287,6 +292,14 @@ schedule workflows, and owner scoped media upload/list/delete for centers, careg
 profiles, and certificates. Multipart Faker factories are generated with a Blob
 override in `orval.config.ts` so the generated test data matches the browser file
 contract.
+
+`/center-manager/services` manages the signed-in Center Manager's offerings and
+price plans through `entities/care-catalog`. The route takes its center ID only
+from `/users/me`, reads that center's offerings, and uses active master catalog
+items for new offerings. Offering and price plan forms send only contract fields;
+mutations use Identity CSRF headers and invalidate the related TanStack Query
+cache. The backend enforces center ownership and pricing permissions. Admin's
+center pricing view remains read-only.
 
 The Center Manager booking list lives at `/center-manager/bookings` and uses
 role-local fixtures under `features/center-manager/booking-management/`. It is a

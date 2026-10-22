@@ -31,6 +31,7 @@ export default [
       route('caregivers/:id', 'routes/center-manager/caregiver-detail.tsx'),
       route('work-shifts', 'routes/center-manager/work-shifts.tsx'),
       route('schedules', 'routes/center-manager/schedules.tsx'),
+      route('services', 'routes/center-manager/services.tsx'),
       route('work-shifts/:id', 'routes/center-manager/work-shift-detail.tsx'),
       route('bookings', 'routes/center-manager/bookings.tsx'),
       route('bookings/:id', 'routes/center-manager/booking-detail.tsx')

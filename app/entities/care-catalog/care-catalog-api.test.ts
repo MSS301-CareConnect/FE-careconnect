@@ -4,11 +4,15 @@ import {
   careCatalogErrorCode,
   careCatalogErrorStatus,
   createCatalog,
+  createOffering,
+  createOfferingPricePlan,
   fetchCatalogItems,
   fetchCenterOfferings,
   fetchPricePlans,
   removeCatalog,
-  saveCatalog
+  saveCatalog,
+  saveOffering,
+  saveOfferingPricePlan
 } from './care-catalog-api'
 
 function reply(result: unknown, code = 200, status = 200): Response {
@@ -90,5 +94,42 @@ describe('CareCatalog gateway API', () => {
 
     expect(careCatalogErrorStatus(error)).toBe(400)
     expect(careCatalogErrorCode(error)).toBe(3101)
+  })
+
+  it('scopes offering and price plan writes and sends CSRF headers', async () => {
+    const offering = { catalogItemId: 'item-1', centerId: 'center-1', status: 'ACTIVE' as const }
+    const plan = {
+      centerOfferingId: 'offering-1',
+      planName: 'Four hours',
+      pricingUnit: 'HOUR' as const,
+      durationMinutes: 240,
+      basePrice: 400000,
+      isActive: true
+    }
+    const fetchMock = vi.fn<typeof fetch>()
+    for (let index = 0; index < 4; index += 1) {
+      fetchMock.mockResolvedValueOnce(reply(csrf)).mockResolvedValueOnce(reply(index < 2 ? offering : plan))
+    }
+    vi.stubGlobal('fetch', fetchMock)
+
+    await createOffering(offering)
+    await saveOffering('offering-1', offering)
+    await createOfferingPricePlan(plan)
+    await saveOfferingPricePlan('plan-1', plan)
+
+    const writes = [1, 3, 5, 7].map((index) => fetchMock.mock.calls[index])
+    expect(writes.map(([url, options]) => [url, options?.method])).toEqual([
+      ['/api/v1/center-services', 'POST'],
+      ['/api/v1/center-services/offering-1', 'PUT'],
+      ['/api/v1/price-plans', 'POST'],
+      ['/api/v1/price-plans/plan-1', 'PUT']
+    ])
+    for (const [, options] of writes) {
+      expect(options).toMatchObject({ credentials: 'include' })
+      expect(new Headers(options?.headers).get('X-XSRF-TOKEN')).toBe('csrf-token')
+      expect(new Headers(options?.headers).get('X-Client-Type')).toBe('web')
+    }
+    expect(JSON.parse(String(writes[0][1]?.body))).toEqual(offering)
+    expect(JSON.parse(String(writes[2][1]?.body))).toEqual(plan)
   })
 })

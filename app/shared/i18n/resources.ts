@@ -36,6 +36,7 @@ import { managerBookingManagementEn, managerBookingManagementVi } from './center
 import { managerBookingDetailEn, managerBookingDetailVi } from './center-manager/booking-detail-resources'
 import { managerProviderEn, managerProviderVi } from './center-manager/provider-resources'
 import { managerScheduleEn, managerScheduleVi } from './center-manager/schedule-resources'
+import { managerServicesEn, managerServicesVi } from './center-manager/services-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
 import { adminCustomersEn, adminCustomersVi } from './admin/customers-resources'
@@ -90,7 +91,8 @@ export const resources = {
         bookingManagement: managerBookingManagementEn,
         bookingDetail: managerBookingDetailEn,
         provider: managerProviderEn,
-        schedules: managerScheduleEn
+        schedules: managerScheduleEn,
+        services: managerServicesEn
       },
       admin: {
         ...adminLayoutEn,
@@ -148,7 +150,8 @@ export const resources = {
         bookingManagement: managerBookingManagementVi,
         bookingDetail: managerBookingDetailVi,
         provider: managerProviderVi,
-        schedules: managerScheduleVi
+        schedules: managerScheduleVi,
+        services: managerServicesVi
       },
       admin: {
         ...adminLayoutVi,
