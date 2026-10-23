@@ -1,9 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
-
-const ARIA_BREADCRUMB = 'Breadcrumb'
-const ICON_HOME = 'home'
-const ICON_CHEVRON = 'chevron_right'
 const ICON_PHONE = 'phone_in_talk'
 const ICON_PRINT = 'print'
 const ICON_SHARE = 'share'
@@ -28,25 +23,6 @@ export function ShiftHeader({ code, shiftStatus, onShare, copiedToast }: ShiftHe
   return (
     <div className='flex flex-col justify-between gap-4 md:flex-row md:items-center'>
       <div className='space-y-1'>
-        {/* Breadcrumb Navigation */}
-        <nav
-          aria-label={ARIA_BREADCRUMB}
-          className='flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant'
-        >
-          <Link className='flex items-center gap-1 transition-colors hover:text-primary' to='/caregiver/dashboard'>
-            <span className='material-symbols-outlined text-[16px]'>{ICON_HOME}</span>
-            {t('caregiver.shiftDetail.breadcrumb.home')}
-          </Link>
-          <span className='material-symbols-outlined text-[14px] text-outline-variant'>{ICON_CHEVRON}</span>
-          <Link className='transition-colors hover:text-primary' to='/caregiver/schedule'>
-            {t('caregiver.shiftDetail.breadcrumb.schedule')}
-          </Link>
-          <span className='material-symbols-outlined text-[14px] text-outline-variant'>{ICON_CHEVRON}</span>
-          <span className='font-semibold text-on-surface'>
-            {t('caregiver.shiftDetail.breadcrumb.shiftCode', { code })}
-          </span>
-        </nav>
-
         {/* Heading & Status Badges */}
         <div className='flex flex-wrap items-center gap-2 pt-1'>
           <h1 className='text-2xl font-bold tracking-tight text-on-surface sm:text-3xl'>

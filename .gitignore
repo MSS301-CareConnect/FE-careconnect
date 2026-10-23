@@ -9,3 +9,5 @@
 /build/
 /coverage/
 /.vercel/
+/.agents/
+/.claude/

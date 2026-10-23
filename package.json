@@ -9,7 +9,7 @@
     "api:watch": "pnpm api:validate && orval --config ./orval.config.ts --watch",
     "build": "react-router build",
     "check": "pnpm prettier && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "dev": "react-router dev",
+    "dev": "node ./scripts/dev.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",

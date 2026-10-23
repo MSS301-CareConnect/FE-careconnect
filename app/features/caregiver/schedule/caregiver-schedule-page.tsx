@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -21,19 +20,7 @@ export function CaregiverSchedulePage() {
   const number = (value: number) => new Intl.NumberFormat(locale).format(value)
   return (
     <div className='mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-12'>
-      <div className='space-y-4'>
-        <nav
-          aria-label={t('caregiver.schedulePage.breadcrumb')}
-          className='flex items-center gap-1 text-xs text-on-surface-variant'
-        >
-          <Link className='hover:text-primary' to='/caregiver/dashboard'>
-            {t('caregiver.nav.home')}
-          </Link>
-          <Icon className='text-sm' name='chevron_right' />
-          <span className='font-semibold'>{t('caregiver.nav.schedule')}</span>
-        </nav>
-        <ScheduleControls filters={filters} />
-      </div>
+      <ScheduleControls filters={filters} />
       <p className='flex items-start gap-2 rounded-lg bg-secondary-container px-4 py-3 text-xs leading-5 text-primary'>
         <Icon className='shrink-0 text-lg' name='info' />
         {t('caregiver.schedulePage.demo', {

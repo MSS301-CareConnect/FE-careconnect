@@ -9,11 +9,13 @@ import { SignOutButton } from './sign-out-button'
 export function PortalAccountMenu({
   roleLabel,
   fallbackName,
-  avatarIcon
+  avatarIcon,
+  profileLink
 }: {
   roleLabel: string
   fallbackName: string
   avatarIcon?: string
+  profileLink?: { to: string; label: string }
 }) {
   const { t } = useTranslation()
   const user = useAuthUser()
@@ -82,6 +84,16 @@ export function PortalAccountMenu({
             <strong className='block truncate text-sm'>{name}</strong>
             <span className='text-xs text-outline'>{roleLabel}</span>
           </div>
+          {profileLink && (
+            <Link
+              className='flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
+              onClick={() => setOpen(false)}
+              to={profileLink.to}
+            >
+              <Icon className='text-lg text-primary' name='person' />
+              {profileLink.label}
+            </Link>
+          )}
           <Link
             className='flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
             onClick={() => setOpen(false)}

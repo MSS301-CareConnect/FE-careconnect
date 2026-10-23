@@ -210,11 +210,6 @@ export function CaregiverProviderWorkShiftsPage() {
   useDocumentTitle(t(`${key}.workShiftsTitle`))
   return (
     <main className='mx-auto max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8'>
-      <nav className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/caregiver/dashboard'>{t('caregiver.nav.home')}</Link>
-        <Icon name='chevron_right' />
-        <span>{t(`${key}.workShiftsTitle`)}</span>
-      </nav>
       <header className='flex flex-wrap items-center justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.workShiftsTitle`)}</h1>

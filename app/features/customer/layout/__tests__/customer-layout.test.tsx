@@ -1,15 +1,47 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { CustomerLayout } from '../customer-layout'
+
+const customer = { id: 'customer-1', fullName: 'An', status: 'ACTIVE' as const, roles: ['CUSTOMER'] }
 
 describe('CustomerLayout', () => {
   beforeEach(async () => {
     localStorage.clear()
     await setAppLanguage('vi', false)
+  })
+
+  it('lets guests browse caregivers and services without showing private customer links', () => {
+    const outletText = 'Public services'
+    render(
+      <MemoryRouter initialEntries={['/customer/services']}>
+        <Routes>
+          <Route element={<CustomerLayout audience='public' />}>
+            <Route path='/customer/services' element={<div>{outletText}</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const header = within(screen.getByRole('banner'))
+    expect(screen.getByText(outletText)).toBeInTheDocument()
+    expect(header.getByRole('link', { name: 'Tìm người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
+    expect(header.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/customer/services')
+    expect(header.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/')
+    expect(header.getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login')
+    expect(header.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
+    expect(header.queryByRole('button', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
+
+    fireEvent.click(header.getByRole('button', { name: 'Menu khách hàng' }))
+    expect(
+      within(screen.getByRole('navigation', { name: 'Menu khách hàng' })).queryByRole('link', {
+        name: 'Lịch đặt của tôi'
+      })
+    ).not.toBeInTheDocument()
   })
 
   it('renders navigation header with brand and customer links', () => {
@@ -18,7 +50,13 @@ describe('CustomerLayout', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
-          <Route element={<CustomerLayout />}>
+          <Route
+            element={
+              <AuthUserContext value={customer}>
+                <CustomerLayout />
+              </AuthUserContext>
+            }
+          >
             <Route path='/customer' element={<div>{outletText}</div>} />
           </Route>
         </Routes>
@@ -26,15 +64,23 @@ describe('CustomerLayout', () => {
     )
 
     expect(screen.getAllByText('CareConnect')[0]).toBeInTheDocument()
-    expect(screen.getByText('Tìm người chăm sóc')).toBeInTheDocument()
+    expect(within(screen.getByRole('banner')).getByText('Tìm người chăm sóc')).toBeInTheDocument()
     expect(screen.getByText('Lịch đặt của tôi')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Hồ sơ người thân' })).not.toBeInTheDocument()
+    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Hồ sơ người thân' })).toBeInTheDocument()
     expect(screen.getByText('Customer Content')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Lịch đặt của tôi' })).toHaveAttribute('href', '/customer/bookings')
-    expect(screen.getByText('Chính sách bảo mật')).toBeInTheDocument()
+    expect(within(screen.getByRole('banner')).getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute(
+      'href',
+      '/customer/services'
+    )
+    expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'Cách hoạt động' })).not.toBeInTheDocument()
+    expect(screen.getByText(`© ${new Date().getFullYear()} CareConnect. Bảo lưu mọi quyền.`)).toBeInTheDocument()
 
     expect(screen.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/customer')
-    expect(screen.getByRole('link', { name: 'CareConnect' })).toHaveAttribute('href', '/customer')
+    expect(within(screen.getByRole('banner')).getByRole('link', { name: 'CareConnect' })).toHaveAttribute(
+      'href',
+      '/customer'
+    )
     expect(screen.queryByRole('button', { name: 'Đăng xuất' })).not.toBeInTheDocument()
   })
 
@@ -42,7 +88,13 @@ describe('CustomerLayout', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
-          <Route element={<CustomerLayout />}>
+          <Route
+            element={
+              <AuthUserContext value={customer}>
+                <CustomerLayout />
+              </AuthUserContext>
+            }
+          >
             <Route path='/customer' element={<div />} />
           </Route>
         </Routes>
@@ -53,10 +105,11 @@ describe('CustomerLayout', () => {
     fireEvent.click(accountButton)
     const accountMenu = screen.getByRole('navigation', { name: 'Menu tài khoản' })
     expect(accountButton).toHaveAttribute('aria-expanded', 'true')
-    expect(accountMenu).toContainElement(screen.getByRole('link', { name: 'Hồ sơ của tôi' }))
-    expect(screen.getByRole('link', { name: 'Hồ sơ của tôi' })).toHaveAttribute('href', '/customer/my-profile')
-    const familyProfiles = screen.getByRole('link', { name: 'Hồ sơ người thân' })
-    expect(accountMenu).toContainElement(familyProfiles)
+    expect(within(accountMenu).getByRole('link', { name: 'Hồ sơ của tôi' })).toHaveAttribute(
+      'href',
+      '/customer/my-profile'
+    )
+    const familyProfiles = within(accountMenu).getByRole('link', { name: 'Hồ sơ người thân' })
     expect(familyProfiles).toHaveAttribute('href', '/customer/patient-profiles')
     expect(accountMenu).toContainElement(screen.getByRole('button', { name: 'Đăng xuất' }))
 
@@ -72,7 +125,13 @@ describe('CustomerLayout', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
-          <Route element={<CustomerLayout />}>
+          <Route
+            element={
+              <AuthUserContext value={customer}>
+                <CustomerLayout />
+              </AuthUserContext>
+            }
+          >
             <Route path='/customer' element={<div />} />
             <Route path='/customer/patient-profiles' element={<div>{familyProfilesPage}</div>} />
           </Route>
@@ -81,7 +140,9 @@ describe('CustomerLayout', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Menu tài khoản' }))
-    fireEvent.click(screen.getByRole('link', { name: 'Hồ sơ người thân' }))
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Menu tài khoản' })).getByRole('link', { name: 'Hồ sơ người thân' })
+    )
 
     expect(screen.getByText(familyProfilesPage)).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
@@ -91,7 +152,13 @@ describe('CustomerLayout', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
-          <Route element={<CustomerLayout />}>
+          <Route
+            element={
+              <AuthUserContext value={customer}>
+                <CustomerLayout />
+              </AuthUserContext>
+            }
+          >
             <Route path='/customer' element={<div />} />
           </Route>
         </Routes>
@@ -106,6 +173,6 @@ describe('CustomerLayout', () => {
       screen.getAllByRole('link', { name: 'Lịch đặt của tôi' })[1]
     )
     expect(screen.getAllByRole('link', { name: 'Trang chủ' })[1]).toHaveAttribute('href', '/customer')
-    expect(screen.queryByRole('link', { name: 'Hồ sơ người thân' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
   })
 })

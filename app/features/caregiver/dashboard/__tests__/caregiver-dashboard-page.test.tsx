@@ -63,9 +63,9 @@ describe('Caregiver dashboard portal', () => {
   it('opens mobile navigation and closes it after selecting a dashboard section', () => {
     renderPortal()
     fireEvent.click(screen.getByRole('button', { name: 'Mở menu' }))
-    const menu = document.getElementById('caregiver-mobile-menu')!
+    const menu = screen.getByRole('navigation', { name: 'Menu Điều dưỡng' })
     fireEvent.click(within(menu).getByRole('link', { name: 'Ca trực' }))
-    expect(document.getElementById('caregiver-mobile-menu')).not.toBeInTheDocument()
+    expect(document.getElementById('caregiver-sidebar')).toHaveClass('max-lg:invisible')
     expect(screen.getByRole('button', { name: 'Mở menu' })).toHaveAttribute('aria-expanded', 'false')
   })
 

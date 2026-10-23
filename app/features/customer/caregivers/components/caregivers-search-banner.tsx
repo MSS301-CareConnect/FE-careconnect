@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 const ICON_CHEVRON_RIGHT = 'chevron_right'
 const ICON_VERIFIED_USER = 'verified_user'
 const ICON_SEARCH = 'search'
@@ -32,6 +33,7 @@ export function CaregiversSearchBanner({
   catalogMode = false
 }: CaregiversSearchBannerProps) {
   const { t } = useTranslation()
+  const authUser = useAuthUser()
 
   return (
     <section className='w-full border-b border-outline-variant/30 bg-surface-container-lowest shadow-sm'>
@@ -40,7 +42,7 @@ export function CaregiversSearchBanner({
           aria-label={t('customer.caregivers.breadcrumb.current')}
           className='mb-4 flex items-center gap-2 text-sm text-on-surface-variant'
         >
-          <Link className='transition-colors hover:text-primary' to='/customer'>
+          <Link className='transition-colors hover:text-primary' to={authUser ? '/customer' : '/'}>
             {t('customer.caregivers.breadcrumb.home')}
           </Link>
           <span className='material-symbols-outlined text-[18px] text-outline'>{ICON_CHEVRON_RIGHT}</span>

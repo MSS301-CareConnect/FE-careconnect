@@ -58,12 +58,21 @@ the order ADMIN, CENTER_MANAGER, CAREGIVER, CUSTOMER. A safe return path takes
 priority when it belongs to one of the user's roles. Logout clears the backend
 cookies and reloads `/login` to drop the in-memory query cache.
 
-The Customer portal has its own guarded index at `/customer`. Its home screen
-links to existing care search, booking, and family profile screens without
-inventing remote data. The Customer header and in-portal home breadcrumbs point
-there; the account menu contains the profile and family profiles links and the
-session sign-out action. Family profiles are reached from that menu rather than the
-header navigation.
+The Customer portal has its own guarded index at `/customer`. It renders the same
+landing-page content as the public `/` route, with a bookings action in place of
+account registration. The Customer header shares the public landing page's visual
+style while retaining portal links, language selection, account access, and sign-out.
+The shared site footer adapts its account links to the signed-in Customer portal.
+The Customer header and in-portal home breadcrumbs point to `/customer`; the account
+menu contains the profile and family profiles links and the session sign-out action.
+Family profiles are reached from that menu rather than the header navigation.
+Caregiver search, caregiver detail, and services under `/customer` use a public browse
+layout outside the Customer portal guard. Guests see the same navigation style with
+Home, Find Caregivers, Services, and Sign in; active Customers also see bookings and
+their account menu. The `/customer` index, booking routes, and personal and patient
+profiles remain guarded. The public browse pages require anonymous read access to
+the caregiver catalog and detail, verified certificates, catalog items, center
+offerings, and price plans at the backend gateway; frontend routing cannot grant it.
 
 Customer `/customer/services` lists the care services customers can book. Customers
 cannot list ProviderService centers, so the page collects center IDs and names from the

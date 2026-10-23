@@ -3,61 +3,68 @@ import { Link } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
+import { SiteFooter } from '~/shared/ui/site-footer'
 
 import './home-page.css'
 
 const steps = ['find', 'compare', 'book'] as const
 const reasons = ['profiles', 'schedule', 'family'] as const
 
-export function HomePage() {
+export function HomePage({ audience = 'public' }: { audience?: 'public' | 'customer' }) {
   const { t } = useTranslation()
+  const isCustomer = audience === 'customer'
 
   return (
-    <div className='home-page min-h-[100dvh] bg-[#f7f8f5] text-[#1b2922]'>
-      <header className='border-b border-[#dfe6dc]'>
-        <div className='mx-auto flex min-h-20 max-w-[1440px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3 sm:px-8 lg:px-12'>
-          <Link
-            className='inline-flex items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em] text-[#075b31]'
-            to='/'
-          >
-            <span aria-hidden='true' className='grid h-9 w-9 place-items-center rounded-lg bg-[#075b31] text-white'>
-              <Icon className='text-[22px]' name='volunteer_activism' />
-            </span>
-            {t('common.brand')}
-          </Link>
-          <nav
-            aria-label={t('home.navigation')}
-            className='order-3 flex w-full items-center gap-5 text-sm font-semibold text-[#44594b] sm:order-2 sm:w-auto lg:gap-8'
-          >
-            <a
-              className='hover:text-[#075b31] focus-visible:outline-2 focus-visible:outline-[#075b31]'
-              href='#how-it-works'
-            >
-              {t('home.howItWorks')}
-            </a>
+    <div className={`home-page bg-[#f7f8f5] text-[#1b2922] ${isCustomer ? '' : 'min-h-[100dvh]'}`}>
+      {!isCustomer && (
+        <header className='border-b border-[#dfe6dc]'>
+          <div className='mx-auto flex min-h-20 max-w-[1440px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3 sm:px-8 lg:px-12'>
             <Link
-              className='hover:text-[#075b31] focus-visible:outline-2 focus-visible:outline-[#075b31]'
-              to='/customer/services'
+              className='inline-flex items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em] text-[#075b31]'
+              to='/'
             >
-              {t('home.services')}
+              <span aria-hidden='true' className='grid h-9 w-9 place-items-center rounded-lg bg-[#075b31] text-white'>
+                <Icon className='text-[22px]' name='volunteer_activism' />
+              </span>
+              {t('common.brand')}
             </Link>
-          </nav>
-          <div className='order-2 flex items-center gap-3 sm:order-3'>
-            <div className='hidden sm:block'>
+            <nav
+              aria-label={t('home.navigation')}
+              className='order-3 flex w-full items-center gap-5 text-sm font-semibold text-[#44594b] sm:order-2 sm:w-auto lg:gap-8'
+            >
+              <Link className='hover:text-[#075b31] focus-visible:outline-2 focus-visible:outline-[#075b31]' to='/'>
+                {t('customer.nav.home')}
+              </Link>
+              <Link
+                className='hover:text-[#075b31] focus-visible:outline-2 focus-visible:outline-[#075b31]'
+                to='/customer/caregivers'
+              >
+                {t('customer.nav.findCaregivers')}
+              </Link>
+              <Link
+                className='hover:text-[#075b31] focus-visible:outline-2 focus-visible:outline-[#075b31]'
+                to='/customer/services'
+              >
+                {t('customer.nav.services')}
+              </Link>
+            </nav>
+            <div className='order-2 flex items-center gap-3 sm:order-3'>
+              <div className='hidden sm:block'>
+                <LanguageSwitch />
+              </div>
+              <Link
+                className='inline-flex min-h-11 items-center rounded-lg border border-[#b9c9bb] px-4 text-sm font-bold text-[#075b31] hover:bg-[#eaf2e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+                to='/login'
+              >
+                {t('home.signIn')}
+              </Link>
+            </div>
+            <div className='order-4 w-full sm:hidden'>
               <LanguageSwitch />
             </div>
-            <Link
-              className='inline-flex min-h-11 items-center rounded-lg border border-[#b9c9bb] px-4 text-sm font-bold text-[#075b31] hover:bg-[#eaf2e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
-              to='/login'
-            >
-              {t('home.signIn')}
-            </Link>
           </div>
-          <div className='order-4 w-full sm:hidden'>
-            <LanguageSwitch />
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main>
         <section
@@ -90,9 +97,9 @@ export function HomePage() {
               </Link>
               <Link
                 className='inline-flex min-h-11 items-center border-b border-[#075b31] text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
-                to='/register'
+                to={isCustomer ? '/customer/bookings' : '/register'}
               >
-                {t('home.createAccount')}
+                {isCustomer ? t('customer.home.viewBookings') : t('home.createAccount')}
               </Link>
             </div>
           </div>
@@ -176,65 +183,7 @@ export function HomePage() {
           </div>
         </section>
       </main>
-      <footer className='bg-[#123a29] text-[#e9f0e9]'>
-        <div className='mx-auto grid max-w-[1440px] gap-12 px-5 py-14 sm:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,1fr))] sm:gap-8 sm:px-8 lg:px-12 lg:py-16'>
-          <div>
-            <Link className='inline-flex items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em]' to='/'>
-              <span
-                aria-hidden='true'
-                className='grid h-9 w-9 place-items-center rounded-lg bg-[#d8efcc] text-[#123a29]'
-              >
-                <Icon className='text-[22px]' name='volunteer_activism' />
-              </span>
-              {t('common.brand')}
-            </Link>
-            <p className='mt-5 max-w-[32ch] text-sm leading-7 text-[#c6d7c9]'>{t('home.footer')}</p>
-          </div>
-          <nav aria-label={t('home.footerExplore')}>
-            <h2 className='text-xs font-extrabold uppercase tracking-[0.16em] text-[#9dc9a8]'>
-              {t('home.footerExplore')}
-            </h2>
-            <div className='mt-5 flex flex-col items-start gap-3 text-sm'>
-              <Link
-                className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-                to='/customer/caregivers'
-              >
-                {t('home.primaryAction')}
-              </Link>
-              <Link
-                className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-                to='/customer/services'
-              >
-                {t('home.services')}
-              </Link>
-              <a
-                className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-                href='#how-it-works'
-              >
-                {t('home.howItWorks')}
-              </a>
-            </div>
-          </nav>
-          <nav aria-label={t('home.footerAccount')}>
-            <h2 className='text-xs font-extrabold uppercase tracking-[0.16em] text-[#9dc9a8]'>
-              {t('home.footerAccount')}
-            </h2>
-            <div className='mt-5 flex flex-col items-start gap-3 text-sm'>
-              <Link className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2' to='/login'>
-                {t('home.signIn')}
-              </Link>
-              <Link className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2' to='/register'>
-                {t('home.createAccount')}
-              </Link>
-            </div>
-          </nav>
-        </div>
-        <div className='border-t border-white/15'>
-          <div className='mx-auto max-w-[1440px] px-5 py-5 text-xs text-[#c6d7c9] sm:px-8 lg:px-12'>
-            {t('home.footerCopyright', { year: new Date().getFullYear() })}
-          </div>
-        </div>
-      </footer>
+      {!isCustomer && <SiteFooter audience='public' />}
     </div>
   )
 }
