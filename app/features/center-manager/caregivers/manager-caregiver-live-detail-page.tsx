@@ -11,10 +11,11 @@ import {
   removeCaregiver,
   removeCertificate,
   saveCaregiver,
-  saveCertificate
+  saveCertificate,
+  uploadMedia
 } from '~/entities/provider/provider-api'
 import { formatProviderDate } from '~/entities/provider/provider-format'
-import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
+import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import type { ProviderCaregiverRecord, ProviderCertificateRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -163,8 +164,11 @@ function CertificateEditor({
   const [number, setNumber] = useState(certificate?.credentialNumber ?? '')
   const [issuedDate, setIssuedDate] = useState(certificate?.issuedDate ?? '')
   const [expiryDate, setExpiryDate] = useState(certificate?.expiryDate ?? '')
+  const [file, setFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<'type' | 'size' | null>(null)
+  const [pendingCertificateId, setPendingCertificateId] = useState<string | null>(null)
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const request = {
         certificateName: name.trim(),
         issuedBy: issuedBy.trim(),
@@ -172,9 +176,21 @@ function CertificateEditor({
         issuedDate: issuedDate || undefined,
         expiryDate: expiryDate || undefined
       }
-      return certificate
-        ? saveCertificate(certificate.id, { ...request, version: certificate.version })
-        : createCertificate(caregiverId, request)
+      const certificateId =
+        pendingCertificateId ??
+        (certificate
+          ? (await saveCertificate(certificate.id, { ...request, version: certificate.version })).id
+          : (await createCertificate(caregiverId, request)).id)
+      if (file) {
+        setPendingCertificateId(certificateId)
+        try {
+          await uploadMedia('CERTIFICATE', certificateId, [file])
+        } catch (error) {
+          await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
+          throw error
+        }
+      }
+      return certificateId
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
@@ -188,15 +204,38 @@ function CertificateEditor({
   return (
     <form className='space-y-4 rounded-lg border p-4' onSubmit={submit}>
       <h3 className='font-semibold'>{t(certificate ? `${key}.editCertificate` : `${key}.addCertificate`)}</h3>
+      <label className='block text-sm'>
+        {t(`${key}.certificateFile`)}
+        <input
+          accept='.pdf,.jpg,.jpeg,.png'
+          className={inputClass}
+          onChange={(event) => {
+            const selected = event.target.files?.[0] ?? null
+            const error = selected ? validateProviderFiles('CERTIFICATE', [selected]) : null
+            setFileError(error === 'type' || error === 'size' ? error : null)
+            setFile(error ? null : selected)
+            if (error) event.target.value = ''
+          }}
+          required={!certificate}
+          type='file'
+        />
+      </label>
       <div className='grid gap-3 sm:grid-cols-2'>
         <label className='text-sm'>
           {t(`${key}.certificateName`)}
-          <input className={inputClass} onChange={(event) => setName(event.target.value)} required value={name} />
+          <input
+            className={inputClass}
+            disabled={Boolean(pendingCertificateId)}
+            onChange={(event) => setName(event.target.value)}
+            required
+            value={name}
+          />
         </label>
         <label className='text-sm'>
           {t(`${key}.issuedBy`)}
           <input
             className={inputClass}
+            disabled={Boolean(pendingCertificateId)}
             onChange={(event) => setIssuedBy(event.target.value)}
             required
             value={issuedBy}
@@ -204,12 +243,18 @@ function CertificateEditor({
         </label>
         <label className='text-sm'>
           {t(`${key}.credentialNumber`)}
-          <input className={inputClass} onChange={(event) => setNumber(event.target.value)} value={number} />
+          <input
+            className={inputClass}
+            disabled={Boolean(pendingCertificateId)}
+            onChange={(event) => setNumber(event.target.value)}
+            value={number}
+          />
         </label>
         <label className='text-sm'>
           {t(`${key}.issuedDate`)}
           <input
             className={inputClass}
+            disabled={Boolean(pendingCertificateId)}
             onChange={(event) => setIssuedDate(event.target.value)}
             type='date'
             value={issuedDate}
@@ -219,20 +264,24 @@ function CertificateEditor({
           {t(`${key}.expiryDate`)}
           <input
             className={inputClass}
+            disabled={Boolean(pendingCertificateId)}
             onChange={(event) => setExpiryDate(event.target.value)}
             type='date'
             value={expiryDate}
           />
         </label>
       </div>
-      {save.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      {fileError ? <p role='alert'>{t(`common.providerMedia.validation.${fileError}`, { maxSize: 10 })}</p> : null}
+      {save.isError ? (
+        <p role='alert'>{t(pendingCertificateId ? `${key}.certificateUploadError` : `${key}.actionError`)}</p>
+      ) : null}
       <div className='flex gap-3'>
         <button
           className='rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-50'
-          disabled={save.isPending}
+          disabled={save.isPending || (!certificate && !file)}
           type='submit'
         >
-          {t(`${key}.save`)}
+          {t(pendingCertificateId ? `${key}.retryCertificateUpload` : file ? `${key}.saveAndUpload` : `${key}.save`)}
         </button>
         <button className='rounded-lg border px-3 py-2' onClick={onDone} type='button'>
           {t(`${key}.cancel`)}
@@ -288,8 +337,12 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
                 <button className='text-primary underline' onClick={() => setEditor(certificate.id)} type='button'>
                   {t(`${key}.editCertificate`)}
                 </button>
-                <button className='text-primary underline' onClick={() => setMediaFor(certificate.id)} type='button'>
-                  {t('common.providerMedia.title')}
+                <button
+                  className='text-primary underline'
+                  onClick={() => setMediaFor(mediaFor === certificate.id ? null : certificate.id)}
+                  type='button'
+                >
+                  {t(`${key}.uploadCertificateFile`)}
                 </button>
                 <button
                   className='text-error underline disabled:opacity-50'
@@ -302,11 +355,15 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
                   {t(`${key}.archiveCertificate`)}
                 </button>
               </div>
+              {mediaFor === certificate.id ? (
+                <div className='w-full'>
+                  <ProviderMediaPanel ownerId={certificate.id} ownerType='CERTIFICATE' />
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
       ) : null}
-      {mediaFor ? <ProviderMediaPanel key={mediaFor} ownerId={mediaFor} ownerType='CERTIFICATE' /> : null}
       {editor ? (
         <CertificateEditor
           caregiverId={caregiverId}

@@ -6,6 +6,7 @@
   "scripts": {
     "api:generate": "pnpm api:validate && orval --config ./orval.config.ts",
     "api:validate": "node ./scripts/validate-openapi.mjs ./openapi/openapi.yaml",
+    "api:audit:live": "node ./scripts/audit-live-api.mjs",
     "api:watch": "pnpm api:validate && orval --config ./orval.config.ts --watch",
     "build": "react-router build",
     "check": "pnpm prettier && pnpm lint && pnpm typecheck && pnpm test && pnpm build",

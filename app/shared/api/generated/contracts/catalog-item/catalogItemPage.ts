@@ -5,10 +5,12 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { ProviderScheduleRecord } from './providerScheduleRecord'
+import type { CatalogItemRecord } from '../catalogItemRecord'
 
-export interface ProviderScheduleResponse {
-  code: number
-  message: string
-  result: ProviderScheduleRecord
+export interface CatalogItemPage {
+  items: CatalogItemRecord[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
 }

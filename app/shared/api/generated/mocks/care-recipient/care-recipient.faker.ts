@@ -118,33 +118,6 @@ export const getListCareRecipientsBatchResponseMock = (
   ...overrideResponse
 })
 
-export const getGetCaregiverCareRecipientResponseMock = (
-  overrideResponse: Partial<Extract<CareRecipientSnapshotResponse, object>> = {}
-): CareRecipientSnapshotResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getCareRecipientSnapshotRecordMock() },
-  ...overrideResponse
-})
-
-export const getListAdminCareRecipientsResponseMock = (
-  overrideResponse: Partial<Extract<CareRecipientSummaryPageResponse, object>> = {}
-): CareRecipientSummaryPageResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getCareRecipientSummaryPageMock() },
-  ...overrideResponse
-})
-
-export const getGetAdminCareRecipientResponseMock = (
-  overrideResponse: Partial<Extract<CareRecipientDetailResponse, object>> = {}
-): CareRecipientDetailResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getCareRecipientDetailRecordMock() },
-  ...overrideResponse
-})
-
 export const getListCareRecipientMedicationsResponseMock = (
   overrideResponse: Partial<Extract<MedicationListResponse, object>> = {}
 ): MedicationListResponse => ({

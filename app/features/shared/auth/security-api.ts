@@ -1,7 +1,7 @@
 import { changeMyPassword } from '~/shared/api/generated/api/account/account'
 import {
   listWebSessions,
-  logoutAllWebSessions,
+  logoutWebSession,
   revokeWebSession
 } from '~/shared/api/generated/api/authentication/authentication'
 import type { ChangePasswordRequest, SessionRecord } from '~/shared/api/generated/contracts'
@@ -13,8 +13,17 @@ export async function changePassword(request: ChangePasswordRequest) {
 }
 
 export async function signOutEverywhere() {
-  const response = await logoutAllWebSessions({ credentials: 'include', headers: await csrfHeaders() })
-  if (response.data.code !== 200) throw new Error(`IdentityService returned code ${response.data.code}`)
+  const sessions = await fetchWebSessions()
+  for (const session of sessions.filter((item) => !item.isCurrent)) {
+    await revokeSession(session.sessionId)
+  }
+  const current = sessions.find((item) => item.isCurrent)
+  if (current) {
+    await revokeSession(current.sessionId)
+  } else {
+    const response = await logoutWebSession({ credentials: 'include', headers: await csrfHeaders() })
+    if (response.data.code !== 200) throw new Error(`IdentityService returned code ${response.data.code}`)
+  }
 }
 
 export async function fetchWebSessions(): Promise<SessionRecord[]> {

@@ -8,7 +8,7 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { CatalogItemListResponse, CatalogItemResponse, EmptyActionResponse } from '../../contracts'
+import type { CatalogItemPageResponse, CatalogItemResponse, EmptyActionResponse } from '../../contracts'
 
 import {
   getCreateCatalogItemResponseMock,
@@ -28,10 +28,10 @@ export {
 
 export const getListCatalogItemsMockHandler = (
   overrideResponse?:
-    | CatalogItemListResponse
+    | CatalogItemPageResponse
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<CatalogItemListResponse> | CatalogItemListResponse),
+      ) => Promise<CatalogItemPageResponse> | CatalogItemPageResponse),
   options?: RequestHandlerOptions
 ) => {
   return http.get(

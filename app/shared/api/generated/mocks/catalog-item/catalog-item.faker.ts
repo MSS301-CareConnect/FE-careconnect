@@ -7,18 +7,16 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { CatalogItemListResponse, CatalogItemResponse, EmptyActionResponse } from '../../contracts'
+import type { CatalogItemPageResponse, CatalogItemResponse, EmptyActionResponse } from '../../contracts'
 
-import { getCatalogItemRecordMock } from '../../contracts/index.faker'
+import { getCatalogItemPageMock, getCatalogItemRecordMock } from '../../contracts/index.faker'
 
 export const getListCatalogItemsResponseMock = (
-  overrideResponse: Partial<Extract<CatalogItemListResponse, object>> = {}
-): CatalogItemListResponse => ({
+  overrideResponse: Partial<Extract<CatalogItemPageResponse, object>> = {}
+): CatalogItemPageResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    ...getCatalogItemRecordMock()
-  })),
+  result: { ...getCatalogItemPageMock() },
   ...overrideResponse
 })
 

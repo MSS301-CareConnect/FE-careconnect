@@ -26,12 +26,14 @@ import type {
   CareRecipientUpdateRequest,
   CaregiverCreateRequest,
   CaregiverUpdateRequest,
-  CatalogItemListResponse,
+  CatalogItemPage,
+  CatalogItemPageResponse,
   CatalogItemRecord,
   CatalogItemRequest,
   CatalogItemResponse,
   CenterCreateRequest,
-  CenterOfferingListResponse,
+  CenterOfferingPage,
+  CenterOfferingPageResponse,
   CenterOfferingRecord,
   CenterOfferingRequest,
   CenterOfferingResponse,
@@ -919,14 +921,23 @@ export const getCatalogItemResponseMock = (
   ...overrideResponse
 })
 
-export const getCatalogItemListResponseMock = (
-  overrideResponse: Partial<CatalogItemListResponse> = {}
-): CatalogItemListResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+export const getCatalogItemPageMock = (overrideResponse: Partial<CatalogItemPage> = {}): CatalogItemPage => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     ...getCatalogItemRecordMock()
   })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCatalogItemPageResponseMock = (
+  overrideResponse: Partial<CatalogItemPageResponse> = {}
+): CatalogItemPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCatalogItemPageMock() },
   ...overrideResponse
 })
 
@@ -939,14 +950,23 @@ export const getCenterOfferingResponseMock = (
   ...overrideResponse
 })
 
-export const getCenterOfferingListResponseMock = (
-  overrideResponse: Partial<CenterOfferingListResponse> = {}
-): CenterOfferingListResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+export const getCenterOfferingPageMock = (overrideResponse: Partial<CenterOfferingPage> = {}): CenterOfferingPage => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     ...getCenterOfferingRecordMock()
   })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCenterOfferingPageResponseMock = (
+  overrideResponse: Partial<CenterOfferingPageResponse> = {}
+): CenterOfferingPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCenterOfferingPageMock() },
   ...overrideResponse
 })
 

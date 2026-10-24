@@ -9,7 +9,7 @@ import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
 import type {
-  CenterOfferingListResponse,
+  CenterOfferingPageResponse,
   CenterOfferingResponse,
   EmptyActionResponse,
   ServiceQuoteListResponse
@@ -137,10 +137,10 @@ export const getDeleteCenterOfferingMockHandler = (
 
 export const getListCenterOfferingsMockHandler = (
   overrideResponse?:
-    | CenterOfferingListResponse
+    | CenterOfferingPageResponse
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<CenterOfferingListResponse> | CenterOfferingListResponse),
+      ) => Promise<CenterOfferingPageResponse> | CenterOfferingPageResponse),
   options?: RequestHandlerOptions
 ) => {
   return http.get(

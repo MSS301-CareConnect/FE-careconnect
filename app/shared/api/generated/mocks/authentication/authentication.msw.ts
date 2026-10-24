@@ -20,7 +20,6 @@ import {
   getGetCsrfTokenResponseMock,
   getListWebSessionsResponseMock,
   getLoginWebResponseMock,
-  getLogoutAllWebSessionsResponseMock,
   getLogoutWebSessionResponseMock,
   getRefreshWebSessionResponseMock,
   getRevokeWebSessionResponseMock
@@ -31,7 +30,6 @@ export {
   getLoginWebResponseMock,
   getRefreshWebSessionResponseMock,
   getLogoutWebSessionResponseMock,
-  getLogoutAllWebSessionsResponseMock,
   getListWebSessionsResponseMock,
   getRevokeWebSessionResponseMock
 } from './authentication.faker'
@@ -131,30 +129,6 @@ export const getLogoutWebSessionMockHandler = (
   )
 }
 
-export const getLogoutAllWebSessionsMockHandler = (
-  overrideResponse?:
-    | EmptyActionResponse
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
-  options?: RequestHandlerOptions
-) => {
-  return http.post(
-    '*/v1/auth/logout-all',
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-      await delay(150)
-
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getLogoutAllWebSessionsResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
 export const getListWebSessionsMockHandler = (
   overrideResponse?:
     | SessionListResponse
@@ -207,7 +181,6 @@ export const getAuthenticationMock = () => [
   getLoginWebMockHandler(),
   getRefreshWebSessionMockHandler(),
   getLogoutWebSessionMockHandler(),
-  getLogoutAllWebSessionsMockHandler(),
   getListWebSessionsMockHandler(),
   getRevokeWebSessionMockHandler()
 ]

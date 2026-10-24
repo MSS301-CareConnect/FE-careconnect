@@ -5,13 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { ListAdminCareRecipientsStatus } from './listAdminCareRecipientsStatus'
+import type { ListCenterOfferingsStatus } from './listCenterOfferingsStatus'
 
-export type ListAdminCareRecipientsParams = {
-  status?: ListAdminCareRecipientsStatus
-  keyword?: string
-  createdBy?: string
-  includeDeleted?: boolean
+export type ListCenterOfferingsParams = {
+  status?: ListCenterOfferingsStatus
   page?: number
   size?: number
 }

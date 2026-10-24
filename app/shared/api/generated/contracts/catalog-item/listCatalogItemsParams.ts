@@ -5,10 +5,12 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { CenterOfferingRecord } from './centerOfferingRecord'
+import type { ListCatalogItemsStatus } from './listCatalogItemsStatus'
 
-export interface CenterOfferingListResponse {
-  code: number
-  message: string
-  result: CenterOfferingRecord[]
+export type ListCatalogItemsParams = {
+  status?: ListCatalogItemsStatus
+  category?: string
+  keyword?: string
+  page?: number
+  size?: number
 }

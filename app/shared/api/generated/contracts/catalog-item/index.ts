@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export * from './catalogItemListResponse'
+export * from './catalogItemPage'
+export * from './catalogItemPageResponse'
 export * from './catalogItemRequest'
 export * from './catalogItemRequestStatus'
 export * from './catalogItemResponse'
+export * from './listCatalogItemsParams'
+export * from './listCatalogItemsStatus'

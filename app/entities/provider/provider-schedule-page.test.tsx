@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchCenterSchedules, fetchMySchedules, updateCaregiverSchedule, updateCenterSchedule } from './provider-api'
+import { fetchCenterSchedules, fetchMySchedules, updateCaregiverSchedule } from './provider-api'
 import { ProviderSchedulePage } from './provider-schedule-page'
 import type { ProviderScheduleRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -12,8 +12,7 @@ vi.mock('./provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./provider-api')>()),
   fetchCenterSchedules: vi.fn(),
   fetchMySchedules: vi.fn(),
-  updateCaregiverSchedule: vi.fn(),
-  updateCenterSchedule: vi.fn()
+  updateCaregiverSchedule: vi.fn()
 }))
 
 const schedule: ProviderScheduleRecord = {
@@ -46,7 +45,6 @@ beforeEach(async () => {
   vi.mocked(fetchCenterSchedules).mockReset()
   vi.mocked(fetchMySchedules).mockReset()
   vi.mocked(updateCaregiverSchedule).mockReset()
-  vi.mocked(updateCenterSchedule).mockReset()
   await setAppLanguage('en', false)
 })
 
@@ -68,26 +66,15 @@ describe('Provider schedules', () => {
     expect(fetchCenterSchedules).not.toHaveBeenCalled()
   })
 
-  it('requires a reason to cancel a manager schedule', async () => {
+  it('shows center schedules without controls for the removed manager mutation', async () => {
     vi.mocked(fetchCenterSchedules).mockResolvedValue(page)
-    vi.mocked(updateCenterSchedule).mockResolvedValue({ ...schedule, scheduleStatus: 'CANCELLED', version: 4 })
     renderPage('center-1')
 
     expect(await screen.findByText('Lan Nguyen')).toBeInTheDocument()
     expect(fetchCenterSchedules).toHaveBeenCalledWith('center-1', { page: 0, size: 20 })
-    const cancel = screen.getByRole('button', { name: 'Cancel schedule' })
-    expect(cancel).toBeDisabled()
-    fireEvent.change(screen.getByRole('textbox', { name: 'Cancellation reason' }), {
-      target: { value: '  Change of care plan  ' }
-    })
-    fireEvent.click(cancel)
-    await waitFor(() =>
-      expect(updateCenterSchedule).toHaveBeenCalledWith('schedule-1', {
-        status: 'CANCELLED',
-        version: 3,
-        reason: 'Change of care plan'
-      })
-    )
+    expect(screen.queryByRole('button', { name: 'Cancel schedule' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: 'Cancellation reason' })).not.toBeInTheDocument()
     expect(fetchMySchedules).not.toHaveBeenCalled()
   })
 })

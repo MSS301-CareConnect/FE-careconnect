@@ -12,8 +12,7 @@ import type {
   EmptyActionResponse,
   ProviderCenterPageResponse,
   ProviderCenterResponse,
-  ProviderSchedulePageResponse,
-  ProviderScheduleResponse
+  ProviderSchedulePageResponse
 } from '../../contracts'
 
 import {
@@ -23,8 +22,7 @@ import {
   getListProviderCenterSchedulesResponseMock,
   getListProviderCentersResponseMock,
   getSetProviderCenterStatusResponseMock,
-  getUpdateProviderCenterResponseMock,
-  getUpdateProviderCenterScheduleStatusResponseMock
+  getUpdateProviderCenterResponseMock
 } from './provider-center.faker'
 
 export {
@@ -34,7 +32,6 @@ export {
   getUpdateProviderCenterResponseMock,
   getArchiveProviderCenterResponseMock,
   getSetProviderCenterStatusResponseMock,
-  getUpdateProviderCenterScheduleStatusResponseMock,
   getListProviderCenterSchedulesResponseMock
 } from './provider-center.faker'
 
@@ -192,32 +189,6 @@ export const getSetProviderCenterStatusMockHandler = (
   )
 }
 
-export const getUpdateProviderCenterScheduleStatusMockHandler = (
-  overrideResponse?:
-    | ProviderScheduleResponse
-    | ((
-        info: Parameters<Parameters<typeof http.patch>[1]>[0]
-      ) => Promise<ProviderScheduleResponse> | ProviderScheduleResponse),
-  options?: RequestHandlerOptions
-) => {
-  return http.patch(
-    '*/v1/care-centers/schedules/:id/status',
-    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
-      await delay(150)
-
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getUpdateProviderCenterScheduleStatusResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
 export const getListProviderCenterSchedulesMockHandler = (
   overrideResponse?:
     | ProviderSchedulePageResponse
@@ -250,6 +221,5 @@ export const getProviderCenterMock = () => [
   getUpdateProviderCenterMockHandler(),
   getArchiveProviderCenterMockHandler(),
   getSetProviderCenterStatusMockHandler(),
-  getUpdateProviderCenterScheduleStatusMockHandler(),
   getListProviderCenterSchedulesMockHandler()
 ]

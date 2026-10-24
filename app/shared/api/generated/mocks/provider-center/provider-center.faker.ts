@@ -11,15 +11,13 @@ import type {
   EmptyActionResponse,
   ProviderCenterPageResponse,
   ProviderCenterResponse,
-  ProviderSchedulePageResponse,
-  ProviderScheduleResponse
+  ProviderSchedulePageResponse
 } from '../../contracts'
 
 import {
   getProviderCenterPageMock,
   getProviderCenterRecordMock,
-  getProviderSchedulePageMock,
-  getProviderScheduleRecordMock
+  getProviderSchedulePageMock
 } from '../../contracts/index.faker'
 
 export const getListProviderCentersResponseMock = (
@@ -73,15 +71,6 @@ export const getSetProviderCenterStatusResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderCenterRecordMock() },
-  ...overrideResponse
-})
-
-export const getUpdateProviderCenterScheduleStatusResponseMock = (
-  overrideResponse: Partial<Extract<ProviderScheduleResponse, object>> = {}
-): ProviderScheduleResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getProviderScheduleRecordMock() },
   ...overrideResponse
 })
 

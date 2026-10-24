@@ -3,7 +3,15 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchCaregiver, fetchCaregivers, fetchCertificates, saveCaregiver } from '~/entities/provider/provider-api'
+import {
+  createCertificate,
+  fetchCaregiver,
+  fetchCaregivers,
+  fetchCertificates,
+  fetchProviderMedia,
+  saveCaregiver,
+  uploadMedia
+} from '~/entities/provider/provider-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -15,7 +23,10 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchCaregivers: vi.fn(),
   fetchCaregiver: vi.fn(),
   fetchCertificates: vi.fn(),
-  saveCaregiver: vi.fn()
+  fetchProviderMedia: vi.fn(),
+  saveCaregiver: vi.fn(),
+  createCertificate: vi.fn(),
+  uploadMedia: vi.fn()
 }))
 
 const person: ProviderCaregiverRecord = {
@@ -48,7 +59,10 @@ beforeEach(async () => {
   vi.mocked(fetchCaregivers).mockReset()
   vi.mocked(fetchCaregiver).mockReset()
   vi.mocked(fetchCertificates).mockReset()
+  vi.mocked(fetchProviderMedia).mockReset()
   vi.mocked(saveCaregiver).mockReset()
+  vi.mocked(createCertificate).mockReset()
+  vi.mocked(uploadMedia).mockReset()
   await setAppLanguage('en', false)
 })
 
@@ -93,6 +107,60 @@ describe('Center Manager Provider caregivers', () => {
         expect.objectContaining({ fullName: 'Lan Tran', version: 4 })
       )
     )
+  })
+
+  it('opens certificate file upload beside the selected certificate', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue(person)
+    vi.mocked(fetchCertificates).mockResolvedValue([
+      {
+        id: 'certificate-1',
+        caregiverId: 'caregiver-1',
+        certificateName: 'First aid',
+        issuedBy: 'Red Cross',
+        verificationStatus: 'PENDING',
+        version: 1
+      }
+    ])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Upload certificate file' }))
+    await waitFor(() => expect(fetchProviderMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1'))
+    expect(screen.getAllByLabelText('Upload files')).toHaveLength(2)
+  })
+
+  it('creates and uploads a certificate in one form', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue(person)
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(createCertificate).mockResolvedValue({
+      id: 'certificate-1',
+      caregiverId: 'caregiver-1',
+      certificateName: 'First aid',
+      issuedBy: 'Red Cross',
+      verificationStatus: 'PENDING',
+      version: 1
+    })
+    vi.mocked(uploadMedia).mockResolvedValue([])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add certificate' }))
+    const file = new File(['sample'], 'first-aid.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText('Certificate image or PDF'), { target: { files: [file] } })
+    fireEvent.change(screen.getByLabelText('Certificate name'), { target: { value: 'First aid' } })
+    fireEvent.change(screen.getByLabelText('Issued by'), { target: { value: 'Red Cross' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Save and upload certificate' }).closest('form')!)
+
+    await waitFor(() =>
+      expect(createCertificate).toHaveBeenCalledWith(
+        'caregiver-1',
+        expect.objectContaining({
+          certificateName: 'First aid',
+          issuedBy: 'Red Cross'
+        })
+      )
+    )
+    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [file]))
   })
 
   it('blocks a manager without an assigned center before requesting Provider data', () => {

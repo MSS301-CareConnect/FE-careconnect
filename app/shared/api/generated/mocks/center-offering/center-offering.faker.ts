@@ -8,13 +8,17 @@
 import { faker } from '@faker-js/faker'
 
 import type {
-  CenterOfferingListResponse,
+  CenterOfferingPageResponse,
   CenterOfferingResponse,
   EmptyActionResponse,
   ServiceQuoteListResponse
 } from '../../contracts'
 
-import { getCenterOfferingRecordMock, getServiceQuoteRecordMock } from '../../contracts/index.faker'
+import {
+  getCenterOfferingPageMock,
+  getCenterOfferingRecordMock,
+  getServiceQuoteRecordMock
+} from '../../contracts/index.faker'
 
 export const getCreateCenterOfferingResponseMock = (
   overrideResponse: Partial<Extract<CenterOfferingResponse, object>> = {}
@@ -53,13 +57,11 @@ export const getDeleteCenterOfferingResponseMock = (
 })
 
 export const getListCenterOfferingsResponseMock = (
-  overrideResponse: Partial<Extract<CenterOfferingListResponse, object>> = {}
-): CenterOfferingListResponse => ({
+  overrideResponse: Partial<Extract<CenterOfferingPageResponse, object>> = {}
+): CenterOfferingPageResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    ...getCenterOfferingRecordMock()
-  })),
+  result: { ...getCenterOfferingPageMock() },
   ...overrideResponse
 })
 

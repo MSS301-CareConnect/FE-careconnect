@@ -5,29 +5,65 @@ import { Icon } from '~/shared/ui/icon'
 
 import { fetchProviderMedia, providerKeys, removeMedia, uploadMedia, type ProviderMediaOwner } from './provider-api'
 
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const CERTIFICATE_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+const MAX_FILES = 10
+const MEGABYTE = 1024 * 1024
+
+export function validateProviderFiles(ownerType: ProviderMediaOwner, files: File[]): 'count' | 'type' | 'size' | null {
+  if (files.length > MAX_FILES) return 'count'
+  const allowed = ownerType === 'CERTIFICATE' ? CERTIFICATE_TYPES : IMAGE_TYPES
+  if (files.some((file) => !allowed.includes(file.type))) return 'type'
+  const maxBytes = (ownerType === 'CERTIFICATE' ? 10 : 5) * MEGABYTE
+  if (files.some((file) => file.size === 0 || file.size > maxBytes)) return 'size'
+  return null
+}
+
 export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: ProviderMediaOwner; ownerId: string }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [files, setFiles] = useState<File[]>([])
+  const [fileError, setFileError] = useState<'count' | 'type' | 'size' | null>(null)
+  const [inputKey, setInputKey] = useState(0)
+  const titleKey = {
+    CARE_CENTER: 'common.providerMedia.centerTitle',
+    CAREGIVER_PROFILE: 'common.providerMedia.caregiverTitle',
+    CERTIFICATE: 'common.providerMedia.certificateTitle'
+  } as const
   const queryKey = providerKeys.media(ownerType, ownerId)
   const media = useQuery({ queryKey, queryFn: () => fetchProviderMedia(ownerType, ownerId), retry: false })
   const upload = useMutation({
     mutationFn: () => uploadMedia(ownerType, ownerId, files),
     onSuccess: async () => {
       setFiles([])
-      await queryClient.invalidateQueries({ queryKey })
+      setInputKey((current) => current + 1)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: providerKeys.catalog })
+      ])
     }
   })
   const remove = useMutation({
     mutationFn: (mediaFileId: string) => removeMedia(ownerType, ownerId, mediaFileId),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: providerKeys.catalog })
+      ])
+    }
   })
   return (
     <section className='space-y-4 rounded-2xl bg-white p-5 shadow-sm'>
       <h2 className='flex items-center gap-2 text-lg font-bold'>
         <Icon className='text-primary' name='perm_media' />
-        {t('common.providerMedia.title')}
+        {t(titleKey[ownerType])}
       </h2>
+      {ownerType === 'CAREGIVER_PROFILE' ? (
+        <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.caregiverHint')}</p>
+      ) : null}
+      {ownerType === 'CARE_CENTER' ? (
+        <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.centerHint')}</p>
+      ) : null}
       {media.isPending ? <p role='status'>{t('common.providerMedia.loading')}</p> : null}
       {media.isError ? <p role='alert'>{t('common.providerMedia.error')}</p> : null}
       {media.isSuccess && media.data.length === 0 ? (
@@ -40,7 +76,15 @@ export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: Provider
           {media.data.map((item) => (
             <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={item.mediaFileId}>
               <span className='flex min-w-0 items-center gap-2 text-sm font-medium'>
-                <Icon className='shrink-0 text-primary' name='attach_file' />
+                {item.downloadUrl && item.contentType?.startsWith('image/') ? (
+                  <img
+                    alt={item.originalFileName || t('common.providerMedia.image')}
+                    className='h-12 w-12 shrink-0 rounded-lg object-cover'
+                    src={item.downloadUrl}
+                  />
+                ) : (
+                  <Icon className='shrink-0 text-primary' name='attach_file' />
+                )}
                 <span className='truncate'>{item.originalFileName || item.mediaFileType}</span>
               </span>
               <div className='flex gap-3'>
@@ -71,10 +115,18 @@ export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: Provider
       ) : null}
       <div className='flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-4'>
         <input
+          accept={ownerType === 'CERTIFICATE' ? '.pdf,.jpg,.jpeg,.png' : '.jpg,.jpeg,.png,.webp'}
           aria-label={t('common.providerMedia.upload')}
           className='min-w-0 flex-1 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:font-semibold file:text-primary'
+          key={inputKey}
           multiple
-          onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
+          onChange={(event) => {
+            const selected = Array.from(event.target.files ?? [])
+            const error = validateProviderFiles(ownerType, selected)
+            setFileError(error)
+            setFiles(error ? [] : selected)
+            if (error) event.target.value = ''
+          }}
           type='file'
         />
         <button
@@ -86,6 +138,11 @@ export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: Provider
           {t('common.providerMedia.upload')}
         </button>
       </div>
+      {fileError ? (
+        <p role='alert'>
+          {t(`common.providerMedia.validation.${fileError}`, { maxSize: ownerType === 'CERTIFICATE' ? 10 : 5 })}
+        </p>
+      ) : null}
       {upload.isError || remove.isError ? <p role='alert'>{t('common.providerMedia.actionError')}</p> : null}
     </section>
   )

@@ -4,13 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { formatProviderDate, formatProviderTime } from './provider-format'
-import {
-  fetchCenterSchedules,
-  fetchMySchedules,
-  providerKeys,
-  updateCaregiverSchedule,
-  updateCenterSchedule
-} from './provider-api'
+import { fetchCenterSchedules, fetchMySchedules, providerKeys, updateCaregiverSchedule } from './provider-api'
 import type { ProviderScheduleRecord, ScheduleStatusRequest } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -43,13 +37,11 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
   const update = useMutation({
     mutationFn: ({ item, status }: { item: ProviderScheduleRecord; status: ScheduleStatusRequest['status'] }) => {
       const request = { status, version: item.version, reason: status === 'CANCELLED' ? reason.trim() : undefined }
-      return manager ? updateCenterSchedule(item.id, request) : updateCaregiverSchedule(item.id, request)
+      return updateCaregiverSchedule(item.id, request)
     },
     onSuccess: async () => {
       setReason('')
-      await queryClient.invalidateQueries({
-        queryKey: manager ? providerKeys.centerSchedules(centerId ?? '') : providerKeys.mySchedules
-      })
+      await queryClient.invalidateQueries({ queryKey: providerKeys.mySchedules })
     }
   })
   const title = t(manager ? 'centerManager.schedules.title' : 'caregiver.provider.schedulesTitle')
@@ -106,7 +98,7 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
         ))}
       </div>
       <div className='grid items-start gap-8 lg:grid-cols-12'>
-        <div className='space-y-5 lg:col-span-8'>
+        <div className={`space-y-5 ${manager ? 'lg:col-span-12' : 'lg:col-span-8'}`}>
           <div className='flex flex-wrap gap-2 rounded-xl bg-white p-2 shadow-sm'>
             {(['ALL', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const).map((status) => (
               <button
@@ -161,38 +153,40 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
                       {t(`${key}.${statusKeys[item.scheduleStatus]}`)}
                     </span>
                   </div>
-                  <div className='mt-5 flex flex-wrap gap-2 border-t border-outline-variant/20 pt-4'>
-                    {item.scheduleStatus === 'SCHEDULED' ? (
-                      <button
-                        className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50'
-                        disabled={update.isPending}
-                        onClick={() => update.mutate({ item, status: 'IN_PROGRESS' })}
-                        type='button'
-                      >
-                        {t(`${key}.start`)}
-                      </button>
-                    ) : null}
-                    {item.scheduleStatus === 'IN_PROGRESS' ? (
-                      <button
-                        className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50'
-                        disabled={update.isPending}
-                        onClick={() => update.mutate({ item, status: 'COMPLETED' })}
-                        type='button'
-                      >
-                        {t(`${key}.complete`)}
-                      </button>
-                    ) : null}
-                    {item.scheduleStatus === 'SCHEDULED' || item.scheduleStatus === 'IN_PROGRESS' ? (
-                      <button
-                        className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
-                        disabled={update.isPending || !reason.trim()}
-                        onClick={() => update.mutate({ item, status: 'CANCELLED' })}
-                        type='button'
-                      >
-                        {t(manager ? 'centerManager.schedules.cancel' : 'caregiver.provider.cancelSchedule')}
-                      </button>
-                    ) : null}
-                  </div>
+                  {!manager ? (
+                    <div className='mt-5 flex flex-wrap gap-2 border-t border-outline-variant/20 pt-4'>
+                      {item.scheduleStatus === 'SCHEDULED' ? (
+                        <button
+                          className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50'
+                          disabled={update.isPending}
+                          onClick={() => update.mutate({ item, status: 'IN_PROGRESS' })}
+                          type='button'
+                        >
+                          {t(`${key}.start`)}
+                        </button>
+                      ) : null}
+                      {item.scheduleStatus === 'IN_PROGRESS' ? (
+                        <button
+                          className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50'
+                          disabled={update.isPending}
+                          onClick={() => update.mutate({ item, status: 'COMPLETED' })}
+                          type='button'
+                        >
+                          {t(`${key}.complete`)}
+                        </button>
+                      ) : null}
+                      {item.scheduleStatus === 'SCHEDULED' || item.scheduleStatus === 'IN_PROGRESS' ? (
+                        <button
+                          className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
+                          disabled={update.isPending || !reason.trim()}
+                          onClick={() => update.mutate({ item, status: 'CANCELLED' })}
+                          type='button'
+                        >
+                          {t('caregiver.provider.cancelSchedule')}
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -219,28 +213,30 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
             </div>
           ) : null}
         </div>
-        <aside className='space-y-5 lg:col-span-4'>
-          <div className='rounded-xl bg-white p-5 shadow-sm'>
-            <h2 className='flex items-center gap-2 text-lg font-bold'>
-              <Icon className='text-primary' name='event_note' />
-              {t(`${key}.reason`)}
-            </h2>
-            <p className='mt-2 text-xs leading-5 text-outline'>{t(`${key}.reasonHint`)}</p>
-            <label className='mt-4 block text-sm'>
-              {t(`${key}.reason`)}
-              <input
-                className='mt-2 w-full rounded-lg bg-surface-container-low p-3 outline-none focus:ring-2 focus:ring-primary'
-                onChange={(event) => setReason(event.target.value)}
-                value={reason}
-              />
-            </label>
-          </div>
-          {update.isError ? (
-            <p className='rounded-xl bg-error-container p-4 text-sm text-on-error-container' role='alert'>
-              {t(`${key}.actionError`)}
-            </p>
-          ) : null}
-        </aside>
+        {!manager ? (
+          <aside className='space-y-5 lg:col-span-4'>
+            <div className='rounded-xl bg-white p-5 shadow-sm'>
+              <h2 className='flex items-center gap-2 text-lg font-bold'>
+                <Icon className='text-primary' name='event_note' />
+                {t(`${key}.reason`)}
+              </h2>
+              <p className='mt-2 text-xs leading-5 text-outline'>{t(`${key}.reasonHint`)}</p>
+              <label className='mt-4 block text-sm'>
+                {t(`${key}.reason`)}
+                <input
+                  className='mt-2 w-full rounded-lg bg-surface-container-low p-3 outline-none focus:ring-2 focus:ring-primary'
+                  onChange={(event) => setReason(event.target.value)}
+                  value={reason}
+                />
+              </label>
+            </div>
+            {update.isError ? (
+              <p className='rounded-xl bg-error-container p-4 text-sm text-on-error-container' role='alert'>
+                {t(`${key}.actionError`)}
+              </p>
+            ) : null}
+          </aside>
+        ) : null}
       </div>
     </main>
   )
