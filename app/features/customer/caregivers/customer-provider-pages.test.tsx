@@ -54,9 +54,14 @@ describe('Customer caregiver catalog', () => {
     })
     renderCatalog()
 
-    expect(screen.getByRole('heading', { name: 'Search & Book Trusted Caregivers' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Find the right caregiver' })).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Lan Nguyen' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'View profile' })).toHaveAttribute('href', '/customer/caregivers/user-1')
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search caregivers by name…' }), {
+      target: { value: 'Lan' }
+    })
+    fireEvent.submit(screen.getByRole('search'))
+    await waitFor(() => expect(fetchCaregiverCatalog).toHaveBeenCalledWith({ page: 0, size: 20, keyword: 'Lan' }))
     fireEvent.change(screen.getByRole('combobox', { name: 'Gender' }), { target: { value: 'MALE' } })
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Lan Nguyen' })).not.toBeInTheDocument())
   })
@@ -65,7 +70,7 @@ describe('Customer caregiver catalog', () => {
     vi.mocked(fetchCaregiverCatalog).mockRejectedValue(new Error('Unavailable'))
     renderCatalog()
 
-    expect(screen.getByRole('heading', { name: 'Search & Book Trusted Caregivers' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Find the right caregiver' })).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load caregivers.')
     expect(screen.getByRole('combobox', { name: 'Gender' })).toBeInTheDocument()
   })

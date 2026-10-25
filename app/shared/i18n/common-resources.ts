@@ -4,14 +4,26 @@ export const commonEn = {
     accountMenu: 'Account menu',
     providerMedia: {
       title: 'Files and images',
+      centerTitle: 'Center logo and images',
+      caregiverTitle: 'Caregiver profile photos',
+      certificateTitle: 'Certificate files',
+      caregiverHint:
+        'The first photo is used as the profile photo. Remove the old photo before uploading a replacement.',
+      centerHint: 'The first image is used as the center logo. Remove the old image before uploading a replacement.',
       empty: 'No files yet.',
       loading: 'Loading files…',
       error: 'Unable to load files.',
       upload: 'Upload files',
       remove: 'Remove file',
       open: 'Open file',
+      image: 'Uploaded image',
       actionError: 'Unable to update files.',
-      confirmRemove: 'Remove this file?'
+      confirmRemove: 'Remove this file?',
+      validation: {
+        count: 'Select up to 10 files at a time.',
+        type: 'This file type is not supported.',
+        size: 'Each file must be larger than 0 bytes and no more than {{maxSize}} MB.'
+      }
     },
     language: {
       english: 'English',
@@ -44,14 +56,25 @@ export const commonVi = {
     accountMenu: 'Menu tài khoản',
     providerMedia: {
       title: 'Tệp và hình ảnh',
+      centerTitle: 'Logo và hình ảnh trung tâm',
+      caregiverTitle: 'Ảnh hồ sơ người chăm sóc',
+      certificateTitle: 'Tệp chứng chỉ',
+      caregiverHint: 'Ảnh đầu tiên được dùng làm ảnh hồ sơ. Hãy xóa ảnh cũ trước khi tải ảnh thay thế.',
+      centerHint: 'Ảnh đầu tiên được dùng làm logo trung tâm. Hãy xóa ảnh cũ trước khi tải ảnh thay thế.',
       empty: 'Chưa có tệp.',
       loading: 'Đang tải tệp…',
       error: 'Không thể tải tệp.',
       upload: 'Tải tệp lên',
       remove: 'Xóa tệp',
       open: 'Mở tệp',
+      image: 'Hình ảnh đã tải lên',
       actionError: 'Không thể cập nhật tệp.',
-      confirmRemove: 'Xóa tệp này?'
+      confirmRemove: 'Xóa tệp này?',
+      validation: {
+        count: 'Mỗi lần chỉ được chọn tối đa 10 tệp.',
+        type: 'Loại tệp này không được hỗ trợ.',
+        size: 'Mỗi tệp phải lớn hơn 0 byte và không vượt quá {{maxSize}} MB.'
+      }
     },
     language: {
       english: 'Tiếng Anh',

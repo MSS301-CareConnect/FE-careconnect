@@ -5,8 +5,7 @@ import {
   listProviderCenters,
   setProviderCenterStatus,
   updateProviderCenter,
-  listProviderCenterSchedules,
-  updateProviderCenterScheduleStatus
+  listProviderCenterSchedules
 } from '~/shared/api/generated/api/provider-center/provider-center'
 import {
   archiveProviderCaregiver,
@@ -195,9 +194,6 @@ export async function updateCaregiverSchedule(id: string, request: ScheduleStatu
 }
 export async function fetchCenterSchedules(centerId: string, params: ListProviderCenterSchedulesParams = {}) {
   return result(await listProviderCenterSchedules(centerId, params, readOptions))
-}
-export async function updateCenterSchedule(id: string, request: ScheduleStatusRequest) {
-  return result(await updateProviderCenterScheduleStatus(id, request, await writeOptions()))
 }
 export async function registerForShift(id: string, request: ShiftRegistrationRequest) {
   return result(await registerProviderShift(id, request, await writeOptions()))

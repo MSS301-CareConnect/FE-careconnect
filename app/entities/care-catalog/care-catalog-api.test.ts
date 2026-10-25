@@ -33,18 +33,22 @@ describe('CareCatalog gateway API', () => {
   it('reads the catalog, center offerings and price plans with cookies', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(reply([item]))
-      .mockResolvedValueOnce(reply([]))
+      .mockResolvedValueOnce(reply({ items: [item], page: 0, size: 100, totalElements: 2, totalPages: 2 }))
+      .mockResolvedValueOnce(
+        reply({ items: [{ ...item, id: 'item-2' }], page: 1, size: 100, totalElements: 2, totalPages: 2 })
+      )
+      .mockResolvedValueOnce(reply({ items: [], page: 0, size: 100, totalElements: 0, totalPages: 0 }))
       .mockResolvedValueOnce(reply([]))
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(fetchCatalogItems()).resolves.toEqual([item])
-    await fetchCenterOfferings('center-1')
+    await expect(fetchCatalogItems()).resolves.toEqual([item, { ...item, id: 'item-2' }])
+    await expect(fetchCenterOfferings('center-1')).resolves.toEqual([])
     await fetchPricePlans('offering-1')
 
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/v1/catalog-items',
-      '/api/v1/center-services/center/center-1',
+      '/api/v1/catalog-items?page=0&size=100',
+      '/api/v1/catalog-items?page=1&size=100',
+      '/api/v1/center-services/center/center-1?page=0&size=100',
       '/api/v1/price-plans/center-offering/offering-1'
     ])
     for (const [, options] of fetchMock.mock.calls)

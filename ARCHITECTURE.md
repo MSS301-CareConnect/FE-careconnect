@@ -58,12 +58,22 @@ the order ADMIN, CENTER_MANAGER, CAREGIVER, CUSTOMER. A safe return path takes
 priority when it belongs to one of the user's roles. Logout clears the backend
 cookies and reloads `/login` to drop the in-memory query cache.
 
-The Customer portal has its own guarded index at `/customer`. Its home screen
-links to existing care search, booking, and family profile screens without
-inventing remote data. The Customer header and in-portal home breadcrumbs point
-there; the account menu contains the profile and family profiles links and the
-session sign-out action. Family profiles are reached from that menu rather than the
-header navigation.
+The Customer portal has its own guarded index at `/customer`. It renders the same
+landing-page content as the public `/` route, with a bookings action in place of
+account registration. The Customer header shares the public landing page's visual
+style while retaining portal links, language selection, account access, and sign-out.
+The shared site footer adapts its account links to the signed-in Customer portal.
+The Customer header and in-portal home breadcrumbs point to `/customer`; the account
+menu contains the profile and family profiles links and the session sign-out action.
+Family profiles are reached from that menu rather than the header navigation.
+Caregiver search, caregiver detail, and services under `/customer` use a public browse
+layout outside the Customer portal guard. Guests see the same navigation style with
+Home, Find Caregivers, Services, and Sign in; active Customers also see bookings and
+their account menu. The `/customer` index, booking routes, and personal and patient
+profiles remain guarded. The current backend requires an authenticated session for
+caregiver search and detail, verified certificates, catalog items, center offerings,
+and price plans. Guest browse routes remain reachable, but their data requests return
+401 until the backend enables anonymous reads or the product requires sign-in for browsing.
 
 Customer `/customer/services` lists the care services customers can book. Customers
 cannot list ProviderService centers, so the page collects center IDs and names from the
@@ -145,7 +155,9 @@ sign-out on every device use CSRF-protected cookie requests, then reload `/login
 to clear in-memory session state. The same screen lists active web sessions through
 `GET /api/v1/auth/sessions` and revokes a selected session through the CSRF-protected
 `DELETE /api/v1/auth/sessions/{sessionId}`. Revoking the current session reloads
-`/login`; revoking another session refreshes the session list. Admin provisioning offers Customer and Center
+`/login`; revoking another session refreshes the session list. Sign-out on every
+device revokes other sessions before the current session because IdentityService no
+longer exposes `/auth/logout-all`. Admin provisioning offers Customer and Center
 Manager accounts; the latter requires a center ID. New accounts set their password
 through the existing email OTP recovery flow.
 
@@ -284,8 +296,10 @@ requests. The displayed rows come from ProviderService; no assignment or booking
 data is inferred from them. Both list and detail show loading, empty, error, and
 access-denied states. No Provider mutation runs from sample fixtures.
 
-`/center-manager/schedules` reads the assigned center's ProviderService schedules and
-updates their status. Customer `/customer/caregivers` reads the ProviderService
+`/center-manager/schedules` reads the assigned center's ProviderService schedules.
+The manager status mutation is unavailable in the current backend, so this page is
+read-only; caregivers can still update their own schedules. Customer
+`/customer/caregivers` reads the ProviderService
 catalog; its detail route resolves a caregiver by Identity user ID and lists only
 verified certificates. Shared `entities/provider` code owns gateway request wrappers,
 schedule workflows, and owner scoped media upload/list/delete for centers, caregiver
@@ -473,6 +487,9 @@ controller return types (`*Record` payloads, `*Response`/`*ListResponse`/
 `/v1/catalog-items` and `/v1/price-plans/center-offering/{id}`. Mutations still need
 the Identity CSRF header and `X-Client-Type: web` like ProviderService calls; the
 backend enforces ADMIN, CENTER_MANAGER, CUSTOMER, and CAREGIVER access per operation.
+Catalog items and center offerings now return paginated envelopes. Their entity
+wrappers collect pages of up to 100 so existing service screens can still filter the
+complete collection locally.
 
 ```text
 openapi/openapi.yaml

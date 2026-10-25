@@ -54,16 +54,6 @@ export function CustomerBookingsPage() {
       <div className='mx-auto flex max-w-7xl flex-col gap-7 px-4 py-8 sm:px-6 lg:px-8'>
         <div className='flex flex-col justify-between gap-5 md:flex-row md:items-end'>
           <div>
-            <nav
-              aria-label={t('customer.myBookings.breadcrumb')}
-              className='mb-3 flex items-center gap-1.5 text-xs text-on-surface-variant'
-            >
-              <Link to='/customer' className='hover:text-primary'>
-                {t('customer.nav.home')}
-              </Link>
-              <Icon name='chevron_right' className='text-base' />
-              <span className='font-semibold text-primary'>{t('customer.myBookings.breadcrumb')}</span>
-            </nav>
             <h1 className='text-2xl font-bold tracking-tight text-on-surface sm:text-3xl'>
               {t('customer.myBookings.title')}
             </h1>

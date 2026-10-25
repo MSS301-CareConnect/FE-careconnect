@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchWebSessions, revokeSession } from './security-api'
+import { fetchWebSessions, revokeSession, signOutEverywhere } from './security-api'
 
 function reply(data: unknown): Response {
   return { status: 200, ok: true, text: async () => JSON.stringify(data), headers: new Headers() } as Response
@@ -34,5 +34,35 @@ describe('security sessions API', () => {
       credentials: 'include',
       headers: { 'X-XSRF-TOKEN': 'csrf-value', 'X-Client-Type': 'web' }
     })
+  })
+
+  it('signs out other devices before revoking the current session', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        reply({
+          code: 200,
+          message: 'Success',
+          result: [
+            { sessionId: 'current', isCurrent: true },
+            { sessionId: 'other', isCurrent: false }
+          ]
+        })
+      )
+      .mockResolvedValueOnce(reply({ code: 200, result: { token: 'csrf', headerName: 'X-XSRF-TOKEN' } }))
+      .mockResolvedValueOnce(reply({ code: 200, result: null }))
+      .mockResolvedValueOnce(reply({ code: 200, result: { token: 'csrf', headerName: 'X-XSRF-TOKEN' } }))
+      .mockResolvedValueOnce(reply({ code: 200, result: null }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await signOutEverywhere()
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/api/v1/auth/sessions',
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/sessions/other',
+      '/api/v1/auth/csrf',
+      '/api/v1/auth/sessions/current'
+    ])
   })
 })

@@ -7,11 +7,18 @@ import {
 import { listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
 import { createCenterOffering, updateCenterOffering } from '~/shared/api/generated/api/center-offering/center-offering'
 import { createPricePlan, listPricePlans, updatePricePlan } from '~/shared/api/generated/api/price-plan/price-plan'
-import type { CatalogItemRequest, CenterOfferingRequest, PricePlanRequest } from '~/shared/api/generated/contracts'
+import type {
+  CatalogItemRecord,
+  CatalogItemRequest,
+  CenterOfferingRecord,
+  CenterOfferingRequest,
+  PricePlanRequest
+} from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 
 const readOptions = { credentials: 'include' as const }
 const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
+const pageSize = 100
 
 function result<T>(response: { data: { code: number; result: T } }): T {
   if (response.data.code !== 200) throw new Error(`CareCatalogService returned code ${response.data.code}`)
@@ -20,6 +27,15 @@ function result<T>(response: { data: { code: number; result: T } }): T {
 
 function success(response: { data: { code: number } }): void {
   if (response.data.code !== 200) throw new Error(`CareCatalogService returned code ${response.data.code}`)
+}
+
+async function collectPages<T>(load: (page: number) => Promise<{ items: T[]; totalPages: number }>): Promise<T[]> {
+  const items: T[] = []
+  for (let page = 0; ; page += 1) {
+    const result = await load(page)
+    items.push(...result.items)
+    if (page + 1 >= result.totalPages) return items
+  }
 }
 
 /** HTTP status attached by the generated fetch client when the backend answered with an error. */
@@ -43,9 +59,9 @@ export const careCatalogKeys = {
   pricePlans: (centerOfferingId: string) => ['care-catalog', 'price-plans', centerOfferingId] as const
 }
 
-/** The backend returns the whole non-deleted catalog; it has no server-side pagination. */
-export async function fetchCatalogItems() {
-  return result(await listCatalogItems(readOptions))
+/** Collect every page because the current service screens filter the complete catalog locally. */
+export async function fetchCatalogItems(): Promise<CatalogItemRecord[]> {
+  return collectPages((page) => listCatalogItems({ page, size: pageSize }, readOptions).then(result))
 }
 export async function createCatalog(request: CatalogItemRequest) {
   return result(await createCatalogItem(request, await writeOptions()))
@@ -58,8 +74,8 @@ export async function removeCatalog(id: string) {
   success(await deleteCatalogItem(id, await writeOptions()))
 }
 
-export async function fetchCenterOfferings(centerId: string) {
-  return result(await listCenterOfferings(centerId, readOptions))
+export async function fetchCenterOfferings(centerId: string): Promise<CenterOfferingRecord[]> {
+  return collectPages((page) => listCenterOfferings(centerId, { page, size: pageSize }, readOptions).then(result))
 }
 export async function createOffering(request: CenterOfferingRequest) {
   return result(await createCenterOffering(request, await writeOptions()))

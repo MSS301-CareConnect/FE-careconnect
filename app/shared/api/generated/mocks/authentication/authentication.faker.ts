@@ -53,15 +53,6 @@ export const getLogoutWebSessionResponseMock = (
   ...overrideResponse
 })
 
-export const getLogoutAllWebSessionsResponseMock = (
-  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
-): EmptyActionResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: faker.helpers.arrayElement([null, undefined]),
-  ...overrideResponse
-})
-
 export const getListWebSessionsResponseMock = (
   overrideResponse: Partial<Extract<SessionListResponse, object>> = {}
 ): SessionListResponse => ({

@@ -52,11 +52,13 @@ export default [
     ])
   ]),
   ...prefix('customer', [
-    layout('routes/customer/layout.tsx', [
-      index('routes/customer/index.tsx'),
+    layout('routes/customer/browse-layout.tsx', [
       route('caregivers', 'routes/customer/caregivers.tsx'),
       route('services', 'routes/customer/services.tsx'),
-      route('caregivers/:userId', 'routes/customer/caregiver-profile.tsx'),
+      route('caregivers/:userId', 'routes/customer/caregiver-profile.tsx')
+    ]),
+    layout('routes/customer/layout.tsx', [
+      index('routes/customer/index.tsx'),
       route('booking', 'routes/customer/booking.tsx'),
       route('bookings', 'routes/customer/bookings.tsx'),
       route('bookings/:code', 'routes/customer/booking-detail.tsx'),

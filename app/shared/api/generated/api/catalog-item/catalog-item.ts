@@ -22,10 +22,11 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
-  CatalogItemListResponse,
+  CatalogItemPageResponse,
   CatalogItemRequest,
   CatalogItemResponse,
-  EmptyActionResponse
+  EmptyActionResponse,
+  ListCatalogItemsParams
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -46,7 +47,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 }
 
 export type listCatalogItemsResponse200 = {
-  data: CatalogItemListResponse
+  data: CatalogItemPageResponse
   status: 200
 }
 
@@ -100,12 +101,27 @@ export type listCatalogItemsResponseError = (
   headers: Headers
 }
 
-export const getListCatalogItemsUrl = () => {
-  return `${env.API_BASE_URL}/v1/catalog-items`
+export const getListCatalogItemsUrl = (params?: ListCatalogItemsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/catalog-items?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/catalog-items`
 }
 
-export const listCatalogItems = async (options?: RequestInit): Promise<listCatalogItemsResponseSuccess> => {
-  const res = await fetch(getListCatalogItemsUrl(), {
+export const listCatalogItems = async (
+  params?: ListCatalogItemsParams,
+  options?: RequestInit
+): Promise<listCatalogItemsResponseSuccess> => {
+  const res = await fetch(getListCatalogItemsUrl(params), {
     ...options,
     method: 'GET'
   })
@@ -123,23 +139,26 @@ export const listCatalogItems = async (options?: RequestInit): Promise<listCatal
   return { data, status: res.status, headers: res.headers } as listCatalogItemsResponseSuccess
 }
 
-export const getListCatalogItemsQueryKey = () => {
-  return [`${env.API_BASE_URL}/v1/catalog-items`] as const
+export const getListCatalogItemsQueryKey = (params?: ListCatalogItemsParams) => {
+  return [`${env.API_BASE_URL}/v1/catalog-items`, ...(params ? [params] : [])] as const
 }
 
 export const getListCatalogItemsQueryOptions = <
   TData = Awaited<ReturnType<typeof listCatalogItems>>,
   TError = globalThis.Error & { info?: void; status?: number }
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCatalogItems>>, TError, TData>>
-  fetch?: RequestInit
-}) => {
+>(
+  params?: ListCatalogItemsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCatalogItems>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
   const { query: queryOptions, fetch: fetchOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getListCatalogItemsQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getListCatalogItemsQueryKey(params)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof listCatalogItems>>> = ({ signal }) =>
-    listCatalogItems({ signal, ...fetchOptions })
+    listCatalogItems(params, { signal, ...fetchOptions })
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof listCatalogItems>>,
@@ -155,6 +174,7 @@ export function useListCatalogItems<
   TData = Awaited<ReturnType<typeof listCatalogItems>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
+  params: undefined | ListCatalogItemsParams,
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCatalogItems>>, TError, TData>> &
       Pick<
@@ -173,6 +193,7 @@ export function useListCatalogItems<
   TData = Awaited<ReturnType<typeof listCatalogItems>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
+  params?: ListCatalogItemsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCatalogItems>>, TError, TData>> &
       Pick<
@@ -191,6 +212,7 @@ export function useListCatalogItems<
   TData = Awaited<ReturnType<typeof listCatalogItems>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
+  params?: ListCatalogItemsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCatalogItems>>, TError, TData>>
     fetch?: RequestInit
@@ -202,13 +224,14 @@ export function useListCatalogItems<
   TData = Awaited<ReturnType<typeof listCatalogItems>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
+  params?: ListCatalogItemsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCatalogItems>>, TError, TData>>
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getListCatalogItemsQueryOptions(options)
+  const queryOptions = getListCatalogItemsQueryOptions(params, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

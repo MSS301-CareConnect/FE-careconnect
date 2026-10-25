@@ -164,19 +164,6 @@ export function MyProfilePage() {
 
   return (
     <main className='mx-auto max-w-7xl space-y-7 px-4 py-8 text-on-surface sm:px-6'>
-      <nav
-        aria-label={t('customer.profile.breadcrumb.personalInfo')}
-        className='flex items-center gap-2 text-xs text-on-surface-variant'
-      >
-        <Link className='inline-flex items-center gap-1 hover:text-primary' to='/customer'>
-          <Icon className='text-base' name='home' />
-          {t('customer.profile.breadcrumb.home')}
-        </Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span>{t('customer.profile.breadcrumb.myAccount')}</span>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='font-semibold text-primary'>{t('customer.profile.breadcrumb.personalInfo')}</span>
-      </nav>
       <header>
         <span className='inline-flex items-center gap-1.5 rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-primary'>
           <Icon className='text-sm' name='account_circle' />

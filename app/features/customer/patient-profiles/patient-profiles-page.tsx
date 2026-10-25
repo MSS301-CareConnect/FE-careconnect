@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 
 import { MedicalGuidelinesBanner } from './components/medical-guidelines-banner'
-import { PatientBreadcrumb } from './components/patient-breadcrumb'
 import { PatientList } from './components/patient-list'
 import { PatientSidebar } from './components/patient-sidebar'
 import { PatientToolbar } from './components/patient-toolbar'
@@ -18,8 +17,6 @@ export function PatientProfilesPage() {
 
   return (
     <div className='mx-auto max-w-7xl px-6 py-8'>
-      <PatientBreadcrumb />
-
       <div className='grid grid-cols-1 items-start gap-8 lg:grid-cols-12'>
         {/* Left Column: Synchronized Account Sidebar */}
         <PatientSidebar familyCount={familyCount} />

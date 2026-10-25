@@ -36,13 +36,10 @@ import {
   getDeleteCareRecipientManagerResponseMock,
   getDeleteCareRecipientMedicationResponseMock,
   getDeleteCareRecipientResponseMock,
-  getGetAdminCareRecipientResponseMock,
   getGetCareRecipientEmergencyContactResponseMock,
   getGetCareRecipientMedicationResponseMock,
   getGetCareRecipientResponseMock,
   getGetCareRecipientSnapshotResponseMock,
-  getGetCaregiverCareRecipientResponseMock,
-  getListAdminCareRecipientsResponseMock,
   getListCareRecipientEmergencyContactsResponseMock,
   getListCareRecipientManagersResponseMock,
   getListCareRecipientMedicationsResponseMock,
@@ -66,9 +63,6 @@ export {
   getGetCareRecipientSnapshotResponseMock,
   getCheckCareRecipientAccessResponseMock,
   getListCareRecipientsBatchResponseMock,
-  getGetCaregiverCareRecipientResponseMock,
-  getListAdminCareRecipientsResponseMock,
-  getGetAdminCareRecipientResponseMock,
   getListCareRecipientMedicationsResponseMock,
   getCreateCareRecipientMedicationResponseMock,
   getGetCareRecipientMedicationResponseMock,
@@ -311,84 +305,6 @@ export const getListCareRecipientsBatchMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getListCareRecipientsBatchResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getGetCaregiverCareRecipientMockHandler = (
-  overrideResponse?:
-    | CareRecipientSnapshotResponse
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<CareRecipientSnapshotResponse> | CareRecipientSnapshotResponse),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    '*/v1/care-recipients/caregiver/:id',
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      await delay(150)
-
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getGetCaregiverCareRecipientResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getListAdminCareRecipientsMockHandler = (
-  overrideResponse?:
-    | CareRecipientSummaryPageResponse
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<CareRecipientSummaryPageResponse> | CareRecipientSummaryPageResponse),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    '*/v1/care-recipients/admin',
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      await delay(150)
-
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getListAdminCareRecipientsResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
-export const getGetAdminCareRecipientMockHandler = (
-  overrideResponse?:
-    | CareRecipientDetailResponse
-    | ((
-        info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<CareRecipientDetailResponse> | CareRecipientDetailResponse),
-  options?: RequestHandlerOptions
-) => {
-  return http.get(
-    '*/v1/care-recipients/admin/:id',
-    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-      await delay(150)
-
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getGetAdminCareRecipientResponseMock(),
         { status: 200 }
       )
     },
@@ -833,9 +749,6 @@ export const getCareRecipientMock = () => [
   getGetCareRecipientSnapshotMockHandler(),
   getCheckCareRecipientAccessMockHandler(),
   getListCareRecipientsBatchMockHandler(),
-  getGetCaregiverCareRecipientMockHandler(),
-  getListAdminCareRecipientsMockHandler(),
-  getGetAdminCareRecipientMockHandler(),
   getListCareRecipientMedicationsMockHandler(),
   getCreateCareRecipientMedicationMockHandler(),
   getGetCareRecipientMedicationMockHandler(),

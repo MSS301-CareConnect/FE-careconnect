@@ -6,11 +6,9 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type ListAdminCareRecipientsStatus =
-  (typeof ListAdminCareRecipientsStatus)[keyof typeof ListAdminCareRecipientsStatus]
+export type ListCatalogItemsStatus = (typeof ListCatalogItemsStatus)[keyof typeof ListCatalogItemsStatus]
 
-export const ListAdminCareRecipientsStatus = {
+export const ListCatalogItemsStatus = {
   ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-  ARCHIVED: 'ARCHIVED'
+  INACTIVE: 'INACTIVE'
 } as const

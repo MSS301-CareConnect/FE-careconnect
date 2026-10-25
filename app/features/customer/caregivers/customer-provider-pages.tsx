@@ -12,7 +12,7 @@ import {
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { CaregiversSearchBanner } from './components/caregivers-search-banner'
+import { ProviderCatalogSearch } from './components/provider-catalog-search'
 
 const key = 'customer.provider' as const
 type GenderFilter = 'ALL' | 'FEMALE' | 'MALE' | 'OTHER'
@@ -20,60 +20,67 @@ type GenderFilter = 'ALL' | 'FEMALE' | 'MALE' | 'OTHER'
 function ProviderCaregiverCard({ person }: { person: ProviderCaregiverRecord }) {
   const { t, i18n } = useTranslation()
   return (
-    <article className='flex flex-col gap-5 rounded-2xl bg-surface-container-lowest p-5 shadow-sm transition-shadow hover:shadow-md md:p-6'>
-      <div className='flex flex-col gap-5 sm:flex-row'>
-        <div className='flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-secondary-container text-primary sm:h-28 sm:w-28'>
-          <Icon className='text-5xl' name='person' />
+    <article className='group flex h-full flex-col rounded-2xl border border-[#dbe4db] bg-white p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[#a8c2ad] sm:p-6'>
+      <div className='flex min-w-0 items-start gap-4 sm:gap-5'>
+        <div
+          aria-hidden='true'
+          className='grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-[#e8f0e8] text-[#075b31] sm:h-20 sm:w-20'
+        >
+          <Icon className='text-4xl' name='person' />
         </div>
-        <div className='min-w-0 flex-1 space-y-3'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <h2 className='text-xl font-bold text-on-surface'>{person.fullName}</h2>
-            {person.verificationStatus === 'VERIFIED' ? (
-              <span className='inline-flex items-center gap-1 rounded-full bg-secondary-container px-3 py-1 text-xs font-bold text-primary'>
-                <Icon className='text-base' name='verified' />
+        <div className='min-w-0 flex-1'>
+          <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+            <h2 className='text-xl font-bold tracking-[-0.025em] text-[#1b2922]'>{person.fullName}</h2>
+            {person.verificationStatus === 'VERIFIED' && (
+              <span className='inline-flex items-center gap-1 rounded-md bg-[#e8f0e8] px-2 py-1 text-xs font-bold text-[#075b31]'>
+                <Icon className='text-sm' name='verified' />
                 {t(`${key}.verified`)}
               </span>
-            ) : null}
+            )}
           </div>
-          {person.centerName ? (
-            <p className='flex items-center gap-1 text-sm text-on-surface-variant'>
-              <Icon className='text-lg text-primary' name='home_health' />
+          {person.centerName && (
+            <p className='mt-2 flex items-center gap-1.5 text-sm text-[#637469]'>
+              <Icon className='text-base text-[#075b31]' name='home_health' />
               {person.centerName}
             </p>
-          ) : null}
-          <div className='flex flex-wrap gap-2 text-sm text-on-surface-variant'>
-            {person.experienceYears !== undefined ? (
-              <span className='rounded-lg bg-surface-container px-3 py-1.5'>
-                {t(`${key}.experienceValue`, {
-                  years: new Intl.NumberFormat(i18n.language).format(person.experienceYears)
-                })}
-              </span>
-            ) : null}
-            {person.ratingAverage !== undefined ? (
-              <span className='inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-1.5'>
-                <Icon className='text-base text-amber-500' filled name='star' />
-                {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(person.ratingAverage)}
-                {person.ratingCount !== undefined ? t(`${key}.reviews`, { count: person.ratingCount }) : null}
-              </span>
-            ) : null}
-          </div>
-          {person.bio ? <p className='line-clamp-3 text-sm leading-6 text-on-surface-variant'>{person.bio}</p> : null}
+          )}
         </div>
       </div>
-      <div className='flex items-center justify-between gap-3 rounded-xl bg-surface-container-low p-3 sm:p-4'>
-        <span className='text-xs font-medium text-on-surface-variant'>
-          {person.centerName ?? t(`${key}.caregiver`)}
+
+      <div className='mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#e6ece5] pt-4 text-sm text-[#415548]'>
+        {person.experienceYears !== undefined && (
+          <span className='inline-flex items-center gap-1.5'>
+            <Icon className='text-lg text-[#075b31]' name='workspace_premium' />
+            {t(`${key}.experienceValue`, {
+              years: new Intl.NumberFormat(i18n.language).format(person.experienceYears)
+            })}
+          </span>
+        )}
+        {person.ratingAverage !== undefined && (
+          <span className='inline-flex items-center gap-1.5'>
+            <Icon className='text-lg text-[#a06a12]' filled name='star' />
+            {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(person.ratingAverage)}
+            {person.ratingCount !== undefined && t(`${key}.reviews`, { count: person.ratingCount })}
+          </span>
+        )}
+      </div>
+
+      {person.bio && <p className='mt-4 line-clamp-2 text-sm leading-6 text-[#617267]'>{person.bio}</p>}
+
+      <div className='mt-auto flex items-center justify-between gap-4 pt-6'>
+        <span className='min-w-0 truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#76867a]'>
+          {t(`${key}.caregiver`)}
         </span>
         {person.userId ? (
           <Link
-            className='inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary'
+            className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-[#075b31]'
             to={`/customer/caregivers/${person.userId}`}
           >
             {t(`${key}.details`)}
-            <Icon className='text-lg' name='arrow_forward' />
+            <Icon className='text-lg transition-transform group-hover:translate-x-1' name='arrow_forward' />
           </Link>
         ) : (
-          <span className='text-xs text-outline'>{t(`${key}.profileUnavailable`)}</span>
+          <span className='text-xs text-[#76867a]'>{t(`${key}.profileUnavailable`)}</span>
         )}
       </div>
     </article>
@@ -81,7 +88,7 @@ function ProviderCaregiverCard({ person }: { person: ProviderCaregiverRecord }) 
 }
 
 export function CustomerProviderCatalogPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [params, setParams] = useSearchParams()
   const [gender, setGender] = useState<GenderFilter>('ALL')
   const [minimumExperience, setMinimumExperience] = useState(0)
@@ -111,26 +118,18 @@ export function CustomerProviderCatalogPage() {
     })
   }
   return (
-    <div className='flex w-full flex-1 flex-col bg-surface'>
-      <CaregiversSearchBanner
-        catalogMode
-        location='all'
-        searchQuery={keyword}
-        selectedTags={[]}
-        onLocationChange={() => undefined}
-        onSearchChange={(value) => update('q', value)}
-        onTagToggle={() => undefined}
-      />
-      <section className='mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
-        <div className='grid grid-cols-1 items-start gap-8 lg:grid-cols-12'>
-          <aside className='space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-sm lg:col-span-4'>
-            <div className='flex items-center justify-between border-b border-outline-variant/30 pb-4'>
+    <div className='flex w-full flex-1 flex-col bg-[#fbfcfa] text-[#1b2922]'>
+      <ProviderCatalogSearch key={keyword} keyword={keyword} onSearch={(value) => update('q', value)} />
+      <section className='mx-auto w-full max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12 lg:py-14'>
+        <div className='grid grid-cols-1 items-start gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12'>
+          <aside className='rounded-2xl border border-[#dbe4db] bg-white p-5 lg:sticky lg:top-6 lg:p-6'>
+            <div className='flex items-center justify-between gap-3 border-b border-[#e3eae2] pb-5'>
               <h2 className='flex items-center gap-2 text-base font-bold'>
-                <Icon className='text-primary' name='tune' />
+                <Icon className='text-xl text-[#075b31]' name='tune' />
                 {t(`${key}.filters`)}
               </h2>
               <button
-                className='text-xs font-semibold text-primary'
+                className='text-xs font-bold text-[#075b31] underline-offset-4 hover:underline'
                 onClick={() => {
                   setGender('ALL')
                   setMinimumExperience(0)
@@ -140,10 +139,10 @@ export function CustomerProviderCatalogPage() {
                 {t(`${key}.reset`)}
               </button>
             </div>
-            <label className='block text-sm font-semibold'>
+            <label className='mt-6 block text-sm font-semibold'>
               {t(`${key}.gender`)}
               <select
-                className='mt-2 w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm'
+                className='mt-2 w-full rounded-lg border border-[#d5e0d5] bg-[#f8faf7] px-3 py-3 text-sm text-[#1b2922] focus:border-[#075b31] focus:outline-none'
                 onChange={(event) => setGender(event.target.value as GenderFilter)}
                 value={gender}
               >
@@ -154,10 +153,10 @@ export function CustomerProviderCatalogPage() {
                 ))}
               </select>
             </label>
-            <label className='block text-sm font-semibold'>
+            <label className='mt-5 block text-sm font-semibold'>
               {t(`${key}.minimumExperience`)}
               <select
-                className='mt-2 w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm'
+                className='mt-2 w-full rounded-lg border border-[#d5e0d5] bg-[#f8faf7] px-3 py-3 text-sm text-[#1b2922] focus:border-[#075b31] focus:outline-none'
                 onChange={(event) => setMinimumExperience(Number(event.target.value))}
                 value={minimumExperience}
               >
@@ -168,21 +167,33 @@ export function CustomerProviderCatalogPage() {
                 ))}
               </select>
             </label>
-            <p className='rounded-xl bg-secondary-container/40 p-4 text-xs leading-5 text-on-surface-variant'>
+            <p className='mt-6 border-t border-[#e3eae2] pt-5 text-xs leading-5 text-[#697b6e]'>
               {t(`${key}.pageFilterHint`)}
             </p>
           </aside>
-          <div className='flex flex-col gap-6 lg:col-span-8'>
-            <div className='flex items-center justify-between gap-4 rounded-2xl bg-surface-container-lowest p-4 shadow-sm'>
+          <div className='min-w-0'>
+            <div className='flex flex-wrap items-end justify-between gap-4 border-b border-[#dce5dc] pb-5'>
               <div>
-                <strong className='text-2xl'>{catalog.data?.totalElements ?? 0}</strong>{' '}
-                <span className='text-sm text-on-surface-variant'>{t(`${key}.results`)}</span>
+                <h2 className='text-2xl font-bold tracking-[-0.04em]'>{t(`${key}.resultsTitle`)}</h2>
+                <p className='mt-1 text-sm text-[#647568]'>
+                  {catalog.isSuccess ? (
+                    <>
+                      <strong className='font-bold text-[#075b31]'>
+                        {new Intl.NumberFormat(i18n.language).format(catalog.data.totalElements)}
+                      </strong>{' '}
+                      {t(`${key}.results`)}
+                    </>
+                  ) : (
+                    t(catalog.isError ? `${key}.error` : `${key}.loading`)
+                  )}
+                </p>
               </div>
-              <div className='flex items-center rounded-lg bg-surface-container p-1'>
+              <div className='flex items-center gap-1 rounded-lg border border-[#dce5dc] bg-white p-1'>
                 {(['list', 'grid'] as const).map((mode) => (
                   <button
                     aria-label={t(`${key}.views.${mode}`)}
-                    className={`rounded-md p-1.5 ${view === mode ? 'bg-white text-primary shadow-xs' : 'text-outline'}`}
+                    aria-pressed={view === mode}
+                    className={`grid h-9 w-9 place-items-center rounded-md transition-colors ${view === mode ? 'bg-[#e8f0e8] text-[#075b31]' : 'text-[#728275] hover:bg-[#f2f6f1]'}`}
                     key={mode}
                     onClick={() => setView(mode)}
                     type='button'
@@ -192,50 +203,58 @@ export function CustomerProviderCatalogPage() {
                 ))}
               </div>
             </div>
-            {catalog.isPending ? (
-              <div className='rounded-2xl bg-white p-10 text-center shadow-sm' role='status'>
-                {t(`${key}.loading`)}
+            {catalog.isPending && (
+              <div
+                className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center text-[#53675a]'
+                role='status'
+              >
+                <Icon className='mb-4 text-4xl text-[#075b31]' name='progress_activity' />
+                <p>{t(`${key}.loading`)}</p>
               </div>
-            ) : null}
-            {catalog.isError ? (
-              <div className='rounded-2xl bg-white p-10 text-center shadow-sm' role='alert'>
-                <Icon className='text-4xl text-outline' name='wifi_off' />
-                <p className='mt-3'>{t(`${key}.error`)}</p>
+            )}
+            {catalog.isError && (
+              <div className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center' role='alert'>
+                <Icon className='text-4xl text-[#075b31]' name='wifi_off' />
+                <h3 className='mt-4 text-xl font-bold'>{t(`${key}.error`)}</h3>
+                <p className='mt-2 text-sm text-[#647568]'>{t(`${key}.errorHelp`)}</p>
                 <button
-                  className='mt-4 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white'
+                  className='mt-6 rounded-lg bg-[#075b31] px-5 py-3 text-sm font-bold text-white hover:bg-[#064a29]'
                   onClick={() => catalog.refetch()}
                   type='button'
                 >
                   {t(`${key}.retry`)}
                 </button>
               </div>
-            ) : null}
-            {catalog.isSuccess && visible.length === 0 ? (
-              <div className='rounded-2xl bg-white p-10 text-center shadow-sm'>
-                <Icon className='text-4xl text-outline' name='person_search' />
-                <p className='mt-3'>{t(`${key}.empty`)}</p>
+            )}
+            {catalog.isSuccess && visible.length === 0 && (
+              <div className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center'>
+                <Icon className='text-4xl text-[#075b31]' name='person_search' />
+                <h3 className='mt-4 text-xl font-bold'>{t(`${key}.empty`)}</h3>
+                <p className='mt-2 text-sm text-[#647568]'>{t(`${key}.emptyHelp`)}</p>
               </div>
-            ) : null}
-            {catalog.isSuccess && visible.length > 0 ? (
-              <div className={view === 'grid' ? 'grid gap-6 md:grid-cols-2' : 'flex flex-col gap-6'}>
+            )}
+            {catalog.isSuccess && visible.length > 0 && (
+              <div className={view === 'grid' ? 'mt-6 grid gap-4 xl:grid-cols-2' : 'mt-6 flex flex-col gap-4'}>
                 {visible.map((person) => (
                   <ProviderCaregiverCard key={person.id} person={person} />
                 ))}
               </div>
-            ) : null}
-            {catalog.isSuccess ? (
-              <div className='flex items-center justify-between rounded-2xl bg-white p-4 text-sm shadow-sm'>
+            )}
+            {catalog.isSuccess && catalog.data.totalPages > 1 && (
+              <div className='mt-8 flex items-center justify-between border-t border-[#dce5dc] pt-5 text-sm'>
                 <button
-                  className='font-semibold text-primary disabled:opacity-40'
+                  className='font-semibold text-[#075b31] disabled:opacity-40'
                   disabled={page === 0}
                   onClick={() => update('page', String(page - 1))}
                   type='button'
                 >
                   {t(`${key}.previous`)}
                 </button>
-                <span>{t(`${key}.page`, { page: page + 1, pages: Math.max(1, catalog.data.totalPages) })}</span>
+                <span className='text-[#647568]'>
+                  {t(`${key}.page`, { page: page + 1, pages: catalog.data.totalPages })}
+                </span>
                 <button
-                  className='font-semibold text-primary disabled:opacity-40'
+                  className='font-semibold text-[#075b31] disabled:opacity-40'
                   disabled={page + 1 >= catalog.data.totalPages}
                   onClick={() => update('page', String(page + 1))}
                   type='button'
@@ -243,7 +262,7 @@ export function CustomerProviderCatalogPage() {
                   {t(`${key}.next`)}
                 </button>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </section>

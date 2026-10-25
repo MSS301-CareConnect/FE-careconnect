@@ -10,6 +10,8 @@ import type { ListCareRecipientsStatus } from './listCareRecipientsStatus'
 export type ListCareRecipientsParams = {
   status?: ListCareRecipientsStatus
   keyword?: string
+  createdBy?: string
+  includeDeleted?: boolean
   page?: number
   size?: number
 }

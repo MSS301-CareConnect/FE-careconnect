@@ -41,7 +41,7 @@ export function CaregiverShiftDetailPage() {
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 space-y-6'>
-      {/* Breadcrumb & Header Action Group */}
+      {/* Header action group */}
       <ShiftHeader code={shiftCode} copiedToast={copiedToast} onShare={shareShift} shiftStatus={shiftStatus} />
 
       {/* Countdown Real-time Banner */}

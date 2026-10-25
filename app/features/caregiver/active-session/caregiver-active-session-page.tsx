@@ -63,8 +63,7 @@ export function CaregiverActiveSessionPage() {
         </div>
       )}
 
-      {/* Header Breadcrumbs & Live Sync Clock */}
-      <ActiveSessionHeader currentClock={session.currentClock} shiftCode={sessionCode} />
+      <ActiveSessionHeader currentClock={session.currentClock} />
 
       {/* Hero Command Banner */}
       <ActiveSessionHeroBanner

@@ -6,10 +6,10 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { HomePage } from './home-page'
 
-function renderHome() {
+function renderHome(audience: 'public' | 'customer' = 'public') {
   return render(
     <MemoryRouter>
-      <HomePage />
+      <HomePage audience={audience} />
     </MemoryRouter>
   )
 }
@@ -22,6 +22,12 @@ describe('HomePage', () => {
 
   it('shows the CareConnect landing content and working entry points', () => {
     renderHome()
+
+    const navigation = within(screen.getByRole('banner'))
+    expect(navigation.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/')
+    expect(navigation.getByRole('link', { name: 'Tìm người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
+    expect(navigation.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/customer/services')
+    expect(navigation.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
 
     const hero = screen.getByRole('region', { name: 'An tâm chăm sóc tại nhà.' })
     expect(within(hero).getByRole('link', { name: /Tìm người chăm sóc/i })).toHaveAttribute(
@@ -53,5 +59,23 @@ describe('HomePage', () => {
     expect(await screen.findByRole('heading', { name: 'Feel confident about care at home.' })).toBeInTheDocument()
     expect(within(screen.getByRole('contentinfo')).getByText(/All rights reserved\./)).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('lang', 'en')
+  })
+
+  it('shows the same landing content with customer actions inside the guarded portal', () => {
+    renderHome('customer')
+
+    const hero = screen.getByRole('region', { name: 'An tâm chăm sóc tại nhà.' })
+    expect(within(hero).getByRole('img', { name: /Người chăm sóc hỗ trợ/i })).toBeInTheDocument()
+    expect(within(hero).getByRole('link', { name: 'Tìm người chăm sóc' })).toHaveAttribute(
+      'href',
+      '/customer/caregivers'
+    )
+    expect(within(hero).getByRole('link', { name: 'Xem lịch đặt của tôi' })).toHaveAttribute(
+      'href',
+      '/customer/bookings'
+    )
+    expect(screen.queryByRole('link', { name: 'Tạo tài khoản' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Đăng nhập' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mỗi quyết định chăm sóc đều cần sự rõ ràng.' })).toBeInTheDocument()
   })
 })

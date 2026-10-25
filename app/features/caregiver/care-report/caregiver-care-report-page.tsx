@@ -35,13 +35,6 @@ function CareReportEditor({ record }: { record: CareRecordPreview }) {
   const editor = useCareReportDraft(record)
   return (
     <div className='caregiver-print-page mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8'>
-      <nav className='flex flex-wrap items-center gap-2 text-xs text-outline print:hidden'>
-        <Link className='hover:text-primary' to='/caregiver/history'>
-          {t('caregiver.careHistory.title')}
-        </Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span>{t('caregiver.careReport.breadcrumb')}</span>
-      </nav>
       <div className='flex flex-wrap items-start justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>

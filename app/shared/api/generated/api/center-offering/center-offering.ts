@@ -22,10 +22,11 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
-  CenterOfferingListResponse,
+  CenterOfferingPageResponse,
   CenterOfferingRequest,
   CenterOfferingResponse,
   EmptyActionResponse,
+  ListCenterOfferingsParams,
   ServiceQuoteListResponse,
   ServiceQuoteRequest
 } from '../../contracts'
@@ -659,7 +660,7 @@ export const useDeleteCenterOffering = <
   return useMutation(getDeleteCenterOfferingMutationOptions(options), queryClient)
 }
 export type listCenterOfferingsResponse200 = {
-  data: CenterOfferingListResponse
+  data: CenterOfferingPageResponse
   status: 200
 }
 
@@ -713,15 +714,28 @@ export type listCenterOfferingsResponseError = (
   headers: Headers
 }
 
-export const getListCenterOfferingsUrl = (centerId: string) => {
-  return `${env.API_BASE_URL}/v1/center-services/center/${centerId}`
+export const getListCenterOfferingsUrl = (centerId: string, params?: ListCenterOfferingsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/center-services/center/${centerId}?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/center-services/center/${centerId}`
 }
 
 export const listCenterOfferings = async (
   centerId: string,
+  params?: ListCenterOfferingsParams,
   options?: RequestInit
 ): Promise<listCenterOfferingsResponseSuccess> => {
-  const res = await fetch(getListCenterOfferingsUrl(centerId), {
+  const res = await fetch(getListCenterOfferingsUrl(centerId, params), {
     ...options,
     method: 'GET'
   })
@@ -739,8 +753,8 @@ export const listCenterOfferings = async (
   return { data, status: res.status, headers: res.headers } as listCenterOfferingsResponseSuccess
 }
 
-export const getListCenterOfferingsQueryKey = (centerId: string) => {
-  return [`${env.API_BASE_URL}/v1/center-services/center/${centerId}`] as const
+export const getListCenterOfferingsQueryKey = (centerId: string, params?: ListCenterOfferingsParams) => {
+  return [`${env.API_BASE_URL}/v1/center-services/center/${centerId}`, ...(params ? [params] : [])] as const
 }
 
 export const getListCenterOfferingsQueryOptions = <
@@ -748,6 +762,7 @@ export const getListCenterOfferingsQueryOptions = <
   TError = globalThis.Error & { info?: void; status?: number }
 >(
   centerId: string,
+  params?: ListCenterOfferingsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCenterOfferings>>, TError, TData>>
     fetch?: RequestInit
@@ -755,10 +770,10 @@ export const getListCenterOfferingsQueryOptions = <
 ) => {
   const { query: queryOptions, fetch: fetchOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getListCenterOfferingsQueryKey(centerId)
+  const queryKey = queryOptions?.queryKey ?? getListCenterOfferingsQueryKey(centerId, params)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof listCenterOfferings>>> = ({ signal }) =>
-    listCenterOfferings(centerId, { signal, ...fetchOptions })
+    listCenterOfferings(centerId, params, { signal, ...fetchOptions })
 
   return {
     queryKey,
@@ -778,6 +793,7 @@ export function useListCenterOfferings<
   TError = globalThis.Error & { info?: void; status?: number }
 >(
   centerId: string,
+  params: undefined | ListCenterOfferingsParams,
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCenterOfferings>>, TError, TData>> &
       Pick<
@@ -797,6 +813,7 @@ export function useListCenterOfferings<
   TError = globalThis.Error & { info?: void; status?: number }
 >(
   centerId: string,
+  params?: ListCenterOfferingsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCenterOfferings>>, TError, TData>> &
       Pick<
@@ -816,6 +833,7 @@ export function useListCenterOfferings<
   TError = globalThis.Error & { info?: void; status?: number }
 >(
   centerId: string,
+  params?: ListCenterOfferingsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCenterOfferings>>, TError, TData>>
     fetch?: RequestInit
@@ -828,13 +846,14 @@ export function useListCenterOfferings<
   TError = globalThis.Error & { info?: void; status?: number }
 >(
   centerId: string,
+  params?: ListCenterOfferingsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCenterOfferings>>, TError, TData>>
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getListCenterOfferingsQueryOptions(centerId, options)
+  const queryOptions = getListCenterOfferingsQueryOptions(centerId, params, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

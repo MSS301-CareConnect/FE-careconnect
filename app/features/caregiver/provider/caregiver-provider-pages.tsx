@@ -5,15 +5,18 @@ import { Link } from 'react-router'
 
 import {
   cancelMyShiftRegistration,
+  createCertificate,
   fetchMyCaregiverProfile,
   fetchMyShiftRegistrations,
   fetchCertificates,
+  fetchProviderMedia,
   fetchWorkShifts,
   providerKeys,
-  registerForShift
+  registerForShift,
+  uploadMedia
 } from '~/entities/provider/provider-api'
 import { formatProviderDate, formatProviderTime } from '~/entities/provider/provider-format'
-import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
+import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
@@ -28,12 +31,62 @@ const registrationStatusKeys = {
 
 export function CaregiverProviderProfilePage() {
   const { t, i18n } = useTranslation()
+  const queryClient = useQueryClient()
+  const [certificateName, setCertificateName] = useState('')
+  const [issuedBy, setIssuedBy] = useState('')
+  const [certificateFile, setCertificateFile] = useState<File | null>(null)
+  const [certificateFileError, setCertificateFileError] = useState<'type' | 'size' | null>(null)
+  const [fileInputKey, setFileInputKey] = useState(0)
+  const [pendingCertificateId, setPendingCertificateId] = useState<string | null>(null)
+  const [selectedCertificateId, setSelectedCertificateId] = useState<string | null>(null)
+  const [certificateSuccess, setCertificateSuccess] = useState(false)
+  const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const profile = useQuery({ queryKey: providerKeys.myProfile, queryFn: fetchMyCaregiverProfile, retry: false })
+  const avatarMedia = useQuery({
+    queryKey: providerKeys.media('CAREGIVER_PROFILE', profile.data?.id ?? ''),
+    queryFn: () => fetchProviderMedia('CAREGIVER_PROFILE', profile.data!.id),
+    enabled: Boolean(profile.data?.id),
+    retry: false
+  })
   const certificates = useQuery({
     queryKey: providerKeys.certificates(profile.data?.id ?? ''),
     queryFn: () => fetchCertificates(profile.data!.id),
     enabled: Boolean(profile.data?.id),
     retry: false
+  })
+  const create = useMutation({
+    mutationFn: async () => {
+      const certificateId =
+        pendingCertificateId ??
+        (
+          await createCertificate(profile.data!.id, {
+            certificateName: certificateName.trim(),
+            issuedBy: issuedBy.trim()
+          })
+        ).id
+      setPendingCertificateId(certificateId)
+      try {
+        await uploadMedia('CERTIFICATE', certificateId, [certificateFile!])
+      } catch (error) {
+        await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(profile.data!.id) })
+        throw error
+      }
+      return certificateId
+    },
+    onSuccess: async (certificateId) => {
+      setCertificateName('')
+      setIssuedBy('')
+      setCertificateFile(null)
+      setCertificateFileError(null)
+      setFileInputKey((current) => current + 1)
+      setPendingCertificateId(null)
+      setSelectedCertificateId(null)
+      setCertificateSuccess(true)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: providerKeys.certificates(profile.data!.id) }),
+        queryClient.invalidateQueries({ queryKey: providerKeys.media('CERTIFICATE', certificateId) })
+      ])
+    }
   })
   useDocumentTitle(t(`${key}.profileTitle`))
   return (
@@ -71,8 +124,25 @@ export function CaregiverProviderProfilePage() {
             <div className='h-3 bg-primary' />
             <div className='p-5 sm:p-7'>
               <div className='flex flex-wrap items-start gap-5'>
-                <div className='flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-secondary-container text-primary'>
-                  <Icon className='text-6xl' name='person' />
+                <div className='flex shrink-0 flex-col items-center gap-2'>
+                  <div className='flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-secondary-container text-primary'>
+                    {avatarMedia.data?.[0]?.downloadUrl ? (
+                      <img
+                        alt={t(`${key}.avatarAlt`, { name: profile.data.fullName })}
+                        className='h-full w-full object-cover'
+                        src={avatarMedia.data[0].downloadUrl}
+                      />
+                    ) : (
+                      <Icon className='text-6xl' name='person' />
+                    )}
+                  </div>
+                  <button
+                    className='text-sm font-semibold text-primary underline print:hidden'
+                    onClick={() => setShowAvatarEditor((current) => !current)}
+                    type='button'
+                  >
+                    {t(`${key}.avatarUpload`)}
+                  </button>
                 </div>
                 <div className='min-w-0 flex-1'>
                   <span className='rounded-md bg-secondary-container px-2 py-1 text-[10px] font-bold text-primary'>
@@ -92,6 +162,11 @@ export function CaregiverProviderProfilePage() {
                   {t(`${key}.viewSchedules`)}
                 </Link>
               </div>
+              {showAvatarEditor ? (
+                <div className='mt-5 max-w-xl print:hidden'>
+                  <ProviderMediaPanel ownerId={profile.data.id} ownerType='CAREGIVER_PROFILE' />
+                </div>
+              ) : null}
               <div className='mt-6 grid grid-cols-2 gap-5 border-t border-outline-variant/20 pt-5 sm:grid-cols-4'>
                 {(
                   [
@@ -126,8 +201,8 @@ export function CaregiverProviderProfilePage() {
               </div>
             </div>
           </section>
-          <div className='grid items-start gap-6 lg:grid-cols-12'>
-            <div className='space-y-6 lg:col-span-8'>
+          <div className='space-y-6'>
+            <div className='space-y-6'>
               <section className='rounded-2xl bg-white p-6 shadow-sm'>
                 <h2 className='flex items-center gap-2 text-lg font-bold'>
                   <Icon className='text-primary' name='person' />
@@ -142,6 +217,81 @@ export function CaregiverProviderProfilePage() {
                   <Icon className='text-primary' name='workspace_premium' />
                   {t(`${key}.certificatesTitle`)}
                 </h2>
+                <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.certificateUploadHint`)}</p>
+                <form
+                  className='mt-4 grid gap-3 sm:grid-cols-2'
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    if (certificateFile) create.mutate()
+                  }}
+                >
+                  <label className='text-sm sm:col-span-2'>
+                    {t(`${key}.certificateFile`)}
+                    <input
+                      accept='.pdf,.jpg,.jpeg,.png'
+                      className='mt-1 block w-full rounded-lg border border-outline-variant px-3 py-2 text-sm'
+                      key={fileInputKey}
+                      onChange={(event) => {
+                        setCertificateSuccess(false)
+                        const selected = event.target.files?.[0] ?? null
+                        const error = selected ? validateProviderFiles('CERTIFICATE', [selected]) : null
+                        setCertificateFileError(error === 'type' || error === 'size' ? error : null)
+                        setCertificateFile(error ? null : selected)
+                        if (error) event.target.value = ''
+                      }}
+                      required
+                      type='file'
+                    />
+                  </label>
+                  <label className='text-sm'>
+                    {t(`${key}.certificateName`)}
+                    <input
+                      className='mt-1 w-full rounded-lg border border-outline-variant px-3 py-2'
+                      onChange={(event) => {
+                        setCertificateSuccess(false)
+                        setCertificateName(event.target.value)
+                      }}
+                      disabled={Boolean(pendingCertificateId)}
+                      required
+                      value={certificateName}
+                    />
+                  </label>
+                  <label className='text-sm'>
+                    {t(`${key}.issuedBy`)}
+                    <input
+                      className='mt-1 w-full rounded-lg border border-outline-variant px-3 py-2'
+                      onChange={(event) => {
+                        setCertificateSuccess(false)
+                        setIssuedBy(event.target.value)
+                      }}
+                      disabled={Boolean(pendingCertificateId)}
+                      required
+                      value={issuedBy}
+                    />
+                  </label>
+                  <button
+                    className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:col-span-2 sm:justify-self-start'
+                    disabled={create.isPending || !certificateFile}
+                    type='submit'
+                  >
+                    {t(pendingCertificateId ? `${key}.retryCertificateUpload` : `${key}.addCertificate`)}
+                  </button>
+                </form>
+                {certificateFileError ? (
+                  <p className='mt-3 text-sm text-error' role='alert'>
+                    {t(`common.providerMedia.validation.${certificateFileError}`, { maxSize: 10 })}
+                  </p>
+                ) : null}
+                {create.isError ? (
+                  <p className='mt-3 text-sm text-error' role='alert'>
+                    {t(pendingCertificateId ? `${key}.certificateUploadError` : `${key}.actionError`)}
+                  </p>
+                ) : null}
+                {certificateSuccess ? (
+                  <p className='mt-3 text-sm font-semibold text-primary' role='status'>
+                    {t(`${key}.certificateUploadSuccess`)}
+                  </p>
+                ) : null}
                 {certificates.isPending ? (
                   <p className='mt-4 text-sm' role='status'>
                     {t(`${key}.loading`)}
@@ -161,14 +311,27 @@ export function CaregiverProviderProfilePage() {
                       <li className='rounded-xl bg-surface-container-low p-4' key={certificate.id}>
                         <strong className='text-sm'>{certificate.certificateName}</strong>
                         <p className='mt-1 text-xs text-outline'>{certificate.issuedBy}</p>
+                        <button
+                          className='mt-3 text-sm font-semibold text-primary underline'
+                          onClick={() => setSelectedCertificateId(certificate.id)}
+                          type='button'
+                        >
+                          {t(`${key}.certificateFiles`)}
+                        </button>
                       </li>
                     ))}
                   </ul>
                 ) : null}
+                {selectedCertificateId ? (
+                  <div className='mt-4'>
+                    <ProviderMediaPanel
+                      key={selectedCertificateId}
+                      ownerId={selectedCertificateId}
+                      ownerType='CERTIFICATE'
+                    />
+                  </div>
+                ) : null}
               </section>
-            </div>
-            <div className='lg:col-span-4'>
-              <ProviderMediaPanel ownerId={profile.data.id} ownerType='CAREGIVER_PROFILE' />
             </div>
           </div>
         </>
@@ -210,11 +373,6 @@ export function CaregiverProviderWorkShiftsPage() {
   useDocumentTitle(t(`${key}.workShiftsTitle`))
   return (
     <main className='mx-auto max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8'>
-      <nav className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/caregiver/dashboard'>{t('caregiver.nav.home')}</Link>
-        <Icon name='chevron_right' />
-        <span>{t(`${key}.workShiftsTitle`)}</span>
-      </nav>
       <header className='flex flex-wrap items-center justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.workShiftsTitle`)}</h1>
