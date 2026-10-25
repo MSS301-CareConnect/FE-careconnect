@@ -1,6 +1,8 @@
 .DS_Store
 .env
 .env.*
+.agents
+.claude
 !.env.example
 /node_modules/
 
