@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import {
   careCatalogErrorStatus,
+  careCatalogErrorCode,
   careCatalogKeys,
   createOffering,
   createOfferingPricePlan,
@@ -27,10 +28,11 @@ const labelClass = 'block text-sm font-semibold text-on-surface'
 const statusOptions = ['ACTIVE', 'INACTIVE'] as const
 const pricingUnits = Object.values(PricePlanRequestPricingUnit)
 
-function errorKind(error: unknown): 'invalid' | 'duplicate' | 'forbidden' | 'notFound' | 'failed' {
+function errorKind(error: unknown): 'invalid' | 'duplicate' | 'unauthenticated' | 'forbidden' | 'notFound' | 'failed' {
   const status = careCatalogErrorStatus(error)
-  if (status === 400) return 'invalid'
+  if (status === 400 || status === 422) return 'invalid'
   if (status === 409) return 'duplicate'
+  if (status === 401) return 'unauthenticated'
   if (status === 403) return 'forbidden'
   if (status === 404) return 'notFound'
   return 'failed'
@@ -231,6 +233,7 @@ export function PricePlanEditor({
       onClose()
     }
   })
+  const saveErrorCode = careCatalogErrorCode(save.error)
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -328,6 +331,9 @@ export function PricePlanEditor({
         {invalid || save.isError ? (
           <p className='rounded-xl bg-error/10 px-4 py-3 text-sm text-error' role='alert'>
             {t(invalid ? `${key}.planForm.invalid` : `${key}.planForm.${errorKind(save.error)}`)}
+            {!invalid && saveErrorCode !== undefined
+              ? ` ${t(`${key}.planForm.apiErrorCode`, { code: saveErrorCode })}`
+              : null}
           </p>
         ) : null}
         <div className='flex justify-end gap-3 border-t border-outline-variant/40 pt-5'>

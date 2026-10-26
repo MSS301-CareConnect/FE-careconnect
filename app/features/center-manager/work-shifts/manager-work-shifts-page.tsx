@@ -16,6 +16,7 @@ import {
 } from '~/entities/provider/provider-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import type { ProviderWorkShiftRecord, WorkShiftRequest } from '~/shared/api/generated/contracts'
+import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
@@ -36,6 +37,16 @@ const registrationStatusKeys = {
   REJECTED: 'rejected',
   CANCELLED: 'cancelled'
 } as const
+
+function shiftSaveErrorKey(error: unknown) {
+  const status = apiErrorStatus(error)
+  if (status === 400 || status === 422) return `${key}.shiftSaveInvalid` as const
+  if (status === 401) return `${key}.shiftSaveUnauthenticated` as const
+  if (status === 403) return `${key}.shiftSaveForbidden` as const
+  if (status === 404) return `${key}.shiftSaveNotFound` as const
+  if (status === 409) return `${key}.shiftSaveConflict` as const
+  return `${key}.actionError` as const
+}
 
 function localDateTimeInput(value?: string): string {
   if (!value) return ''
@@ -62,6 +73,7 @@ function ShiftEditor({
   const [shiftStatus, setShiftStatus] = useState<WorkShiftRequest['shiftStatus']>(shift?.shiftStatus ?? 'DRAFT')
   const [capacity, setCapacity] = useState(shift?.capacity ?? 1)
   const [deadline, setDeadline] = useState(localDateTimeInput(shift?.registrationDeadline))
+  const [invalidDeadline, setInvalidDeadline] = useState(false)
   const [note, setNote] = useState(shift?.note ?? '')
   const save = useMutation({
     mutationFn: () => {
@@ -84,8 +96,14 @@ function ShiftEditor({
       onDone()
     }
   })
+  const saveErrorCode = apiErrorCode(save.error)
   function submit(event: FormEvent) {
     event.preventDefault()
+    if (deadline && workDate && startTime && deadline >= `${workDate}T${startTime}`) {
+      setInvalidDeadline(true)
+      return
+    }
+    setInvalidDeadline(false)
     save.mutate()
   }
   return (
@@ -157,21 +175,38 @@ function ShiftEditor({
             value={capacity}
           />
         </label>
-        <label className='text-sm'>
-          {t(`${key}.deadline`)}
-          <input
-            className={inputClass}
-            onChange={(event) => setDeadline(event.target.value)}
-            type='datetime-local'
-            value={deadline}
-          />
-        </label>
+        <div className='text-sm'>
+          <label>
+            {t(`${key}.deadline`)}
+            <input
+              aria-describedby={invalidDeadline ? 'shift-deadline-error' : undefined}
+              aria-invalid={invalidDeadline}
+              className={inputClass}
+              onChange={(event) => {
+                setDeadline(event.target.value)
+                setInvalidDeadline(false)
+              }}
+              type='datetime-local'
+              value={deadline}
+            />
+          </label>
+          {invalidDeadline ? (
+            <span className='mt-1 block text-error' id='shift-deadline-error' role='alert'>
+              {t(`${key}.deadlineBeforeStart`)}
+            </span>
+          ) : null}
+        </div>
         <label className='text-sm sm:col-span-2'>
           {t(`${key}.note`)}
           <textarea className={inputClass} onChange={(event) => setNote(event.target.value)} value={note} />
         </label>
       </div>
-      {save.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      {save.isError ? (
+        <p role='alert'>
+          {t(shiftSaveErrorKey(save.error))}
+          {saveErrorCode !== undefined ? ` ${t(`${key}.apiErrorCode`, { code: saveErrorCode })}` : null}
+        </p>
+      ) : null}
       <div className='flex gap-3'>
         <button
           className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'

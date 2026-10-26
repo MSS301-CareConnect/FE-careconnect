@@ -15,6 +15,7 @@ import type {
   PricePlanRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
+import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
 
 const readOptions = { credentials: 'include' as const }
 const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
@@ -40,16 +41,12 @@ async function collectPages<T>(load: (page: number) => Promise<{ items: T[]; tot
 
 /** HTTP status attached by the generated fetch client when the backend answered with an error. */
 export function careCatalogErrorStatus(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null || !('status' in error)) return undefined
-  return typeof error.status === 'number' ? error.status : undefined
+  return apiErrorStatus(error)
 }
 
 /** Application error code from the backend APIResponse body, such as 3101 CARE_SERVICE_NAME_REQUIRED. */
 export function careCatalogErrorCode(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null || !('info' in error)) return undefined
-  const info = error.info
-  if (typeof info !== 'object' || info === null || !('code' in info)) return undefined
-  return typeof info.code === 'number' ? info.code : undefined
+  return apiErrorCode(error)
 }
 
 export const careCatalogKeys = {
