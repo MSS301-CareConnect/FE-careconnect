@@ -255,11 +255,6 @@ export function ManagerWorkShiftsPage() {
     )
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('centerManager.menu')} className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/center-manager/caregivers'>{t('centerManager.portal')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='font-semibold text-primary'>{t(`${key}.shiftsTitle`)}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.shiftsTitle`)}</h1>
@@ -539,13 +534,6 @@ export function ManagerWorkShiftDetailPage() {
     )
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('centerManager.menu')} className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/center-manager/caregivers'>{t('centerManager.portal')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <Link to='/center-manager/work-shifts'>{t(`${key}.shiftsTitle`)}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='font-semibold text-primary'>{t(`${key}.shiftDetail`)}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>

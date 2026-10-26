@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -95,11 +94,6 @@ export function RolesPage() {
 
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('admin.menu')} className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/admin/dashboard'>{t('admin.dashboard')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='text-primary'>{t(`${key}.rolesTitle`)}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.rolesTitle`)}</h1>

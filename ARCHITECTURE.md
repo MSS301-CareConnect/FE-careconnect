@@ -149,6 +149,8 @@ roles and their permission sets. These screens stay separate from the illustrati
 Admin customer screens. TanStack Query caches reads and invalidates affected lists
 and details after mutations. The backend enforces all permissions; the UI hides
 actions based on `/api/v1/users/me` permissions and renders denied/error states.
+The account list reads the `content` array and `totalPages` from IdentityService's
+paginated `/api/v1/users` result; an invalid page shape becomes a retryable API error.
 
 `/account/security` is available to every active web user. Password change and
 sign-out on every device use CSRF-protected cookie requests, then reload `/login`
@@ -160,6 +162,11 @@ device revokes other sessions before the current session because IdentityService
 longer exposes `/auth/logout-all`. Admin provisioning offers Customer and Center
 Manager accounts; the latter requires a center ID. New accounts set their password
 through the existing email OTP recovery flow.
+The Center Manager caregiver form provisions a CAREGIVER account through IdentityService,
+then uses its returned user ID to create the ProviderService profile under the manager's
+center. The manager enters details once. If profile creation fails after provisioning,
+the open form retains the account ID for a profile-only retry so it does not create a
+duplicate account. This frontend orchestration is not atomic across services.
 
 ## Key decisions
 
@@ -250,7 +257,7 @@ A lower layer cannot import a higher layer:
 
 The Center Manager shell uses a fixed sidebar on desktop and a dismissible drawer
 on smaller screens, matching the Admin portal's navigation pattern. Its topbar
-shows the current section, language switch, and account menu. Navigation closes
+shows the language switch and account menu without breadcrumbs. Navigation closes
 on selection or Escape; the role guard remains at the parent route.
 
 The Caregiver portal uses its own role guarded shell. `/caregiver/profile` reads the
@@ -335,8 +342,8 @@ The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts`
 menu into Overview, Operations, Customers and System; items without a route stay disabled.
 At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
 navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
-navigation. The topbar holds the breadcrumb derived from the active menu item, the language
-switch, notifications and the account menu.
+navigation. The topbar holds the language switch, notifications and the account menu;
+Admin pages do not render breadcrumbs.
 The Admin portal has its own `/admin` layout, VI/EN menu resources, and child
 routes `/admin/dashboard`, `/admin/revenue`, `/admin/customers`,
 `/admin/customers/:id`, `/admin/services`, `/admin/centers`,

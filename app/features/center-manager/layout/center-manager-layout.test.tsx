@@ -30,7 +30,7 @@ describe('Center Manager sidebar layout', () => {
     await setAppLanguage('en', false)
   })
 
-  it('groups all manager destinations and shows the active section in the topbar', () => {
+  it('groups all manager destinations without a topbar breadcrumb', () => {
     renderManager()
     const navigation = screen.getByRole('navigation', { name: 'Center manager menu' })
     expect(within(navigation).getByRole('list', { name: 'Care delivery' })).toBeInTheDocument()
@@ -41,9 +41,7 @@ describe('Center Manager sidebar layout', () => {
       '/center-manager/caregivers'
     )
     expect(within(navigation).getByRole('button', { name: 'Reviews and feedback' })).toBeDisabled()
-    expect(screen.getByRole('navigation', { name: 'Center manager breadcrumb' })).toHaveTextContent(
-      'Services & pricing'
-    )
+    expect(screen.getAllByRole('navigation')).toHaveLength(1)
     expect(document.getElementById('manager-sidebar')).toHaveClass('lg:translate-x-0')
   })
 

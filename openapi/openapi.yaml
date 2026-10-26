@@ -234,7 +234,7 @@ paths:
             default: 20
       responses:
         '200':
-          description: Page of users visible to the actor, without a total count.
+          description: Page of users visible to the actor.
           content:
             application/json:
               schema:
@@ -6712,9 +6712,24 @@ components:
         message:
           type: string
         result:
+          $ref: '#/components/schemas/UserPage'
+    UserPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
           type: array
           items:
             $ref: '#/components/schemas/UserResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
     RoleListResponse:
       type: object
       required: [code, message, result]

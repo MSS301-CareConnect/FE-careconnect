@@ -17,7 +17,7 @@ import type {
   VerifyRegistrationResponse
 } from '../../contracts'
 
-import { getRegistrationOtpMock, getUserResponseMock } from '../../contracts/index.faker'
+import { getRegistrationOtpMock, getUserPageMock, getUserResponseMock } from '../../contracts/index.faker'
 
 export const getGetCurrentUserResponseMock = (
   overrideResponse: Partial<Extract<CurrentUserResponse, object>> = {}
@@ -51,9 +51,7 @@ export const getListManagedUsersResponseMock = (
 ): UserListResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    ...getUserResponseMock()
-  })),
+  result: { ...getUserPageMock() },
   ...overrideResponse
 })
 

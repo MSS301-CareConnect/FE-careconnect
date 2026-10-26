@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -47,11 +47,6 @@ export function AdminServicesPage() {
 
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('admin.menu')} className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/admin/dashboard'>{t('admin.dashboard')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='text-primary'>{t('admin.services')}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-5'>
         <div className='max-w-3xl'>
           <div className='flex flex-wrap items-center gap-2 text-xs'>

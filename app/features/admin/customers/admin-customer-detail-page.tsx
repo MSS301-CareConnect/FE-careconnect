@@ -44,13 +44,6 @@ export function AdminCustomerDetailPage() {
 
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('admin.menu')} className='flex flex-wrap items-center gap-2 text-xs text-outline'>
-        <Link to='/admin/dashboard'>{t('admin.dashboard')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <Link to='/admin/customers'>{t(`${key}.title`)}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='text-primary'>#{customer.id}</span>
-      </nav>
       <Link
         className='inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm'
         to='/admin/customers'

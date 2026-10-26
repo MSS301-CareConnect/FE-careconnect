@@ -64,7 +64,7 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('heading', { name: 'GMV by service' })).toBeInTheDocument()
   })
 
-  it('groups the sidebar menu and shows the current page in the topbar breadcrumb', () => {
+  it('groups the sidebar menu without a topbar breadcrumb', () => {
     renderAdmin()
     const navigation = screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })
     expect(
@@ -80,9 +80,7 @@ describe('Admin dashboard', () => {
     )
     const system = screen.getByRole('list', { name: 'Hệ thống' })
     expect(within(system).getByRole('link', { name: /Tài khoản/ })).toHaveAttribute('href', '/admin/accounts')
-    const breadcrumb = screen.getByRole('navigation', { name: 'Đường dẫn trang quản trị' })
-    expect(within(breadcrumb).getByText('Tổng quan')).toBeInTheDocument()
-    expect(within(breadcrumb).getByText('Bảng điều khiển')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })
 
   it('opens the sidebar as a drawer and closes it on Escape or navigation', () => {
@@ -98,7 +96,6 @@ describe('Admin dashboard', () => {
     const navigation = screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })
     fireEvent.click(within(navigation).getByRole('link', { name: /Giao dịch & Báo cáo/ }))
     expect(screen.getByRole('button', { name: 'Mở menu quản trị' })).toHaveAttribute('aria-expanded', 'false')
-    const breadcrumb = screen.getByRole('navigation', { name: 'Đường dẫn trang quản trị' })
-    expect(within(breadcrumb).getByText('Giao dịch & Báo cáo')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })
 })

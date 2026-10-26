@@ -40,12 +40,3 @@ export type AdminNavigationItem = AdminNavigationGroup['items'][number]
 export function isActiveItem(item: AdminNavigationItem, pathname: string) {
   return 'to' in item && (pathname === item.to || pathname.startsWith(`${item.to}/`))
 }
-
-/** The group and item that own the current path, used by the topbar breadcrumb. */
-export function findActiveNavigation(pathname: string) {
-  for (const group of adminNavigation) {
-    const item = group.items.find((candidate) => isActiveItem(candidate, pathname))
-    if (item) return { group, item }
-  }
-  return undefined
-}

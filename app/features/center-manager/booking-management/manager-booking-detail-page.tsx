@@ -91,17 +91,6 @@ export function ManagerBookingDetailPage() {
 
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav
-        aria-label={t('centerManager.bookingDetail.breadcrumb')}
-        className='flex items-center gap-1.5 text-xs text-outline'
-      >
-        <Link className='hover:text-primary' to='/center-manager/bookings'>
-          {t('centerManager.bookingManagement.title')}
-        </Link>
-        <Icon className='text-base' name='chevron_right' />
-        <span className='font-semibold text-primary'>#{data.bookingCode}</span>
-      </nav>
-
       <header className='flex flex-wrap items-start justify-between gap-4'>
         <div className='min-w-0'>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>

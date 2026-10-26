@@ -29,7 +29,9 @@ async function writeOptions() {
 }
 
 export async function fetchUsers(page: number, size: number) {
-  return result(await listManagedUsers({ page, size }, readOptions))
+  const users = result(await listManagedUsers({ page, size }, readOptions))
+  if (!users || !Array.isArray(users.content)) throw new Error('Invalid IdentityService user page')
+  return users
 }
 export async function fetchUser(id: string) {
   return result(await getManagedUser(id, readOptions))

@@ -1,4 +1,4 @@
-/** Center Manager navigation is shared by the sidebar and topbar breadcrumb. */
+/** Center Manager navigation for the sidebar. */
 export const managerNavigation = [
   {
     key: 'careDelivery',
@@ -43,12 +43,4 @@ export type ManagerNavigationItem = ManagerNavigationGroup['items'][number]
 
 export function isActiveManagerItem(item: ManagerNavigationItem, pathname: string) {
   return 'to' in item && (pathname === item.to || pathname.startsWith(`${item.to}/`))
-}
-
-export function findActiveManagerNavigation(pathname: string) {
-  for (const group of managerNavigation) {
-    const item = group.items.find((candidate) => isActiveManagerItem(candidate, pathname))
-    if (item) return { group, item }
-  }
-  return undefined
 }
