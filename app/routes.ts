@@ -43,6 +43,8 @@ export default [
       route('dashboard', 'routes/caregiver/dashboard.tsx'),
       route('schedule', 'routes/caregiver/schedule.tsx'),
       route('work-shifts', 'routes/caregiver/work-shifts.tsx'),
+      route('visits', 'routes/caregiver/visits.tsx'),
+      route('visits/:id', 'routes/caregiver/visit-detail.tsx'),
       route('history', 'routes/caregiver/history.tsx'),
       route('profile', 'routes/caregiver/profile.tsx'),
       route('shifts/:id/report', 'routes/caregiver/care-report.tsx'),

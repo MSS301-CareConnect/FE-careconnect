@@ -31,6 +31,8 @@ import { caregiverReportEn, caregiverReportVi } from './caregiver/care-report-re
 import { caregiverHistoryEn, caregiverHistoryVi } from './caregiver/care-history-resources'
 import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
 import { caregiverProviderEn, caregiverProviderVi } from './caregiver/provider-resources'
+import { caregiverVisitsEn, caregiverVisitsVi } from './caregiver/visits-resources'
+import { caregiverVisitDetailEn, caregiverVisitDetailVi } from './caregiver/visit-detail-resources'
 import { managerLayoutEn, managerLayoutVi } from './center-manager/layout-resources'
 import { managerManagementEn, managerManagementVi } from './center-manager/management-resources'
 import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
@@ -86,7 +88,9 @@ export const resources = {
         careReport: caregiverReportEn,
         careHistory: caregiverHistoryEn,
         profile: caregiverProfileEn,
-        provider: caregiverProviderEn
+        provider: caregiverProviderEn,
+        visits: caregiverVisitsEn,
+        visitDetail: caregiverVisitDetailEn
       },
       centerManager: {
         ...managerLayoutEn,
@@ -147,7 +151,9 @@ export const resources = {
         careReport: caregiverReportVi,
         careHistory: caregiverHistoryVi,
         profile: caregiverProfileVi,
-        provider: caregiverProviderVi
+        provider: caregiverProviderVi,
+        visits: caregiverVisitsVi,
+        visitDetail: caregiverVisitDetailVi
       },
       centerManager: {
         ...managerLayoutVi,

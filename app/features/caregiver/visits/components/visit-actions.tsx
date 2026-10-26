@@ -1,0 +1,109 @@
+import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
+
+import { acknowledgeOccurrence, bookingKeys, checkIn, reportNoShow } from '~/entities/booking/booking-api'
+import { bookingErrorKey, formatClock, hasStarted } from '~/entities/booking/booking-format'
+import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
+import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { Icon } from '~/shared/ui/icon'
+
+import { currentPosition } from '../current-position'
+
+const CHECK_IN_LEAD_MS = 30 * 60 * 1000
+
+/** The next job for a visit that has no care session yet: acknowledge, check in, or report a no-show. */
+export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
+  const { t, i18n } = useTranslation()
+  const queryClient = useQueryClient()
+  const [reporting, setReporting] = useState(false)
+  const waiting = visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED'
+  const start = new Date(visit.startAt).getTime()
+  const opensAt = formatClock(new Date(start - CHECK_IN_LEAD_MS).toISOString(), i18n.language)
+  const started = hasStarted(visit.startAt)
+  const noShowReported = Boolean(visit.noShowReportedAt)
+
+  function refresh() {
+    void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+  }
+  const acknowledge = useMutation({ mutationFn: () => acknowledgeOccurrence(visit.id), onSuccess: refresh })
+  const checkInVisit = useMutation({
+    mutationFn: async () => checkIn({ occurrenceId: visit.id, ...(await currentPosition()) }),
+    onSuccess: refresh
+  })
+  const noShow = useMutation({
+    mutationFn: (note: string) => reportNoShow(visit.id, note),
+    onSuccess: () => {
+      refresh()
+      setReporting(false)
+    }
+  })
+
+  if (!waiting) return null
+  if (noShowReported)
+    return (
+      <p className='flex items-start gap-2 rounded-xl bg-amber-50 p-4 text-sm text-amber-900'>
+        <Icon className='text-lg' name='pending' />
+        {t('caregiver.visitDetail.noShowAwaiting')}
+      </p>
+    )
+
+  const error = acknowledge.error ?? checkInVisit.error
+  return (
+    <section className='flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-sm sm:p-6'>
+      <h2 className='text-base font-bold'>{t('caregiver.visitDetail.nextStep')}</h2>
+      <div className='flex flex-wrap gap-2'>
+        {visit.status === 'SCHEDULED' ? (
+          <button
+            className='inline-flex items-center gap-2 rounded-lg bg-surface-container px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surface-container-high disabled:opacity-50'
+            disabled={acknowledge.isPending}
+            onClick={() => acknowledge.mutate()}
+            type='button'
+          >
+            <Icon className='text-lg' name='thumb_up' />
+            {acknowledge.isPending ? t('booking.actions.working') : t('caregiver.visitDetail.acknowledge')}
+          </button>
+        ) : null}
+        <button
+          className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container disabled:opacity-50'
+          disabled={checkInVisit.isPending}
+          onClick={() => checkInVisit.mutate()}
+          type='button'
+        >
+          <Icon className='text-lg' name='login' />
+          {checkInVisit.isPending ? t('caregiver.visitDetail.checkingIn') : t('caregiver.visitDetail.checkIn')}
+        </button>
+        {started ? (
+          <button
+            className='inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-error ring-1 ring-error/30 hover:bg-error-container/30'
+            onClick={() => setReporting(true)}
+            type='button'
+          >
+            <Icon className='text-lg' name='person_off' />
+            {t('caregiver.visitDetail.reportNoShow')}
+          </button>
+        ) : null}
+      </div>
+      <p className='text-xs text-on-surface-variant'>{t('caregiver.visitDetail.checkInHint', { time: opensAt })}</p>
+      {error ? (
+        <p className='rounded-lg bg-error-container/40 p-3 text-sm text-error' role='alert'>
+          {t(bookingErrorKey(error))}
+        </p>
+      ) : null}
+      {reporting ? (
+        <BookingReasonDialog
+          confirmLabel={t('caregiver.visitDetail.reportNoShow')}
+          danger
+          description={t('caregiver.visitDetail.noShowHint')}
+          error={noShow.error ? t(bookingErrorKey(noShow.error)) : undefined}
+          label={t('caregiver.visitDetail.noShowNote')}
+          minLength={10}
+          onClose={() => setReporting(false)}
+          onConfirm={(note) => noShow.mutate(note)}
+          pending={noShow.isPending}
+          title={t('caregiver.visitDetail.noShowTitle')}
+        />
+      ) : null}
+    </section>
+  )
+}
