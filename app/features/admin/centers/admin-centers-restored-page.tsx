@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import { fetchCenters, providerKeys } from '~/entities/provider/provider-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -79,13 +79,6 @@ export function AdminCentersPage() {
 
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('admin.menu')} className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/admin/dashboard'>{t('admin.dashboard')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span>{t(`${key}.breadcrumb`)}</span>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='text-primary'>{t('admin.centers')}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-5'>
         <div className='max-w-3xl'>
           <h1 className='text-2xl font-bold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>

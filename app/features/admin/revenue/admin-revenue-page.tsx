@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { RevenueAnalytics } from './components/revenue-analytics'
@@ -69,13 +68,6 @@ export function AdminRevenuePage() {
   }
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('admin.menu')} className='flex flex-wrap items-center gap-2 text-xs text-outline'>
-        <Link className='hover:text-primary' to='/admin/dashboard'>
-          {t('admin.dashboard')}
-        </Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span>{t(`${key}.breadcrumb`)}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-4'>
         <div>
           <div className='flex flex-wrap items-center gap-3'>

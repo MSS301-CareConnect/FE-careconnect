@@ -5,10 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { UserResponse } from './userResponse'
+import type { UserPage } from './userPage'
 
 export interface UserListResponse {
   code: number
   message: string
-  result: UserResponse[]
+  result: UserPage
 }

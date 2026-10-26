@@ -191,11 +191,6 @@ export function AdminCenterCaregiversPage() {
   }
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/admin/centers'>{t('admin.centers')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span>{t(`${key}.caregiverTitle`)}</span>
-      </nav>
       <Link
         className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold text-primary'
         to='/admin/centers'

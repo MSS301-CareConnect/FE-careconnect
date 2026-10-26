@@ -52,9 +52,16 @@ export const managerProviderVi = {
   approved: 'Đã duyệt',
   retry: 'Thử lại',
   createCaregiver: 'Thêm người chăm sóc',
+  createCaregiverHint:
+    'Tài khoản và hồ sơ sẽ được tạo cho trung tâm của bạn. Người chăm sóc tự đặt mật khẩu qua email OTP; hồ sơ chờ quản trị viên xác minh trước khi nhận việc.',
   editCaregiver: 'Sửa hồ sơ',
   caregiverName: 'Họ và tên',
   userId: 'ID tài khoản',
+  email: 'Email đăng nhập',
+  phoneNumber: 'Số điện thoại',
+  retryProfile: 'Thử lưu hồ sơ lại',
+  profileAfterAccountError:
+    'Đã tạo tài khoản (ID: {{id}}) nhưng chưa lưu được hồ sơ. Hãy thử lại; hệ thống sẽ không tạo thêm tài khoản.',
   experience: 'Số năm kinh nghiệm',
   gender: 'Giới tính',
   birthDate: 'Ngày sinh',
@@ -166,9 +173,16 @@ export const managerProviderEn = {
   approved: 'Approved',
   retry: 'Try again',
   createCaregiver: 'Add caregiver',
+  createCaregiverHint:
+    'The account and profile will be created for your center. The caregiver sets a password using email OTP; an admin must verify the profile before work begins.',
   editCaregiver: 'Edit profile',
   caregiverName: 'Full name',
   userId: 'Account ID',
+  email: 'Sign-in email',
+  phoneNumber: 'Phone number',
+  retryProfile: 'Retry saving profile',
+  profileAfterAccountError:
+    'The account was created (ID: {{id}}), but the profile was not saved. Retry without creating another account.',
   experience: 'Years of experience',
   gender: 'Gender',
   birthDate: 'Date of birth',

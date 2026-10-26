@@ -137,12 +137,6 @@ export function ManagerCaregiversPage() {
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
       <header>
-        <p className='mb-3 flex items-center gap-2 text-xs text-outline'>
-          <Icon className='text-base' name='admin_panel_settings' />
-          {t('centerManager.portal')}
-          <Icon className='text-base' name='chevron_right' />
-          {t(`${key}.list`)}
-        </p>
         <div className='flex flex-wrap items-start justify-between gap-4'>
           <div>
             <div className='flex flex-wrap items-center gap-3'>

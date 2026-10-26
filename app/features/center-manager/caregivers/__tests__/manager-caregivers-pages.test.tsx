@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   createCertificate,
+  createCaregiver,
   fetchCaregiver,
   fetchCaregivers,
   fetchCertificates,
@@ -17,6 +18,9 @@ import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { ManagerCaregiverDetailPage } from '../manager-caregiver-detail-page'
 import { ManagerCaregiversPage } from '../manager-caregivers-page'
+import { provisionCaregiverAccount } from '../caregiver-onboarding-api'
+
+vi.mock('../caregiver-onboarding-api', () => ({ provisionCaregiverAccount: vi.fn() }))
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
@@ -26,6 +30,7 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchProviderMedia: vi.fn(),
   saveCaregiver: vi.fn(),
   createCertificate: vi.fn(),
+  createCaregiver: vi.fn(),
   uploadMedia: vi.fn()
 }))
 
@@ -62,11 +67,55 @@ beforeEach(async () => {
   vi.mocked(fetchProviderMedia).mockReset()
   vi.mocked(saveCaregiver).mockReset()
   vi.mocked(createCertificate).mockReset()
+  vi.mocked(createCaregiver).mockReset()
+  vi.mocked(provisionCaregiverAccount).mockReset()
   vi.mocked(uploadMedia).mockReset()
   await setAppLanguage('en', false)
 })
 
 describe('Center Manager Provider caregivers', () => {
+  it('creates the account and center profile from one form without asking for an account ID', async () => {
+    vi.mocked(fetchCaregivers).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    vi.mocked(provisionCaregiverAccount).mockResolvedValue('user-1')
+    vi.mocked(createCaregiver).mockResolvedValue({ ...person, userId: 'user-1' })
+    renderManager()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add caregiver' }))
+    expect(screen.queryByLabelText('Account ID')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Sign-in email'), { target: { value: 'lan@example.com' } })
+    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Lan Nguyen' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(provisionCaregiverAccount).toHaveBeenCalledWith('lan@example.com', 'Lan Nguyen', undefined)
+    )
+    await waitFor(() =>
+      expect(createCaregiver).toHaveBeenCalledWith(
+        'center-1',
+        expect.objectContaining({ userId: 'user-1', fullName: 'Lan Nguyen' })
+      )
+    )
+  })
+
+  it('retries only the profile after an account was created', async () => {
+    vi.mocked(fetchCaregivers).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    vi.mocked(provisionCaregiverAccount).mockResolvedValue('user-1')
+    vi.mocked(createCaregiver)
+      .mockRejectedValueOnce(new Error('Provider unavailable'))
+      .mockResolvedValueOnce({ ...person, userId: 'user-1' })
+    renderManager()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add caregiver' }))
+    fireEvent.change(screen.getByLabelText('Sign-in email'), { target: { value: 'lan@example.com' } })
+    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Lan Nguyen' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('user-1')
+    fireEvent.click(screen.getByRole('button', { name: 'Retry saving profile' }))
+
+    await waitFor(() => expect(createCaregiver).toHaveBeenCalledTimes(2))
+    expect(provisionCaregiverAccount).toHaveBeenCalledTimes(1)
+  })
+
   it('loads only the assigned center and opens a real caregiver profile with certificates', async () => {
     vi.mocked(fetchCaregivers).mockResolvedValue({
       items: [person],

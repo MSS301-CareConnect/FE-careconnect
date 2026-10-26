@@ -32,7 +32,7 @@ export function AccountsPage() {
   const [message, setMessage] = useState('')
   const canCreateCustomer = authUser?.permissions?.includes('user:manage')
   const canCreateManager = authUser?.permissions?.includes('manager:create')
-  const rows = users.data ?? []
+  const rows = users.data?.content ?? []
   const visible = rows.filter((user) => {
     const matchesKeyword =
       !keyword ||
@@ -106,11 +106,6 @@ export function AccountsPage() {
 
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <nav aria-label={t('admin.menu')} className='flex items-center gap-2 text-xs text-outline'>
-        <Link to='/admin/dashboard'>{t('admin.dashboard')}</Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='text-primary'>{t(`${key}.accountsTitle`)}</span>
-      </nav>
       <header className='flex flex-wrap items-start justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.accountsTitle`)}</h1>
@@ -303,7 +298,7 @@ export function AccountsPage() {
               <span>{t(`${key}.pageNumber`, { page: page + 1 })}</span>
               <button
                 className='font-semibold text-primary disabled:opacity-40'
-                disabled={rows.length < size}
+                disabled={page + 1 >= (users.data?.totalPages ?? 0)}
                 onClick={() => update('page', String(page + 1))}
                 type='button'
               >

@@ -25,20 +25,27 @@ function renderPage(permissions: string[]) {
 beforeEach(async () => {
   vi.mocked(fetchUsers).mockReset()
   vi.mocked(addUser).mockReset()
-  vi.mocked(fetchUsers).mockResolvedValue([])
+  vi.mocked(fetchUsers).mockResolvedValue({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
   await setAppLanguage('en', false)
 })
 
 describe('AccountsPage', () => {
   it('shows API account data in the customer management layout and filters the loaded page', async () => {
-    vi.mocked(fetchUsers).mockResolvedValue([
-      { id: 'one', fullName: 'Mai Anh', email: 'mai@example.com', status: 'ACTIVE', roles: ['CUSTOMER'] },
-      { id: 'two', fullName: 'Bao Ngoc', email: 'bao@example.com', status: 'LOCKED', roles: ['CENTER_MANAGER'] }
-    ])
+    vi.mocked(fetchUsers).mockResolvedValue({
+      content: [
+        { id: 'one', fullName: 'Mai Anh', email: 'mai@example.com', status: 'ACTIVE', roles: ['CUSTOMER'] },
+        { id: 'two', fullName: 'Bao Ngoc', email: 'bao@example.com', status: 'LOCKED', roles: ['CENTER_MANAGER'] }
+      ],
+      page: 0,
+      size: 20,
+      totalElements: 2,
+      totalPages: 1
+    })
     renderPage(['user:read'])
     expect(await screen.findByRole('link', { name: 'Mai Anh' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Account overview' })).toBeInTheDocument()
     expect(screen.getAllByRole('row')).toHaveLength(3)
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
     fireEvent.change(screen.getByRole('searchbox', { name: /Search by name/ }), { target: { value: 'Bao' } })
     expect(screen.queryByRole('link', { name: 'Mai Anh' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Bao Ngoc' })).toBeInTheDocument()

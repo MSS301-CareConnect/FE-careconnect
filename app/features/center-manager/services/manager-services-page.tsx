@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import {
   careCatalogErrorStatus,
@@ -68,14 +68,6 @@ export function ManagerServicesPage() {
 
   return (
     <div className='mx-auto max-w-7xl space-y-7 px-4 py-7 sm:px-6 lg:py-10'>
-      <nav aria-label={t('centerManager.menu')} className='flex items-center gap-2 text-xs text-on-surface-variant'>
-        <Link className='hover:text-primary' to='/center-manager'>
-          {t('centerManager.role')}
-        </Link>
-        <Icon className='text-sm' name='chevron_right' />
-        <span className='font-semibold text-primary'>{t('centerManager.serviceMenu')}</span>
-      </nav>
-
       <header className='grid gap-5 border-b border-outline-variant/50 pb-7 md:grid-cols-[minmax(0,1fr)_auto] md:items-end'>
         <div>
           <p className='mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary'>{t(`${key}.eyebrow`)}</p>

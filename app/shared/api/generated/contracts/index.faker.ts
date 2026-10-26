@@ -222,6 +222,7 @@ import type {
   UnreadCountResponse,
   UpdateProfileRequest,
   UserListResponse,
+  UserPage,
   UserResponse,
   VerificationRequest,
   VerifyRegistrationRequest,
@@ -693,12 +694,21 @@ export const getUserResponseMock = (overrideResponse: Partial<UserResponse> = {}
   ...overrideResponse
 })
 
+export const getUserPageMock = (overrideResponse: Partial<UserPage> = {}): UserPage => ({
+  content: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getUserResponseMock()
+  })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
 export const getUserListResponseMock = (overrideResponse: Partial<UserListResponse> = {}): UserListResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    ...getUserResponseMock()
-  })),
+  result: { ...getUserPageMock() },
   ...overrideResponse
 })
 
