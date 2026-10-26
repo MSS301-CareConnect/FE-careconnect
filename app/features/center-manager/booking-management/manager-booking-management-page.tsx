@@ -1,244 +1,170 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+
+import { bookingErrorKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
+import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { managerBookingPreviews } from './booking-preview'
-import { BookingFilters } from './components/booking-filters'
-import { BookingPreviewDialog } from './components/booking-preview-dialog'
-import { BookingTableRow } from './components/booking-table-row'
-import { useManagerBookingList } from './hooks/use-manager-booking-list'
 
-const columns = [
-  'bookingId',
-  'customer',
-  'patient',
-  'caregiver',
-  'medicalService',
-  'appointment',
-  'status',
-  'actions'
-] as const
-function csvCell(value: string) {
-  return `"${(/^[=+@-]/.test(value) ? `'${value}` : value).replaceAll('"', '""')}"`
-}
+import { ManagerBookingFilters } from './components/manager-booking-filters'
+import { useManagerBookings } from './hooks/use-manager-bookings'
+
+const COLUMNS = ['booking', 'customer', 'schedule', 'next', 'total', 'status'] as const
 
 export function ManagerBookingManagementPage() {
   const { t, i18n } = useTranslation()
-  const list = useManagerBookingList()
-  const number = (value: number) => new Intl.NumberFormat(list.locale).format(value)
-  const selected = managerBookingPreviews.find((booking) => booking.id === list.get('booking'))
-  const stats = [
-    {
-      key: 'total',
-      icon: 'calendar_month',
-      value: number(list.periodRecords.length),
-      detail: t('centerManager.bookingManagement.completedCount', { count: list.counts.completed })
-    },
-    {
-      key: 'running',
-      icon: 'schedule',
-      value: number(list.counts.inProgress),
-      detail: t('centerManager.bookingManagement.runningCount', { count: list.counts.inProgress })
-    },
-    {
-      key: 'pendingTotal',
-      icon: 'pending_actions',
-      value: number(list.counts.pending),
-      detail: t('centerManager.bookingManagement.pendingCount', { count: list.counts.pending })
-    },
-    {
-      key: 'revenue',
-      icon: 'payments',
-      value: new Intl.NumberFormat(list.locale, {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0
-      }).format(42850),
-      detail: t('centerManager.bookingManagement.revenueDetail')
-    }
-  ] as const
+  const language = i18n.language
+  const list = useManagerBookings()
+  const { bookings } = list
   useDocumentTitle(t('centerManager.bookingManagement.documentTitle'))
-
-  function exportCsv() {
-    const date = new Intl.DateTimeFormat(i18n.resolvedLanguage ?? 'vi', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      timeZone: 'UTC'
-    })
-    const rows = [
-      columns.slice(0, -1).map((column) => t(`centerManager.bookingManagement.${column}`)),
-      ...list.filtered.map((booking) => [
-        booking.id,
-        booking.customer,
-        booking.patient,
-        booking.caregiver ?? t('centerManager.bookingManagement.unassigned'),
-        booking.serviceName,
-        date.format(new Date(`${booking.date}T00:00:00Z`)),
-        t(`centerManager.bookingManagement.statuses.${booking.status}`)
-      ])
-    ]
-    const csv = '\uFEFF' + rows.map((row) => row.map(csvCell).join(',')).join('\r\n')
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = 'manager-bookings-preview.csv'
-    anchor.click()
-    URL.revokeObjectURL(url)
-  }
 
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header>
-        <p className='mb-3 flex items-center gap-2 text-xs text-outline'>
-          <Icon className='text-base' name='admin_panel_settings' />
-          {t('centerManager.portal')}
-          <Icon className='text-base' name='chevron_right' />
-          {t('centerManager.bookingManagement.list')}
-        </p>
-        <div className='flex flex-wrap items-start justify-between gap-4'>
-          <div>
-            <div className='flex flex-wrap items-center gap-3'>
-              <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
-                {t('centerManager.bookingManagement.title')}
-              </h1>
-              <span className='rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-primary'>
-                {t('centerManager.bookingManagement.monthlyCount', { count: managerBookingPreviews.length })}
-              </span>
-            </div>
-            <p className='mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant'>
-              {t('centerManager.bookingManagement.subtitle')}
-            </p>
-          </div>
-          <div className='flex flex-wrap gap-2'>
-            <button
-              className='flex items-center gap-2 rounded-lg bg-surface-container px-3 py-2.5 text-sm font-semibold disabled:opacity-50'
-              disabled={!list.filtered.length}
-              onClick={exportCsv}
-              type='button'
-            >
-              <Icon className='text-lg' name='download' />
-              {t('centerManager.bookingManagement.export')}
-            </button>
-            <button
-              className='flex cursor-not-allowed items-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white opacity-60'
-              disabled
-              title={t('centerManager.unavailable')}
-              type='button'
-            >
-              <Icon className='text-lg' name='add' />
-              {t('centerManager.bookingManagement.create')}
-            </button>
-          </div>
+      <header className='flex flex-wrap items-end justify-between gap-4'>
+        <div>
+          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
+            {t('centerManager.bookingManagement.title')}
+          </h1>
+          <p className='mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant'>
+            {list.pendingCount
+              ? t('centerManager.bookingManagement.pendingSubtitle', { count: list.pendingCount })
+              : t('centerManager.bookingManagement.subtitle')}
+          </p>
         </div>
+        {list.pendingCount && list.status !== 'PENDING' ? (
+          <button
+            className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
+            onClick={() => list.setStatus('PENDING')}
+            type='button'
+          >
+            <Icon className='text-lg' name='pending_actions' />
+            {t('centerManager.bookingManagement.reviewQueue')}
+          </button>
+        ) : null}
       </header>
-      <p className='rounded-lg bg-secondary-container/45 px-4 py-3 text-xs leading-5 text-primary'>
-        {t('centerManager.bookingManagement.preview')}
-      </p>
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
-        {stats.map((stat) => (
-          <section className='rounded-xl bg-white p-5 shadow-sm' key={stat.key}>
-            <div className='flex items-center justify-between gap-3'>
-              <h2 className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
-                {t(`centerManager.bookingManagement.${stat.key}`)}
-              </h2>
-              <Icon className='text-2xl text-primary' name={stat.icon} />
-            </div>
-            <p className='mt-3 text-3xl font-extrabold'>{stat.value}</p>
-            <p className='mt-2 text-xs text-outline'>{stat.detail}</p>
-          </section>
-        ))}
-      </div>
-      <BookingFilters list={list} />
-      <section
-        className='overflow-hidden rounded-xl bg-white shadow-sm'
-        aria-label={t('centerManager.bookingManagement.list')}
-      >
-        <div className='flex items-center justify-between gap-3 border-b border-outline-variant/25 px-5 py-4'>
-          <h2 className='text-lg font-bold'>{t('centerManager.bookingManagement.list')}</h2>
-          <span className='text-xs text-outline'>{t('centerManager.bookingManagement.snapshot')}</span>
+
+      <ManagerBookingFilters key={`${list.keyword}|${list.from}|${list.to}`} list={list} />
+
+      {bookings.isPending ? (
+        <p className='rounded-xl bg-white p-6 text-sm text-on-surface-variant shadow-sm' role='status'>
+          {t('centerManager.bookingManagement.loading')}
+        </p>
+      ) : null}
+      {bookings.isError ? (
+        <div className='rounded-xl bg-white p-6 shadow-sm' role='alert'>
+          <p className='text-sm text-error'>{t(bookingErrorKey(bookings.error))}</p>
+          <button
+            className='mt-2 text-sm font-semibold text-primary underline'
+            onClick={() => void bookings.refetch()}
+            type='button'
+          >
+            {t('booking.actions.retry')}
+          </button>
         </div>
-        <div className='overflow-x-auto'>
-          <table className='w-full min-w-[1180px] text-left text-sm'>
-            <thead className='bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
+      ) : null}
+      {bookings.isSuccess && bookings.data.items.length === 0 ? (
+        <div className='flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-12 text-center shadow-sm'>
+          <Icon className='text-4xl text-primary' name='event_busy' />
+          <h2 className='text-lg font-bold'>{t('centerManager.bookingManagement.empty')}</h2>
+          {list.hasFilters ? (
+            <button className='text-sm font-semibold text-primary underline' onClick={list.reset} type='button'>
+              {t('centerManager.bookingManagement.filters.reset')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {bookings.isSuccess && bookings.data.items.length > 0 ? (
+        <div className='overflow-x-auto rounded-xl bg-white shadow-sm'>
+          <table className='w-full min-w-[880px] text-left text-sm'>
+            <caption className='sr-only'>{t('centerManager.bookingManagement.title')}</caption>
+            <thead className='bg-surface-container-low text-xs text-on-surface-variant'>
               <tr>
-                {columns.map((column) => (
-                  <th className='p-4 font-semibold' key={column} scope='col'>
-                    {t(`centerManager.bookingManagement.${column}`)}
+                {COLUMNS.map((column) => (
+                  <th className='px-4 py-3 font-semibold' key={column} scope='col'>
+                    {t(`centerManager.bookingManagement.columns.${column}`)}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {list.shown.map((booking) => (
-                <BookingTableRow booking={booking} key={booking.id} onView={(id) => list.update('booking', id)} />
+              {bookings.data.items.map((booking) => (
+                <tr className='border-t border-surface-container hover:bg-surface-container-lowest' key={booking.id}>
+                  <td className='px-4 py-3'>
+                    <Link
+                      className='font-semibold text-primary hover:underline'
+                      to={`/center-manager/bookings/${booking.id}`}
+                    >
+                      #{booking.bookingCode}
+                    </Link>
+                    <p className='text-xs text-on-surface-variant'>{booking.recipientName}</p>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <p className='font-semibold'>{booking.customer?.fullName ?? '—'}</p>
+                    <p className='text-xs text-on-surface-variant'>{booking.customer?.phoneNumber}</p>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <p>
+                      {formatDay(booking.startDate, language)}
+                      {booking.endDate && booking.endDate !== booking.startDate
+                        ? ` – ${formatDay(booking.endDate, language)}`
+                        : ''}
+                    </p>
+                    <p className='text-xs text-on-surface-variant'>
+                      {t(`booking.scheduleType.${booking.scheduleType}`)} · {shortTime(booking.startTime)}–
+                      {shortTime(booking.endTime)}
+                    </p>
+                  </td>
+                  <td className='px-4 py-3'>
+                    {booking.nextOccurrenceAt ? formatDateTime(booking.nextOccurrenceAt, language) : '—'}
+                    <p className='text-xs text-on-surface-variant'>
+                      {t('centerManager.bookingManagement.progress', {
+                        done: booking.completedCount ?? 0,
+                        total: booking.totalCount ?? 0
+                      })}
+                    </p>
+                  </td>
+                  <td className='px-4 py-3 font-semibold tabular-nums'>{formatMoney(booking.totalAmount, language)}</td>
+                  <td className='px-4 py-3'>
+                    <BookingStatusBadge status={booking.status} />
+                    {booking.caregiverId ? null : (
+                      <p className='mt-1 text-xs text-amber-800'>{t('centerManager.bookingManagement.noCaregiver')}</p>
+                    )}
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {!list.shown.length && (
-          <div className='px-5 py-16 text-center'>
-            <Icon className='text-4xl text-outline' name='event_busy' />
-            <h3 className='mt-3 text-base font-bold'>{t('centerManager.bookingManagement.empty')}</h3>
-            <p className='mt-2 text-sm text-outline'>{t('centerManager.bookingManagement.emptyHint')}</p>
-          </div>
-        )}
-        <div className='flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/25 px-5 py-4 text-xs text-on-surface-variant'>
-          <p>
-            {t('centerManager.bookingManagement.showing', {
-              from: list.filtered.length ? (list.page - 1) * list.perPage + 1 : 0,
-              to: Math.min(list.page * list.perPage, list.filtered.length),
-              total: list.filtered.length
+      ) : null}
+      {bookings.isSuccess && bookings.data.totalPages > 1 ? (
+        <nav
+          aria-label={t('centerManager.bookingManagement.pagination.label')}
+          className='flex items-center justify-between rounded-xl bg-white p-3 text-sm shadow-sm'
+        >
+          <button
+            className='rounded-lg px-3 py-2 font-semibold text-primary disabled:text-outline'
+            disabled={bookings.data.page <= 0}
+            onClick={() => list.setPage(bookings.data.page - 1)}
+            type='button'
+          >
+            {t('centerManager.bookingManagement.pagination.previous')}
+          </button>
+          <span className='text-on-surface-variant'>
+            {t('centerManager.bookingManagement.pagination.pageOf', {
+              page: bookings.data.page + 1,
+              total: bookings.data.totalPages
             })}
-          </p>
-          <div className='flex items-center gap-2'>
-            <label className='flex items-center gap-2'>
-              {t('centerManager.bookingManagement.pageSize')}
-              <select
-                className='rounded-lg bg-surface-container-low px-2 py-2'
-                onChange={(event) => list.update('size', event.target.value)}
-                value={list.perPage}
-              >
-                {[10, 25, 50, 100].map((size) => (
-                  <option key={size} value={size}>
-                    {number(size)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              aria-label={t('centerManager.bookingManagement.previous')}
-              className='rounded-lg border border-outline-variant/50 px-3 py-2 disabled:opacity-40'
-              disabled={list.page <= 1}
-              onClick={() => list.update('page', String(list.page - 1))}
-              type='button'
-            >
-              <Icon name='chevron_left' />
-            </button>
-            <span>
-              {number(list.page)} / {number(list.pages)}
-            </span>
-            <button
-              aria-label={t('centerManager.bookingManagement.next')}
-              className='rounded-lg border border-outline-variant/50 px-3 py-2 disabled:opacity-40'
-              disabled={list.page >= list.pages}
-              onClick={() => list.update('page', String(list.page + 1))}
-              type='button'
-            >
-              <Icon name='chevron_right' />
-            </button>
-          </div>
-        </div>
-      </section>
-      <button
-        className='flex cursor-not-allowed items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-primary opacity-60 shadow-sm'
-        disabled
-        title={t('centerManager.bookingManagement.mapHint')}
-        type='button'
-      >
-        <Icon name='map' />
-        {t('centerManager.bookingManagement.map')}
-      </button>
-      {selected && <BookingPreviewDialog booking={selected} onClose={() => list.update('booking', '')} />}
+          </span>
+          <button
+            className='rounded-lg px-3 py-2 font-semibold text-primary disabled:text-outline'
+            disabled={bookings.data.page + 1 >= bookings.data.totalPages}
+            onClick={() => list.setPage(bookings.data.page + 1)}
+            type='button'
+          >
+            {t('centerManager.bookingManagement.pagination.next')}
+          </button>
+        </nav>
+      ) : null}
     </div>
   )
 }
