@@ -34,7 +34,8 @@ export const customerServicesVi = {
     contactPrice: 'Liên hệ để nhận báo giá',
     comingSoon: 'Sắp ra mắt',
     noCenter: 'Chưa có cơ sở y tế cung cấp',
-    findCaregivers: 'Tìm người chăm sóc'
+    findCaregivers: 'Tìm người chăm sóc',
+    book: 'Đặt lịch dịch vụ này'
   },
   pricingUnits: { HOUR: 'Theo giờ', DAY: 'Theo ngày', SHIFT: 'Theo ca' },
   states: {
@@ -87,7 +88,8 @@ export const customerServicesEn = {
     contactPrice: 'Contact us for a quote',
     comingSoon: 'Coming soon',
     noCenter: 'Not yet offered by a medical center',
-    findCaregivers: 'Find caregivers'
+    findCaregivers: 'Find caregivers',
+    book: 'Book this service'
   },
   pricingUnits: { HOUR: 'Hourly', DAY: 'Daily', SHIFT: 'Per shift' },
   states: {

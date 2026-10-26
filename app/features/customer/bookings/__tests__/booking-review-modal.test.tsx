@@ -3,7 +3,6 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { CustomerCareReportPage } from '../care-report-page'
-import { CustomerBookingDetailPage } from '../booking-detail-page'
 
 function openReportReview() {
   render(
@@ -60,17 +59,6 @@ describe('BookingReviewModal', () => {
     expect(comment).toHaveAttribute('maxlength', '500')
     fireEvent.click(screen.getByRole('checkbox', { name: 'Hiển thị nhận xét công khai trên hồ sơ điều dưỡng' }))
     expect(screen.getByRole('checkbox', { name: 'Hiển thị đánh giá ẩn danh' })).toBeDisabled()
-  })
-
-  it('opens on completed booking details and closes on the native Escape cancel event', () => {
-    render(
-      <MemoryRouter>
-        <CustomerBookingDetailPage code='CC-BK-9750' />
-      </MemoryRouter>
-    )
-    fireEvent.click(screen.getByRole('button', { name: 'Đánh giá điều dưỡng' }))
-    fireEvent(screen.getByRole('dialog'), new Event('cancel', { cancelable: true }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('translates the open modal when language changes', async () => {

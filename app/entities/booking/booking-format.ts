@@ -33,6 +33,11 @@ export function weekdayKey(day: number) {
   return WEEKDAYS.find((item) => item === String(day))
 }
 
+/** True once the scheduled start of a visit has passed. */
+export function hasStarted(startAt: string, now = Date.now()) {
+  return new Date(startAt).getTime() <= now
+}
+
 /** Occurrences that have not started yet and can still be cancelled or reassigned. */
 export function isUpcomingOccurrence(occurrence: { status: OccurrenceStatus; startAt: string }, now = Date.now()) {
   return (
@@ -50,9 +55,12 @@ export function formatMoney(value: number | undefined, language: string) {
 /** Formats a calendar date (YYYY-MM-DD) without shifting it through the browser time zone. */
 export function formatDay(value: string | undefined, language: string) {
   if (!value) return ''
-  return new Intl.DateTimeFormat(language, { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(
-    new Date(`${value}T00:00:00Z`)
-  )
+  return new Intl.DateTimeFormat(language, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }).format(new Date(`${value}T00:00:00Z`))
 }
 
 export function formatDateTime(value: string | undefined, language: string) {
@@ -63,6 +71,17 @@ export function formatDateTime(value: string | undefined, language: string) {
     month: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: BOOKING_TIME_ZONE
+  }).format(new Date(value))
+}
+
+/** Weekday and date of an instant in Vietnam time, without the clock. */
+export function formatDate(value: string | undefined, language: string) {
+  if (!value) return ''
+  return new Intl.DateTimeFormat(language, {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
     timeZone: BOOKING_TIME_ZONE
   }).format(new Date(value))
 }

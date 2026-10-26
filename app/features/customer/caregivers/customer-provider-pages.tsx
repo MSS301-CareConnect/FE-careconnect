@@ -326,6 +326,13 @@ export function CustomerProviderDetailPage() {
                 <p className='max-w-3xl leading-7 text-on-surface-variant'>{profile.data.bio}</p>
               ) : null}
             </div>
+            <Link
+              className='inline-flex items-center gap-2 self-start rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container'
+              to={`/customer/booking?caregiver=${userId}`}
+            >
+              <Icon className='text-xl' name='calendar_add_on' />
+              {t(`${key}.book`)}
+            </Link>
           </div>
         </section>
       ) : null}

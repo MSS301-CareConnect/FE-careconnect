@@ -1,47 +1,59 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { bookingErrorStatus, bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
+import { bookingErrorKey } from '~/entities/booking/booking-format'
+import { BookingHistoryList } from '~/entities/booking/booking-history-list'
+import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
+import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import type { BookingStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { SectionCard } from '~/shared/ui/section-card'
 
-import { bookingPreviews } from './bookings-data'
-import { BookingDetailSidebar } from './components/booking-detail-sidebar'
-import { BookingProgress } from './components/booking-progress'
-import { BookingVitalsAndFeed } from './components/booking-vitals-and-feed'
-import { BookingReviewModal } from './components/booking-review-modal'
+import { BookingCancelDialog } from './components/booking-cancel-dialog'
+import { BookingDetailSummary } from './components/booking-detail-summary'
+import { BookingStatusPanel } from './components/booking-status-panel'
 
-interface CustomerBookingDetailPageProps {
-  code: string
-}
+const CANCELLABLE: readonly BookingStatus[] = ['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS']
 
-export function CustomerBookingDetailPage({ code }: CustomerBookingDetailPageProps) {
-  const { t, i18n } = useTranslation()
-  const [reviewOpen, setReviewOpen] = useState(false)
-  const booking = bookingPreviews.find((item) => item.code === code)
-  useDocumentTitle(t('customer.bookingDetail.documentTitle', { code }))
+export function CustomerBookingDetailPage({ id }: { id: string }) {
+  const { t } = useTranslation()
+  const [cancelling, setCancelling] = useState(false)
+  const booking = useQuery({ queryKey: bookingKeys.detail(id), queryFn: () => fetchBooking(id), retry: false })
+  useDocumentTitle(t('customer.bookingDetail.documentTitle', { code: booking.data?.bookingCode ?? '' }))
 
-  if (!booking) {
+  if (booking.isPending)
     return (
-      <div className='mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center px-4 text-center'>
-        <Icon name='event_busy' className='text-5xl text-primary' />
-        <h1 className='mt-4 text-2xl font-bold'>{t('customer.bookingDetail.notFound.title')}</h1>
-        <p className='mt-2 text-sm text-on-surface-variant'>{t('customer.bookingDetail.notFound.description')}</p>
-        <Link to='/customer/bookings' className='mt-6 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white'>
-          {t('customer.bookingDetail.notFound.back')}
+      <p className='mx-auto mt-10 max-w-7xl px-4 text-sm text-on-surface-variant' role='status'>
+        {t('customer.bookingDetail.loading')}
+      </p>
+    )
+
+  if (booking.isError) {
+    const missing = bookingErrorStatus(booking.error) === 404
+    return (
+      <div
+        className='mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center px-4 text-center'
+        role='alert'
+      >
+        <Icon className='text-5xl text-primary' name='event_busy' />
+        <h1 className='mt-4 text-2xl font-bold'>
+          {missing ? t('customer.bookingDetail.notFound.title') : t('customer.bookingDetail.error')}
+        </h1>
+        <p className='mt-2 text-sm text-on-surface-variant'>
+          {missing ? t('customer.bookingDetail.notFound.description') : t(bookingErrorKey(booking.error))}
+        </p>
+        <Link className='mt-6 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white' to='/customer/bookings'>
+          {t('customer.bookingDetail.back')}
         </Link>
       </div>
     )
   }
 
-  const locale = i18n.resolvedLanguage === 'en' ? 'en-US' : 'vi-VN'
-  const date = new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  }).format(new Date(`${booking.date}T12:00:00`))
-
+  const data = booking.data
   return (
     <div className='min-h-full bg-surface pb-16'>
       <div className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
@@ -49,83 +61,64 @@ export function CustomerBookingDetailPage({ code }: CustomerBookingDetailPagePro
           aria-label={t('customer.bookingDetail.breadcrumb')}
           className='flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant'
         >
-          <Link to='/customer' className='hover:text-primary'>
+          <Link className='hover:text-primary' to='/customer'>
             {t('customer.nav.home')}
           </Link>
-          <Icon name='chevron_right' className='text-base' />
-          <Link to='/customer/bookings' className='hover:text-primary'>
+          <Icon className='text-base' name='chevron_right' />
+          <Link className='hover:text-primary' to='/customer/bookings'>
             {t('customer.nav.myBookings')}
           </Link>
-          <Icon name='chevron_right' className='text-base' />
-          <span className='font-semibold text-primary'>
-            {t('customer.bookingDetail.breadcrumb')} #{booking.code}
-          </span>
+          <Icon className='text-base' name='chevron_right' />
+          <span className='font-semibold text-primary'>#{data.bookingCode}</span>
         </nav>
 
         <div className='mt-5 flex flex-wrap items-start justify-between gap-4'>
-          <div>
-            <h1 className='text-2xl font-bold tracking-tight sm:text-3xl'>{t('customer.bookingDetail.title')}</h1>
+          <div className='min-w-0'>
+            <h1 className='text-2xl font-bold tracking-tight sm:text-3xl'>
+              {data.recipientSnapshot?.fullName ?? t('customer.bookingDetail.title')}
+            </h1>
             <p className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
-              <span className='rounded-md bg-surface-container px-2 py-1 font-mono font-semibold text-on-surface'>
-                #{booking.code}
+              <span className='rounded-md bg-surface-container px-2 py-1 font-semibold text-on-surface'>
+                #{data.bookingCode}
               </span>
-              <span>·</span>
-              <span>{t(`customer.bookingDetail.status.${booking.status}`)}</span>
-              <span>·</span>
-              <span>
-                {booking.start}–{booking.end}
-              </span>
+              <BookingStatusBadge status={data.status} />
             </p>
           </div>
-          <Link
-            to='/customer/bookings'
-            className='inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm hover:bg-surface-container-low'
-          >
-            <Icon name='arrow_back' className='text-lg' />
-            {t('customer.bookingDetail.notFound.back')}
-          </Link>
+          <div className='flex flex-wrap gap-2'>
+            {CANCELLABLE.includes(data.status) ? (
+              <button
+                className='inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-error shadow-sm hover:bg-error-container/30'
+                onClick={() => setCancelling(true)}
+                type='button'
+              >
+                <Icon className='text-lg' name='event_busy' />
+                {t('customer.bookingDetail.cancel.open')}
+              </button>
+            ) : null}
+            <Link
+              className='inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm hover:bg-surface-container-low'
+              to='/customer/bookings'
+            >
+              <Icon className='text-lg' name='arrow_back' />
+              {t('customer.bookingDetail.back')}
+            </Link>
+          </div>
         </div>
-
-        <p className='mt-5 flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900'>
-          <Icon name='info' className='mt-0.5 shrink-0 text-lg' />
-          {t('customer.bookingDetail.sampleNotice')}
-        </p>
 
         <div className='mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]'>
           <div className='flex min-w-0 flex-col gap-6'>
-            <BookingProgress booking={booking} date={date} />
-            {booking.status === 'completed' && (
-              <button
-                type='button'
-                onClick={() => setReviewOpen(true)}
-                className='flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-4 text-sm font-semibold text-primary shadow-sm hover:bg-surface-container-low'
-              >
-                <Icon name='star' className='text-xl text-amber-500' />
-                {t('customer.careReport.rate')}
-              </button>
-            )}
-            {booking.status === 'completed' && (
-              <Link
-                to={`/customer/bookings/${booking.code}/report`}
-                className='flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-4 text-sm font-semibold text-white hover:bg-primary-container'
-              >
-                <Icon name='clinical_notes' className='text-xl' />
-                {t('customer.careReport.read')}
-              </Link>
-            )}
-            {booking.status === 'ongoing' && <BookingVitalsAndFeed />}
+            <BookingStatusPanel booking={data} />
+            <SectionCard icon='event_note' title={t('customer.bookingDetail.occurrences')}>
+              <BookingOccurrenceList occurrences={data.occurrences ?? []} />
+            </SectionCard>
+            <SectionCard icon='history' title={t('customer.bookingDetail.history')}>
+              <BookingHistoryList bookingId={data.id} />
+            </SectionCard>
           </div>
-          <BookingDetailSidebar booking={booking} />
+          <BookingDetailSummary booking={data} />
         </div>
       </div>
-      {booking.status === 'completed' && (
-        <BookingReviewModal
-          key={booking.code}
-          booking={booking}
-          open={reviewOpen}
-          onClose={() => setReviewOpen(false)}
-        />
-      )}
+      {cancelling ? <BookingCancelDialog booking={data} onClose={() => setCancelling(false)} /> : null}
     </div>
   )
 }

@@ -1,34 +1,49 @@
 export const bookingsEn = {
-  documentTitle: 'My Bookings | CareConnect',
-  breadcrumb: 'My Bookings',
-  title: 'Manage care bookings',
-  subtitle: 'Track confirmed sessions, care updates, and schedules for your family.',
-  newBooking: 'Book a new care session',
-  sampleNotice: 'Preview bookings while live booking history is being connected.',
-  stats: {
-    ongoing: 'Ongoing',
-    upcoming: 'Upcoming',
-    completed: 'Completed',
-    cancelled: 'Cancelled / Refunded'
-  },
-  tabs: {
-    all: 'All bookings',
-    ongoing: 'Ongoing',
-    upcoming: 'Upcoming',
-    completed: 'Completed',
-    cancelled: 'Cancelled'
-  },
+  documentTitle: 'My bookings | CareConnect',
+  title: 'My bookings',
+  subtitle: 'Track every care request from center review to the last visit.',
+  subtitleCount: '{{count}} bookings. Track each request from center review to the last visit.',
+  newBooking: 'Book home care',
   filters: {
-    month: 'Month',
-    allMonths: 'All dates',
-    patient: 'Family member',
-    allPatients: 'All family members',
-    search: 'Search by booking code, family member, or caregiver',
-    reset: 'Reset filters'
+    label: 'Filter bookings',
+    status: 'Booking status',
+    all: 'All',
+    search: 'Search by booking code',
+    searchPlaceholder: 'Booking code, e.g. the last 6 characters',
+    sort: 'Sort bookings',
+    reset: 'Clear filters'
   },
-  patients: {
-    father: 'Mr. Nguyen Van An',
-    mother: 'Ms. Nguyen Thi A'
+  sorts: {
+    newest: 'Newest request first',
+    startSoonest: 'Starting soonest',
+    startLatest: 'Starting latest'
+  },
+  card: {
+    code: 'Booking #{{code}}',
+    patientFallback: 'Patient',
+    total: 'Total',
+    schedule: 'Schedule',
+    dateRange: '{{from}} – {{to}}',
+    next: 'Next visit',
+    noNext: 'No upcoming visit',
+    progress: 'Visits done',
+    progressValue: '{{done}} / {{total}}',
+    view: 'View booking'
+  },
+  states: {
+    loading: 'Loading your bookings…'
+  },
+  empty: {
+    title: 'No bookings yet',
+    description: 'Choose a caregiver or a service, then send your first booking request.',
+    filteredTitle: 'No booking matches',
+    filteredDescription: 'Try another status or booking code.'
+  },
+  pagination: {
+    label: 'Booking pages',
+    previous: 'Previous',
+    next: 'Next',
+    pageOf: 'Page {{page}} of {{total}}'
   },
   items: {
     ongoing: {
@@ -71,59 +86,55 @@ export const bookingsEn = {
       note: 'Cancelled more than 24 hours before the session',
       payment: '100% deposit refunded · 450,000 ₫'
     }
-  },
-  labels: {
-    patient: 'Care recipient',
-    caregiver: 'Assigned caregiver',
-    service: 'Service package',
-    total: 'Total cost',
-    schedule: 'Schedule',
-    location: 'Care location',
-    payment: 'Payment status'
-  },
-  actions: {
-    details: 'View details',
-    close: 'Close details',
-    bookAgain: 'Book again',
-    findCaregiver: 'Find another caregiver'
-  },
-  empty: {
-    title: 'No matching bookings',
-    description: 'Try another search term or change the filters to view your care history.'
   }
-} as const
+}
 
 export const bookingsVi = {
   documentTitle: 'Lịch đặt của tôi | CareConnect',
-  breadcrumb: 'Lịch đặt của tôi',
-  title: 'Quản lý lịch chăm sóc',
-  subtitle: 'Theo dõi trạng thái xác nhận, cập nhật ca trực và lịch chăm sóc cho người thân.',
-  newBooking: 'Đặt lịch chăm sóc mới',
-  sampleNotice: 'Dữ liệu lịch đặt mẫu trong khi hệ thống đang kết nối lịch sử đặt lịch.',
-  stats: {
-    ongoing: 'Đang diễn ra',
-    upcoming: 'Sắp diễn ra',
-    completed: 'Đã hoàn thành',
-    cancelled: 'Đã hủy / Hoàn cọc'
-  },
-  tabs: {
-    all: 'Tất cả lịch đặt',
-    ongoing: 'Đang diễn ra',
-    upcoming: 'Sắp diễn ra',
-    completed: 'Đã hoàn thành',
-    cancelled: 'Đã hủy'
-  },
+  title: 'Lịch đặt của tôi',
+  subtitle: 'Theo dõi từng yêu cầu chăm sóc từ lúc trung tâm duyệt tới buổi cuối cùng.',
+  subtitleCount: '{{count}} lịch đặt. Theo dõi từng yêu cầu từ lúc trung tâm duyệt tới buổi cuối cùng.',
+  newBooking: 'Đặt lịch chăm sóc',
   filters: {
-    month: 'Tháng',
-    allMonths: 'Tất cả thời gian',
-    patient: 'Người thân',
-    allPatients: 'Tất cả người thân',
-    search: 'Tìm theo mã lịch, người thân hoặc điều dưỡng',
-    reset: 'Đặt lại bộ lọc'
+    label: 'Lọc lịch đặt',
+    status: 'Trạng thái lịch đặt',
+    all: 'Tất cả',
+    search: 'Tìm theo mã booking',
+    searchPlaceholder: 'Mã booking, ví dụ 6 ký tự cuối',
+    sort: 'Sắp xếp lịch đặt',
+    reset: 'Xóa bộ lọc'
   },
-  patients: {
-    father: 'Nguyễn Văn An (Bố ruột)',
-    mother: 'Nguyễn Thị A (Mẹ ruột)'
+  sorts: {
+    newest: 'Yêu cầu mới nhất',
+    startSoonest: 'Bắt đầu sớm nhất',
+    startLatest: 'Bắt đầu muộn nhất'
+  },
+  card: {
+    code: 'Booking #{{code}}',
+    patientFallback: 'Người bệnh',
+    total: 'Tổng tiền',
+    schedule: 'Lịch chăm sóc',
+    dateRange: '{{from}} – {{to}}',
+    next: 'Buổi kế tiếp',
+    noNext: 'Không còn buổi sắp tới',
+    progress: 'Buổi đã xong',
+    progressValue: '{{done}} / {{total}}',
+    view: 'Xem lịch đặt'
+  },
+  states: {
+    loading: 'Đang tải lịch đặt…'
+  },
+  empty: {
+    title: 'Chưa có lịch đặt nào',
+    description: 'Chọn người chăm sóc hoặc dịch vụ, rồi gửi yêu cầu đặt lịch đầu tiên.',
+    filteredTitle: 'Không có lịch đặt phù hợp',
+    filteredDescription: 'Thử trạng thái hoặc mã booking khác.'
+  },
+  pagination: {
+    label: 'Trang lịch đặt',
+    previous: 'Trước',
+    next: 'Sau',
+    pageOf: 'Trang {{page}} / {{total}}'
   },
   items: {
     ongoing: {
@@ -166,24 +177,5 @@ export const bookingsVi = {
       note: 'Hủy trước 24 giờ · Miễn phí hủy ca',
       payment: 'Đã hoàn cọc 100% · 450.000 ₫'
     }
-  },
-  labels: {
-    patient: 'Người nhận chăm sóc',
-    caregiver: 'Điều dưỡng phụ trách',
-    service: 'Gói dịch vụ',
-    total: 'Tổng chi phí',
-    schedule: 'Lịch chăm sóc',
-    location: 'Địa điểm chăm sóc',
-    payment: 'Tình trạng thanh toán'
-  },
-  actions: {
-    details: 'Xem chi tiết',
-    close: 'Đóng chi tiết',
-    bookAgain: 'Đặt lại ca này',
-    findCaregiver: 'Tìm điều dưỡng khác'
-  },
-  empty: {
-    title: 'Không tìm thấy ca trực phù hợp',
-    description: 'Thử từ khóa khác hoặc thay đổi bộ lọc để xem lại lịch sử chăm sóc.'
   }
-} as const
+}

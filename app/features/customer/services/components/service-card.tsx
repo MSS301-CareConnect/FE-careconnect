@@ -86,9 +86,9 @@ export function ServiceCard({ service }: { service: CustomerService }) {
           {service.center ? (
             <Link
               className='inline-flex items-center gap-2 rounded-lg bg-[#075b31] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#064925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
-              to='/customer/caregivers'
+              to={`/customer/booking?center=${service.center.id}&service=${service.catalogItemId}`}
             >
-              {t(`${key}.card.findCaregivers`)}
+              {t(`${key}.card.book`)}
               <Icon
                 aria-hidden='true'
                 className='text-lg transition-transform group-hover:translate-x-0.5'

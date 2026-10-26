@@ -61,7 +61,7 @@ export default [
       index('routes/customer/index.tsx'),
       route('booking', 'routes/customer/booking.tsx'),
       route('bookings', 'routes/customer/bookings.tsx'),
-      route('bookings/:code', 'routes/customer/booking-detail.tsx'),
+      route('bookings/:id', 'routes/customer/booking-detail.tsx'),
       route('bookings/:code/report', 'routes/customer/care-report.tsx'),
       route('booking/deposit', 'routes/customer/booking-deposit.tsx'),
       route('my-profile', 'routes/customer/my-profile.tsx'),

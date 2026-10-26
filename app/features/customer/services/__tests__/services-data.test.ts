@@ -12,6 +12,7 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
 function service(name: string, centerName?: string, price?: number): CustomerService {
   return {
     id: `${name}-${centerName ?? 'none'}`,
+    catalogItemId: name,
     name,
     category: 'Chung',
     center: centerName ? { id: centerName, name: centerName } : undefined,

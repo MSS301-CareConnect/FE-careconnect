@@ -14,6 +14,8 @@ export type ServiceCenter = { id: string; name: string }
 export type CustomerService = {
   /** Center offering ID, or the catalog item ID when no center offers the service yet. */
   id: string
+  /** Catalog item (care service) ID that a booking request references. */
+  catalogItemId: string
   name: string
   category: string
   description?: string
@@ -52,6 +54,7 @@ export async function fetchCenterServices(center: ServiceCenter): Promise<Custom
   return Promise.all(
     offerings.map(async (offering) => ({
       id: offering.id,
+      catalogItemId: offering.catalogItem.id,
       name: offering.catalogItem.name,
       category: offering.catalogItem.category,
       description: offering.description || offering.catalogItem.description,
@@ -70,6 +73,7 @@ export function unofferedServices(items: readonly CatalogItemRecord[], offered: 
     .filter((item) => item.status === 'ACTIVE' && !offeredNames.has(`${item.name}\u0000${item.category}`))
     .map<CustomerService>((item) => ({
       id: item.id,
+      catalogItemId: item.id,
       name: item.name,
       category: item.category,
       description: item.description,

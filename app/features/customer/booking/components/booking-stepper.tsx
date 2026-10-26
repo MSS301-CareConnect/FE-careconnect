@@ -1,79 +1,52 @@
 import { useTranslation } from 'react-i18next'
 
-const ICON_CHECK = 'check'
-const STEP_5_NUM = '5'
+import { Icon } from '~/shared/ui/icon'
 
-export function BookingStepper() {
+const STEPS = ['patient', 'provider', 'services', 'schedule', 'confirm'] as const
+export type BookingStep = (typeof STEPS)[number]
+const ICONS: Record<BookingStep, string> = {
+  patient: 'person',
+  provider: 'home_health',
+  services: 'medical_services',
+  schedule: 'calendar_month',
+  confirm: 'task_alt'
+}
+
+/** Shows which parts of the booking request are already filled in; it does not gate navigation. */
+export function BookingStepper({ done }: { done: Record<BookingStep, boolean> }) {
   const { t } = useTranslation()
+  const current = STEPS.find((step) => !done[step])
 
   return (
-    <div className='rounded-xl bg-surface-container-lowest p-4 shadow-sm md:p-5'>
-      <ol className='relative grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-5'>
-        {/* Step 1 */}
-        <li className='flex items-center gap-3'>
-          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-sm text-on-primary shadow-xs'>
-            <span className='material-symbols-outlined text-[20px]'>{ICON_CHECK}</span>
-          </div>
-          <div className='min-w-0'>
-            <p className='font-semibold text-xs text-primary uppercase tracking-wider'>
-              {t('customer.booking.stepper.step1Label')}
-            </p>
-            <p className='truncate font-semibold text-sm text-on-surface'>{t('customer.booking.stepper.step1Title')}</p>
-          </div>
-        </li>
-
-        {/* Step 2 */}
-        <li className='flex items-center gap-3'>
-          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-sm text-on-primary shadow-xs'>
-            <span className='material-symbols-outlined text-[20px]'>{ICON_CHECK}</span>
-          </div>
-          <div className='min-w-0'>
-            <p className='font-semibold text-xs text-primary uppercase tracking-wider'>
-              {t('customer.booking.stepper.step2Label')}
-            </p>
-            <p className='truncate font-semibold text-sm text-on-surface'>{t('customer.booking.stepper.step2Title')}</p>
-          </div>
-        </li>
-
-        {/* Step 3 */}
-        <li className='flex items-center gap-3'>
-          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-sm text-on-primary shadow-xs'>
-            <span className='material-symbols-outlined text-[20px]'>{ICON_CHECK}</span>
-          </div>
-          <div className='min-w-0'>
-            <p className='font-semibold text-xs text-primary uppercase tracking-wider'>
-              {t('customer.booking.stepper.step3Label')}
-            </p>
-            <p className='truncate font-semibold text-sm text-on-surface'>{t('customer.booking.stepper.step3Title')}</p>
-          </div>
-        </li>
-
-        {/* Step 4 */}
-        <li className='flex items-center gap-3'>
-          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-sm text-on-primary shadow-xs'>
-            <span className='material-symbols-outlined text-[20px]'>{ICON_CHECK}</span>
-          </div>
-          <div className='min-w-0'>
-            <p className='font-semibold text-xs text-primary uppercase tracking-wider'>
-              {t('customer.booking.stepper.step4Label')}
-            </p>
-            <p className='truncate font-semibold text-sm text-on-surface'>{t('customer.booking.stepper.step4Title')}</p>
-          </div>
-        </li>
-
-        {/* Step 5 */}
-        <li className='col-span-2 flex items-center gap-3 rounded-lg bg-surface-container-low/70 p-2 md:col-span-1'>
-          <div className='flex h-9 w-9 shrink-0 animate-pulse items-center justify-center rounded-full bg-secondary font-bold text-sm text-on-secondary shadow-xs'>
-            {STEP_5_NUM}
-          </div>
-          <div className='min-w-0'>
-            <p className='font-bold text-xs text-secondary uppercase tracking-wider'>
-              {t('customer.booking.stepper.step5Label')}
-            </p>
-            <p className='truncate font-bold text-sm text-secondary'>{t('customer.booking.stepper.step5Title')}</p>
-          </div>
-        </li>
-      </ol>
-    </div>
+    <ol
+      aria-label={t('customer.booking.stepper.label')}
+      className='grid grid-cols-2 gap-3 rounded-xl bg-surface-container-lowest p-4 shadow-sm sm:grid-cols-5 md:p-5'
+    >
+      {STEPS.map((step) => {
+        const complete = done[step]
+        const active = step === current
+        return (
+          <li
+            aria-current={active ? 'step' : undefined}
+            className={`flex items-center gap-3 rounded-lg p-2 ${active ? 'bg-surface-container-low' : ''}`}
+            key={step}
+          >
+            <span
+              aria-hidden='true'
+              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${complete ? 'bg-primary text-on-primary' : active ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant'}`}
+            >
+              <Icon className='text-[20px]' name={complete ? 'check' : ICONS[step]} />
+            </span>
+            <span className={`min-w-0 truncate text-sm font-semibold ${active ? 'text-secondary' : 'text-on-surface'}`}>
+              {t(`customer.booking.stepper.${step}`)}
+              <span className='sr-only'>
+                {' '}
+                {complete ? t('customer.booking.stepper.complete') : t('customer.booking.stepper.incomplete')}
+              </span>
+            </span>
+          </li>
+        )
+      })}
+    </ol>
   )
 }
