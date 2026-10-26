@@ -108,6 +108,20 @@ describe('Center Manager services and pricing', () => {
     )
   })
 
+  it('shows the backend error code when a price plan cannot be created', async () => {
+    vi.mocked(fetchCenterOfferings).mockResolvedValue([offering])
+    vi.mocked(createOfferingPricePlan).mockRejectedValue({ status: 400, info: { code: 4101 } })
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Add price plan' }))
+    fireEvent.change(screen.getByLabelText('Plan name'), { target: { value: 'Four hours' } })
+    fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '240' } })
+    fireEvent.change(screen.getByLabelText('Base price (VND)'), { target: { value: '400000' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Enter a plan name')
+    expect(screen.getByRole('alert')).toHaveTextContent('Error code: 4101')
+  })
+
   it('shows the missing-center state without requesting another center’s data', () => {
     renderPage('')
     expect(screen.getByRole('alert')).toHaveTextContent('Your account has no assigned center.')

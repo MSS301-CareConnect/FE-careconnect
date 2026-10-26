@@ -47,6 +47,7 @@ export const managerServicesVi = {
     status: 'Trạng thái',
     invalid: 'Vui lòng chọn dịch vụ chuẩn và kiểm tra các trường.',
     duplicate: 'Dịch vụ này đã được thêm vào trung tâm.',
+    unauthenticated: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
     forbidden: 'Bạn không có quyền thay đổi dịch vụ của trung tâm.',
     notFound: 'Dịch vụ không còn tồn tại. Hãy tải lại danh sách.',
     failed: 'Không thể lưu dịch vụ lúc này. Vui lòng thử lại.'
@@ -62,9 +63,11 @@ export const managerServicesVi = {
     active: 'Đang áp dụng',
     invalid: 'Nhập tên gói, thời lượng lớn hơn 0 và giá không âm.',
     duplicate: 'Gói giá này đã tồn tại.',
+    unauthenticated: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
     forbidden: 'Bạn không có quyền thay đổi bảng giá này.',
     notFound: 'Gói giá không còn tồn tại. Hãy tải lại danh sách.',
-    failed: 'Không thể lưu gói giá lúc này. Vui lòng thử lại.'
+    failed: 'Không thể lưu gói giá lúc này. Vui lòng thử lại.',
+    apiErrorCode: '(Mã lỗi: {{code}})'
   }
 } as const
 
@@ -117,6 +120,7 @@ export const managerServicesEn = {
     status: 'Status',
     invalid: 'Choose a catalog service and check the fields.',
     duplicate: 'This service is already offered by your center.',
+    unauthenticated: 'Your session has expired. Please sign in again.',
     forbidden: 'You do not have permission to change center services.',
     notFound: 'This service no longer exists. Refresh the list.',
     failed: 'Unable to save the service right now. Try again.'
@@ -132,8 +136,10 @@ export const managerServicesEn = {
     active: 'Currently offered',
     invalid: 'Enter a plan name, a duration above 0, and a non-negative price.',
     duplicate: 'This price plan already exists.',
+    unauthenticated: 'Your session has expired. Please sign in again.',
     forbidden: 'You do not have permission to change this price plan.',
     notFound: 'This price plan no longer exists. Refresh the list.',
-    failed: 'Unable to save the price plan right now. Try again.'
+    failed: 'Unable to save the price plan right now. Try again.',
+    apiErrorCode: '(Error code: {{code}})'
   }
 } as const

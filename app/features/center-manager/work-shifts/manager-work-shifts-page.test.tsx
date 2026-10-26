@@ -113,4 +113,52 @@ describe('Center Manager work shifts', () => {
       )
     )
   })
+
+  it('explains a rejected shift creation and shows the backend error code', async () => {
+    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    vi.mocked(createWorkShift).mockRejectedValue({ status: 403, info: { code: 3403 } })
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
+    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: '2026-11-01' } })
+    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
+    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('You cannot create or edit work shifts for this center.')
+    expect(screen.getByRole('alert')).toHaveTextContent('Error code: 3403')
+  })
+
+  it('blocks a registration deadline after the shift starts', async () => {
+    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    vi.mocked(createWorkShift).mockResolvedValue({
+      id: 'shift-1',
+      centerId: 'center-1',
+      workDate: '2026-10-27',
+      startTime: '07:00:00',
+      endTime: '18:00:00',
+      shiftType: 'Morning',
+      shiftStatus: 'DRAFT',
+      capacity: 1,
+      version: 1
+    })
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
+    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: '2026-10-27' } })
+    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '07:00' } })
+    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '18:00' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
+    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: '2026-11-07T00:00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The registration deadline must be before the work shift starts.'
+    )
+    expect(screen.getByLabelText('Registration deadline')).toHaveAttribute('aria-invalid', 'true')
+    expect(createWorkShift).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: '2026-10-27T06:00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(createWorkShift).toHaveBeenCalledOnce())
+  })
 })
