@@ -23,6 +23,7 @@ import { bookingDepositEn, bookingDepositVi } from './customer/booking-deposit-r
 import { careReportEn, careReportVi } from './customer/care-report-resources'
 import { bookingReviewEn, bookingReviewVi } from './customer/booking-review-resources'
 import { customerPaymentEn, customerPaymentVi } from './customer/payment-resources'
+import { centerPickerEn, centerPickerVi } from './customer/center-picker-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
 import { caregiverDashboardEn, caregiverDashboardVi } from './caregiver/dashboard-resources'
 import { caregiverScheduleEn, caregiverScheduleVi } from './caregiver/schedule-resources'
@@ -80,7 +81,8 @@ export const resources = {
         bookingDeposit: bookingDepositEn,
         careReport: careReportEn,
         bookingReview: bookingReviewEn,
-        payment: customerPaymentEn
+        payment: customerPaymentEn,
+        centerPicker: centerPickerEn
       },
       caregiver: {
         ...caregiverLayoutEn,
@@ -145,7 +147,8 @@ export const resources = {
         bookingDeposit: bookingDepositVi,
         careReport: careReportVi,
         bookingReview: bookingReviewVi,
-        payment: customerPaymentVi
+        payment: customerPaymentVi,
+        centerPicker: centerPickerVi
       },
       caregiver: {
         ...caregiverLayoutVi,

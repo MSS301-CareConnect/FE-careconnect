@@ -23,17 +23,33 @@ import type {
 
 import type {
   ArchiveProviderCaregiverParams,
+  AvailabilityCheckRequest,
   CaregiverCreateRequest,
+  CaregiverRatingRequest,
+  CaregiverSkillRequest,
+  CaregiverStatusRequest,
   CaregiverUpdateRequest,
   CatalogProviderCaregiversParams,
   EmptyActionResponse,
+  GetProviderCaregiverAvailabilityParams,
   ListCenterCaregiversParams,
   ListMyProviderCaregiverSchedulesParams,
+  ListPendingVerificationProviderCaregiversParams,
+  ListProviderCaregiverTimeOffsParams,
+  ProviderAvailabilityCheckResponse,
+  ProviderAvailabilityWindowListResponse,
+  ProviderCaregiverCardPageResponse,
   ProviderCaregiverPageResponse,
+  ProviderCaregiverPublicResponse,
   ProviderCaregiverResponse,
+  ProviderCaregiverSkillListResponse,
   ProviderSchedulePageResponse,
   ProviderScheduleResponse,
+  ProviderTimeOffListResponse,
+  ProviderTimeOffResponse,
   ScheduleStatusRequest,
+  SearchProviderCaregiversParams,
+  TimeOffRequest,
   VerificationRequest
 } from '../../contracts'
 
@@ -1896,4 +1912,2100 @@ export function useGetProviderCaregiverByUser<
   }
 
   return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type listPendingVerificationProviderCaregiversResponse200 = {
+  data: ProviderCaregiverPageResponse
+  status: 200
+}
+
+export type listPendingVerificationProviderCaregiversResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listPendingVerificationProviderCaregiversResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listPendingVerificationProviderCaregiversResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listPendingVerificationProviderCaregiversResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listPendingVerificationProviderCaregiversResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listPendingVerificationProviderCaregiversResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listPendingVerificationProviderCaregiversResponseSuccess =
+  listPendingVerificationProviderCaregiversResponse200 & {
+    headers: Headers
+  }
+export type listPendingVerificationProviderCaregiversResponseError = (
+  | listPendingVerificationProviderCaregiversResponse400
+  | listPendingVerificationProviderCaregiversResponse401
+  | listPendingVerificationProviderCaregiversResponse403
+  | listPendingVerificationProviderCaregiversResponse404
+  | listPendingVerificationProviderCaregiversResponse500
+  | listPendingVerificationProviderCaregiversResponse503
+) & {
+  headers: Headers
+}
+
+export const getListPendingVerificationProviderCaregiversUrl = (
+  params?: ListPendingVerificationProviderCaregiversParams
+) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/caregivers/pending-verification?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/caregivers/pending-verification`
+}
+
+/**
+ * @summary ADMIN xem caregiver chờ xác minh
+ */
+export const listPendingVerificationProviderCaregivers = async (
+  params?: ListPendingVerificationProviderCaregiversParams,
+  options?: RequestInit
+): Promise<listPendingVerificationProviderCaregiversResponseSuccess> => {
+  const res = await fetch(getListPendingVerificationProviderCaregiversUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & {
+      info?: listPendingVerificationProviderCaregiversResponseError['data']
+      status?: number
+    } = new globalThis.Error()
+    const data: listPendingVerificationProviderCaregiversResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listPendingVerificationProviderCaregiversResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listPendingVerificationProviderCaregiversResponseSuccess
+}
+
+export const getListPendingVerificationProviderCaregiversQueryKey = (
+  params?: ListPendingVerificationProviderCaregiversParams
+) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/pending-verification`, ...(params ? [params] : [])] as const
+}
+
+export const getListPendingVerificationProviderCaregiversQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingVerificationProviderCaregiversParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>, TError, TData>
+    >
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListPendingVerificationProviderCaregiversQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>> = ({ signal }) =>
+    listPendingVerificationProviderCaregivers(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListPendingVerificationProviderCaregiversQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>
+>
+export type ListPendingVerificationProviderCaregiversQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListPendingVerificationProviderCaregivers<
+  TData = Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListPendingVerificationProviderCaregiversParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+          TError,
+          Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPendingVerificationProviderCaregivers<
+  TData = Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingVerificationProviderCaregiversParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+          TError,
+          Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPendingVerificationProviderCaregivers<
+  TData = Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingVerificationProviderCaregiversParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>, TError, TData>
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary ADMIN xem caregiver chờ xác minh
+ */
+
+export function useListPendingVerificationProviderCaregivers<
+  TData = Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingVerificationProviderCaregiversParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listPendingVerificationProviderCaregivers>>, TError, TData>
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListPendingVerificationProviderCaregiversQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type searchProviderCaregiversResponse200 = {
+  data: ProviderCaregiverCardPageResponse
+  status: 200
+}
+
+export type searchProviderCaregiversResponse400 = {
+  data: void
+  status: 400
+}
+
+export type searchProviderCaregiversResponse401 = {
+  data: void
+  status: 401
+}
+
+export type searchProviderCaregiversResponse403 = {
+  data: void
+  status: 403
+}
+
+export type searchProviderCaregiversResponse404 = {
+  data: void
+  status: 404
+}
+
+export type searchProviderCaregiversResponse500 = {
+  data: void
+  status: 500
+}
+
+export type searchProviderCaregiversResponse503 = {
+  data: void
+  status: 503
+}
+
+export type searchProviderCaregiversResponseSuccess = searchProviderCaregiversResponse200 & {
+  headers: Headers
+}
+export type searchProviderCaregiversResponseError = (
+  | searchProviderCaregiversResponse400
+  | searchProviderCaregiversResponse401
+  | searchProviderCaregiversResponse403
+  | searchProviderCaregiversResponse404
+  | searchProviderCaregiversResponse500
+  | searchProviderCaregiversResponse503
+) & {
+  headers: Headers
+}
+
+export const getSearchProviderCaregiversUrl = (params: SearchProviderCaregiversParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    const explodeParameters = ['careServiceIds', 'slots']
+
+    if (Array.isArray(value) && explodeParameters.includes(key)) {
+      value.forEach((v) => {
+        normalizedParams.append(key, v === null ? 'null' : String(v))
+      })
+      return
+    }
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/caregivers/search?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/caregivers/search`
+}
+
+/**
+ * @summary Tìm caregiver theo trung tâm, dịch vụ và khung giờ
+ */
+export const searchProviderCaregivers = async (
+  params: SearchProviderCaregiversParams,
+  options?: RequestInit
+): Promise<searchProviderCaregiversResponseSuccess> => {
+  const res = await fetch(getSearchProviderCaregiversUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: searchProviderCaregiversResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: searchProviderCaregiversResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: searchProviderCaregiversResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as searchProviderCaregiversResponseSuccess
+}
+
+export const getSearchProviderCaregiversQueryKey = (params?: SearchProviderCaregiversParams) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/search`, ...(params ? [params] : [])] as const
+}
+
+export const getSearchProviderCaregiversQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: SearchProviderCaregiversParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProviderCaregivers>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getSearchProviderCaregiversQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchProviderCaregivers>>> = ({ signal }) =>
+    searchProviderCaregivers(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchProviderCaregivers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type SearchProviderCaregiversQueryResult = NonNullable<Awaited<ReturnType<typeof searchProviderCaregivers>>>
+export type SearchProviderCaregiversQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useSearchProviderCaregivers<
+  TData = Awaited<ReturnType<typeof searchProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: SearchProviderCaregiversParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProviderCaregivers>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchProviderCaregivers>>,
+          TError,
+          Awaited<ReturnType<typeof searchProviderCaregivers>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchProviderCaregivers<
+  TData = Awaited<ReturnType<typeof searchProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: SearchProviderCaregiversParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProviderCaregivers>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchProviderCaregivers>>,
+          TError,
+          Awaited<ReturnType<typeof searchProviderCaregivers>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchProviderCaregivers<
+  TData = Awaited<ReturnType<typeof searchProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: SearchProviderCaregiversParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProviderCaregivers>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tìm caregiver theo trung tâm, dịch vụ và khung giờ
+ */
+
+export function useSearchProviderCaregivers<
+  TData = Awaited<ReturnType<typeof searchProviderCaregivers>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: SearchProviderCaregiversParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProviderCaregivers>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchProviderCaregiversQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type checkProviderCaregiverAvailabilityResponse200 = {
+  data: ProviderAvailabilityCheckResponse
+  status: 200
+}
+
+export type checkProviderCaregiverAvailabilityResponse400 = {
+  data: void
+  status: 400
+}
+
+export type checkProviderCaregiverAvailabilityResponse401 = {
+  data: void
+  status: 401
+}
+
+export type checkProviderCaregiverAvailabilityResponse403 = {
+  data: void
+  status: 403
+}
+
+export type checkProviderCaregiverAvailabilityResponse404 = {
+  data: void
+  status: 404
+}
+
+export type checkProviderCaregiverAvailabilityResponse500 = {
+  data: void
+  status: 500
+}
+
+export type checkProviderCaregiverAvailabilityResponse503 = {
+  data: void
+  status: 503
+}
+
+export type checkProviderCaregiverAvailabilityResponseSuccess = checkProviderCaregiverAvailabilityResponse200 & {
+  headers: Headers
+}
+export type checkProviderCaregiverAvailabilityResponseError = (
+  | checkProviderCaregiverAvailabilityResponse400
+  | checkProviderCaregiverAvailabilityResponse401
+  | checkProviderCaregiverAvailabilityResponse403
+  | checkProviderCaregiverAvailabilityResponse404
+  | checkProviderCaregiverAvailabilityResponse500
+  | checkProviderCaregiverAvailabilityResponse503
+) & {
+  headers: Headers
+}
+
+export const getCheckProviderCaregiverAvailabilityUrl = () => {
+  return `${env.API_BASE_URL}/v1/caregivers/availability-checks`
+}
+
+/**
+ * @summary SERVICE kiểm tra caregiver rảnh theo khung giờ
+ */
+export const checkProviderCaregiverAvailability = async (
+  availabilityCheckRequest: AvailabilityCheckRequest,
+  options?: RequestInit
+): Promise<checkProviderCaregiverAvailabilityResponseSuccess> => {
+  const res = await fetch(getCheckProviderCaregiverAvailabilityUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(availabilityCheckRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: checkProviderCaregiverAvailabilityResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: checkProviderCaregiverAvailabilityResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: checkProviderCaregiverAvailabilityResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as checkProviderCaregiverAvailabilityResponseSuccess
+}
+
+export const getCheckProviderCaregiverAvailabilityMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkProviderCaregiverAvailability>>,
+    TError,
+    { data: AvailabilityCheckRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof checkProviderCaregiverAvailability>>,
+  TError,
+  { data: AvailabilityCheckRequest },
+  TContext
+> => {
+  const mutationKey = ['checkProviderCaregiverAvailability']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof checkProviderCaregiverAvailability>>,
+    { data: AvailabilityCheckRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return checkProviderCaregiverAvailability(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CheckProviderCaregiverAvailabilityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof checkProviderCaregiverAvailability>>
+>
+export type CheckProviderCaregiverAvailabilityMutationBody = AvailabilityCheckRequest
+export type CheckProviderCaregiverAvailabilityMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary SERVICE kiểm tra caregiver rảnh theo khung giờ
+ */
+export const useCheckProviderCaregiverAvailability = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof checkProviderCaregiverAvailability>>,
+      TError,
+      { data: AvailabilityCheckRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof checkProviderCaregiverAvailability>>,
+  TError,
+  { data: AvailabilityCheckRequest },
+  TContext
+> => {
+  return useMutation(getCheckProviderCaregiverAvailabilityMutationOptions(options), queryClient)
+}
+export type getPublicProviderCaregiverResponse200 = {
+  data: ProviderCaregiverPublicResponse
+  status: 200
+}
+
+export type getPublicProviderCaregiverResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getPublicProviderCaregiverResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getPublicProviderCaregiverResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getPublicProviderCaregiverResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getPublicProviderCaregiverResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getPublicProviderCaregiverResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getPublicProviderCaregiverResponseSuccess = getPublicProviderCaregiverResponse200 & {
+  headers: Headers
+}
+export type getPublicProviderCaregiverResponseError = (
+  | getPublicProviderCaregiverResponse400
+  | getPublicProviderCaregiverResponse401
+  | getPublicProviderCaregiverResponse403
+  | getPublicProviderCaregiverResponse404
+  | getPublicProviderCaregiverResponse500
+  | getPublicProviderCaregiverResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetPublicProviderCaregiverUrl = (caregiverId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/public`
+}
+
+/**
+ * @summary Khách xem hồ sơ công khai của caregiver
+ */
+export const getPublicProviderCaregiver = async (
+  caregiverId: string,
+  options?: RequestInit
+): Promise<getPublicProviderCaregiverResponseSuccess> => {
+  const res = await fetch(getGetPublicProviderCaregiverUrl(caregiverId), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getPublicProviderCaregiverResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getPublicProviderCaregiverResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getPublicProviderCaregiverResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getPublicProviderCaregiverResponseSuccess
+}
+
+export const getGetPublicProviderCaregiverQueryKey = (caregiverId: string) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/${caregiverId}/public`] as const
+}
+
+export const getGetPublicProviderCaregiverQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCaregiver>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicProviderCaregiverQueryKey(caregiverId)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicProviderCaregiver>>> = ({ signal }) =>
+    getPublicProviderCaregiver(caregiverId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: caregiverId !== null && caregiverId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCaregiver>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type GetPublicProviderCaregiverQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicProviderCaregiver>>>
+export type GetPublicProviderCaregiverQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetPublicProviderCaregiver<
+  TData = Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCaregiver>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicProviderCaregiver>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicProviderCaregiver<
+  TData = Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCaregiver>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicProviderCaregiver>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicProviderCaregiver<
+  TData = Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCaregiver>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Khách xem hồ sơ công khai của caregiver
+ */
+
+export function useGetPublicProviderCaregiver<
+  TData = Awaited<ReturnType<typeof getPublicProviderCaregiver>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCaregiver>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPublicProviderCaregiverQueryOptions(caregiverId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type listProviderCaregiverServicesResponse200 = {
+  data: ProviderCaregiverSkillListResponse
+  status: 200
+}
+
+export type listProviderCaregiverServicesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listProviderCaregiverServicesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listProviderCaregiverServicesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listProviderCaregiverServicesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listProviderCaregiverServicesResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listProviderCaregiverServicesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listProviderCaregiverServicesResponseSuccess = listProviderCaregiverServicesResponse200 & {
+  headers: Headers
+}
+export type listProviderCaregiverServicesResponseError = (
+  | listProviderCaregiverServicesResponse400
+  | listProviderCaregiverServicesResponse401
+  | listProviderCaregiverServicesResponse403
+  | listProviderCaregiverServicesResponse404
+  | listProviderCaregiverServicesResponse500
+  | listProviderCaregiverServicesResponse503
+) & {
+  headers: Headers
+}
+
+export const getListProviderCaregiverServicesUrl = (caregiverId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/services`
+}
+
+/**
+ * @summary Xem dịch vụ caregiver đảm nhận
+ */
+export const listProviderCaregiverServices = async (
+  caregiverId: string,
+  options?: RequestInit
+): Promise<listProviderCaregiverServicesResponseSuccess> => {
+  const res = await fetch(getListProviderCaregiverServicesUrl(caregiverId), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listProviderCaregiverServicesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listProviderCaregiverServicesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listProviderCaregiverServicesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProviderCaregiverServicesResponseSuccess
+}
+
+export const getListProviderCaregiverServicesQueryKey = (caregiverId: string) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/${caregiverId}/services`] as const
+}
+
+export const getListProviderCaregiverServicesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverServices>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListProviderCaregiverServicesQueryKey(caregiverId)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviderCaregiverServices>>> = ({ signal }) =>
+    listProviderCaregiverServices(caregiverId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: caregiverId !== null && caregiverId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverServices>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type ListProviderCaregiverServicesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProviderCaregiverServices>>
+>
+export type ListProviderCaregiverServicesQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListProviderCaregiverServices<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverServices>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCaregiverServices>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCaregiverServices<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverServices>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCaregiverServices>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCaregiverServices<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverServices>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem dịch vụ caregiver đảm nhận
+ */
+
+export function useListProviderCaregiverServices<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverServices>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverServices>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProviderCaregiverServicesQueryOptions(caregiverId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type replaceProviderCaregiverServicesResponse200 = {
+  data: ProviderCaregiverSkillListResponse
+  status: 200
+}
+
+export type replaceProviderCaregiverServicesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type replaceProviderCaregiverServicesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type replaceProviderCaregiverServicesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type replaceProviderCaregiverServicesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type replaceProviderCaregiverServicesResponse500 = {
+  data: void
+  status: 500
+}
+
+export type replaceProviderCaregiverServicesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type replaceProviderCaregiverServicesResponseSuccess = replaceProviderCaregiverServicesResponse200 & {
+  headers: Headers
+}
+export type replaceProviderCaregiverServicesResponseError = (
+  | replaceProviderCaregiverServicesResponse400
+  | replaceProviderCaregiverServicesResponse401
+  | replaceProviderCaregiverServicesResponse403
+  | replaceProviderCaregiverServicesResponse404
+  | replaceProviderCaregiverServicesResponse500
+  | replaceProviderCaregiverServicesResponse503
+) & {
+  headers: Headers
+}
+
+export const getReplaceProviderCaregiverServicesUrl = (caregiverId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/services`
+}
+
+/**
+ * @summary CENTER_MANAGER gán dịch vụ cho caregiver
+ */
+export const replaceProviderCaregiverServices = async (
+  caregiverId: string,
+  caregiverSkillRequest: CaregiverSkillRequest,
+  options?: RequestInit
+): Promise<replaceProviderCaregiverServicesResponseSuccess> => {
+  const res = await fetch(getReplaceProviderCaregiverServicesUrl(caregiverId), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(caregiverSkillRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: replaceProviderCaregiverServicesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: replaceProviderCaregiverServicesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: replaceProviderCaregiverServicesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as replaceProviderCaregiverServicesResponseSuccess
+}
+
+export const getReplaceProviderCaregiverServicesMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof replaceProviderCaregiverServices>>,
+    TError,
+    { caregiverId: string; data: CaregiverSkillRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof replaceProviderCaregiverServices>>,
+  TError,
+  { caregiverId: string; data: CaregiverSkillRequest },
+  TContext
+> => {
+  const mutationKey = ['replaceProviderCaregiverServices']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof replaceProviderCaregiverServices>>,
+    { caregiverId: string; data: CaregiverSkillRequest }
+  > = (props) => {
+    const { caregiverId, data } = props ?? {}
+
+    return replaceProviderCaregiverServices(caregiverId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ReplaceProviderCaregiverServicesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof replaceProviderCaregiverServices>>
+>
+export type ReplaceProviderCaregiverServicesMutationBody = CaregiverSkillRequest
+export type ReplaceProviderCaregiverServicesMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CENTER_MANAGER gán dịch vụ cho caregiver
+ */
+export const useReplaceProviderCaregiverServices = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof replaceProviderCaregiverServices>>,
+      TError,
+      { caregiverId: string; data: CaregiverSkillRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof replaceProviderCaregiverServices>>,
+  TError,
+  { caregiverId: string; data: CaregiverSkillRequest },
+  TContext
+> => {
+  return useMutation(getReplaceProviderCaregiverServicesMutationOptions(options), queryClient)
+}
+export type updateProviderCaregiverRatingResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type updateProviderCaregiverRatingResponse400 = {
+  data: void
+  status: 400
+}
+
+export type updateProviderCaregiverRatingResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updateProviderCaregiverRatingResponse403 = {
+  data: void
+  status: 403
+}
+
+export type updateProviderCaregiverRatingResponse404 = {
+  data: void
+  status: 404
+}
+
+export type updateProviderCaregiverRatingResponse500 = {
+  data: void
+  status: 500
+}
+
+export type updateProviderCaregiverRatingResponse503 = {
+  data: void
+  status: 503
+}
+
+export type updateProviderCaregiverRatingResponseSuccess = updateProviderCaregiverRatingResponse200 & {
+  headers: Headers
+}
+export type updateProviderCaregiverRatingResponseError = (
+  | updateProviderCaregiverRatingResponse400
+  | updateProviderCaregiverRatingResponse401
+  | updateProviderCaregiverRatingResponse403
+  | updateProviderCaregiverRatingResponse404
+  | updateProviderCaregiverRatingResponse500
+  | updateProviderCaregiverRatingResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateProviderCaregiverRatingUrl = (caregiverId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/rating`
+}
+
+/**
+ * @summary SERVICE cập nhật điểm đánh giá caregiver
+ */
+export const updateProviderCaregiverRating = async (
+  caregiverId: string,
+  caregiverRatingRequest: CaregiverRatingRequest,
+  options?: RequestInit
+): Promise<updateProviderCaregiverRatingResponseSuccess> => {
+  const res = await fetch(getUpdateProviderCaregiverRatingUrl(caregiverId), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(caregiverRatingRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateProviderCaregiverRatingResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateProviderCaregiverRatingResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateProviderCaregiverRatingResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateProviderCaregiverRatingResponseSuccess
+}
+
+export const getUpdateProviderCaregiverRatingMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProviderCaregiverRating>>,
+    TError,
+    { caregiverId: string; data: CaregiverRatingRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProviderCaregiverRating>>,
+  TError,
+  { caregiverId: string; data: CaregiverRatingRequest },
+  TContext
+> => {
+  const mutationKey = ['updateProviderCaregiverRating']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProviderCaregiverRating>>,
+    { caregiverId: string; data: CaregiverRatingRequest }
+  > = (props) => {
+    const { caregiverId, data } = props ?? {}
+
+    return updateProviderCaregiverRating(caregiverId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateProviderCaregiverRatingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProviderCaregiverRating>>
+>
+export type UpdateProviderCaregiverRatingMutationBody = CaregiverRatingRequest
+export type UpdateProviderCaregiverRatingMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary SERVICE cập nhật điểm đánh giá caregiver
+ */
+export const useUpdateProviderCaregiverRating = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateProviderCaregiverRating>>,
+      TError,
+      { caregiverId: string; data: CaregiverRatingRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateProviderCaregiverRating>>,
+  TError,
+  { caregiverId: string; data: CaregiverRatingRequest },
+  TContext
+> => {
+  return useMutation(getUpdateProviderCaregiverRatingMutationOptions(options), queryClient)
+}
+export type setProviderCaregiverStatusResponse200 = {
+  data: ProviderCaregiverResponse
+  status: 200
+}
+
+export type setProviderCaregiverStatusResponse400 = {
+  data: void
+  status: 400
+}
+
+export type setProviderCaregiverStatusResponse401 = {
+  data: void
+  status: 401
+}
+
+export type setProviderCaregiverStatusResponse403 = {
+  data: void
+  status: 403
+}
+
+export type setProviderCaregiverStatusResponse404 = {
+  data: void
+  status: 404
+}
+
+export type setProviderCaregiverStatusResponse500 = {
+  data: void
+  status: 500
+}
+
+export type setProviderCaregiverStatusResponse503 = {
+  data: void
+  status: 503
+}
+
+export type setProviderCaregiverStatusResponseSuccess = setProviderCaregiverStatusResponse200 & {
+  headers: Headers
+}
+export type setProviderCaregiverStatusResponseError = (
+  | setProviderCaregiverStatusResponse400
+  | setProviderCaregiverStatusResponse401
+  | setProviderCaregiverStatusResponse403
+  | setProviderCaregiverStatusResponse404
+  | setProviderCaregiverStatusResponse500
+  | setProviderCaregiverStatusResponse503
+) & {
+  headers: Headers
+}
+
+export const getSetProviderCaregiverStatusUrl = (caregiverId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/status`
+}
+
+/**
+ * @summary ADMIN/CENTER_MANAGER đổi trạng thái caregiver
+ */
+export const setProviderCaregiverStatus = async (
+  caregiverId: string,
+  caregiverStatusRequest: CaregiverStatusRequest,
+  options?: RequestInit
+): Promise<setProviderCaregiverStatusResponseSuccess> => {
+  const res = await fetch(getSetProviderCaregiverStatusUrl(caregiverId), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(caregiverStatusRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: setProviderCaregiverStatusResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: setProviderCaregiverStatusResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: setProviderCaregiverStatusResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as setProviderCaregiverStatusResponseSuccess
+}
+
+export const getSetProviderCaregiverStatusMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setProviderCaregiverStatus>>,
+    TError,
+    { caregiverId: string; data: CaregiverStatusRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setProviderCaregiverStatus>>,
+  TError,
+  { caregiverId: string; data: CaregiverStatusRequest },
+  TContext
+> => {
+  const mutationKey = ['setProviderCaregiverStatus']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setProviderCaregiverStatus>>,
+    { caregiverId: string; data: CaregiverStatusRequest }
+  > = (props) => {
+    const { caregiverId, data } = props ?? {}
+
+    return setProviderCaregiverStatus(caregiverId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type SetProviderCaregiverStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setProviderCaregiverStatus>>
+>
+export type SetProviderCaregiverStatusMutationBody = CaregiverStatusRequest
+export type SetProviderCaregiverStatusMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary ADMIN/CENTER_MANAGER đổi trạng thái caregiver
+ */
+export const useSetProviderCaregiverStatus = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof setProviderCaregiverStatus>>,
+      TError,
+      { caregiverId: string; data: CaregiverStatusRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof setProviderCaregiverStatus>>,
+  TError,
+  { caregiverId: string; data: CaregiverStatusRequest },
+  TContext
+> => {
+  return useMutation(getSetProviderCaregiverStatusMutationOptions(options), queryClient)
+}
+export type getProviderCaregiverAvailabilityResponse200 = {
+  data: ProviderAvailabilityWindowListResponse
+  status: 200
+}
+
+export type getProviderCaregiverAvailabilityResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getProviderCaregiverAvailabilityResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getProviderCaregiverAvailabilityResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getProviderCaregiverAvailabilityResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getProviderCaregiverAvailabilityResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getProviderCaregiverAvailabilityResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getProviderCaregiverAvailabilityResponseSuccess = getProviderCaregiverAvailabilityResponse200 & {
+  headers: Headers
+}
+export type getProviderCaregiverAvailabilityResponseError = (
+  | getProviderCaregiverAvailabilityResponse400
+  | getProviderCaregiverAvailabilityResponse401
+  | getProviderCaregiverAvailabilityResponse403
+  | getProviderCaregiverAvailabilityResponse404
+  | getProviderCaregiverAvailabilityResponse500
+  | getProviderCaregiverAvailabilityResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetProviderCaregiverAvailabilityUrl = (
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams
+) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/availability?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/availability`
+}
+
+/**
+ * @summary Xem khung giờ rảnh của caregiver
+ */
+export const getProviderCaregiverAvailability = async (
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams,
+  options?: RequestInit
+): Promise<getProviderCaregiverAvailabilityResponseSuccess> => {
+  const res = await fetch(getGetProviderCaregiverAvailabilityUrl(caregiverId, params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getProviderCaregiverAvailabilityResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getProviderCaregiverAvailabilityResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getProviderCaregiverAvailabilityResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getProviderCaregiverAvailabilityResponseSuccess
+}
+
+export const getGetProviderCaregiverAvailabilityQueryKey = (
+  caregiverId: string,
+  params?: GetProviderCaregiverAvailabilityParams
+) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/${caregiverId}/availability`, ...(params ? [params] : [])] as const
+}
+
+export const getGetProviderCaregiverAvailabilityQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProviderCaregiverAvailabilityQueryKey(caregiverId, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>> = ({ signal }) =>
+    getProviderCaregiverAvailability(caregiverId, params, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: caregiverId !== null && caregiverId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type GetProviderCaregiverAvailabilityQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProviderCaregiverAvailability>>
+>
+export type GetProviderCaregiverAvailabilityQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetProviderCaregiverAvailability<
+  TData = Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof getProviderCaregiverAvailability>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProviderCaregiverAvailability<
+  TData = Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof getProviderCaregiverAvailability>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProviderCaregiverAvailability<
+  TData = Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem khung giờ rảnh của caregiver
+ */
+
+export function useGetProviderCaregiverAvailability<
+  TData = Awaited<ReturnType<typeof getProviderCaregiverAvailability>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: GetProviderCaregiverAvailabilityParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderCaregiverAvailability>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetProviderCaregiverAvailabilityQueryOptions(caregiverId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type listProviderCaregiverTimeOffsResponse200 = {
+  data: ProviderTimeOffListResponse
+  status: 200
+}
+
+export type listProviderCaregiverTimeOffsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listProviderCaregiverTimeOffsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listProviderCaregiverTimeOffsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listProviderCaregiverTimeOffsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listProviderCaregiverTimeOffsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listProviderCaregiverTimeOffsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listProviderCaregiverTimeOffsResponseSuccess = listProviderCaregiverTimeOffsResponse200 & {
+  headers: Headers
+}
+export type listProviderCaregiverTimeOffsResponseError = (
+  | listProviderCaregiverTimeOffsResponse400
+  | listProviderCaregiverTimeOffsResponse401
+  | listProviderCaregiverTimeOffsResponse403
+  | listProviderCaregiverTimeOffsResponse404
+  | listProviderCaregiverTimeOffsResponse500
+  | listProviderCaregiverTimeOffsResponse503
+) & {
+  headers: Headers
+}
+
+export const getListProviderCaregiverTimeOffsUrl = (
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams
+) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/time-offs?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/time-offs`
+}
+
+/**
+ * @summary Xem ngày nghỉ của caregiver
+ */
+export const listProviderCaregiverTimeOffs = async (
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams,
+  options?: RequestInit
+): Promise<listProviderCaregiverTimeOffsResponseSuccess> => {
+  const res = await fetch(getListProviderCaregiverTimeOffsUrl(caregiverId, params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listProviderCaregiverTimeOffsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listProviderCaregiverTimeOffsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listProviderCaregiverTimeOffsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProviderCaregiverTimeOffsResponseSuccess
+}
+
+export const getListProviderCaregiverTimeOffsQueryKey = (
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams
+) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/${caregiverId}/time-offs`, ...(params ? [params] : [])] as const
+}
+
+export const getListProviderCaregiverTimeOffsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListProviderCaregiverTimeOffsQueryKey(caregiverId, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>> = ({ signal }) =>
+    listProviderCaregiverTimeOffs(caregiverId, params, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: caregiverId !== null && caregiverId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type ListProviderCaregiverTimeOffsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>
+>
+export type ListProviderCaregiverTimeOffsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListProviderCaregiverTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: undefined | ListProviderCaregiverTimeOffsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCaregiverTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCaregiverTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem ngày nghỉ của caregiver
+ */
+
+export function useListProviderCaregiverTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderCaregiverTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverTimeOffs>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProviderCaregiverTimeOffsQueryOptions(caregiverId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type createProviderCaregiverTimeOffResponse200 = {
+  data: ProviderTimeOffResponse
+  status: 200
+}
+
+export type createProviderCaregiverTimeOffResponse400 = {
+  data: void
+  status: 400
+}
+
+export type createProviderCaregiverTimeOffResponse401 = {
+  data: void
+  status: 401
+}
+
+export type createProviderCaregiverTimeOffResponse403 = {
+  data: void
+  status: 403
+}
+
+export type createProviderCaregiverTimeOffResponse404 = {
+  data: void
+  status: 404
+}
+
+export type createProviderCaregiverTimeOffResponse500 = {
+  data: void
+  status: 500
+}
+
+export type createProviderCaregiverTimeOffResponse503 = {
+  data: void
+  status: 503
+}
+
+export type createProviderCaregiverTimeOffResponseSuccess = createProviderCaregiverTimeOffResponse200 & {
+  headers: Headers
+}
+export type createProviderCaregiverTimeOffResponseError = (
+  | createProviderCaregiverTimeOffResponse400
+  | createProviderCaregiverTimeOffResponse401
+  | createProviderCaregiverTimeOffResponse403
+  | createProviderCaregiverTimeOffResponse404
+  | createProviderCaregiverTimeOffResponse500
+  | createProviderCaregiverTimeOffResponse503
+) & {
+  headers: Headers
+}
+
+export const getCreateProviderCaregiverTimeOffUrl = (caregiverId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/time-offs`
+}
+
+/**
+ * @summary Tạo ngày nghỉ cho caregiver
+ */
+export const createProviderCaregiverTimeOff = async (
+  caregiverId: string,
+  timeOffRequest: TimeOffRequest,
+  options?: RequestInit
+): Promise<createProviderCaregiverTimeOffResponseSuccess> => {
+  const res = await fetch(getCreateProviderCaregiverTimeOffUrl(caregiverId), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(timeOffRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: createProviderCaregiverTimeOffResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: createProviderCaregiverTimeOffResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: createProviderCaregiverTimeOffResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createProviderCaregiverTimeOffResponseSuccess
+}
+
+export const getCreateProviderCaregiverTimeOffMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProviderCaregiverTimeOff>>,
+    TError,
+    { caregiverId: string; data: TimeOffRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProviderCaregiverTimeOff>>,
+  TError,
+  { caregiverId: string; data: TimeOffRequest },
+  TContext
+> => {
+  const mutationKey = ['createProviderCaregiverTimeOff']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProviderCaregiverTimeOff>>,
+    { caregiverId: string; data: TimeOffRequest }
+  > = (props) => {
+    const { caregiverId, data } = props ?? {}
+
+    return createProviderCaregiverTimeOff(caregiverId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CreateProviderCaregiverTimeOffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProviderCaregiverTimeOff>>
+>
+export type CreateProviderCaregiverTimeOffMutationBody = TimeOffRequest
+export type CreateProviderCaregiverTimeOffMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Tạo ngày nghỉ cho caregiver
+ */
+export const useCreateProviderCaregiverTimeOff = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createProviderCaregiverTimeOff>>,
+      TError,
+      { caregiverId: string; data: TimeOffRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof createProviderCaregiverTimeOff>>,
+  TError,
+  { caregiverId: string; data: TimeOffRequest },
+  TContext
+> => {
+  return useMutation(getCreateProviderCaregiverTimeOffMutationOptions(options), queryClient)
+}
+export type deleteProviderCaregiverTimeOffResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type deleteProviderCaregiverTimeOffResponse400 = {
+  data: void
+  status: 400
+}
+
+export type deleteProviderCaregiverTimeOffResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteProviderCaregiverTimeOffResponse403 = {
+  data: void
+  status: 403
+}
+
+export type deleteProviderCaregiverTimeOffResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteProviderCaregiverTimeOffResponse500 = {
+  data: void
+  status: 500
+}
+
+export type deleteProviderCaregiverTimeOffResponse503 = {
+  data: void
+  status: 503
+}
+
+export type deleteProviderCaregiverTimeOffResponseSuccess = deleteProviderCaregiverTimeOffResponse200 & {
+  headers: Headers
+}
+export type deleteProviderCaregiverTimeOffResponseError = (
+  | deleteProviderCaregiverTimeOffResponse400
+  | deleteProviderCaregiverTimeOffResponse401
+  | deleteProviderCaregiverTimeOffResponse403
+  | deleteProviderCaregiverTimeOffResponse404
+  | deleteProviderCaregiverTimeOffResponse500
+  | deleteProviderCaregiverTimeOffResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeleteProviderCaregiverTimeOffUrl = (caregiverId: string, timeOffId: string) => {
+  return `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/time-offs/${timeOffId}`
+}
+
+/**
+ * @summary Xóa ngày nghỉ của caregiver
+ */
+export const deleteProviderCaregiverTimeOff = async (
+  caregiverId: string,
+  timeOffId: string,
+  options?: RequestInit
+): Promise<deleteProviderCaregiverTimeOffResponseSuccess> => {
+  const res = await fetch(getDeleteProviderCaregiverTimeOffUrl(caregiverId, timeOffId), {
+    ...options,
+    method: 'DELETE'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: deleteProviderCaregiverTimeOffResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: deleteProviderCaregiverTimeOffResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: deleteProviderCaregiverTimeOffResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as deleteProviderCaregiverTimeOffResponseSuccess
+}
+
+export const getDeleteProviderCaregiverTimeOffMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProviderCaregiverTimeOff>>,
+    TError,
+    { caregiverId: string; timeOffId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProviderCaregiverTimeOff>>,
+  TError,
+  { caregiverId: string; timeOffId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteProviderCaregiverTimeOff']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProviderCaregiverTimeOff>>,
+    { caregiverId: string; timeOffId: string }
+  > = (props) => {
+    const { caregiverId, timeOffId } = props ?? {}
+
+    return deleteProviderCaregiverTimeOff(caregiverId, timeOffId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteProviderCaregiverTimeOffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProviderCaregiverTimeOff>>
+>
+
+export type DeleteProviderCaregiverTimeOffMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Xóa ngày nghỉ của caregiver
+ */
+export const useDeleteProviderCaregiverTimeOff = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteProviderCaregiverTimeOff>>,
+      TError,
+      { caregiverId: string; timeOffId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProviderCaregiverTimeOff>>,
+  TError,
+  { caregiverId: string; timeOffId: string },
+  TContext
+> => {
+  return useMutation(getDeleteProviderCaregiverTimeOffMutationOptions(options), queryClient)
 }

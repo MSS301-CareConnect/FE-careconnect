@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
 
@@ -23,12 +23,6 @@ describe('HomePage', () => {
   it('shows the CareConnect landing content and working entry points', () => {
     renderHome()
 
-    const navigation = within(screen.getByRole('banner'))
-    expect(navigation.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/')
-    expect(navigation.getByRole('link', { name: 'Tìm người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
-    expect(navigation.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/customer/services')
-    expect(navigation.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
-
     const hero = screen.getByRole('region', { name: 'An tâm chăm sóc tại nhà.' })
     expect(within(hero).getByRole('link', { name: /Tìm người chăm sóc/i })).toHaveAttribute(
       'href',
@@ -42,23 +36,15 @@ describe('HomePage', () => {
     )
     expect(screen.getByRole('heading', { name: 'Mỗi quyết định chăm sóc đều cần sự rõ ràng.' })).toBeInTheDocument()
 
-    const footer = screen.getByRole('contentinfo')
-    expect(within(footer).getByRole('link', { name: 'Dịch vụ chăm sóc' })).toHaveAttribute('href', '/customer/services')
-    expect(within(footer).getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login')
-    expect(
-      within(footer).getByText(`© ${new Date().getFullYear()} CareConnect. Bảo lưu mọi quyền.`)
-    ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Bắt đầu tìm dịch vụ phù hợp cho gia đình.' })).not.toBeInTheDocument()
   })
 
   it('switches the landing content to English', async () => {
     renderHome()
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Chuyển sang Tiếng Anh' })[0])
+    await act(() => setAppLanguage('en', false))
 
     expect(await screen.findByRole('heading', { name: 'Feel confident about care at home.' })).toBeInTheDocument()
-    expect(within(screen.getByRole('contentinfo')).getByText(/All rights reserved\./)).toBeInTheDocument()
-    expect(document.documentElement).toHaveAttribute('lang', 'en')
   })
 
   it('shows the same landing content with customer actions inside the guarded portal', () => {

@@ -1,31 +1,22 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { CenterReminder } from '~/entities/care-center/center-scope'
 import { Icon } from '~/shared/ui/icon'
 
 import type { useCustomerServices } from '../hooks/use-customer-services'
-import { SERVICE_SORTS, type CustomerService } from '../services-data'
+import { SERVICE_SORTS } from '../services-data'
 import { ServiceCard } from './service-card'
 
 const key = 'customer.services' as const
 
-/** Consecutive services of the same center, so a center-sorted page reads as one section per center. */
-function groupByCenter(services: readonly CustomerService[]) {
-  const groups: { centerId: string | undefined; centerName: string | undefined; services: CustomerService[] }[] = []
-  for (const service of services) {
-    const last = groups.at(-1)
-    if (last && last.centerId === service.center?.id) last.services.push(service)
-    else groups.push({ centerId: service.center?.id, centerName: service.center?.name, services: [service] })
-  }
-  return groups
-}
-
 export function ServicesResults({ list }: { list: ReturnType<typeof useCustomerServices> }) {
   const { t } = useTranslation()
   const sortId = useId()
-  const { rows, filtered, page, pageCount, sort, isPending, isError } = list
+  const { center, rows, filtered, page, pageCount, sort, isPending, isError } = list
   const ready = !isPending && !isError
-  const groups = sort === 'center' ? groupByCenter(rows) : [{ centerId: 'all', centerName: undefined, services: rows }]
+  // Without a center, a failed or empty platform-wide list asks for a center instead of reporting an error.
+  const needsCenter = !center && !isPending && (isError || !rows.length) && !list.hasFilters
 
   return (
     <div className='flex flex-col gap-6'>
@@ -57,7 +48,8 @@ export function ServicesResults({ list }: { list: ReturnType<typeof useCustomerS
           {t(`${key}.states.loading`)}
         </div>
       ) : null}
-      {isError ? (
+      {needsCenter ? <CenterReminder text={t(`${key}.reminder.text`)} title={t(`${key}.reminder.title`)} /> : null}
+      {isError && !needsCenter ? (
         <div className='rounded-2xl border border-[#dfe8de] bg-white p-10 text-center' role='alert'>
           <Icon className='text-4xl text-outline' name='wifi_off' />
           <p className='mt-3'>{t(`${key}.states.error`)}</p>
@@ -70,58 +62,19 @@ export function ServicesResults({ list }: { list: ReturnType<typeof useCustomerS
           </button>
         </div>
       ) : null}
-      {ready && list.hasPartialError ? (
-        <div
-          className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dce8db] bg-[#edf4ed] px-5 py-3 text-sm'
-          role='status'
-        >
-          <span className='flex items-center gap-2 text-[#415548]'>
-            <Icon aria-hidden='true' className='text-[#075b31]' name='info' />
-            {t(`${key}.states.partial`)}
-          </span>
-          <button
-            className='font-semibold text-[#075b31] underline-offset-4 hover:underline'
-            onClick={list.retry}
-            type='button'
-          >
-            {t(`${key}.states.retry`)}
-          </button>
-        </div>
-      ) : null}
-      {ready && !rows.length ? (
+      {ready && !rows.length && !needsCenter ? (
         <div className='rounded-2xl border border-[#dfe8de] bg-white p-10 text-center'>
           <Icon className='text-4xl text-outline' name='medical_services' />
           <p className='mt-3'>{t(list.hasFilters ? `${key}.states.noResults` : `${key}.states.empty`)}</p>
         </div>
       ) : null}
-      {ready && rows.length
-        ? groups.map((group) => (
-            <section
-              aria-label={sort === 'center' ? (group.centerName ?? t(`${key}.unassignedGroup`)) : undefined}
-              className='flex flex-col gap-4'
-              key={`${group.centerId ?? 'none'}-${group.services[0].id}`}
-            >
-              {sort === 'center' ? (
-                <h2 className='flex flex-wrap items-center gap-2 text-lg font-bold text-[#1b2922]'>
-                  <Icon
-                    aria-hidden='true'
-                    className='text-[#075b31]'
-                    name={group.centerName ? 'home_health' : 'schedule'}
-                  />
-                  {group.centerName ?? t(`${key}.unassignedGroup`)}
-                  <span className='ml-1 text-sm font-normal text-[#748477]'>
-                    {t(`${key}.groupCount`, { count: group.services.length })}
-                  </span>
-                </h2>
-              ) : null}
-              <div className='grid gap-4'>
-                {group.services.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            </section>
-          ))
-        : null}
+      {ready && rows.length ? (
+        <div className='grid gap-4'>
+          {rows.map((service) => (
+            <ServiceCard key={service.id} service={service} />
+          ))}
+        </div>
+      ) : null}
       {ready && filtered.length > 0 ? (
         <nav
           aria-label={t(`${key}.pagination`)}

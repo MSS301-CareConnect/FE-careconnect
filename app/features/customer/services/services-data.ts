@@ -1,18 +1,12 @@
 import { careCatalogErrorStatus, fetchCenterOfferings, fetchPricePlans } from '~/entities/care-catalog/care-catalog-api'
-import { fetchCaregiverCatalog } from '~/entities/provider/provider-api'
+import type { ServiceCenter } from '~/entities/care-center/care-center-api'
 import type { CatalogItemRecord, PricePlanRecord } from '~/shared/api/generated/contracts'
 
-/** Customers cannot list centers, so centers are read from the active caregiver catalog. */
-const CATALOG_PAGE_SIZE = 100
-const MAX_CATALOG_PAGES = 5
-
-export const SERVICE_SORTS = ['center', 'name', 'priceAsc', 'priceDesc'] as const
+export const SERVICE_SORTS = ['name', 'priceAsc', 'priceDesc'] as const
 export type ServiceSort = (typeof SERVICE_SORTS)[number]
 
-export type ServiceCenter = { id: string; name: string }
-
 export type CustomerService = {
-  /** Center offering ID, or the catalog item ID when no center offers the service yet. */
+  /** Center offering ID, or the catalog item ID for the platform-wide configuration. */
   id: string
   /** Catalog item (care service) ID that a booking request references. */
   catalogItemId: string
@@ -22,18 +16,6 @@ export type CustomerService = {
   center?: ServiceCenter
   /** Active price plans, cheapest first. */
   plans: PricePlanRecord[]
-}
-
-export async function fetchServiceCenters(): Promise<ServiceCenter[]> {
-  const centers = new Map<string, string>()
-  for (let page = 0; page < MAX_CATALOG_PAGES; page += 1) {
-    const result = await fetchCaregiverCatalog({ page, size: CATALOG_PAGE_SIZE })
-    for (const caregiver of result.items)
-      if (caregiver.centerId && !centers.has(caregiver.centerId))
-        centers.set(caregiver.centerId, caregiver.centerName ?? caregiver.centerId)
-    if (page + 1 >= result.totalPages) break
-  }
-  return [...centers].map(([id, name]) => ({ id, name }))
 }
 
 /** A center or offering with nothing registered yet is empty, not a failure. */
@@ -66,11 +48,10 @@ export async function fetchCenterServices(center: ServiceCenter): Promise<Custom
   )
 }
 
-/** Active catalog items that no loaded center offers yet, so new services are visible too. */
-export function unofferedServices(items: readonly CatalogItemRecord[], offered: readonly CustomerService[]) {
-  const offeredNames = new Set(offered.map((service) => `${service.name}\u0000${service.category}`))
+/** Active catalog items as the platform-wide configuration; prices exist only per center. */
+export function catalogServices(items: readonly CatalogItemRecord[]) {
   return items
-    .filter((item) => item.status === 'ACTIVE' && !offeredNames.has(`${item.name}\u0000${item.category}`))
+    .filter((item) => item.status === 'ACTIVE')
     .map<CustomerService>((item) => ({
       id: item.id,
       catalogItemId: item.id,
@@ -99,15 +80,10 @@ function comparePrice(a: number | undefined, b: number | undefined, direction: 1
   return (a - b) * direction
 }
 
-/** Services without a center or a price always sort last. */
+/** Services without a price always sort last. */
 export function sortServices(services: readonly CustomerService[], sort: ServiceSort) {
   return [...services].sort((a, b) => {
-    const primary =
-      sort === 'center'
-        ? compareText(a.center?.name, b.center?.name)
-        : sort === 'name'
-          ? 0
-          : comparePrice(lowestPrice(a), lowestPrice(b), sort === 'priceAsc' ? 1 : -1)
+    const primary = sort === 'name' ? 0 : comparePrice(lowestPrice(a), lowestPrice(b), sort === 'priceAsc' ? 1 : -1)
     return primary || compareText(a.name, b.name)
   })
 }

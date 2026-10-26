@@ -24,8 +24,11 @@ import type {
 import type {
   ArchiveProviderCertificateParams,
   CertificateRequest,
+  CertificateVerificationRequest,
   EmptyActionResponse,
+  ListPendingAuditProviderCertificatesParams,
   ProviderCertificateListResponse,
+  ProviderCertificatePageResponse,
   ProviderCertificateResponse,
   VerificationRequest
 } from '../../contracts'
@@ -983,4 +986,353 @@ export function useListVerifiedProviderCertificates<
   }
 
   return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type listPendingAuditProviderCertificatesResponse200 = {
+  data: ProviderCertificatePageResponse
+  status: 200
+}
+
+export type listPendingAuditProviderCertificatesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listPendingAuditProviderCertificatesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listPendingAuditProviderCertificatesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listPendingAuditProviderCertificatesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listPendingAuditProviderCertificatesResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listPendingAuditProviderCertificatesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listPendingAuditProviderCertificatesResponseSuccess = listPendingAuditProviderCertificatesResponse200 & {
+  headers: Headers
+}
+export type listPendingAuditProviderCertificatesResponseError = (
+  | listPendingAuditProviderCertificatesResponse400
+  | listPendingAuditProviderCertificatesResponse401
+  | listPendingAuditProviderCertificatesResponse403
+  | listPendingAuditProviderCertificatesResponse404
+  | listPendingAuditProviderCertificatesResponse500
+  | listPendingAuditProviderCertificatesResponse503
+) & {
+  headers: Headers
+}
+
+export const getListPendingAuditProviderCertificatesUrl = (params?: ListPendingAuditProviderCertificatesParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/certificates/pending-audit?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/certificates/pending-audit`
+}
+
+/**
+ * @summary ADMIN xem chứng chỉ chờ hậu kiểm
+ */
+export const listPendingAuditProviderCertificates = async (
+  params?: ListPendingAuditProviderCertificatesParams,
+  options?: RequestInit
+): Promise<listPendingAuditProviderCertificatesResponseSuccess> => {
+  const res = await fetch(getListPendingAuditProviderCertificatesUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & {
+      info?: listPendingAuditProviderCertificatesResponseError['data']
+      status?: number
+    } = new globalThis.Error()
+    const data: listPendingAuditProviderCertificatesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listPendingAuditProviderCertificatesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listPendingAuditProviderCertificatesResponseSuccess
+}
+
+export const getListPendingAuditProviderCertificatesQueryKey = (
+  params?: ListPendingAuditProviderCertificatesParams
+) => {
+  return [`${env.API_BASE_URL}/v1/certificates/pending-audit`, ...(params ? [params] : [])] as const
+}
+
+export const getListPendingAuditProviderCertificatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingAuditProviderCertificatesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListPendingAuditProviderCertificatesQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>> = ({ signal }) =>
+    listPendingAuditProviderCertificates(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListPendingAuditProviderCertificatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>
+>
+export type ListPendingAuditProviderCertificatesQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListPendingAuditProviderCertificates<
+  TData = Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListPendingAuditProviderCertificatesParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+          TError,
+          Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPendingAuditProviderCertificates<
+  TData = Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingAuditProviderCertificatesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+          TError,
+          Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPendingAuditProviderCertificates<
+  TData = Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingAuditProviderCertificatesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary ADMIN xem chứng chỉ chờ hậu kiểm
+ */
+
+export function useListPendingAuditProviderCertificates<
+  TData = Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPendingAuditProviderCertificatesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPendingAuditProviderCertificates>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListPendingAuditProviderCertificatesQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type verifyProviderCertificateByCenterResponse200 = {
+  data: ProviderCertificateResponse
+  status: 200
+}
+
+export type verifyProviderCertificateByCenterResponse400 = {
+  data: void
+  status: 400
+}
+
+export type verifyProviderCertificateByCenterResponse401 = {
+  data: void
+  status: 401
+}
+
+export type verifyProviderCertificateByCenterResponse403 = {
+  data: void
+  status: 403
+}
+
+export type verifyProviderCertificateByCenterResponse404 = {
+  data: void
+  status: 404
+}
+
+export type verifyProviderCertificateByCenterResponse500 = {
+  data: void
+  status: 500
+}
+
+export type verifyProviderCertificateByCenterResponse503 = {
+  data: void
+  status: 503
+}
+
+export type verifyProviderCertificateByCenterResponseSuccess = verifyProviderCertificateByCenterResponse200 & {
+  headers: Headers
+}
+export type verifyProviderCertificateByCenterResponseError = (
+  | verifyProviderCertificateByCenterResponse400
+  | verifyProviderCertificateByCenterResponse401
+  | verifyProviderCertificateByCenterResponse403
+  | verifyProviderCertificateByCenterResponse404
+  | verifyProviderCertificateByCenterResponse500
+  | verifyProviderCertificateByCenterResponse503
+) & {
+  headers: Headers
+}
+
+export const getVerifyProviderCertificateByCenterUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/certificates/${id}/center-verification`
+}
+
+/**
+ * @summary CENTER_MANAGER duyệt chứng chỉ cấp trung tâm
+ */
+export const verifyProviderCertificateByCenter = async (
+  id: string,
+  certificateVerificationRequest: CertificateVerificationRequest,
+  options?: RequestInit
+): Promise<verifyProviderCertificateByCenterResponseSuccess> => {
+  const res = await fetch(getVerifyProviderCertificateByCenterUrl(id), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(certificateVerificationRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: verifyProviderCertificateByCenterResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: verifyProviderCertificateByCenterResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: verifyProviderCertificateByCenterResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as verifyProviderCertificateByCenterResponseSuccess
+}
+
+export const getVerifyProviderCertificateByCenterMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyProviderCertificateByCenter>>,
+    TError,
+    { id: string; data: CertificateVerificationRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof verifyProviderCertificateByCenter>>,
+  TError,
+  { id: string; data: CertificateVerificationRequest },
+  TContext
+> => {
+  const mutationKey = ['verifyProviderCertificateByCenter']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof verifyProviderCertificateByCenter>>,
+    { id: string; data: CertificateVerificationRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return verifyProviderCertificateByCenter(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type VerifyProviderCertificateByCenterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof verifyProviderCertificateByCenter>>
+>
+export type VerifyProviderCertificateByCenterMutationBody = CertificateVerificationRequest
+export type VerifyProviderCertificateByCenterMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CENTER_MANAGER duyệt chứng chỉ cấp trung tâm
+ */
+export const useVerifyProviderCertificateByCenter = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof verifyProviderCertificateByCenter>>,
+      TError,
+      { id: string; data: CertificateVerificationRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof verifyProviderCertificateByCenter>>,
+  TError,
+  { id: string; data: CertificateVerificationRequest },
+  TContext
+> => {
+  return useMutation(getVerifyProviderCertificateByCenterMutationOptions(options), queryClient)
 }

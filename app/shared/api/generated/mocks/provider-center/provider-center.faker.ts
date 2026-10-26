@@ -11,13 +11,19 @@ import type {
   EmptyActionResponse,
   ProviderCenterPageResponse,
   ProviderCenterResponse,
-  ProviderSchedulePageResponse
+  ProviderSchedulePageResponse,
+  ProviderStatisticsResponse,
+  PublicCenterPageResponse,
+  PublicCenterResponse
 } from '../../contracts'
 
 import {
   getProviderCenterPageMock,
   getProviderCenterRecordMock,
-  getProviderSchedulePageMock
+  getProviderSchedulePageMock,
+  getProviderStatisticsRecordMock,
+  getPublicCenterPageMock,
+  getPublicCenterRecordMock
 } from '../../contracts/index.faker'
 
 export const getListProviderCentersResponseMock = (
@@ -35,6 +41,24 @@ export const getCreateProviderCenterResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderCenterRecordMock() },
+  ...overrideResponse
+})
+
+export const getListPublicProviderCentersResponseMock = (
+  overrideResponse: Partial<Extract<PublicCenterPageResponse, object>> = {}
+): PublicCenterPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPublicCenterPageMock() },
+  ...overrideResponse
+})
+
+export const getGetPublicProviderCenterResponseMock = (
+  overrideResponse: Partial<Extract<PublicCenterResponse, object>> = {}
+): PublicCenterResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPublicCenterRecordMock() },
   ...overrideResponse
 })
 
@@ -80,5 +104,23 @@ export const getListProviderCenterSchedulesResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderSchedulePageMock() },
+  ...overrideResponse
+})
+
+export const getGetProviderStatisticsResponseMock = (
+  overrideResponse: Partial<Extract<ProviderStatisticsResponse, object>> = {}
+): ProviderStatisticsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderStatisticsRecordMock() },
+  ...overrideResponse
+})
+
+export const getUpdateMyProviderCenterResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCenterResponse, object>> = {}
+): ProviderCenterResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCenterRecordMock() },
   ...overrideResponse
 })

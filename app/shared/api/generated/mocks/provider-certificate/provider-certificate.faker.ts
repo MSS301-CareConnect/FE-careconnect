@@ -7,9 +7,14 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { EmptyActionResponse, ProviderCertificateListResponse, ProviderCertificateResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  ProviderCertificateListResponse,
+  ProviderCertificatePageResponse,
+  ProviderCertificateResponse
+} from '../../contracts'
 
-import { getProviderCertificateRecordMock } from '../../contracts/index.faker'
+import { getProviderCertificatePageMock, getProviderCertificateRecordMock } from '../../contracts/index.faker'
 
 export const getListProviderCertificatesResponseMock = (
   overrideResponse: Partial<Extract<ProviderCertificateListResponse, object>> = {}
@@ -66,5 +71,23 @@ export const getListVerifiedProviderCertificatesResponseMock = (
   result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     ...getProviderCertificateRecordMock()
   })),
+  ...overrideResponse
+})
+
+export const getListPendingAuditProviderCertificatesResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCertificatePageResponse, object>> = {}
+): ProviderCertificatePageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCertificatePageMock() },
+  ...overrideResponse
+})
+
+export const getVerifyProviderCertificateByCenterResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCertificateResponse, object>> = {}
+): ProviderCertificateResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCertificateRecordMock() },
   ...overrideResponse
 })

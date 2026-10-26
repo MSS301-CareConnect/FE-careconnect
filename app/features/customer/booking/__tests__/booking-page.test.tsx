@@ -6,7 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchBookingQuote, placeBooking } from '~/entities/booking/booking-api'
 import { fetchCenterOfferings, fetchPricePlans } from '~/entities/care-catalog/care-catalog-api'
 import { fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
-import { fetchCaregiverByUser, fetchCaregiverCatalog } from '~/entities/provider/provider-api'
+import { selectCenter } from '~/entities/care-center/selected-center'
+import { fetchCaregiverByUser, fetchCaregiverCatalog, fetchPublicCenters } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { CustomerBookingPage } from '../booking-page'
@@ -28,7 +29,8 @@ vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) =
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
   fetchCaregiverByUser: vi.fn(),
-  fetchCaregiverCatalog: vi.fn()
+  fetchCaregiverCatalog: vi.fn(),
+  fetchPublicCenters: vi.fn()
 }))
 
 function DetailRoute() {
@@ -71,12 +73,20 @@ const nam = {
 beforeEach(async () => {
   vi.clearAllMocks()
   await setAppLanguage('vi', false)
-  vi.mocked(fetchCaregiverCatalog).mockResolvedValue({
-    items: [hoa, nam],
+  selectCenter(null)
+  vi.mocked(fetchPublicCenters).mockResolvedValue({
+    items: [
+      { centerId: 'center-1', centerName: 'TT An Tâm' },
+      { centerId: 'center-2', centerName: 'TT Bình An' }
+    ],
     page: 0,
     size: 100,
     totalElements: 2,
     totalPages: 1
+  })
+  vi.mocked(fetchCaregiverCatalog).mockImplementation(async ({ centerId } = {}) => {
+    const items = [hoa, nam].filter((item) => item.centerId === centerId)
+    return { items, page: 0, size: 100, totalElements: items.length, totalPages: 1 }
   })
   vi.mocked(fetchCareRecipients).mockResolvedValue({
     items: [{ id: 'rec-1', fullName: 'Bà Lan', age: 81, status: 'ACTIVE' }],
@@ -147,6 +157,15 @@ beforeEach(async () => {
 })
 
 describe('CustomerBookingPage', () => {
+  it('starts from the center chosen in the header', async () => {
+    selectCenter({ id: 'center-2', name: 'TT Bình An' })
+    renderPage('/customer/booking')
+
+    expect(await screen.findByRole('combobox', { name: 'Trung tâm chăm sóc' })).toHaveValue('center-2')
+    await waitFor(() => expect(fetchCenterOfferings).toHaveBeenCalledWith('center-2'))
+    expect(fetchPublicCenters).toHaveBeenCalledWith({ page: 0, size: 100 })
+  })
+
   it('lets the customer choose the center and caregiver in the form when opened from the homepage', async () => {
     renderPage('/customer/booking')
 
@@ -161,7 +180,8 @@ describe('CustomerBookingPage', () => {
     // Only caregivers of the chosen center are offered, next to the center's own assignment.
     expect(screen.getByRole('radio', { name: /Để trung tâm phân công/ })).toBeChecked()
     expect(screen.queryByRole('radio', { name: /Chị Hoa/ })).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('radio', { name: /Anh Nam/ }))
+    fireEvent.click(await screen.findByRole('radio', { name: /Anh Nam/ }))
+    expect(fetchCaregiverCatalog).toHaveBeenCalledWith({ centerId: 'center-2', page: 0, size: 100 })
 
     fireEvent.click(await screen.findByRole('radio', { name: /Bà Lan/ }))
     fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))

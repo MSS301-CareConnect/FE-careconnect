@@ -38,7 +38,11 @@ export const customerProviderVi = {
   next: 'Tiếp',
   previous: 'Trước',
   page: 'Trang {{page}} / {{pages}}',
-  profileError: 'Không thể tải hồ sơ người chăm sóc.'
+  profileError: 'Không thể tải hồ sơ người chăm sóc.',
+  scopeGeneral:
+    'Bạn đang xem người chăm sóc của tất cả trung tâm. Chọn một trung tâm để chỉ xem đội ngũ của trung tâm đó.',
+  reminderTitle: 'Chọn trung tâm để xem đội ngũ chăm sóc',
+  reminderText: 'Người chăm sóc làm việc theo từng trung tâm. Chọn trung tâm gần bạn để xem hồ sơ và đặt lịch.'
 } as const
 
 export const customerProviderEn = {
@@ -81,5 +85,8 @@ export const customerProviderEn = {
   next: 'Next',
   previous: 'Previous',
   page: 'Page {{page}} / {{pages}}',
-  profileError: 'Unable to load the caregiver profile.'
+  profileError: 'Unable to load the caregiver profile.',
+  scopeGeneral: 'You are viewing caregivers from every center. Choose a center to see only its care team.',
+  reminderTitle: 'Choose a center to see its care team',
+  reminderText: 'Caregivers work with a specific center. Choose one near you to view profiles and book.'
 } as const
