@@ -25,7 +25,6 @@ export const adminProviderVi = {
   phone: 'Số điện thoại',
   address: 'Địa chỉ',
   hours: 'Giờ hoạt động',
-  managerId: 'ID tài khoản quản lý',
   status: 'Trạng thái',
   reason: 'Lý do',
   save: 'Lưu',
@@ -62,7 +61,31 @@ export const adminProviderVi = {
   archived: 'Đã lưu trữ',
   verified: 'Đã xác minh',
   confirmReject: 'Từ chối hồ sơ này?',
-  actionError: 'Không thể hoàn tất thao tác. Vui lòng thử lại.'
+  actionError: 'Không thể hoàn tất thao tác. Vui lòng thử lại.',
+  manager: {
+    label: 'Người quản lý trung tâm',
+    none: 'Chưa chọn người quản lý',
+    option: '{{name}} · {{email}}',
+    loading: 'Đang tải danh sách người quản lý…',
+    unavailable: 'Chưa tải được danh sách người quản lý',
+    inactive: 'Tài khoản đã chọn không còn hoạt động',
+    hint: 'Chỉ hiện các tài khoản quản lý trung tâm đang hoạt động.',
+    inactiveHint: 'Người quản lý hiện tại đã bị khóa hoặc không còn vai trò quản lý. Hãy chọn người khác.',
+    empty: 'Chưa có tài khoản quản lý trung tâm nào đang hoạt động.',
+    createAccount: 'Tạo tài khoản quản lý',
+    error: 'Không tải được danh sách người quản lý.',
+    retry: 'Thử lại',
+    requiredHint: 'Trung tâm cần có người quản lý trước khi được kích hoạt.',
+    assign: 'Chọn người quản lý'
+  },
+  errors: {
+    managerRequired:
+      'Chưa thể kích hoạt: trung tâm chưa có người quản lý đang hoạt động. Hãy bấm "Sửa trung tâm" và chọn người quản lý trước.',
+    managerTaken: 'Người quản lý này đang phụ trách một trung tâm khác. Hãy chọn người khác.',
+    managerNotFound: 'Không tìm thấy tài khoản quản lý đã chọn. Hãy chọn lại.',
+    managerInvalid: 'Tài khoản đã chọn đang bị khóa hoặc không có vai trò quản lý trung tâm.',
+    identityUnavailable: 'Hệ thống tài khoản đang bận, chưa kiểm tra được người quản lý. Vui lòng thử lại sau.'
+  }
 } as const
 
 export const adminProviderEn = {
@@ -92,7 +115,6 @@ export const adminProviderEn = {
   phone: 'Phone number',
   address: 'Address',
   hours: 'Operating hours',
-  managerId: 'Manager account ID',
   status: 'Status',
   reason: 'Reason',
   save: 'Save',
@@ -129,5 +151,29 @@ export const adminProviderEn = {
   archived: 'Archived',
   verified: 'Verified',
   confirmReject: 'Reject this profile?',
-  actionError: 'Unable to complete the action. Please try again.'
+  actionError: 'Unable to complete the action. Please try again.',
+  manager: {
+    label: 'Center manager',
+    none: 'No manager selected',
+    option: '{{name}} · {{email}}',
+    loading: 'Loading center managers…',
+    unavailable: 'Center managers could not be loaded',
+    inactive: 'The selected account is no longer active',
+    hint: 'Only active center manager accounts are listed.',
+    inactiveHint: 'The current manager is locked or no longer a center manager. Choose someone else.',
+    empty: 'There is no active center manager account yet.',
+    createAccount: 'Create a manager account',
+    error: 'Center managers could not be loaded.',
+    retry: 'Try again',
+    requiredHint: 'A center needs a manager before it can be activated.',
+    assign: 'Choose a manager'
+  },
+  errors: {
+    managerRequired:
+      'This center cannot be activated yet because it has no active manager. Select "Edit center" and choose a manager first.',
+    managerTaken: 'This manager already runs another center. Choose someone else.',
+    managerNotFound: 'The selected manager account was not found. Choose again.',
+    managerInvalid: 'The selected account is locked or is not a center manager.',
+    identityUnavailable: 'The account service is busy and could not check the manager. Please try again later.'
+  }
 } as const

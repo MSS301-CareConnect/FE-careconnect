@@ -16,6 +16,10 @@ import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 
+import { centerErrorKey } from './center-errors'
+import { CenterManagerSelect } from './components/center-manager-select'
+import { useCenterManagers } from './hooks/use-center-managers'
+
 const key = 'admin.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
 const statuses = ['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'REJECTED'] as const
@@ -69,8 +73,7 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
             [t(`${key}.email`), email, setEmail, 'email', true],
             [t(`${key}.phone`), phone, setPhone, 'tel', false],
             [t(`${key}.address`), address, setAddress, 'text', true],
-            [t(`${key}.hours`), hours, setHours, 'text', false],
-            [t(`${key}.managerId`), managerId, setManagerId, 'text', false]
+            [t(`${key}.hours`), hours, setHours, 'text', false]
           ] as const
         ).map(([label, value, setValue, type, required]) => (
           <label className='text-sm font-medium' key={label}>
@@ -84,8 +87,9 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
             />
           </label>
         ))}
+        <CenterManagerSelect className={inputClass} onChange={setManagerId} value={managerId} />
       </div>
-      {mutation.isError ? <p role='alert'>{t(`${key}.saveError`)}</p> : null}
+      {mutation.isError ? <p role='alert'>{t(centerErrorKey(mutation.error, `${key}.saveError`))}</p> : null}
       <div className='flex gap-3'>
         <button
           className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
@@ -109,6 +113,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
   const [status, setStatus] = useState<(typeof statuses)[number]>('ACTIVE')
   const [reason, setReason] = useState('')
   const center = useQuery({ queryKey: providerKeys.center(id), queryFn: () => fetchCenter(id), retry: false })
+  const managers = useCenterManagers()
   const changeStatus = useMutation({
     mutationFn: () =>
       changeCenterStatus(id, { status, reason: reason.trim() || undefined, version: center.data!.version }),
@@ -135,6 +140,15 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
       </div>
     )
   if (editing) return <CenterForm center={center.data} onDone={() => setEditing(false)} />
+  function managerName(managerId: string | undefined) {
+    if (!managerId) return t(`${key}.manager.none`)
+    const manager = managers.data?.find((item) => item.id === managerId)
+    if (manager)
+      return manager.email
+        ? t(`${key}.manager.option`, { name: manager.fullName, email: manager.email })
+        : manager.fullName
+    return managers.isSuccess ? t(`${key}.manager.inactive`) : t(`${key}.manager.loading`)
+  }
   return (
     <section className='space-y-4 rounded-xl border border-outline-variant bg-white p-5'>
       <div className='flex items-start justify-between gap-3'>
@@ -153,7 +167,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
             [t(`${key}.phone`), center.data.phoneNumber],
             [t(`${key}.address`), center.data.address],
             [t(`${key}.hours`), center.data.operatingHours],
-            [t(`${key}.managerId`), center.data.managerUserId],
+            [t(`${key}.manager.label`), managerName(center.data.managerUserId)],
             [t(`${key}.status`), center.data.centerStatus]
           ] as const
         ).map(([label, value]) => (
@@ -171,6 +185,14 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
           {t(`${key}.viewCaregivers`)}
         </Link>
       </div>
+      {center.data.managerUserId ? null : (
+        <p className='rounded-lg bg-surface-container-low p-3 text-sm'>
+          {t(`${key}.manager.requiredHint`)}{' '}
+          <button className='text-primary underline' onClick={() => setEditing(true)} type='button'>
+            {t(`${key}.manager.assign`)}
+          </button>
+        </p>
+      )}
       <form
         className='flex flex-wrap items-end gap-3 border-t pt-4'
         onSubmit={(event) => {
@@ -214,7 +236,9 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
       >
         {t(`${key}.archive`)}
       </button>
-      {changeStatus.isError || archive.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      {changeStatus.isError || archive.isError ? (
+        <p role='alert'>{t(centerErrorKey(changeStatus.error ?? archive.error, `${key}.actionError`))}</p>
+      ) : null}
       <ProviderMediaPanel ownerId={id} ownerType='CARE_CENTER' />
     </section>
   )

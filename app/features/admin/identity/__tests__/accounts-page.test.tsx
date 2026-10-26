@@ -5,9 +5,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AccountsPage } from '../accounts-page'
+import { fetchCenters } from '~/entities/provider/provider-api'
+
 import { addUser, fetchUsers } from '../identity-api'
 
 vi.mock('../identity-api', () => ({ addUser: vi.fn(), fetchUsers: vi.fn() }))
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchCenters: vi.fn()
+}))
 
 function renderPage(permissions: string[]) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
@@ -58,6 +64,16 @@ describe('AccountsPage', () => {
   })
 
   it('validates manager center before provisioning', async () => {
+    vi.mocked(fetchCenters).mockResolvedValue({
+      items: [
+        { id: 'center-123', centerName: 'Cầu Kho', centerStatus: 'PENDING', version: 0 },
+        { id: 'center-old', centerName: 'Đã lưu trữ', centerStatus: 'ARCHIVED', version: 0 }
+      ],
+      page: 0,
+      size: 100,
+      totalElements: 2,
+      totalPages: 1
+    })
     renderPage(['user:read', 'user:manage', 'manager:create'])
     await screen.findByText('No data yet.')
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }))
@@ -67,9 +83,14 @@ describe('AccountsPage', () => {
       target: { value: 'CENTER_MANAGER' }
     })
     fireEvent.click(screen.getAllByRole('button', { name: 'Create account' })[1])
-    expect(screen.getByRole('status')).toHaveTextContent('Center ID is required')
+    expect(screen.getByRole('status')).toHaveTextContent('Choose the center this manager runs.')
     expect(addUser).not.toHaveBeenCalled()
-    fireEvent.change(screen.getByLabelText('Center ID'), { target: { value: 'center-123' } })
+    const center = screen.getByRole('combobox', { name: 'Managed center' })
+    await waitFor(() => expect(center).toBeEnabled())
+    // A PENDING center is offered too, since it needs its manager before it can be approved.
+    expect(within(center).getByRole('option', { name: 'Cầu Kho (Pending)' })).toBeInTheDocument()
+    expect(within(center).queryByRole('option', { name: /Đã lưu trữ/ })).not.toBeInTheDocument()
+    fireEvent.change(center, { target: { value: 'center-123' } })
     vi.mocked(addUser).mockResolvedValue({})
     fireEvent.click(screen.getAllByRole('button', { name: 'Create account' })[1])
     await waitFor(() =>
