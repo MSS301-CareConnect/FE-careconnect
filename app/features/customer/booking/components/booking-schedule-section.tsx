@@ -2,14 +2,13 @@ import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { WEEKDAYS } from '~/entities/booking/booking-format'
-import { SectionCard } from '~/shared/ui/section-card'
 
 import type { useBookingForm } from '../hooks/use-booking-form'
+import { BookingPanel, bookingField } from './booking-panel'
 
 type Form = ReturnType<typeof useBookingForm>
 const SCHEDULE_TYPES = ['ONE_TIME', 'DAILY', 'WEEKLY'] as const
-const field =
-  'mt-1 w-full rounded-lg border border-outline-variant/60 bg-white p-2.5 text-sm text-on-surface focus:border-primary focus:outline-none'
+const label = 'text-sm font-semibold text-[#1b2922]'
 
 export function BookingScheduleSection({ form }: { form: Form }) {
   const { t } = useTranslation()
@@ -20,14 +19,19 @@ export function BookingScheduleSection({ form }: { form: Form }) {
   const invalidRange = repeating && Boolean(schedule.endDate && schedule.endDate < schedule.startDate)
 
   return (
-    <SectionCard icon='calendar_month' title={t('customer.booking.schedule.title')}>
+    <BookingPanel
+      description={t('customer.booking.schedule.leadTime')}
+      icon='calendar_month'
+      id='booking-schedule'
+      title={t('customer.booking.schedule.title')}
+    >
       <div className='flex flex-col gap-5'>
         <fieldset>
-          <legend className='text-sm font-semibold text-on-surface'>{t('customer.booking.schedule.type')}</legend>
-          <div className='mt-2 inline-flex flex-wrap gap-1 rounded-lg bg-surface-container-low p-1'>
+          <legend className={label}>{t('customer.booking.schedule.type')}</legend>
+          <div className='mt-2 grid grid-cols-3 gap-1 rounded-xl bg-[#f2f6f1] p-1 sm:inline-grid'>
             {SCHEDULE_TYPES.map((type) => (
               <label
-                className={`cursor-pointer rounded-md px-4 py-2 text-sm font-semibold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-primary ${schedule.scheduleType === type ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                className={`cursor-pointer rounded-lg px-4 py-2.5 text-center text-sm font-bold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-[#075b31] ${schedule.scheduleType === type ? 'bg-[#075b31] text-white' : 'text-[#44594b] hover:bg-[#e8f0e8]'}`}
                 key={type}
               >
                 <input
@@ -44,22 +48,22 @@ export function BookingScheduleSection({ form }: { form: Form }) {
         </fieldset>
 
         <div className='grid gap-4 sm:grid-cols-2'>
-          <label className='text-sm font-semibold text-on-surface'>
+          <label className={label}>
             {repeating ? t('customer.booking.schedule.startDate') : t('customer.booking.schedule.date')}
             <input
-              className={field}
+              className={bookingField}
               onChange={(event) => updateSchedule({ startDate: event.target.value })}
               type='date'
               value={schedule.startDate}
             />
           </label>
           {repeating ? (
-            <label className='text-sm font-semibold text-on-surface'>
+            <label className={label}>
               {t('customer.booking.schedule.endDate')}
               <input
                 aria-describedby={invalidRange ? `${id}-range` : undefined}
                 aria-invalid={invalidRange}
-                className={field}
+                className={bookingField}
                 min={schedule.startDate}
                 onChange={(event) => updateSchedule({ endDate: event.target.value })}
                 type='date'
@@ -67,22 +71,22 @@ export function BookingScheduleSection({ form }: { form: Form }) {
               />
             </label>
           ) : null}
-          <label className='text-sm font-semibold text-on-surface'>
+          <label className={label}>
             {t('customer.booking.schedule.startTime')}
             <input
-              className={field}
+              className={bookingField}
               onChange={(event) => updateSchedule({ startTime: event.target.value })}
               step={900}
               type='time'
               value={schedule.startTime}
             />
           </label>
-          <label className='text-sm font-semibold text-on-surface'>
+          <label className={label}>
             {t('customer.booking.schedule.endTime')}
             <input
               aria-describedby={invalidTime ? `${id}-time` : undefined}
               aria-invalid={invalidTime}
-              className={field}
+              className={bookingField}
               onChange={(event) => updateSchedule({ endTime: event.target.value })}
               step={900}
               type='time'
@@ -91,26 +95,26 @@ export function BookingScheduleSection({ form }: { form: Form }) {
           </label>
         </div>
         {invalidRange ? (
-          <p className='-mt-2 text-sm text-error' id={`${id}-range`}>
+          <p className='-mt-2 text-sm text-[#ba1a1a]' id={`${id}-range`}>
             {t('customer.booking.schedule.invalidRange')}
           </p>
         ) : null}
         {invalidTime ? (
-          <p className='-mt-2 text-sm text-error' id={`${id}-time`}>
+          <p className='-mt-2 text-sm text-[#ba1a1a]' id={`${id}-time`}>
             {t('customer.booking.schedule.invalidTime')}
           </p>
         ) : null}
 
         {schedule.scheduleType === 'WEEKLY' ? (
           <fieldset>
-            <legend className='text-sm font-semibold text-on-surface'>{t('customer.booking.schedule.weekdays')}</legend>
+            <legend className={label}>{t('customer.booking.schedule.weekdays')}</legend>
             <div className='mt-2 flex flex-wrap gap-2'>
               {WEEKDAYS.map((day) => {
                 const value = Number(day)
                 const checked = schedule.daysOfWeek.includes(value)
                 return (
                   <label
-                    className={`grid h-11 min-w-11 cursor-pointer place-items-center rounded-lg px-3 text-sm font-semibold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-primary ${checked ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}
+                    className={`grid h-11 min-w-12 cursor-pointer place-items-center rounded-lg border px-3 text-sm font-bold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-[#075b31] ${checked ? 'border-[#075b31] bg-[#075b31] text-white' : 'border-[#d5e0d5] bg-white text-[#44594b] hover:border-[#a8c2ad]'}`}
                     key={day}
                   >
                     <input
@@ -133,12 +137,10 @@ export function BookingScheduleSection({ form }: { form: Form }) {
           </fieldset>
         ) : null}
 
-        <p className='text-xs text-on-surface-variant'>{t('customer.booking.schedule.leadTime')}</p>
-
-        <label className='text-sm font-semibold text-on-surface'>
+        <label className={label}>
           {t('customer.booking.schedule.note')}
           <textarea
-            className={field}
+            className={bookingField}
             maxLength={2000}
             onChange={(event) => form.setCustomerNote(event.target.value)}
             placeholder={t('customer.booking.schedule.notePlaceholder')}
@@ -147,6 +149,6 @@ export function BookingScheduleSection({ form }: { form: Form }) {
           />
         </label>
       </div>
-    </SectionCard>
+    </BookingPanel>
   )
 }

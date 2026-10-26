@@ -70,10 +70,7 @@ describe('HomePage', () => {
       'href',
       '/customer/caregivers'
     )
-    expect(within(hero).getByRole('link', { name: 'Xem lịch đặt của tôi' })).toHaveAttribute(
-      'href',
-      '/customer/bookings'
-    )
+    expect(within(hero).getByRole('link', { name: 'Đặt lịch chăm sóc' })).toHaveAttribute('href', '/customer/booking')
     expect(screen.queryByRole('link', { name: 'Tạo tài khoản' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Đăng nhập' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Mỗi quyết định chăm sóc đều cần sự rõ ràng.' })).toBeInTheDocument()

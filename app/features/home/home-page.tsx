@@ -97,9 +97,9 @@ export function HomePage({ audience = 'public' }: { audience?: 'public' | 'custo
               </Link>
               <Link
                 className='inline-flex min-h-11 items-center border-b border-[#075b31] text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
-                to={isCustomer ? '/customer/bookings' : '/register'}
+                to={isCustomer ? '/customer/booking' : '/register'}
               >
-                {isCustomer ? t('customer.home.viewBookings') : t('home.createAccount')}
+                {isCustomer ? t('customer.home.book') : t('home.createAccount')}
               </Link>
             </div>
           </div>

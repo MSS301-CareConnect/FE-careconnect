@@ -3,7 +3,6 @@ export const bookingEn = {
   breadcrumb: {
     label: 'Breadcrumb',
     home: 'Home',
-    bookings: 'My bookings',
     current: 'New booking'
   },
   header: {
@@ -21,15 +20,9 @@ export const bookingEn = {
     complete: '(done)',
     incomplete: '(not done)'
   },
-  start: {
-    title: 'Start from a caregiver or a service',
-    description:
-      'A booking belongs to one care center. Pick a caregiver you trust, or a service a center offers, then come back here to choose the schedule.',
-    caregivers: 'Find a caregiver',
-    services: 'Browse services'
-  },
   patient: {
     title: 'Who needs care',
+    description: 'Choose one of your family members’ patient profiles.',
     add: 'Add patient profile',
     loading: 'Loading patient profiles…',
     error: 'Could not load your patient profiles.',
@@ -37,16 +30,22 @@ export const bookingEn = {
   },
   provider: {
     title: 'Center & caregiver',
-    change: 'Choose another caregiver',
-    loading: 'Loading the caregiver…',
-    error: 'Could not load this caregiver. Choose another one.',
+    description: 'Pick a care center, then a caregiver you trust or let the center assign one.',
+    loading: 'Loading care centers and caregivers…',
+    error: 'Could not load care centers. Try again later.',
+    empty: 'No care center is taking bookings right now.',
+    center: 'Care center',
+    chooseCenter: 'Choose a care center',
+    caregiver: 'Caregiver',
+    experience: '{{years}} yrs experience',
     centerFallback: 'Care center',
     letCenterAssign: 'Let the center assign a caregiver',
-    letCenterAssignHint: 'Use this when the caregiver has no free shift at your time.',
-    centerAssigns: 'The center will assign a caregiver when it accepts your request.'
+    letCenterAssignHint: 'The center picks a suitable caregiver when it accepts your request.'
   },
   services: {
     title: 'Services',
+    description: 'Tick the services you need and choose a price plan for each.',
+    chooseCenter: 'Choose a care center first to see its services.',
     limit: 'Up to {{count}} services',
     loading: 'Loading the center’s services…',
     error: 'Could not load the center’s services.',
@@ -95,7 +94,6 @@ export const bookingVi = {
   breadcrumb: {
     label: 'Đường dẫn',
     home: 'Trang chủ',
-    bookings: 'Lịch đặt của tôi',
     current: 'Đặt lịch mới'
   },
   header: {
@@ -112,15 +110,9 @@ export const bookingVi = {
     complete: '(đã xong)',
     incomplete: '(chưa xong)'
   },
-  start: {
-    title: 'Bắt đầu từ người chăm sóc hoặc dịch vụ',
-    description:
-      'Mỗi lịch đặt thuộc về một trung tâm chăm sóc. Hãy chọn người chăm sóc bạn tin tưởng, hoặc một dịch vụ của trung tâm, rồi quay lại đây để chọn lịch.',
-    caregivers: 'Tìm người chăm sóc',
-    services: 'Xem dịch vụ'
-  },
   patient: {
     title: 'Người cần chăm sóc',
+    description: 'Chọn một hồ sơ người thân cần được chăm sóc.',
     add: 'Thêm hồ sơ người bệnh',
     loading: 'Đang tải hồ sơ người bệnh…',
     error: 'Không tải được hồ sơ người bệnh.',
@@ -128,16 +120,22 @@ export const bookingVi = {
   },
   provider: {
     title: 'Trung tâm & người chăm sóc',
-    change: 'Chọn người chăm sóc khác',
-    loading: 'Đang tải người chăm sóc…',
-    error: 'Không tải được người chăm sóc này. Hãy chọn người khác.',
+    description: 'Chọn trung tâm chăm sóc, rồi chọn người chăm sóc bạn tin tưởng hoặc để trung tâm phân công.',
+    loading: 'Đang tải trung tâm và người chăm sóc…',
+    error: 'Không tải được danh sách trung tâm. Vui lòng thử lại sau.',
+    empty: 'Hiện chưa có trung tâm nào nhận đặt lịch.',
+    center: 'Trung tâm chăm sóc',
+    chooseCenter: 'Chọn trung tâm chăm sóc',
+    caregiver: 'Người chăm sóc',
+    experience: '{{years}} năm kinh nghiệm',
     centerFallback: 'Trung tâm chăm sóc',
     letCenterAssign: 'Để trung tâm phân công người chăm sóc',
-    letCenterAssignHint: 'Chọn khi người chăm sóc không có ca trống vào giờ bạn muốn.',
-    centerAssigns: 'Trung tâm sẽ phân công người chăm sóc khi duyệt yêu cầu của bạn.'
+    letCenterAssignHint: 'Trung tâm chọn người phù hợp khi duyệt yêu cầu của bạn.'
   },
   services: {
     title: 'Dịch vụ',
+    description: 'Đánh dấu dịch vụ cần dùng và chọn gói giá cho từng dịch vụ.',
+    chooseCenter: 'Chọn trung tâm chăm sóc trước để xem dịch vụ.',
     limit: 'Tối đa {{count}} dịch vụ',
     loading: 'Đang tải dịch vụ của trung tâm…',
     error: 'Không tải được dịch vụ của trung tâm.',

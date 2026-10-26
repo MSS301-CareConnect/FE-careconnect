@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchBookingQuote, placeBooking } from '~/entities/booking/booking-api'
 import { fetchCenterOfferings, fetchPricePlans } from '~/entities/care-catalog/care-catalog-api'
 import { fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
-import { fetchCaregiverByUser } from '~/entities/provider/provider-api'
+import { fetchCaregiverByUser, fetchCaregiverCatalog } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { CustomerBookingPage } from '../booking-page'
@@ -27,7 +27,8 @@ vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) =
 }))
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
-  fetchCaregiverByUser: vi.fn()
+  fetchCaregiverByUser: vi.fn(),
+  fetchCaregiverCatalog: vi.fn()
 }))
 
 function DetailRoute() {
@@ -48,9 +49,35 @@ function renderPage(path: string) {
   )
 }
 
+const hoa = {
+  id: 'cg-1',
+  userId: 'user-1',
+  centerId: 'center-1',
+  centerName: 'TT An Tâm',
+  fullName: 'Chị Hoa',
+  verificationStatus: 'VERIFIED' as const,
+  caregiverStatus: 'ACTIVE' as const,
+  version: 1
+}
+const nam = {
+  ...hoa,
+  id: 'cg-2',
+  userId: 'user-2',
+  centerId: 'center-2',
+  centerName: 'TT Bình An',
+  fullName: 'Anh Nam'
+}
+
 beforeEach(async () => {
   vi.clearAllMocks()
   await setAppLanguage('vi', false)
+  vi.mocked(fetchCaregiverCatalog).mockResolvedValue({
+    items: [hoa, nam],
+    page: 0,
+    size: 100,
+    totalElements: 2,
+    totalPages: 1
+  })
   vi.mocked(fetchCareRecipients).mockResolvedValue({
     items: [{ id: 'rec-1', fullName: 'Bà Lan', age: 81, status: 'ACTIVE' }],
     page: 0,
@@ -120,18 +147,36 @@ beforeEach(async () => {
 })
 
 describe('CustomerBookingPage', () => {
-  it('asks the customer to start from a caregiver or a service when the URL names neither', () => {
+  it('lets the customer choose the center and caregiver in the form when opened from the homepage', async () => {
     renderPage('/customer/booking')
-    expect(screen.getByRole('heading', { name: 'Bắt đầu từ người chăm sóc hoặc dịch vụ' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Tìm người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
-    expect(fetchBookingQuote).not.toHaveBeenCalled()
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Đặt lịch chăm sóc tại nhà' })).toBeInTheDocument()
+    expect(await screen.findByText('Chọn trung tâm chăm sóc trước để xem dịch vụ.')).toBeInTheDocument()
+    expect(fetchCenterOfferings).not.toHaveBeenCalled()
+
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Trung tâm chăm sóc' }), {
+      target: { value: 'center-2' }
+    })
+    await waitFor(() => expect(fetchCenterOfferings).toHaveBeenCalledWith('center-2'))
+    // Only caregivers of the chosen center are offered, next to the center's own assignment.
+    expect(screen.getByRole('radio', { name: /Để trung tâm phân công/ })).toBeChecked()
+    expect(screen.queryByRole('radio', { name: /Chị Hoa/ })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('radio', { name: /Anh Nam/ }))
+
+    fireEvent.click(await screen.findByRole('radio', { name: /Bà Lan/ }))
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Gói giá' }), { target: { value: 'plan-1' } })
+
+    await waitFor(() =>
+      expect(vi.mocked(fetchBookingQuote).mock.calls[0][0]).toMatchObject({ centerId: 'center-2', caregiverId: 'cg-2' })
+    )
   })
 
   it('quotes the filled request and sends it once with an idempotency key', async () => {
     renderPage('/customer/booking?caregiver=user-1')
 
     fireEvent.click(await screen.findByRole('radio', { name: /Bà Lan/ }))
-    expect(await screen.findByText('Chị Hoa')).toBeInTheDocument()
+    expect(await screen.findByRole('radio', { name: /Chị Hoa/ })).toBeChecked()
     fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
     fireEvent.change(await screen.findByRole('combobox', { name: 'Gói giá' }), { target: { value: 'plan-1' } })
 
@@ -167,7 +212,7 @@ describe('CustomerBookingPage', () => {
     renderPage('/customer/booking?caregiver=user-1')
 
     fireEvent.click(await screen.findByRole('radio', { name: /Bà Lan/ }))
-    fireEvent.click(await screen.findByRole('checkbox', { name: /Để trung tâm phân công người chăm sóc/ }))
+    fireEvent.click(await screen.findByRole('radio', { name: /Để trung tâm phân công người chăm sóc/ }))
     fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
     fireEvent.change(await screen.findByRole('combobox', { name: 'Gói giá' }), { target: { value: 'plan-1' } })
 

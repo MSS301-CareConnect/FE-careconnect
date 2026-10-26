@@ -14,6 +14,8 @@ import type {
   ListCareRecipientsParams
 } from '~/shared/api/generated/contracts'
 
+import { useBookingProviders } from './use-booking-providers'
+
 const recipientRequest: ListCareRecipientsParams = { status: 'ACTIVE', page: 0, size: 50 }
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -59,7 +61,9 @@ export function useBookingForm() {
   const preselectedService = params.get('service') ?? ''
 
   const [recipientId, setRecipientId] = useState(params.get('patientId') ?? '')
-  const [withoutCaregiver, setWithoutCaregiver] = useState(false)
+  // null keeps the center and caregiver the URL pointed at; a choice in the form replaces them.
+  const [centerChoice, setCenterChoice] = useState<string | null>(null)
+  const [caregiverChoice, setCaregiverChoice] = useState<string | null>(null)
   const [services, setServices] = useState<SelectedServices>({})
   const [schedule, setSchedule] = useState<BookingSchedule>(initialSchedule)
   const [customerNote, setCustomerNote] = useState('')
@@ -71,7 +75,13 @@ export function useBookingForm() {
     enabled: Boolean(caregiverUserId),
     retry: false
   })
-  const centerId = caregiver.data?.centerId ?? centerParam
+  const providers = useBookingProviders()
+  const centerId = centerChoice ?? caregiver.data?.centerId ?? centerParam
+  const center = providers.centers.find((item) => item.id === centerId)
+  const urlCaregiverId = caregiver.data ? (caregiver.data.caregiverId ?? caregiver.data.id) : undefined
+  // Empty means the center assigns the caregiver when it accepts the booking.
+  const selectedCaregiverId =
+    caregiverChoice ?? (caregiver.data && caregiver.data.centerId === centerId ? urlCaregiverId : '') ?? ''
   const recipients = useQuery({
     queryKey: careRecipientKeys.list(recipientRequest),
     queryFn: () => fetchCareRecipients(recipientRequest),
@@ -85,8 +95,7 @@ export function useBookingForm() {
     select: (items) => items.filter((item) => item.status === 'ACTIVE' && item.catalogItem.status === 'ACTIVE')
   })
 
-  const caregiverId =
-    caregiver.data && !withoutCaregiver ? (caregiver.data.caregiverId ?? caregiver.data.id) : undefined
+  const caregiverId = selectedCaregiverId || undefined
   const selected = Object.values(services)
   const plansChosen = selected.every((service) => service.pricePlanId)
 
@@ -149,17 +158,37 @@ export function useBookingForm() {
     }))
   }
 
+  function selectCenter(id: string) {
+    if (id === centerId) return
+    setCenterChoice(id)
+    setCaregiverChoice('')
+    // Offerings and price plans belong to one center, so a new center starts with no service selected.
+    setServices({})
+  }
+
+  // The URL caregiver stays selectable even when the catalog pages do not include them.
+  const centerCaregivers = [...(center?.caregivers ?? [])]
+  if (caregiver.data && caregiver.data.centerId === centerId) {
+    if (!centerCaregivers.some((item) => (item.caregiverId ?? item.id) === urlCaregiverId)) {
+      centerCaregivers.unshift(caregiver.data)
+    }
+  }
+
   return {
     caregiverUserId,
     caregiver,
+    providers,
     centerId,
+    centerName: center?.name ?? caregiver.data?.centerName,
+    centerCaregivers,
+    selectCenter,
+    selectedCaregiverId,
+    selectCaregiver: (id: string) => setCaregiverChoice(id),
     preselectedService,
     recipients,
     offerings,
     recipientId,
     setRecipientId,
-    withoutCaregiver,
-    setWithoutCaregiver,
     services,
     toggleService,
     choosePlan,

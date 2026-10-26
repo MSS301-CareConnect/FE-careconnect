@@ -14,8 +14,7 @@ export function CustomerHeader() {
   const navigation = [
     { to: homePath, label: 'customer.nav.home', end: true },
     { to: '/customer/caregivers', label: 'customer.nav.findCaregivers', end: false },
-    { to: '/customer/services', label: 'customer.nav.services', end: false },
-    ...(isCustomer ? [{ to: '/customer/bookings', label: 'customer.nav.myBookings', end: false } as const] : [])
+    { to: '/customer/services', label: 'customer.nav.services', end: false }
   ] as const
   const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -130,6 +129,13 @@ export function CustomerHeader() {
                         to='/customer/patient-profiles'
                       >
                         {t('customer.nav.familyProfiles')}
+                      </Link>
+                      <Link
+                        className='block rounded-lg px-3 py-2.5 text-sm font-semibold text-[#1b2922] hover:bg-[#eaf2e9]'
+                        onClick={() => setAccountMenuOpen(false)}
+                        to='/customer/bookings'
+                      >
+                        {t('customer.nav.myBookings')}
                       </Link>
                       <div className='my-1 border-t border-[#dfe6dc]' />
                       <SignOutButton appearance='menu' />

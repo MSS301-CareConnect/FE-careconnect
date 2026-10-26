@@ -1,9 +1,9 @@
 export const customerHomeEn = {
   documentTitle: 'Customer Home | CareConnect',
-  viewBookings: 'View my bookings'
+  book: 'Book home care'
 } as const
 
 export const customerHomeVi = {
   documentTitle: 'Trang chủ khách hàng | CareConnect',
-  viewBookings: 'Xem lịch đặt của tôi'
+  book: 'Đặt lịch chăm sóc'
 } as const

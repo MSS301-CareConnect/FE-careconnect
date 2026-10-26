@@ -17,84 +17,47 @@ export function CustomerBookingPage() {
   const form = useBookingForm()
   useDocumentTitle(t('customer.booking.documentTitle'))
 
-  const selectedCount = Object.keys(form.services).length
-  const noProvider = !form.caregiverUserId && !form.centerId
-
   return (
-    <div className='flex w-full flex-1 flex-col bg-surface'>
-      <section className='w-full bg-surface-container-low pb-10 sm:pb-12'>
-        <div className='mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8'>
+    <div className='flex w-full flex-1 flex-col bg-[#fbfcfa] text-[#1b2922]'>
+      <section className='border-b border-[#dfe6dc] bg-[#f7f8f5]'>
+        <div className='mx-auto w-full max-w-[1440px] px-5 pt-6 pb-8 sm:px-8 lg:px-12 lg:pt-8 lg:pb-10'>
           <nav
             aria-label={t('customer.booking.breadcrumb.label')}
-            className='mb-4 flex items-center gap-2 text-xs text-on-surface-variant sm:text-sm'
+            className='flex items-center gap-1.5 text-sm text-[#637469]'
           >
-            <Link className='transition-colors hover:text-primary' to='/customer'>
+            <Link className='hover:text-[#075b31]' to='/customer'>
               {t('customer.booking.breadcrumb.home')}
             </Link>
-            <Icon className='text-[16px] text-outline' name='chevron_right' />
-            <Link className='transition-colors hover:text-primary' to='/customer/bookings'>
-              {t('customer.booking.breadcrumb.bookings')}
-            </Link>
-            <Icon className='text-[16px] text-outline' name='chevron_right' />
-            <span className='font-semibold text-primary'>{t('customer.booking.breadcrumb.current')}</span>
+            <Icon className='text-base' name='chevron_right' />
+            <span className='font-semibold text-[#075b31]'>{t('customer.booking.breadcrumb.current')}</span>
           </nav>
-          <div className='mb-6'>
-            <h1 className='text-2xl font-bold tracking-tight text-on-surface sm:text-3xl md:text-4xl'>
-              {t('customer.booking.header.title')}
-            </h1>
-            <p className='mt-2 max-w-2xl text-sm leading-relaxed text-on-surface-variant md:text-base'>
-              {t('customer.booking.header.subtitle')}
-            </p>
+          <h1 className='mt-4 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl'>
+            {t('customer.booking.header.title')}
+          </h1>
+          <p className='mt-3 max-w-2xl text-base leading-7 text-[#5e7063]'>{t('customer.booking.header.subtitle')}</p>
+          <div className='mt-8'>
+            <BookingStepper
+              done={{
+                patient: Boolean(form.recipientId),
+                provider: Boolean(form.centerId),
+                services: Object.keys(form.services).length > 0 && form.plansChosen,
+                schedule: Boolean(form.request),
+                confirm: form.create.isSuccess
+              }}
+            />
           </div>
-          <BookingStepper
-            done={{
-              patient: Boolean(form.recipientId),
-              provider: Boolean(form.centerId),
-              services: selectedCount > 0 && form.plansChosen,
-              schedule: Boolean(form.request),
-              confirm: form.create.isSuccess
-            }}
-          />
         </div>
       </section>
 
-      <div className='-mt-6 mb-16 w-full'>
-        <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-          {noProvider ? (
-            <section className='flex flex-col items-center gap-4 rounded-2xl bg-white px-6 py-12 text-center shadow-sm'>
-              <Icon className='text-5xl text-primary' name='person_search' />
-              <h2 className='text-xl font-bold text-on-surface'>{t('customer.booking.start.title')}</h2>
-              <p className='max-w-lg text-sm leading-6 text-on-surface-variant'>
-                {t('customer.booking.start.description')}
-              </p>
-              <div className='flex flex-wrap justify-center gap-3'>
-                <Link
-                  className='rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-on-primary hover:bg-primary-container'
-                  to='/customer/caregivers'
-                >
-                  {t('customer.booking.start.caregivers')}
-                </Link>
-                <Link
-                  className='rounded-lg bg-surface-container px-5 py-3 text-sm font-semibold text-primary hover:bg-surface-container-high'
-                  to='/customer/services'
-                >
-                  {t('customer.booking.start.services')}
-                </Link>
-              </div>
-            </section>
-          ) : (
-            <div className='grid grid-cols-1 items-start gap-8 lg:grid-cols-12'>
-              <div className='flex flex-col gap-6 lg:col-span-8'>
-                <BookingPatientSection form={form} />
-                <BookingProviderSection form={form} />
-                <BookingServicesSection form={form} />
-                <BookingScheduleSection form={form} />
-              </div>
-              <div className='lg:col-span-4'>
-                <BookingSummarySidebar form={form} />
-              </div>
-            </div>
-          )}
+      <div className='mx-auto w-full max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12 lg:py-12'>
+        <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8'>
+          <div className='flex min-w-0 flex-col gap-6'>
+            <BookingPatientSection form={form} />
+            <BookingProviderSection form={form} />
+            <BookingServicesSection form={form} />
+            <BookingScheduleSection form={form} />
+          </div>
+          <BookingSummarySidebar form={form} />
         </div>
       </div>
     </div>

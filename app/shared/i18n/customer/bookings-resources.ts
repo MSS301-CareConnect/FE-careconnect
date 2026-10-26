@@ -3,7 +3,6 @@ export const bookingsEn = {
   title: 'My bookings',
   subtitle: 'Track every care request from center review to the last visit.',
   subtitleCount: '{{count}} bookings. Track each request from center review to the last visit.',
-  newBooking: 'Book home care',
   filters: {
     label: 'Filter bookings',
     status: 'Booking status',
@@ -35,7 +34,7 @@ export const bookingsEn = {
   },
   empty: {
     title: 'No bookings yet',
-    description: 'Choose a caregiver or a service, then send your first booking request.',
+    description: 'Bookings you send appear here so you can follow each one.',
     filteredTitle: 'No booking matches',
     filteredDescription: 'Try another status or booking code.'
   },
@@ -94,7 +93,6 @@ export const bookingsVi = {
   title: 'Lịch đặt của tôi',
   subtitle: 'Theo dõi từng yêu cầu chăm sóc từ lúc trung tâm duyệt tới buổi cuối cùng.',
   subtitleCount: '{{count}} lịch đặt. Theo dõi từng yêu cầu từ lúc trung tâm duyệt tới buổi cuối cùng.',
-  newBooking: 'Đặt lịch chăm sóc',
   filters: {
     label: 'Lọc lịch đặt',
     status: 'Trạng thái lịch đặt',
@@ -126,7 +124,7 @@ export const bookingsVi = {
   },
   empty: {
     title: 'Chưa có lịch đặt nào',
-    description: 'Chọn người chăm sóc hoặc dịch vụ, rồi gửi yêu cầu đặt lịch đầu tiên.',
+    description: 'Các lịch đặt bạn gửi sẽ hiện ở đây để bạn theo dõi từng lịch.',
     filteredTitle: 'Không có lịch đặt phù hợp',
     filteredDescription: 'Thử trạng thái hoặc mã booking khác.'
   },

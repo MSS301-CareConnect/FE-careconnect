@@ -6,6 +6,8 @@ import { formatMoney } from '~/entities/booking/booking-format'
 import { careCatalogKeys, fetchPricePlans } from '~/entities/care-catalog/care-catalog-api'
 import type { BookingServiceRequest, CenterOfferingRecord } from '~/shared/api/generated/contracts'
 
+import { bookingField, bookingOption } from './booking-panel'
+
 export interface BookingServiceOptionProps {
   offering: CenterOfferingRecord
   selection?: BookingServiceRequest
@@ -34,22 +36,20 @@ export function BookingServiceOption({
   })
 
   return (
-    <li
-      className={`rounded-xl p-4 ${selected ? 'bg-secondary-container/60 ring-2 ring-primary' : 'bg-surface-container-low'}`}
-    >
+    <li className={`p-4 sm:p-5 ${bookingOption(selected)}`}>
       <label className='flex cursor-pointer items-start gap-3'>
-        <input checked={selected} className='mt-1 h-4 w-4 accent-primary' onChange={onToggle} type='checkbox' />
+        <input checked={selected} className='mt-1 h-4 w-4 accent-[#075b31]' onChange={onToggle} type='checkbox' />
         <span className='min-w-0 flex-1'>
           <span className='flex flex-wrap items-center gap-2'>
-            <span className='font-semibold text-on-surface'>{offering.catalogItem.name}</span>
+            <span className='font-bold text-[#1b2922]'>{offering.catalogItem.name}</span>
             {highlighted ? (
-              <span className='rounded-md bg-white px-2 py-0.5 text-xs font-semibold text-primary'>
+              <span className='rounded-md bg-[#e8f0e8] px-2 py-0.5 text-xs font-bold text-[#075b31]'>
                 {t('customer.booking.services.fromServices')}
               </span>
             ) : null}
           </span>
           {offering.description || offering.catalogItem.description ? (
-            <span className='mt-1 block text-sm text-on-surface-variant'>
+            <span className='mt-1 block text-sm leading-6 text-[#5e7063]'>
               {offering.description ?? offering.catalogItem.description}
             </span>
           ) : null}
@@ -58,25 +58,25 @@ export function BookingServiceOption({
       {selected ? (
         <div className='mt-3 pl-7'>
           {plans.isPending ? (
-            <p className='text-sm text-on-surface-variant' role='status'>
+            <p className='text-sm text-[#637469]' role='status'>
               {t('customer.booking.services.plansLoading')}
             </p>
           ) : null}
           {plans.isError ? (
-            <p className='text-sm text-error' role='alert'>
+            <p className='text-sm text-[#ba1a1a]' role='alert'>
               {t('customer.booking.services.plansError')}
             </p>
           ) : null}
           {plans.isSuccess && plans.data.length === 0 ? (
-            <p className='text-sm text-on-surface-variant'>{t('customer.booking.services.plansEmpty')}</p>
+            <p className='text-sm text-[#637469]'>{t('customer.booking.services.plansEmpty')}</p>
           ) : null}
           {plans.isSuccess && plans.data.length > 0 ? (
             <>
-              <label className='text-xs font-semibold text-on-surface-variant' htmlFor={planId}>
+              <label className='text-sm font-semibold text-[#1b2922]' htmlFor={planId}>
                 {t('customer.booking.services.plan')}
               </label>
               <select
-                className='mt-1 w-full rounded-lg border border-outline-variant/60 bg-white p-2.5 text-sm focus:border-primary focus:outline-none'
+                className={`${bookingField} bg-white`}
                 id={planId}
                 onChange={(event) => onChoosePlan(event.target.value)}
                 value={selection?.pricePlanId ?? ''}

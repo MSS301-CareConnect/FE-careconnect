@@ -65,10 +65,10 @@ describe('CustomerLayout', () => {
 
     expect(screen.getAllByText('CareConnect')[0]).toBeInTheDocument()
     expect(within(screen.getByRole('banner')).getByText('Tìm người chăm sóc')).toBeInTheDocument()
-    expect(screen.getByText('Lịch đặt của tôi')).toBeInTheDocument()
+    // Booking history lives in the avatar menu, not in the header navigation.
+    expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
     expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Hồ sơ người thân' })).toBeInTheDocument()
     expect(screen.getByText('Customer Content')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Lịch đặt của tôi' })).toHaveAttribute('href', '/customer/bookings')
     expect(within(screen.getByRole('banner')).getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute(
       'href',
       '/customer/services'
@@ -111,6 +111,10 @@ describe('CustomerLayout', () => {
     )
     const familyProfiles = within(accountMenu).getByRole('link', { name: 'Hồ sơ người thân' })
     expect(familyProfiles).toHaveAttribute('href', '/customer/patient-profiles')
+    const bookings = within(accountMenu).getByRole('link', { name: 'Lịch đặt của tôi' })
+    expect(bookings).toHaveAttribute('href', '/customer/bookings')
+    // The booking history entry sits directly under the family profiles entry.
+    expect(familyProfiles.nextElementSibling).toBe(bookings)
     expect(accountMenu).toContainElement(screen.getByRole('button', { name: 'Đăng xuất' }))
 
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -148,7 +152,7 @@ describe('CustomerLayout', () => {
     expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
   })
 
-  it('opens the customer menu with a bookings link on small screens', () => {
+  it('opens the customer menu without the booking history link on small screens', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
@@ -169,9 +173,11 @@ describe('CustomerLayout', () => {
     fireEvent.click(menuButton)
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('navigation', { name: 'Menu khách hàng' })).toContainElement(
-      screen.getAllByRole('link', { name: 'Lịch đặt của tôi' })[1]
-    )
+    expect(
+      within(screen.getByRole('navigation', { name: 'Menu khách hàng' })).queryByRole('link', {
+        name: 'Lịch đặt của tôi'
+      })
+    ).not.toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Trang chủ' })[1]).toHaveAttribute('href', '/customer')
     expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
   })

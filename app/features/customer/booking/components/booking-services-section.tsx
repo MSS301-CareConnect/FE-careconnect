@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
-import { SectionCard } from '~/shared/ui/section-card'
-
 import type { useBookingForm } from '../hooks/use-booking-form'
+import { BookingPanel } from './booking-panel'
 import { BookingServiceOption } from './booking-service-option'
 
 type Form = ReturnType<typeof useBookingForm>
@@ -20,29 +19,32 @@ export function BookingServicesSection({ form }: { form: Form }) {
   )
 
   return (
-    <SectionCard
+    <BookingPanel
       action={
-        <span className='text-xs text-on-surface-variant'>
-          {t('customer.booking.services.limit', { count: MAX_SERVICES })}
-        </span>
+        <span className='text-sm text-[#637469]'>{t('customer.booking.services.limit', { count: MAX_SERVICES })}</span>
       }
+      description={t('customer.booking.services.description')}
       icon='medical_services'
+      id='booking-services'
       title={t('customer.booking.services.title')}
     >
-      {offerings.isPending ? (
-        <p className='text-sm text-on-surface-variant' role='status'>
+      {!form.centerId ? (
+        <p className='rounded-xl bg-[#f5f9f4] p-4 text-sm text-[#526a57]'>
+          {t('customer.booking.services.chooseCenter')}
+        </p>
+      ) : null}
+      {form.centerId && offerings.isPending ? (
+        <p className='text-sm text-[#637469]' role='status'>
           {t('customer.booking.services.loading')}
         </p>
       ) : null}
       {offerings.isError ? (
-        <p className='text-sm text-error' role='alert'>
+        <p className='text-sm text-[#ba1a1a]' role='alert'>
           {t('customer.booking.services.error')}
         </p>
       ) : null}
       {offerings.isSuccess && items.length === 0 ? (
-        <p className='rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant'>
-          {t('customer.booking.services.empty')}
-        </p>
+        <p className='rounded-xl bg-[#f5f9f4] p-4 text-sm text-[#526a57]'>{t('customer.booking.services.empty')}</p>
       ) : null}
       {items.length > 0 ? (
         <ul className='flex flex-col gap-3'>
@@ -64,8 +66,8 @@ export function BookingServicesSection({ form }: { form: Form }) {
         </ul>
       ) : null}
       {count > 0 && !form.plansChosen ? (
-        <p className='mt-3 text-sm text-on-surface-variant'>{t('customer.booking.services.planRequired')}</p>
+        <p className='mt-3 text-sm text-[#8a5a00]'>{t('customer.booking.services.planRequired')}</p>
       ) : null}
-    </SectionCard>
+    </BookingPanel>
   )
 }

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -31,13 +30,6 @@ export function CustomerBookingsPage() {
                 : t('customer.myBookings.subtitle')}
             </p>
           </div>
-          <Link
-            className='inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-container md:self-auto'
-            to='/customer/booking'
-          >
-            <Icon className='text-xl' name='add_circle' />
-            {t('customer.myBookings.newBooking')}
-          </Link>
         </div>
 
         <BookingListToolbar key={list.keyword} list={list} />
@@ -80,14 +72,7 @@ export function CustomerBookingsPage() {
               >
                 {t('customer.myBookings.filters.reset')}
               </button>
-            ) : (
-              <Link
-                className='mt-5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white'
-                to='/customer/booking'
-              >
-                {t('customer.myBookings.newBooking')}
-              </Link>
-            )}
+            ) : null}
           </div>
         ) : null}
         {bookings.isSuccess && bookings.data.items.length > 0 ? (
