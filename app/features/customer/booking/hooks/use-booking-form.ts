@@ -128,7 +128,7 @@ export function useBookingForm() {
       return placeBooking(body, idempotency.current.key)
     },
     onSuccess: (booking) => {
-      void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+      void queryClient.invalidateQueries({ queryKey: bookingKeys.lists })
       navigate(`/customer/bookings/${booking.id}`)
     }
   })

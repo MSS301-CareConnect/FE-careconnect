@@ -65,6 +65,7 @@ export function bookingErrorCode(error: unknown): number | undefined {
 
 export const bookingKeys = {
   all: ['booking'] as const,
+  lists: ['booking', 'list'] as const,
   list: (params: ListBookingsParams) => ['booking', 'list', params] as const,
   detail: (id: string) => ['booking', 'detail', id] as const,
   history: (id: string, page: number) => ['booking', 'history', id, page] as const,

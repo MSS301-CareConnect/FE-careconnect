@@ -93,7 +93,9 @@ export function BookingReasonDialog({
               value={reason}
             />
             {minLength > 1 ? (
-              <p className='mt-1 text-xs text-on-surface-variant'>{t('booking.dialog.minLength', { count: minLength })}</p>
+              <p className='mt-1 text-xs text-on-surface-variant'>
+                {t('booking.dialog.minLength', { count: minLength })}
+              </p>
             ) : null}
           </div>
           {error ? (
