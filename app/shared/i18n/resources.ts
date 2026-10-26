@@ -1,4 +1,5 @@
 import { commonEn, commonVi } from './common-resources'
+import { bookingSharedEn, bookingSharedVi } from './booking-resources'
 import { publicHomeEn, publicHomeVi } from './public/home-resources'
 import { authEn, authVi } from './auth/login-resources'
 import { registrationEn, registrationVi } from './auth/registration-resources'
@@ -54,6 +55,7 @@ export const resources = {
   en: {
     translation: {
       ...commonEn,
+      booking: bookingSharedEn,
       home: publicHomeEn,
       auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn },
       customer: {
@@ -114,6 +116,7 @@ export const resources = {
   vi: {
     translation: {
       ...commonVi,
+      booking: bookingSharedVi,
       home: publicHomeVi,
       auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi },
       customer: {
