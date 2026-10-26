@@ -610,6 +610,15 @@ Contract update workflow:
   production API prefix therefore requires a rebuild unless the deployment keeps the
   stable `/api` ingress contract.
 - No token, private key, or service credential belongs in a `VITE_*` variable.
+- `PAYMENT_DEMO_SERVICE_CLIENT_ID/SECRET` are read only by the `pnpm dev` server
+  (`scripts/payment-demo.mjs`). Until PaymentService exists, that server answers the
+  `Payment` tag (`POST /payments/deposits`, `GET /payments/{id}`, contract PAY-05/06)
+  and the dev-only `PaymentDemo` tag; every other `/api/v1/payments/*` request still
+  goes through the proxy to the gateway and `BE/scripts/e2e/payment_stub.py`. A
+  successful demo payment takes a SERVICE token and calls BookingService
+  `deposit-paid`, so the booking becomes CONFIRMED as after a real IPN. Builds never
+  include the demo, and its gateway page is reached only through the returned
+  `paymentUrl`.
 
 ### Testing and debugging
 

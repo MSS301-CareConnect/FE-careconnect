@@ -28,6 +28,10 @@ tags:
   - name: Feedback
   - name: Notification
   - name: Statistics
+  - name: Payment
+    description: PaymentService customer APIs (PAY-05/06); served by the pnpm dev payment demo until PaymentService exists.
+  - name: PaymentDemo
+    description: Development-only demo gateway answered by the pnpm dev server, never by a backend service.
 paths:
   /v1/auth/csrf:
     get:
@@ -5738,6 +5742,113 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/payments/deposits:
+    post:
+      tags:
+        - Payment
+      summary: CUSTOMER opens a deposit payment session for a booking awaiting its deposit
+      operationId: createDepositPayment
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositPaymentRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSessionResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/{id}:
+    get:
+      tags:
+        - Payment
+      summary: CUSTOMER owner reads a payment after returning from the gateway
+      operationId: getPayment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/{id}/demo-results:
+    post:
+      tags:
+        - PaymentDemo
+      summary: Development-only demo gateway result; SUCCESS confirms the booking deposit
+      operationId: submitPaymentDemoResult
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentDemoResultRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
 components:
   responses:
     '400':
@@ -10437,3 +10548,124 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/OperationalStatisticsRecord'
+    PaymentStatus:
+      type: string
+      enum:
+        - PENDING
+        - SUCCESS
+        - FAILED
+        - EXPIRED
+        - PARTIALLY_REFUNDED
+        - REFUNDED
+    DepositPaymentRequest:
+      type: object
+      required:
+        - bookingId
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        bankCode:
+          type: string
+          enum:
+            - VNPAYQR
+            - VNBANK
+            - INTCARD
+        locale:
+          type: string
+          enum:
+            - vn
+            - en
+    PaymentDemoResultRequest:
+      type: object
+      required:
+        - outcome
+      properties:
+        outcome:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILED
+    PaymentSessionRecord:
+      type: object
+      required:
+        - paymentId
+        - bookingId
+        - amount
+        - paymentUrl
+        - expiresAt
+        - status
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        paymentUrl:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+    PaymentRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - type
+        - amount
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - DEPOSIT
+            - REMAINING
+        amount:
+          type: number
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        paidAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        failureReason:
+          type: string
+    PaymentSessionResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentSessionRecord'
+    PaymentResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentRecord'

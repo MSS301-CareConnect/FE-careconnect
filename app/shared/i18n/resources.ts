@@ -1,5 +1,6 @@
 import { commonEn, commonVi } from './common-resources'
 import { bookingSharedEn, bookingSharedVi } from './booking-resources'
+import { paymentSharedEn, paymentSharedVi } from './payment-resources'
 import { publicHomeEn, publicHomeVi } from './public/home-resources'
 import { authEn, authVi } from './auth/login-resources'
 import { registrationEn, registrationVi } from './auth/registration-resources'
@@ -21,6 +22,7 @@ import { bookingEn, bookingVi } from './customer/booking-resources'
 import { bookingDepositEn, bookingDepositVi } from './customer/booking-deposit-resources'
 import { careReportEn, careReportVi } from './customer/care-report-resources'
 import { bookingReviewEn, bookingReviewVi } from './customer/booking-review-resources'
+import { customerPaymentEn, customerPaymentVi } from './customer/payment-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
 import { caregiverDashboardEn, caregiverDashboardVi } from './caregiver/dashboard-resources'
 import { caregiverScheduleEn, caregiverScheduleVi } from './caregiver/schedule-resources'
@@ -58,6 +60,7 @@ export const resources = {
     translation: {
       ...commonEn,
       booking: bookingSharedEn,
+      payment: paymentSharedEn,
       home: publicHomeEn,
       auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn },
       customer: {
@@ -76,7 +79,8 @@ export const resources = {
         booking: bookingEn,
         bookingDeposit: bookingDepositEn,
         careReport: careReportEn,
-        bookingReview: bookingReviewEn
+        bookingReview: bookingReviewEn,
+        payment: customerPaymentEn
       },
       caregiver: {
         ...caregiverLayoutEn,
@@ -121,6 +125,7 @@ export const resources = {
     translation: {
       ...commonVi,
       booking: bookingSharedVi,
+      payment: paymentSharedVi,
       home: publicHomeVi,
       auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi },
       customer: {
@@ -139,7 +144,8 @@ export const resources = {
         booking: bookingVi,
         bookingDeposit: bookingDepositVi,
         careReport: careReportVi,
-        bookingReview: bookingReviewVi
+        bookingReview: bookingReviewVi,
+        payment: customerPaymentVi
       },
       caregiver: {
         ...caregiverLayoutVi,

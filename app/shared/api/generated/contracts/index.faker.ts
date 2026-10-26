@@ -116,6 +116,7 @@ import type {
   CsrfResponse,
   CsrfToken,
   CurrentUserResponse,
+  DepositPaymentRequest,
   EligibleCaregiverListResponse,
   EligibleCaregiverRecord,
   EmergencyContactListResponse,
@@ -152,6 +153,12 @@ import type {
   OverallCondition,
   PasswordResetActionResponse,
   PasswordResetEmailRequest,
+  PaymentDemoResultRequest,
+  PaymentRecord,
+  PaymentResponse,
+  PaymentSessionRecord,
+  PaymentSessionResponse,
+  PaymentStatus,
   PermissionListResponse,
   PermissionRecord,
   PricePlanListResponse,
@@ -2866,5 +2873,67 @@ export const getOperationalStatisticsResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getOperationalStatisticsRecordMock() },
+  ...overrideResponse
+})
+
+export const getPaymentStatusMock = (): PaymentStatus =>
+  faker.helpers.arrayElement(['PENDING', 'SUCCESS', 'FAILED', 'EXPIRED', 'PARTIALLY_REFUNDED', 'REFUNDED'] as const)
+
+export const getDepositPaymentRequestMock = (
+  overrideResponse: Partial<DepositPaymentRequest> = {}
+): DepositPaymentRequest => ({
+  bookingId: faker.string.uuid(),
+  bankCode: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(['VNPAYQR', 'VNBANK', 'INTCARD'] as const),
+    undefined
+  ]),
+  locale: faker.helpers.arrayElement([faker.helpers.arrayElement(['vn', 'en'] as const), undefined]),
+  ...overrideResponse
+})
+
+export const getPaymentDemoResultRequestMock = (
+  overrideResponse: Partial<PaymentDemoResultRequest> = {}
+): PaymentDemoResultRequest => ({
+  outcome: faker.helpers.arrayElement(['SUCCESS', 'FAILED'] as const),
+  ...overrideResponse
+})
+
+export const getPaymentSessionRecordMock = (
+  overrideResponse: Partial<PaymentSessionRecord> = {}
+): PaymentSessionRecord => ({
+  paymentId: faker.string.uuid(),
+  bookingId: faker.string.uuid(),
+  amount: faker.number.float({ fractionDigits: 2 }),
+  paymentUrl: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  expiresAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  status: getPaymentStatusMock(),
+  ...overrideResponse
+})
+
+export const getPaymentRecordMock = (overrideResponse: Partial<PaymentRecord> = {}): PaymentRecord => ({
+  id: faker.string.uuid(),
+  bookingId: faker.string.uuid(),
+  type: faker.helpers.arrayElement(['DEPOSIT', 'REMAINING'] as const),
+  amount: faker.number.float({ fractionDigits: 2 }),
+  status: getPaymentStatusMock(),
+  paidAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  expiresAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  failureReason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  ...overrideResponse
+})
+
+export const getPaymentSessionResponseMock = (
+  overrideResponse: Partial<PaymentSessionResponse> = {}
+): PaymentSessionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPaymentSessionRecordMock() },
+  ...overrideResponse
+})
+
+export const getPaymentResponseMock = (overrideResponse: Partial<PaymentResponse> = {}): PaymentResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPaymentRecordMock() },
   ...overrideResponse
 })

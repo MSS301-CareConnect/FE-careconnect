@@ -12,6 +12,7 @@ export const bookingDetailEn = {
   occurrences: 'Care visits',
   history: 'History',
   refunded: 'Refund: {{refund}}',
+  payDeposit: 'Pay the {{deposit}} deposit',
   summary: {
     schedule: 'Schedule',
     services: 'Services',
@@ -82,6 +83,7 @@ export const bookingDetailVi = {
   occurrences: 'Các buổi chăm sóc',
   history: 'Lịch sử',
   refunded: 'Tiền hoàn: {{refund}}',
+  payDeposit: 'Đặt cọc {{deposit}}',
   summary: {
     schedule: 'Lịch chăm sóc',
     services: 'Dịch vụ',

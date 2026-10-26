@@ -136,6 +136,17 @@ describe('CustomerBookingDetailPage', () => {
     )
   })
 
+  it('offers the deposit payment once the center has accepted the booking', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'AWAITING_DEPOSIT' })
+    renderPage()
+
+    expect(await screen.findByRole('heading', { name: 'Đặt cọc để xác nhận lịch' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Đặt cọc 60\.000/ })).toHaveAttribute(
+      'href',
+      '/customer/bookings/bk-1/deposit'
+    )
+  })
+
   it('shows a not-found state for a booking of another account', async () => {
     vi.mocked(fetchBooking).mockRejectedValue(Object.assign(new Error('missing'), { status: 404 }))
     renderPage()
