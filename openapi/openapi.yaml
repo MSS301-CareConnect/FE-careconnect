@@ -20,6 +20,14 @@ tags:
   - name: CenterOffering
   - name: PricePlan
   - name: CareRecipient
+  - name: Booking
+  - name: BookingOccurrence
+  - name: CareSession
+  - name: CareReport
+  - name: Complaint
+  - name: Feedback
+  - name: Notification
+  - name: Statistics
 paths:
   /v1/auth/csrf:
     get:
@@ -3658,6 +3666,2078 @@ paths:
           description: CareRecipientService error
         '503':
           description: CareRecipientService error
+  /v1/bookings:
+    get:
+      tags:
+        - Booking
+      summary: CUSTOMER sees own bookings; CENTER_MANAGER sees the assigned center; ADMIN sees all
+      operationId: listBookings
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/BookingStatus"
+        - name: recipientId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: customerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: caregiverId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 50
+            minLength: 0
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            description: createdAt|startDate , asc|desc
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingSummaryPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+    post:
+      tags:
+        - Booking
+      summary: CUSTOMER creates a PENDING booking; price comes from CareCatalogService
+      operationId: createBooking
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingCreateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetailResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/quotes:
+    post:
+      tags:
+        - Booking
+      summary: CUSTOMER previews occurrences and price without writing
+      operationId: quoteBooking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingQuoteRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingQuoteResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}:
+    get:
+      tags:
+        - Booking
+      operationId: getBooking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetailResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/history:
+    get:
+      tags:
+        - Booking
+      operationId: listBookingHistory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingHistoryPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/occurrences:
+    get:
+      tags:
+        - Booking
+      operationId: listBookingOccurrences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/OccurrenceStatus"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingOccurrencePageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/cancellation-previews:
+    post:
+      tags:
+        - Booking
+      summary: CUSTOMER previews the refund; previewToken lasts 10 minutes
+      operationId: previewBookingCancellation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancellationPreviewRequest"
+        required: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancellationPreviewResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/cancel:
+    post:
+      tags:
+        - Booking
+      summary: CUSTOMER or CENTER_MANAGER cancels the booking or selected occurrences
+      operationId: cancelBooking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingCancelRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetailResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/accept:
+    post:
+      tags:
+        - Booking
+      summary: CENTER_MANAGER accepts a PENDING booking (AWAITING_DEPOSIT)
+      operationId: acceptBooking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptRequest"
+        required: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetailResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/reject:
+    post:
+      tags:
+        - Booking
+      summary: CENTER_MANAGER rejects a PENDING booking
+      operationId: rejectBooking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetailResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/caregiver:
+    patch:
+      tags:
+        - Booking
+      summary: CENTER_MANAGER changes the caregiver of every upcoming occurrence
+      operationId: updateBookingCaregiver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaregiverAssignRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetailResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/bookings/{id}/occurrences/{occurrenceId}/caregiver:
+    patch:
+      tags:
+        - Booking
+      summary: CENTER_MANAGER changes the caregiver of one occurrence
+      operationId: updateBookingOccurrenceCaregiver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: occurrenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaregiverAssignRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingOccurrenceResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/booking-occurrences:
+    get:
+      tags:
+        - BookingOccurrence
+      summary: CAREGIVER lists assigned occurrences
+      operationId: listMyBookingOccurrences
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/OccurrenceStatus"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaregiverOccurrencePageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/booking-occurrences/{id}:
+    get:
+      tags:
+        - BookingOccurrence
+      operationId: getBookingOccurrence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaregiverOccurrenceResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/booking-occurrences/{id}/acknowledge:
+    post:
+      tags:
+        - BookingOccurrence
+      summary: CAREGIVER acknowledges an assigned occurrence
+      operationId: acknowledgeBookingOccurrence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaregiverOccurrenceResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/booking-occurrences/{id}/no-show-reports:
+    post:
+      tags:
+        - BookingOccurrence
+      summary: CAREGIVER reports a customer no-show inside [start, end + 60m)
+      operationId: reportBookingOccurrenceNoShow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoShowReportRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaregiverOccurrenceResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/booking-occurrences/{id}/no-show-reports/decision:
+    post:
+      tags:
+        - BookingOccurrence
+      summary: CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (MISSED) a no-show report
+      operationId: decideBookingOccurrenceNoShow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoShowDecisionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaregiverOccurrenceResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions:
+    post:
+      tags:
+        - CareSession
+      summary: CAREGIVER checks in from 30 minutes before the occurrence start
+      operationId: startCareSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareSessionStartRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareSessionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions/{id}:
+    get:
+      tags:
+        - CareSession
+      operationId: getCareSession
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareSessionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions/{id}/end:
+    post:
+      tags:
+        - CareSession
+      summary: CAREGIVER checks out once no task is PENDING
+      operationId: endCareSession
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareSessionEndRequest"
+        required: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareSessionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions/{id}/force-end:
+    post:
+      tags:
+        - CareSession
+      summary: CENTER_MANAGER ends a session; PENDING tasks become SKIPPED
+      operationId: forceEndCareSession
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareSessionForceEndRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareSessionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions/{id}/tasks:
+    post:
+      tags:
+        - CareSession
+      operationId: createCareSessionTask
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareTaskCreateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareTaskResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions/{id}/tasks/{taskId}:
+    patch:
+      tags:
+        - CareSession
+      operationId: updateCareSessionTask
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareTaskUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareTaskResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-sessions/{id}/notes:
+    get:
+      tags:
+        - CareSession
+      operationId: listCareSessionNotes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionNotePageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+    post:
+      tags:
+        - CareSession
+      operationId: createCareSessionNote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionNoteRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionNoteResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-reports:
+    get:
+      tags:
+        - CareReport
+      operationId: listCareReports
+      parameters:
+        - name: bookingId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareReportPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+    post:
+      tags:
+        - CareReport
+      operationId: createCareReport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareReportRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareReportResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-reports/{id}:
+    get:
+      tags:
+        - CareReport
+      operationId: getCareReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareReportResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+    put:
+      tags:
+        - CareReport
+      operationId: updateCareReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareReportRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareReportResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-reports/{id}/submit:
+    post:
+      tags:
+        - CareReport
+      operationId: submitCareReport
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareReportResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-reports/{id}/photos:
+    post:
+      tags:
+        - CareReport
+      operationId: addCareReportPhotos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CareReportPhotoUploadRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareReportResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/care-reports/{id}/photos/{mediaFileId}:
+    delete:
+      tags:
+        - CareReport
+      operationId: deleteCareReportPhoto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: mediaFileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyActionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/complaints:
+    get:
+      tags:
+        - Complaint
+      operationId: listComplaints
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/ComplaintStatus"
+        - name: level
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/ComplaintLevel"
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+    post:
+      tags:
+        - Complaint
+      operationId: createComplaint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/complaints/{id}:
+    get:
+      tags:
+        - Complaint
+      operationId: getComplaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/complaints/{id}/escalate:
+    post:
+      tags:
+        - Complaint
+      operationId: escalateComplaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintEscalateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/complaints/{id}/accept:
+    patch:
+      tags:
+        - Complaint
+      operationId: acceptComplaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/complaints/{id}/resolve:
+    patch:
+      tags:
+        - Complaint
+      operationId: resolveComplaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintResolutionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/complaints/{id}/admin-resolve:
+    patch:
+      tags:
+        - Complaint
+      operationId: adminResolveComplaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintAdminResolutionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/feedbacks:
+    get:
+      tags:
+        - Feedback
+      operationId: listFeedbacks
+      parameters:
+        - name: caregiverId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: rating
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+    post:
+      tags:
+        - Feedback
+      operationId: createFeedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/feedbacks/me:
+    get:
+      tags:
+        - Feedback
+      operationId: listMyFeedbacks
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/feedbacks/eligible:
+    get:
+      tags:
+        - Feedback
+      operationId: listEligibleFeedbackCaregivers
+      parameters:
+        - name: bookingId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EligibleCaregiverListResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/feedbacks/{id}/reply:
+    post:
+      tags:
+        - Feedback
+      operationId: replyFeedback
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackReplyRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/feedbacks/{id}/visibility:
+    patch:
+      tags:
+        - Feedback
+      operationId: updateFeedbackVisibility
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackVisibilityRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/notifications:
+    get:
+      tags:
+        - Notification
+      operationId: listNotifications
+      parameters:
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/NotificationType"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPageResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/notifications/unread-count:
+    get:
+      tags:
+        - Notification
+      operationId: getUnreadNotificationCount
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadCountResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/notifications/{id}/read:
+    patch:
+      tags:
+        - Notification
+      operationId: markNotificationRead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyActionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/notifications/read-all:
+    patch:
+      tags:
+        - Notification
+      operationId: markAllNotificationsRead
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyActionResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/statistics/centers:
+    get:
+      tags:
+        - Statistics
+      operationId: getCenterStatistics
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationalStatisticsResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
+  /v1/statistics/system:
+    get:
+      tags:
+        - Statistics
+      operationId: getSystemStatistics
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationalStatisticsResponse"
+        "400":
+          description: BookingService error
+        "401":
+          description: BookingService error
+        "403":
+          description: BookingService error
+        "404":
+          description: BookingService error
+        "409":
+          description: BookingService error
+        "500":
+          description: BookingService error
+        "503":
+          description: BookingService error
 components:
   responses:
     '400':
@@ -6323,3 +8403,2037 @@ components:
           minItems: 0
       required:
         - recipientIds
+    BookingStatus:
+      type: string
+      enum:
+        - PENDING
+        - AWAITING_DEPOSIT
+        - CONFIRMED
+        - IN_PROGRESS
+        - COMPLETED
+        - REJECTED
+        - CANCELLED
+        - EXPIRED
+    OccurrenceStatus:
+      type: string
+      enum:
+        - SCHEDULED
+        - ACKNOWLEDGED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+        - MISSED
+        - CUSTOMER_NO_SHOW
+    BookingScheduleType:
+      type: string
+      enum:
+        - ONE_TIME
+        - DAILY
+        - WEEKLY
+    BookingUnitType:
+      type: string
+      enum:
+        - HOUR
+        - DAY
+        - SHIFT
+    CareTaskStatus:
+      type: string
+      enum:
+        - PENDING
+        - DONE
+        - SKIPPED
+    OverallCondition:
+      type: string
+      enum:
+        - STABLE
+        - IMPROVED
+        - DECLINED
+        - NEEDS_ATTENTION
+    ComplaintStatus:
+      type: string
+      enum:
+        - OPEN
+        - IN_PROGRESS
+        - RESOLVED
+        - ESCALATED
+        - RESOLVED_BY_ADMIN
+    ComplaintLevel:
+      type: string
+      enum:
+        - CENTER
+        - ADMIN
+    ComplaintCategory:
+      type: string
+      enum:
+        - QUALITY
+        - ATTITUDE
+        - LATE
+        - SAFETY
+        - BILLING
+        - OTHER
+    ComplaintTargetType:
+      type: string
+      enum:
+        - CAREGIVER_SERVICE
+        - CENTER
+    NotificationType:
+      type: string
+      enum:
+        - BOOKING_CREATED
+        - BOOKING_ACCEPTED
+        - BOOKING_REJECTED
+        - BOOKING_CONFIRMED
+        - BOOKING_CANCELLED
+        - OCCURRENCE_CANCELLED
+        - CAREGIVER_ASSIGNED
+        - CAREGIVER_UNASSIGNED
+        - SESSION_STARTED
+        - SESSION_ENDED
+        - REPORT_SUBMITTED
+        - OCCURRENCE_MISSED
+        - NO_SHOW_REPORTED
+        - BOOKING_COMPLETED
+        - PAYMENT_SUCCEEDED
+        - REFUND_COMPLETED
+        - REMAINING_DUE
+        - REMAINING_OVERDUE
+        - COMPLAINT_UPDATED
+        - REVIEW_CREATED
+        - REVIEW_REPLIED
+        - SETTLEMENT_UPDATED
+        - CENTER_ACTIVATED
+        - SHIFT_REMINDER
+    BookingServiceRequest:
+      type: object
+      required:
+        - careServiceId
+        - pricePlanId
+      properties:
+        careServiceId:
+          type: string
+          format: uuid
+        centerServiceId:
+          type: string
+          format: uuid
+        pricePlanId:
+          type: string
+          format: uuid
+    BookingCreateRequest:
+      type: object
+      required:
+        - centerId
+        - endTime
+        - recipientId
+        - scheduleType
+        - services
+        - startDate
+        - startTime
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        scheduleType:
+          $ref: "#/components/schemas/BookingScheduleType"
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          description: Local time HH:mm
+        endTime:
+          type: string
+          description: Local time HH:mm
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: 1 = Monday … 7 = Sunday (WEEKLY)
+        customerNote:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingServiceRequest"
+          maxItems: 10
+          minItems: 0
+    BookingQuoteRequest:
+      type: object
+      required:
+        - centerId
+        - endTime
+        - scheduleType
+        - services
+        - startDate
+        - startTime
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        scheduleType:
+          $ref: "#/components/schemas/BookingScheduleType"
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+        customerNote:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingServiceRequest"
+          maxItems: 10
+          minItems: 0
+    ReasonRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 0
+    CancellationPreviewRequest:
+      type: object
+      properties:
+        occurrenceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 500
+          minItems: 0
+    BookingCancelRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        occurrenceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 500
+          minItems: 0
+        previewToken:
+          type: string
+          maxLength: 200
+          minLength: 0
+    AcceptRequest:
+      type: object
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+    CaregiverAssignRequest:
+      type: object
+      required:
+        - caregiverId
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+    NoShowReportRequest:
+      type: object
+      required:
+        - note
+      properties:
+        note:
+          type: string
+          maxLength: 1000
+          minLength: 10
+    NoShowDecisionRequest:
+      type: object
+      required:
+        - approved
+      properties:
+        approved:
+          type: boolean
+        note:
+          type: string
+          maxLength: 1000
+          minLength: 0
+    CareSessionStartRequest:
+      type: object
+      required:
+        - occurrenceId
+      properties:
+        occurrenceId:
+          type: string
+          format: uuid
+        latitude:
+          type: number
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          maximum: 180
+          minimum: -180
+    CareSessionEndRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          maximum: 180
+          minimum: -180
+    CareSessionForceEndRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 0
+    CareTaskCreateRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          minLength: 0
+    CareTaskUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: "#/components/schemas/CareTaskStatus"
+        note:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        skipReason:
+          type: string
+          maxLength: 500
+          minLength: 0
+    SessionVitals:
+      type: object
+      properties:
+        systolic:
+          type: integer
+          minimum: 0
+        diastolic:
+          type: integer
+          minimum: 0
+        heartRate:
+          type: integer
+          minimum: 0
+        temperature:
+          type: number
+          maximum: 45
+          minimum: 30
+        spo2:
+          type: integer
+          maximum: 100
+          minimum: 0
+        bloodGlucose:
+          type: number
+          minimum: 0
+    SessionNoteRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        vitals:
+          $ref: "#/components/schemas/SessionVitals"
+    CareReportRequest:
+      type: object
+      required:
+        - overallCondition
+        - sessionId
+        - summary
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        overallCondition:
+          $ref: "#/components/schemas/OverallCondition"
+        summary:
+          type: string
+          maxLength: 4000
+          minLength: 0
+        mealNotes:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        medicationNotes:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        mobilityNotes:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        moodNotes:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        recommendations:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        version:
+          type: integer
+    CareReportPhotoUploadRequest:
+      type: object
+      required:
+        - files
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+    ComplaintRequest:
+      type: object
+      required:
+        - bookingId
+        - category
+        - content
+        - targetType
+        - title
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        occurrenceId:
+          type: string
+          format: uuid
+        targetType:
+          $ref: "#/components/schemas/ComplaintTargetType"
+        category:
+          $ref: "#/components/schemas/ComplaintCategory"
+        title:
+          type: string
+          maxLength: 200
+          minLength: 0
+        content:
+          type: string
+          maxLength: 4000
+          minLength: 0
+    ComplaintEscalateRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 0
+    ComplaintResolutionRequest:
+      type: object
+      required:
+        - resolution
+      properties:
+        resolution:
+          type: string
+          maxLength: 4000
+          minLength: 0
+    ComplaintAdminResolutionRequest:
+      type: object
+      required:
+        - resolution
+      properties:
+        resolution:
+          type: string
+          maxLength: 4000
+          minLength: 0
+        refundAmount:
+          type: number
+          minimum: 0
+    FeedbackRequest:
+      type: object
+      required:
+        - bookingId
+        - caregiverId
+        - rating
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          maxLength: 2000
+          minLength: 0
+    FeedbackReplyRequest:
+      type: object
+      required:
+        - reply
+      properties:
+        reply:
+          type: string
+          maxLength: 1000
+          minLength: 0
+    FeedbackVisibilityRequest:
+      type: object
+      required:
+        - visible
+      properties:
+        visible:
+          type: boolean
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 0
+    BookingCustomerRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+    BookingItemRecord:
+      type: object
+      required:
+        - id
+        - careServiceId
+      properties:
+        id:
+          type: string
+          format: uuid
+        careServiceId:
+          type: string
+          format: uuid
+        centerServiceId:
+          type: string
+          format: uuid
+        pricePlanId:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        unitType:
+          $ref: "#/components/schemas/BookingUnitType"
+        unitPrice:
+          type: number
+        quantity:
+          type: integer
+        unitsPerOccurrence:
+          type: integer
+        totalPrice:
+          type: number
+    BookingOccurrenceRecord:
+      type: object
+      required:
+        - id
+        - occurrenceNo
+        - startAt
+        - endAt
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurrenceNo:
+          type: integer
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        priceAmount:
+          type: number
+        actualStartAt:
+          type: string
+          format: date-time
+        actualEndAt:
+          type: string
+          format: date-time
+        caregiverId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/OccurrenceStatus"
+        cancelReason:
+          type: string
+        cancelledAt:
+          type: string
+          format: date-time
+        cancelledByParty:
+          type: string
+          enum:
+            - CUSTOMER
+            - CENTER
+            - SYSTEM
+            - ADMIN
+        needsReassignment:
+          type: boolean
+        note:
+          type: string
+    BookingRefundRecord:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum:
+            - CUSTOMER_CANCEL
+            - CENTER_REJECT
+            - CENTER_CANCEL
+            - CENTER_LOCKED
+            - CAREGIVER_MISSED
+            - EXPIRED
+            - COMPLAINT_ACCEPTED
+            - LATE_PAYMENT
+            - BOOKING_NOT_CONFIRMABLE
+        occurrenceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        totalRefund:
+          type: number
+    BookingSnapshotMedicationRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        medicationName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        timeOfDay:
+          type: array
+          items:
+            type: string
+        route:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        usageNotes:
+          type: string
+    BookingSnapshotEmergencyContactRecord:
+      type: object
+      properties:
+        fullName:
+          type: string
+        relationship:
+          type: string
+        phoneNumber:
+          type: string
+    BookingRecipientSnapshotRecord:
+      type: object
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        age:
+          type: integer
+        gender:
+          type: string
+        phoneNumber:
+          type: string
+        addressLine:
+          type: string
+        ward:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        bloodType:
+          type: string
+        mobilityLevel:
+          type: string
+        independenceLevel:
+          type: string
+        allergies:
+          type: string
+        chronicConditions:
+          type: string
+        dietaryNotes:
+          type: string
+        behaviorNotes:
+          type: string
+        careRequirements:
+          type: string
+        status:
+          type: string
+        activeMedications:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingSnapshotMedicationRecord"
+        primaryEmergencyContact:
+          $ref: "#/components/schemas/BookingSnapshotEmergencyContactRecord"
+        snapshotAt:
+          type: string
+          format: date-time
+    BookingDetailRecord:
+      type: object
+      required:
+        - id
+        - bookingCode
+        - status
+        - recipientId
+        - centerId
+        - scheduleType
+        - startDate
+        - startTime
+        - endTime
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingCode:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        customerId:
+          type: string
+          format: uuid
+        customer:
+          $ref: "#/components/schemas/BookingCustomerRecord"
+        recipientId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        caregiverUserId:
+          type: string
+          format: uuid
+        scheduleType:
+          $ref: "#/components/schemas/BookingScheduleType"
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+        timezone:
+          type: string
+        recipientSnapshot:
+          $ref: "#/components/schemas/BookingRecipientSnapshotRecord"
+        serviceAddress:
+          type: string
+        customerNote:
+          type: string
+        subtotal:
+          type: number
+        depositAmount:
+          type: number
+        totalAmount:
+          type: number
+        acceptanceDueAt:
+          type: string
+          format: date-time
+        acceptedAt:
+          type: string
+          format: date-time
+        depositDueAt:
+          type: string
+          format: date-time
+        confirmedAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        cancelledAt:
+          type: string
+          format: date-time
+        cancelledBy:
+          type: string
+          format: uuid
+        cancelReason:
+          type: string
+        rejectedAt:
+          type: string
+          format: date-time
+        rejectedReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingItemRecord"
+        occurrences:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingOccurrenceRecord"
+        refund:
+          $ref: "#/components/schemas/BookingRefundRecord"
+    BookingSummaryRecord:
+      type: object
+      required:
+        - id
+        - bookingCode
+        - status
+        - scheduleType
+        - startDate
+        - startTime
+        - endTime
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingCode:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        customerId:
+          type: string
+          format: uuid
+        customer:
+          $ref: "#/components/schemas/BookingCustomerRecord"
+        recipientId:
+          type: string
+          format: uuid
+        recipientName:
+          type: string
+        centerId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        scheduleType:
+          $ref: "#/components/schemas/BookingScheduleType"
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+        totalAmount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        nextOccurrenceAt:
+          type: string
+          format: date-time
+        completedCount:
+          type: integer
+        totalCount:
+          type: integer
+    BookingHistoryRecord:
+      type: object
+      required:
+        - eventType
+        - changedAt
+      properties:
+        eventType:
+          type: string
+        occurrenceId:
+          type: string
+          format: uuid
+        fromStatus:
+          type: string
+        toStatus:
+          type: string
+        oldCaregiverId:
+          type: string
+          format: uuid
+        newCaregiverId:
+          type: string
+          format: uuid
+        changedBy:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        changedAt:
+          type: string
+          format: date-time
+    BookingQuoteLineRecord:
+      type: object
+      properties:
+        careServiceId:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        pricingUnit:
+          $ref: "#/components/schemas/BookingUnitType"
+        unitPrice:
+          type: number
+        unitsPerOccurrence:
+          type: integer
+        occurrenceCount:
+          type: integer
+        lineTotal:
+          type: number
+    BookingQuoteOccurrenceRecord:
+      type: object
+      properties:
+        occurrenceNo:
+          type: integer
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        priceAmount:
+          type: number
+    BookingQuoteRecord:
+      type: object
+      required:
+        - lines
+        - occurrences
+        - totalAmount
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingQuoteLineRecord"
+        occurrences:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingQuoteOccurrenceRecord"
+        totalAmount:
+          type: number
+        depositPercent:
+          type: number
+        estimatedDepositAmount:
+          type: number
+        policyId:
+          type: string
+          format: uuid
+    CancellationPreviewItemRecord:
+      type: object
+      properties:
+        occurrenceId:
+          type: string
+          format: uuid
+        startAt:
+          type: string
+          format: date-time
+        priceAmount:
+          type: number
+        paidAmount:
+          type: number
+        feeAmount:
+          type: number
+        refundAmount:
+          type: number
+        rule:
+          type: string
+    CancellationPreviewRecord:
+      type: object
+      required:
+        - items
+        - previewToken
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CancellationPreviewItemRecord"
+        totalRefund:
+          type: number
+        totalFee:
+          type: number
+        previewToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    OccurrenceServiceRecord:
+      type: object
+      properties:
+        careServiceId:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        unitType:
+          $ref: "#/components/schemas/BookingUnitType"
+    SpecialNotesRecord:
+      type: object
+      properties:
+        allergies:
+          type: string
+        chronicConditions:
+          type: string
+        dietaryNotes:
+          type: string
+        behaviorNotes:
+          type: string
+        careRequirements:
+          type: string
+    CaregiverOccurrenceRecord:
+      type: object
+      required:
+        - id
+        - occurrenceNo
+        - startAt
+        - endAt
+        - status
+        - bookingId
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurrenceNo:
+          type: integer
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        status:
+          $ref: "#/components/schemas/OccurrenceStatus"
+        caregiverId:
+          type: string
+          format: uuid
+        caregiverUserId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        bookingCode:
+          type: string
+        bookingStatus:
+          $ref: "#/components/schemas/BookingStatus"
+        centerId:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        recipientName:
+          type: string
+        serviceAddress:
+          type: string
+        customerNote:
+          type: string
+        acknowledgedAt:
+          type: string
+          format: date-time
+        missedReason:
+          type: string
+          enum:
+            - CAREGIVER
+        noShowReportedAt:
+          type: string
+          format: date-time
+        noShowNote:
+          type: string
+        noShowDecidedAt:
+          type: string
+          format: date-time
+        recipientSnapshot:
+          $ref: "#/components/schemas/BookingRecipientSnapshotRecord"
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/OccurrenceServiceRecord"
+        specialNotes:
+          $ref: "#/components/schemas/SpecialNotesRecord"
+        customerPhone:
+          type: string
+        sessionId:
+          type: string
+          format: uuid
+        reportStatus:
+          type: string
+    CareTaskRecord:
+      type: object
+      required:
+        - id
+        - taskType
+        - title
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskType:
+          type: string
+          enum:
+            - SERVICE
+            - MEDICATION
+            - CUSTOM
+        title:
+          type: string
+        careServiceId:
+          type: string
+          format: uuid
+        scheduledTime:
+          type: string
+        status:
+          $ref: "#/components/schemas/CareTaskStatus"
+        skipReason:
+          type: string
+        note:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+        sortOrder:
+          type: integer
+    CareSessionRecord:
+      type: object
+      required:
+        - sessionId
+        - occurrenceId
+        - status
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        occurrenceId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - IN_PROGRESS
+            - ENDED
+        checkInAt:
+          type: string
+          format: date-time
+        checkOutAt:
+          type: string
+          format: date-time
+        endedBy:
+          type: string
+          format: uuid
+        endReason:
+          type: string
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareTaskRecord"
+    SessionNoteRecord:
+      type: object
+      required:
+        - id
+        - content
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        vitals:
+          $ref: "#/components/schemas/SessionVitals"
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    ReportPhotoRecord:
+      type: object
+      properties:
+        mediaFileId:
+          type: string
+          format: uuid
+        displayOrder:
+          type: integer
+        downloadUrl:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    CareReportRecord:
+      type: object
+      required:
+        - id
+        - sessionId
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        occurrenceId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        caregiverUserId:
+          type: string
+          format: uuid
+        overallCondition:
+          $ref: "#/components/schemas/OverallCondition"
+        summary:
+          type: string
+        mealNotes:
+          type: string
+        medicationNotes:
+          type: string
+        mobilityNotes:
+          type: string
+        moodNotes:
+          type: string
+        recommendations:
+          type: string
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SUBMITTED
+        submittedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportPhotoRecord"
+    ComplaintEventRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        actorId:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum:
+            - CREATED
+            - ACCEPT
+            - RESOLVE
+            - ESCALATE
+            - ADMIN_RESOLVE
+        fromStatus:
+          $ref: "#/components/schemas/ComplaintStatus"
+        toStatus:
+          $ref: "#/components/schemas/ComplaintStatus"
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ComplaintRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        complaintCode:
+          type: string
+        bookingId:
+          type: string
+          format: uuid
+        occurrenceId:
+          type: string
+          format: uuid
+        customerId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        targetType:
+          $ref: "#/components/schemas/ComplaintTargetType"
+        category:
+          $ref: "#/components/schemas/ComplaintCategory"
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          $ref: "#/components/schemas/ComplaintStatus"
+        level:
+          $ref: "#/components/schemas/ComplaintLevel"
+        resolution:
+          type: string
+        resolvedBy:
+          type: string
+          format: uuid
+        resolvedAt:
+          type: string
+          format: date-time
+        escalatedAt:
+          type: string
+          format: date-time
+        escalateReason:
+          type: string
+        refundAmount:
+          type: number
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComplaintEventRecord"
+    FeedbackRecord:
+      type: object
+      required:
+        - id
+        - rating
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        customerDisplayName:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: string
+        reply:
+          type: string
+        repliedAt:
+          type: string
+          format: date-time
+        visibility:
+          type: string
+          enum:
+            - VISIBLE
+            - HIDDEN
+        createdAt:
+          type: string
+          format: date-time
+    EligibleCaregiverRecord:
+      type: object
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        caregiverUserId:
+          type: string
+          format: uuid
+    NotificationRecord:
+      type: object
+      required:
+        - id
+        - type
+        - title
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/NotificationType"
+        title:
+          type: string
+        body:
+          type: string
+        refType:
+          type: string
+        refId:
+          type: string
+          format: uuid
+        readAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    UnreadCountRecord:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+    OccurrenceStatisticsRecord:
+      type: object
+      properties:
+        completed:
+          type: integer
+        cancelled:
+          type: integer
+        missed:
+          type: integer
+        customerNoShow:
+          type: integer
+    ComplaintStatisticsRecord:
+      type: object
+      properties:
+        open:
+          type: integer
+        inProgress:
+          type: integer
+        resolved:
+          type: integer
+        escalated:
+          type: integer
+    TopCaregiverRecord:
+      type: object
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        avgRating:
+          type: number
+    CenterOperationalStatsRecord:
+      type: object
+      properties:
+        centerId:
+          type: string
+          format: uuid
+        statistics:
+          $ref: "#/components/schemas/OperationalStatisticsRecord"
+    BookingSummaryPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingSummaryRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    BookingHistoryPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingHistoryRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    BookingOccurrencePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingOccurrenceRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    CaregiverOccurrencePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CaregiverOccurrenceRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    SessionNotePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionNoteRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    CareReportPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareReportRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ComplaintPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComplaintRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    FeedbackPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedbackRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    NotificationPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotificationRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    CenterOperationalStatsPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CenterOperationalStatsRecord"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    OperationalStatisticsRecord:
+      type: object
+      properties:
+        bookingsByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+        occurrences:
+          $ref: "#/components/schemas/OccurrenceStatisticsRecord"
+        avgRating:
+          type: number
+        complaints:
+          $ref: "#/components/schemas/ComplaintStatisticsRecord"
+        topCaregivers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopCaregiverRecord"
+        byCenter:
+          $ref: "#/components/schemas/CenterOperationalStatsPage"
+    BookingDetailResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/BookingDetailRecord"
+    BookingSummaryPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/BookingSummaryPage"
+    BookingHistoryPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/BookingHistoryPage"
+    BookingOccurrencePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/BookingOccurrencePage"
+    BookingOccurrenceResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/BookingOccurrenceRecord"
+    BookingQuoteResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/BookingQuoteRecord"
+    CancellationPreviewResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CancellationPreviewRecord"
+    CaregiverOccurrenceResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CaregiverOccurrenceRecord"
+    CaregiverOccurrencePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CaregiverOccurrencePage"
+    CareSessionResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CareSessionRecord"
+    CareTaskResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CareTaskRecord"
+    SessionNoteResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/SessionNoteRecord"
+    SessionNotePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/SessionNotePage"
+    CareReportResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CareReportRecord"
+    CareReportPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/CareReportPage"
+    ComplaintResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/ComplaintRecord"
+    ComplaintPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/ComplaintPage"
+    FeedbackResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/FeedbackRecord"
+    FeedbackPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/FeedbackPage"
+    EligibleCaregiverListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: "#/components/schemas/EligibleCaregiverRecord"
+    NotificationPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/NotificationPage"
+    UnreadCountResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/UnreadCountRecord"
+    OperationalStatisticsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: "#/components/schemas/OperationalStatisticsRecord"

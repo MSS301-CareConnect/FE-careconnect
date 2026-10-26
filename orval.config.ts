@@ -48,6 +48,11 @@ export default defineConfig({
               properties: {
                 files: () => [new Blob([new Uint8Array(8)])]
               }
+            },
+            CareReportPhotoUploadRequest: {
+              properties: {
+                files: () => [new Blob([new Uint8Array(8)])]
+              }
             }
           }
         }
