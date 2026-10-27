@@ -16,6 +16,7 @@ import { patientDetailEn, patientDetailVi } from './customer/patient-detail-reso
 import { patientCreateEn, patientCreateVi } from './customer/patient-create-resources'
 import { careRecipientEn, careRecipientVi } from './customer/care-recipient-resources'
 import { customerServicesEn, customerServicesVi } from './customer/services-resources'
+import { serviceDetailEn, serviceDetailVi } from './customer/service-detail-resources'
 import { caregiversEn, caregiversVi } from './customer/caregivers-resources'
 import { customerProviderEn, customerProviderVi } from './customer/provider-resources'
 import { bookingEn, bookingVi } from './customer/booking-resources'
@@ -75,6 +76,7 @@ export const resources = {
         patientCreate: patientCreateEn,
         careRecipient: careRecipientEn,
         services: customerServicesEn,
+        serviceDetail: serviceDetailEn,
         caregivers: caregiversEn,
         provider: customerProviderEn,
         booking: bookingEn,
@@ -141,6 +143,7 @@ export const resources = {
         patientCreate: patientCreateVi,
         careRecipient: careRecipientVi,
         services: customerServicesVi,
+        serviceDetail: serviceDetailVi,
         caregivers: caregiversVi,
         provider: customerProviderVi,
         booking: bookingVi,

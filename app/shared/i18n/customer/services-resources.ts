@@ -38,6 +38,7 @@ export const customerServicesVi = {
     chooseCenter: 'Chọn trung tâm để xem giá',
     noCenter: 'Chưa chọn trung tâm',
     findCaregivers: 'Tìm người chăm sóc',
+    details: 'Xem chi tiết',
     book: 'Đặt lịch dịch vụ này'
   },
   pricingUnits: { HOUR: 'Theo giờ', DAY: 'Theo ngày', SHIFT: 'Theo ca' },
@@ -94,6 +95,7 @@ export const customerServicesEn = {
     chooseCenter: 'Choose a center for prices',
     noCenter: 'No center chosen yet',
     findCaregivers: 'Find caregivers',
+    details: 'View details',
     book: 'Book this service'
   },
   pricingUnits: { HOUR: 'Hourly', DAY: 'Daily', SHIFT: 'Per shift' },

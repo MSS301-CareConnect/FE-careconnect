@@ -1,14 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
-import {
-  fetchCaregiverByUser,
-  fetchCaregiverCatalog,
-  fetchVerifiedCertificates,
-  providerKeys
-} from '~/entities/provider/provider-api'
+import { fetchCaregiverCatalog, providerKeys } from '~/entities/provider/provider-api'
 import { CenterReminder, CenterScope } from '~/entities/care-center/center-scope'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
@@ -73,17 +68,13 @@ function ProviderCaregiverCard({ person }: { person: ProviderCaregiverRecord }) 
         <span className='min-w-0 truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#76867a]'>
           {t(`${key}.caregiver`)}
         </span>
-        {person.userId ? (
-          <Link
-            className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-[#075b31]'
-            to={`/customer/caregivers/${person.userId}`}
-          >
-            {t(`${key}.details`)}
-            <Icon className='text-lg transition-transform group-hover:translate-x-1' name='arrow_forward' />
-          </Link>
-        ) : (
-          <span className='text-xs text-[#76867a]'>{t(`${key}.profileUnavailable`)}</span>
-        )}
+        <Link
+          className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-[#075b31]'
+          to={`/customer/caregivers/${person.id}`}
+        >
+          {t(`${key}.details`)}
+          <Icon className='text-lg transition-transform group-hover:translate-x-1' name='arrow_forward' />
+        </Link>
       </div>
     </article>
   )
@@ -280,99 +271,6 @@ export function CustomerProviderCatalogPage() {
           </div>
         </div>
       </section>
-    </div>
-  )
-}
-
-export function CustomerProviderDetailPage() {
-  const { userId = '' } = useParams()
-  const { t, i18n } = useTranslation()
-  const profile = useQuery({
-    queryKey: ['provider', 'by-user', userId],
-    queryFn: () => fetchCaregiverByUser(userId),
-    enabled: Boolean(userId),
-    retry: false
-  })
-  const certificates = useQuery({
-    queryKey: ['provider', 'verified-certificates', profile.data?.id],
-    queryFn: () => fetchVerifiedCertificates(profile.data!.id),
-    enabled: Boolean(profile.data?.id),
-    retry: false
-  })
-  useDocumentTitle(profile.data?.fullName ?? t(`${key}.title`))
-  return (
-    <div className='mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8'>
-      <Link
-        className='inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm'
-        to='/customer/caregivers'
-      >
-        <Icon name='arrow_back' />
-        {t(`${key}.back`)}
-      </Link>
-      {profile.isPending ? (
-        <p className='rounded-2xl bg-white p-8 shadow-sm' role='status'>
-          {t(`${key}.loading`)}
-        </p>
-      ) : null}
-      {profile.isError ? (
-        <p className='rounded-2xl bg-white p-8 shadow-sm' role='alert'>
-          {t(`${key}.profileError`)}
-        </p>
-      ) : null}
-      {profile.isSuccess ? (
-        <section className='overflow-hidden rounded-2xl bg-white shadow-sm'>
-          <div className='h-3 bg-primary' />
-          <div className='flex flex-wrap items-start gap-6 p-6 sm:p-8'>
-            <div className='flex h-28 w-28 items-center justify-center rounded-2xl bg-secondary-container text-primary'>
-              <Icon className='text-6xl' name='person' />
-            </div>
-            <div className='flex-1 space-y-3'>
-              <h1 className='text-3xl font-extrabold'>{profile.data.fullName}</h1>
-              <p className='text-sm text-on-surface-variant'>{profile.data.centerName}</p>
-              {profile.data.experienceYears !== undefined ? (
-                <p className='text-sm'>
-                  {t(`${key}.experienceValue`, {
-                    years: new Intl.NumberFormat(i18n.language).format(profile.data.experienceYears)
-                  })}
-                </p>
-              ) : null}
-              {profile.data.bio ? (
-                <p className='max-w-3xl leading-7 text-on-surface-variant'>{profile.data.bio}</p>
-              ) : null}
-            </div>
-            <Link
-              className='inline-flex items-center gap-2 self-start rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container'
-              to={`/customer/booking?caregiver=${userId}`}
-            >
-              <Icon className='text-xl' name='calendar_add_on' />
-              {t(`${key}.book`)}
-            </Link>
-          </div>
-        </section>
-      ) : null}
-      {profile.isSuccess ? (
-        <section className='rounded-2xl bg-white p-6 shadow-sm sm:p-8'>
-          <h2 className='mb-4 text-xl font-bold'>{t(`${key}.certificates`)}</h2>
-          {certificates.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
-          {certificates.isError ? <p role='alert'>{t(`${key}.error`)}</p> : null}
-          {certificates.isSuccess && certificates.data.length === 0 ? (
-            <p className='text-outline'>{t(`${key}.certificatesEmpty`)}</p>
-          ) : null}
-          {certificates.isSuccess ? (
-            <ul className='grid gap-3 sm:grid-cols-2'>
-              {certificates.data.map((item) => (
-                <li className='flex items-start gap-3 rounded-xl bg-surface-container-low p-4' key={item.id}>
-                  <Icon className='text-primary' name='verified' />
-                  <div>
-                    <strong>{item.certificateName}</strong>
-                    <p className='text-sm text-outline'>{item.issuedBy}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-      ) : null}
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { bookingDay } from '~/entities/booking/booking-format'
 import { careCatalogKeys, fetchCenterOfferings } from '~/entities/care-catalog/care-catalog-api'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import { careRecipientKeys, fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
-import { fetchCaregiverByUser } from '~/entities/provider/provider-api'
+import { fetchPublicCaregiver, providerKeys } from '~/entities/provider/provider-api'
 import type {
   BookingCreateRequest,
   BookingScheduleType,
@@ -19,6 +19,14 @@ import { useBookingProviders } from './use-booking-providers'
 
 const recipientRequest: ListCareRecipientsParams = { status: 'ACTIVE', page: 0, size: 50 }
 const DAY_MS = 24 * 60 * 60 * 1000
+
+/** A caregiver the customer can pick, from the center catalog or the profile the URL pointed at. */
+export interface BookingCaregiverOption {
+  id: string
+  fullName: string
+  experienceYears?: number
+  ratingAverage?: number
+}
 
 export interface BookingSchedule {
   scheduleType: BookingScheduleType
@@ -57,10 +65,11 @@ export function useBookingForm() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const caregiverUserId = params.get('caregiver') ?? ''
+  // Caregiver profile ID from the public profile page's "book" link.
+  const caregiverParam = params.get('caregiver') ?? ''
   const { center: headerCenter } = useSelectedCenter()
   // The URL's center or caregiver wins; otherwise the center chosen in the header is the starting point.
-  const centerParam = params.get('center') || (caregiverUserId ? '' : (headerCenter?.id ?? ''))
+  const centerParam = params.get('center') || (caregiverParam ? '' : (headerCenter?.id ?? ''))
   const preselectedService = params.get('service') ?? ''
 
   const [recipientId, setRecipientId] = useState(params.get('patientId') ?? '')
@@ -73,15 +82,15 @@ export function useBookingForm() {
   const idempotency = useRef<{ request: string; key: string } | null>(null)
 
   const caregiver = useQuery({
-    queryKey: ['provider', 'by-user', caregiverUserId],
-    queryFn: () => fetchCaregiverByUser(caregiverUserId),
-    enabled: Boolean(caregiverUserId),
+    queryKey: providerKeys.publicCaregiver(caregiverParam),
+    queryFn: () => fetchPublicCaregiver(caregiverParam),
+    enabled: Boolean(caregiverParam),
     retry: false
   })
   const centerId = centerChoice ?? caregiver.data?.centerId ?? centerParam
   const providers = useBookingProviders(centerId)
   const center = providers.centers.data?.find((item) => item.id === centerId)
-  const urlCaregiverId = caregiver.data ? (caregiver.data.caregiverId ?? caregiver.data.id) : undefined
+  const urlCaregiverId = caregiver.data?.caregiverId
   // Empty means the center assigns the caregiver when it accepts the booking.
   const selectedCaregiverId =
     caregiverChoice ?? (caregiver.data && caregiver.data.centerId === centerId ? urlCaregiverId : '') ?? ''
@@ -170,15 +179,21 @@ export function useBookingForm() {
   }
 
   // The URL caregiver stays selectable even when the catalog pages do not include them.
-  const centerCaregivers = [...(providers.caregivers.data ?? [])]
+  const centerCaregivers: BookingCaregiverOption[] = (providers.caregivers.data ?? []).map((item) => ({
+    id: item.caregiverId ?? item.id,
+    fullName: item.fullName,
+    experienceYears: item.experienceYears,
+    ratingAverage: item.ratingAverage
+  }))
   if (caregiver.data && caregiver.data.centerId === centerId) {
-    if (!centerCaregivers.some((item) => (item.caregiverId ?? item.id) === urlCaregiverId)) {
-      centerCaregivers.unshift(caregiver.data)
+    if (!centerCaregivers.some((item) => item.id === urlCaregiverId)) {
+      const { caregiverId, fullName, experienceYears, ratingAverage } = caregiver.data
+      centerCaregivers.unshift({ id: caregiverId, fullName, experienceYears, ratingAverage })
     }
   }
 
   return {
-    caregiverUserId,
+    caregiverParam,
     caregiver,
     providers,
     centerId,

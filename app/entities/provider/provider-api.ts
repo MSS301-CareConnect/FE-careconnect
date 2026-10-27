@@ -19,6 +19,8 @@ import {
   catalogProviderCaregivers,
   getMyProviderCaregiverProfile,
   getProviderCaregiverByUser,
+  getPublicProviderCaregiver,
+  searchProviderCaregivers,
   listMyProviderCaregiverSchedules,
   updateProviderCaregiverScheduleStatus
 } from '~/shared/api/generated/api/provider-caregiver/provider-caregiver'
@@ -66,6 +68,7 @@ import type {
   ListMyProviderShiftRegistrationsParams,
   ListProviderCenterSchedulesParams,
   ScheduleStatusRequest,
+  SearchProviderCaregiversParams,
   ShiftRegistrationRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
@@ -89,6 +92,8 @@ export const providerKeys = {
   center: (id: string) => ['provider', 'center', id] as const,
   caregivers: (centerId: string) => ['provider', 'caregivers', centerId] as const,
   caregiver: (id: string) => ['provider', 'caregiver', id] as const,
+  publicCaregiver: (id: string) => ['provider', 'public-caregiver', id] as const,
+  serviceCaregivers: (params: SearchProviderCaregiversParams) => ['provider', 'service-caregivers', params] as const,
   certificates: (id: string) => ['provider', 'certificates', id] as const,
   shifts: (centerId: string) => ['provider', 'shifts', centerId] as const,
   shift: (id: string) => ['provider', 'shift', id] as const,
@@ -191,6 +196,14 @@ export async function fetchCaregiverCatalog(params: CatalogProviderCaregiversPar
 }
 export async function fetchCaregiverByUser(userId: string) {
   return result(await getProviderCaregiverByUser(userId, readOptions))
+}
+/** Customer-facing profile (SRCH-01) with its services and verified certificates; no internal fields. */
+export async function fetchPublicCaregiver(caregiverId: string) {
+  return result(await getPublicProviderCaregiver(caregiverId, readOptions))
+}
+/** Caregivers of one center who provide every listed care service (SRCH-01). */
+export async function searchCaregiversByService(params: SearchProviderCaregiversParams) {
+  return result(await searchProviderCaregivers(params, readOptions))
 }
 export async function fetchVerifiedCertificates(caregiverId: string) {
   return result(await listVerifiedProviderCertificates(caregiverId, readOptions))

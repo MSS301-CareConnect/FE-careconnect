@@ -1,5 +1,5 @@
-import { CustomerProviderDetailPage } from '~/features/customer/caregivers/customer-provider-pages'
+import { CustomerCaregiverDetailPage } from '~/features/customer/caregivers/caregiver-detail-page'
 
 export default function CustomerCaregiverProfileRoute() {
-  return <CustomerProviderDetailPage />
+  return <CustomerCaregiverDetailPage />
 }
