@@ -1,7 +1,7 @@
 export const caregiverVisitsEn = {
   documentTitle: 'Assigned visits | CareConnect',
   title: 'Assigned visits',
-  subtitle: 'Visits the center assigned to you. Acknowledge each one, then check in when you arrive.',
+  subtitle: 'Visits the center assigned to you. Acknowledge each one, then start the visit when you arrive.',
   rangeLabel: 'Period',
   ranges: {
     upcoming: 'From today',
@@ -27,7 +27,7 @@ export const caregiverVisitsEn = {
 export const caregiverVisitsVi = {
   documentTitle: 'Buổi được giao | CareConnect',
   title: 'Buổi được giao',
-  subtitle: 'Các buổi trung tâm đã giao cho bạn. Nhận từng buổi, rồi check-in khi tới nơi.',
+  subtitle: 'Các buổi trung tâm đã giao cho bạn. Nhận từng buổi, rồi bấm bắt đầu ca khi tới nơi.',
   rangeLabel: 'Khoảng thời gian',
   ranges: {
     upcoming: 'Từ hôm nay',

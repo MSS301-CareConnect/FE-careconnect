@@ -38,7 +38,7 @@ export const caregiverShiftDetailEn = {
     chat: 'Message'
   },
   checklist: {
-    title: 'Clinical Interventions & Task Checklist',
+    title: 'Services & Task List',
     packageBadge: '4-hour package',
     tasksCountBadge: '5 standard tasks',
     description:
@@ -95,7 +95,7 @@ export const caregiverShiftDetailEn = {
     earningsAmount: '350,000',
     currency: 'VND',
     escrowNotice:
-      'Guaranteed via CareConnect Escrow. Payout released immediately after shift completion and clinical report submission.'
+      'Your pay is held by CareConnect and released right after you finish the shift and submit the care report.'
   },
   locationMap: {
     title: 'Address & Location',
@@ -104,7 +104,7 @@ export const caregiverShiftDetailEn = {
     address: '23 Nguyen Huu Tho St., Tan Hung Ward, Dist. 7, Ho Chi Minh City',
     hint: 'Directions: Ring unit 804 at security desk or call the son to meet at Lobby A if elevator requires resident keycard.',
     coordinates: 'Coordinates: 10.7431° N, 106.7009° E',
-    mapDirections: 'Maps Directions',
+    mapDirections: 'Directions',
     arrived: 'Report Arrived',
     arrivedDone: 'Arrival Reported',
     arrivedAlert: 'Sent notification "Caregiver has arrived at Sunrise City lobby" to Mr. Nguyen Binh.'
@@ -112,14 +112,14 @@ export const caregiverShiftDetailEn = {
   shiftAction: {
     safetyTitle: 'Shift Safety & Verification',
     safetyDesc:
-      'GPS coordinates are automatically logged when starting to protect your remuneration rights and record into professional clinical history.',
+      'Your location is recorded automatically when you start, to protect your pay and keep your work history.',
     startShiftBtn: 'START SHIFT NOW',
     ongoingBtn: 'SHIFT IN PROGRESS...',
-    startConfirm: 'Confirm GPS activation and Start Shift #BK-8821 for Mr. Nguyen Van A?',
+    startConfirm: 'Turn on location and start shift #BK-8821 for Mr. Nguyen Van A?',
     startSuccess: 'Shift #BK-8821 has officially started. Please proceed with initial vitals measurement!',
     statusConfirmed: 'Assignment confirmed',
     shiftCodeLabel: 'Shift ID: #{{code}}',
-    startNote: '* Only click start when physically present at the patient home with GPS enabled.',
+    startNote: '* Only click start when physically present at the patient home with location turned on.',
     reportIncidentBtn: 'Report Incident / Request Shift Swap'
   },
   incidentModal: {
@@ -154,7 +154,7 @@ export const caregiverShiftDetailVi = {
   countdown: {
     label: 'Đếm ngược giờ bắt đầu',
     text: 'Ca trực bắt đầu sau',
-    locationReady: 'Tọa độ di chuyển đã sẵn sàng'
+    locationReady: 'Đã có chỉ đường tới nhà bệnh nhân'
   },
   patient: {
     title: 'Hồ sơ người cần chăm sóc',
@@ -173,11 +173,11 @@ export const caregiverShiftDetailVi = {
     chat: 'Nhắn tin'
   },
   checklist: {
-    title: 'Dịch vụ can thiệp y tế & Checklist nhiệm vụ',
+    title: 'Dịch vụ & danh sách công việc',
     packageBadge: 'Gói 4 giờ',
     tasksCountBadge: '5 mục công việc tiêu chuẩn',
     description:
-      'Điều dưỡng viên tích chọn từng hạng mục sau khi hoàn thành quy trình y tế. Dữ liệu checklist sẽ được tổng hợp gửi cho người giám hộ và cập nhật bệnh án CareConnect.',
+      'Điều dưỡng viên tích chọn từng hạng mục sau khi hoàn thành quy trình y tế. Danh sách công việc đã đánh dấu sẽ được gửi cho người nhà và lưu vào hồ sơ bệnh án.',
     completedCount: 'Đã hoàn thành {{completed}}/{{total}} mục',
     items: {
       item1Title: '1. Đo sinh hiệu đầu ca',
@@ -229,7 +229,8 @@ export const caregiverShiftDetailVi = {
     earningsLabel: 'Thu nhập dự kiến nhận được:',
     earningsAmount: '350.000',
     currency: 'VNĐ',
-    escrowNotice: 'Đã bảo chứng qua Escrow CareConnect. Nhận thanh toán ngay sau khi hoàn tất ca và gửi báo cáo y tế.'
+    escrowNotice:
+      'Khoản thù lao đã được CareConnect tạm giữ để đảm bảo. Nhận thanh toán ngay sau khi hoàn tất ca và gửi báo cáo y tế.'
   },
   locationMap: {
     title: 'Địa chỉ & Định vị',
@@ -238,7 +239,7 @@ export const caregiverShiftDetailVi = {
     address: '23 Đường Nguyễn Hữu Thọ, Phường Tân Hưng, Quận 7, TP. Hồ Chí Minh',
     hint: 'Chỉ dẫn: Bấm chuông căn 804 ở sảnh bảo vệ hoặc gọi con trai đón tại sảnh A nếu thang máy cần thẻ cư dân.',
     coordinates: 'Tọa độ: 10.7431° N, 106.7009° E',
-    mapDirections: 'Chỉ đường Maps',
+    mapDirections: 'Chỉ đường',
     arrived: 'Báo đã đến nơi',
     arrivedDone: 'Đã báo tới nơi',
     arrivedAlert: 'Đã gửi thông báo "Điều dưỡng viên đã có mặt tại sảnh Sunrise City" đến Anh Nguyễn Bình.'
@@ -246,14 +247,14 @@ export const caregiverShiftDetailVi = {
   shiftAction: {
     safetyTitle: 'Bảo đảm an toàn ca trực',
     safetyDesc:
-      'Hệ thống ghi nhận GPS tự động khi ấn Bắt đầu để bảo vệ quyền lợi thù lao của bạn và lưu vào lịch sử trực chuyên môn.',
+      'Hệ thống tự ghi nhận vị trí khi bạn bấm Bắt đầu để bảo vệ quyền lợi thù lao và lưu vào lịch sử làm việc.',
     startShiftBtn: 'BẮT ĐẦU VÀO CA',
     ongoingBtn: 'ĐANG TRONG CA TRỰC...',
-    startConfirm: 'Xác nhận kích hoạt GPS và Bắt đầu ca trực #BK-8821 cho Cụ Nguyễn Văn A?',
+    startConfirm: 'Bật định vị và bắt đầu ca trực #BK-8821 cho Cụ Nguyễn Văn A?',
     startSuccess: 'Ca trực #BK-8821 đã được ghi nhận bắt đầu. Hãy tiến hành đo sinh hiệu đầu ca!',
     statusConfirmed: 'Đã xác nhận phân công',
     shiftCodeLabel: 'Mã ca: #{{code}}',
-    startNote: '* Chỉ bấm bắt đầu khi đã có mặt tại nhà bệnh nhân và bật định vị GPS.',
+    startNote: '* Chỉ bấm bắt đầu khi đã có mặt tại nhà bệnh nhân và đã bật định vị.',
     reportIncidentBtn: 'Báo sự cố / Hỗ trợ đổi ca trực'
   },
   incidentModal: {

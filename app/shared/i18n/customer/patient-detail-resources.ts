@@ -1,14 +1,14 @@
 export const patientDetailEn = {
-  documentTitle: 'Medical Record Detail | CareConnect',
+  documentTitle: 'Health Record | CareConnect',
   breadcrumb: {
     home: 'Home',
     myAccount: 'My Account',
     patientProfiles: 'Family member health profiles',
-    title: 'Medical Record Detail'
+    title: 'Health Record'
   },
   banner: {
     back: 'Back to profiles list',
-    title: 'Medical Record: {{name}}',
+    title: 'Health record: {{name}}',
     yourAccess: 'Your access: {{level}}',
     editToggle: 'Edit profile',
     viewMode: 'View mode',
@@ -16,17 +16,17 @@ export const patientDetailEn = {
     saveUpdate: 'Save updates',
     saving: 'Saving...',
     bookNewCare: 'Book new care session',
-    toastSuccess: 'Medical record updated successfully!',
+    toastSuccess: 'Health record saved!',
     saveError: 'Unable to save the profile. Please check the information and try again.',
     conflictError: 'This profile was changed by someone else. Reload the page to see the latest version.',
     nameRequired: 'Full name is required.',
     phoneInvalid: 'Phone number must contain 10 or 11 digits.'
   },
   states: {
-    loading: 'Loading medical record...',
-    error: 'Unable to load this medical record.',
-    forbidden: 'You do not have access to this medical record.',
-    notFound: 'This medical record does not exist or has been archived.',
+    loading: 'Loading health record...',
+    error: 'Unable to load this health record.',
+    forbidden: 'You do not have access to this health record.',
+    notFound: 'This health record does not exist or has been deleted.',
     retry: 'Try again'
   },
   snapshot: {
@@ -103,8 +103,8 @@ export const patientDetailEn = {
     dosageLabel: 'Dosage',
     frequencyLabel: 'Frequency',
     timeOfDayLabel: 'Times of day',
-    timeOfDayHint: 'HH:mm, separated by commas (e.g. 07:30, 18:30)',
-    routeLabel: 'Route',
+    timeOfDayHint: 'Hour:minute, separated by commas (e.g. 07:30, 18:30)',
+    routeLabel: 'How to take',
     startDateLabel: 'Start date',
     endDateLabel: 'End date',
     prescribedByLabel: 'Prescribed by',
@@ -113,7 +113,7 @@ export const patientDetailEn = {
     save: 'Save medication',
     cancel: 'Cancel',
     required: 'Medication name and start date are required.',
-    timeInvalid: 'Times must use the HH:mm format.',
+    timeInvalid: 'Enter times as hour:minute, for example 07:30.',
     actionError: 'Unable to update medications. Please try again.'
   },
   carePlan: {
@@ -135,12 +135,12 @@ export const patientDetailEn = {
 } as const
 
 export const patientDetailVi = {
-  documentTitle: 'Chi tiết hồ sơ bệnh án | CareConnect',
+  documentTitle: 'Chi tiết hồ sơ sức khỏe | CareConnect',
   breadcrumb: {
     home: 'Trang chủ',
     myAccount: 'Tài khoản của tôi',
     patientProfiles: 'Hồ sơ người thân cần chăm sóc',
-    title: 'Chi tiết hồ sơ bệnh án'
+    title: 'Chi tiết hồ sơ sức khỏe'
   },
   banner: {
     back: 'Quay lại danh sách hồ sơ',
@@ -154,15 +154,15 @@ export const patientDetailVi = {
     bookNewCare: 'Đặt lịch chăm sóc mới',
     toastSuccess: 'Đã lưu thông tin hồ sơ người bệnh thành công!',
     saveError: 'Không thể lưu hồ sơ. Vui lòng kiểm tra thông tin và thử lại.',
-    conflictError: 'Hồ sơ vừa được người khác cập nhật. Hãy tải lại trang để xem phiên bản mới nhất.',
+    conflictError: 'Hồ sơ vừa được người khác cập nhật. Hãy tải lại trang để xem thông tin mới nhất.',
     nameRequired: 'Vui lòng nhập họ tên.',
     phoneInvalid: 'Số điện thoại phải gồm 10 hoặc 11 chữ số.'
   },
   states: {
-    loading: 'Đang tải hồ sơ bệnh án...',
-    error: 'Không thể tải hồ sơ bệnh án này.',
-    forbidden: 'Bạn không có quyền truy cập hồ sơ bệnh án này.',
-    notFound: 'Hồ sơ không tồn tại hoặc đã được lưu trữ.',
+    loading: 'Đang tải hồ sơ sức khỏe...',
+    error: 'Không thể tải hồ sơ sức khỏe này.',
+    forbidden: 'Bạn không có quyền xem hồ sơ sức khỏe này.',
+    notFound: 'Hồ sơ không tồn tại hoặc đã bị xóa.',
     retry: 'Thử lại'
   },
   snapshot: {
@@ -239,8 +239,8 @@ export const patientDetailVi = {
     dosageLabel: 'Liều lượng',
     frequencyLabel: 'Tần suất',
     timeOfDayLabel: 'Giờ dùng thuốc',
-    timeOfDayHint: 'Định dạng HH:mm, cách nhau bởi dấu phẩy (vd: 07:30, 18:30)',
-    routeLabel: 'Đường dùng',
+    timeOfDayHint: 'Ghi giờ:phút, nhiều giờ thì cách nhau bằng dấu phẩy (ví dụ: 07:30, 18:30)',
+    routeLabel: 'Cách dùng',
     startDateLabel: 'Ngày bắt đầu',
     endDateLabel: 'Ngày kết thúc',
     prescribedByLabel: 'Bác sĩ kê đơn',
@@ -249,7 +249,7 @@ export const patientDetailVi = {
     save: 'Lưu thuốc',
     cancel: 'Hủy',
     required: 'Vui lòng nhập tên thuốc và ngày bắt đầu.',
-    timeInvalid: 'Giờ dùng thuốc phải theo định dạng HH:mm.',
+    timeInvalid: 'Giờ dùng thuốc cần ghi dạng giờ:phút, ví dụ 07:30.',
     actionError: 'Không thể cập nhật toa thuốc. Vui lòng thử lại.'
   },
   carePlan: {

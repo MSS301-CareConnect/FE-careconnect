@@ -27,7 +27,7 @@ describe('CaregiverActiveSessionPage', () => {
     )
 
     // Hero & Identification
-    expect(screen.getByText(/CA TRỰC ĐANG DIỄN RA • LIVE GPS/i)).toBeInTheDocument()
+    expect(screen.getByText(/CA TRỰC ĐANG DIỄN RA • ĐANG ĐỊNH VỊ/i)).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { level: 1, name: /Ca sáng: Chăm sóc phục hồi sau tai biến/i })
     ).toBeInTheDocument()
@@ -183,7 +183,7 @@ describe('CaregiverActiveSessionPage', () => {
       ).toBeInTheDocument()
     })
 
-    expect(screen.getByText('ACTIVE CARE SESSION • LIVE GPS')).toBeInTheDocument()
+    expect(screen.getByText('ACTIVE CARE SESSION • LOCATION ON')).toBeInTheDocument()
     expect(screen.getByText('Cụ Nguyễn Văn A')).toBeInTheDocument()
     expect(screen.getByText("Today's Care Plan")).toBeInTheDocument()
     expect(screen.getByText('Vital Signs')).toBeInTheDocument()

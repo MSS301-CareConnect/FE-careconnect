@@ -37,7 +37,7 @@ describe('Caregiver schedule', () => {
     expect(screen.getByRole('article', { name: 'Cụ Nguyễn Văn A' })).toBeInTheDocument()
     expect(screen.getByRole('article', { name: 'Bệnh nhân Trần B' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /Hôm nay.*20\/09/ })).toBeInTheDocument()
-    expect(screen.getByText(/Chưa kết nối điều phối ca trực/)).toBeInTheDocument()
+    expect(screen.getByText(/Chưa phải lịch phân ca thực tế/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Lịch trực' })).toHaveAttribute('aria-current', 'page')
     expect(screen.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
     const header = screen.getByRole('banner')

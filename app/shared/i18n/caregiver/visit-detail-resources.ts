@@ -5,9 +5,10 @@ export const caregiverVisitDetailEn = {
   back: 'Back to assigned visits',
   nextStep: 'Next step',
   acknowledge: 'Acknowledge visit',
-  checkIn: 'Check in',
-  checkingIn: 'Checking in…',
-  checkInHint: 'Check-in opens at {{time}}, 30 minutes before the start. Your location is attached when you allow it.',
+  checkIn: 'Start visit',
+  checkingIn: 'Starting…',
+  checkInHint:
+    'You can start the visit from {{time}} (30 minutes before the scheduled time). Your location is shared if you allow it.',
   reportNoShow: 'Report customer no-show',
   noShowTitle: 'Report a customer no-show',
   noShowHint: 'Describe what happened. The center decides whether the customer is charged.',
@@ -20,10 +21,10 @@ export const caregiverVisitDetailEn = {
   customerNote: 'Customer note',
   specialNotes: 'Special notes',
   session: {
-    title: 'Care checklist',
+    title: 'Task list',
     loading: 'Loading the care session…',
-    checkedIn: 'Checked in at {{time}}',
-    ended: 'Checked out at {{time}}',
+    checkedIn: 'Started at {{time}}',
+    ended: 'Finished at {{time}}',
     taskTypes: {
       SERVICE: 'Service',
       MEDICATION: 'Medication',
@@ -37,9 +38,9 @@ export const caregiverVisitDetailEn = {
     addLabel: 'New task',
     addPlaceholder: 'Add a task, e.g. help with a walk',
     add: 'Add',
-    pendingLeft: '{{count}} tasks left before check-out.',
-    readyToFinish: 'Every task is done or skipped. You can check out.',
-    checkOut: 'Check out'
+    pendingLeft: '{{count}} tasks left before you finish the visit.',
+    readyToFinish: 'Every task is done or skipped. You can finish the visit.',
+    checkOut: 'Finish visit'
   }
 }
 
@@ -50,9 +51,10 @@ export const caregiverVisitDetailVi = {
   back: 'Về danh sách buổi được giao',
   nextStep: 'Việc tiếp theo',
   acknowledge: 'Nhận buổi',
-  checkIn: 'Check-in',
-  checkingIn: 'Đang check-in…',
-  checkInHint: 'Mở check-in lúc {{time}}, 30 phút trước giờ bắt đầu. Vị trí được gửi kèm nếu bạn cho phép.',
+  checkIn: 'Bắt đầu ca',
+  checkingIn: 'Đang bắt đầu ca…',
+  checkInHint:
+    'Có thể bắt đầu ca từ {{time}} (30 phút trước giờ hẹn). Vị trí của bạn sẽ được gửi kèm nếu bạn cho phép.',
   reportNoShow: 'Báo khách vắng mặt',
   noShowTitle: 'Báo khách vắng mặt',
   noShowHint: 'Mô tả tình huống. Trung tâm sẽ quyết định khách có chịu phí buổi này không.',
@@ -67,8 +69,8 @@ export const caregiverVisitDetailVi = {
   session: {
     title: 'Danh sách công việc',
     loading: 'Đang tải ca chăm sóc…',
-    checkedIn: 'Check-in lúc {{time}}',
-    ended: 'Check-out lúc {{time}}',
+    checkedIn: 'Bắt đầu lúc {{time}}',
+    ended: 'Kết thúc lúc {{time}}',
     taskTypes: {
       SERVICE: 'Dịch vụ',
       MEDICATION: 'Thuốc',
@@ -82,8 +84,8 @@ export const caregiverVisitDetailVi = {
     addLabel: 'Công việc mới',
     addPlaceholder: 'Thêm việc, ví dụ dìu đi dạo',
     add: 'Thêm',
-    pendingLeft: 'Còn {{count}} việc trước khi check-out.',
-    readyToFinish: 'Mọi việc đã xong hoặc bỏ qua. Bạn có thể check-out.',
-    checkOut: 'Check-out'
+    pendingLeft: 'Còn {{count}} việc trước khi kết thúc ca.',
+    readyToFinish: 'Mọi việc đã xong hoặc được bỏ qua. Bạn có thể kết thúc ca.',
+    checkOut: 'Kết thúc ca'
   }
 }

@@ -55,7 +55,7 @@ export const patientProfilesEn = {
     title: 'CareConnect Safe Medical Profile Guidelines',
     description:
       'Fully updated medical records (including current prescriptions, allergy history, and doctor contacts) enable caregivers to establish accurate care plans from day one.',
-    badgeHipaa: 'HIPAA Data Encryption',
+    badgeHipaa: 'Encrypted data',
     badgePrivacy: 'Medical Privacy Security',
     badgeSync: 'Shared with your care team',
     viewDoc: 'View documentation'
@@ -124,10 +124,10 @@ export const patientProfilesVi = {
     pageOf: 'Trang {{page, number}} / {{total, number}}'
   },
   guidelines: {
-    title: 'Quy chuẩn cập nhật hồ sơ y tế an toàn CareConnect',
+    title: 'Vì sao nên cập nhật hồ sơ đầy đủ?',
     description:
-      'Hồ sơ y tế được cập nhật đầy đủ (bao gồm toa thuốc hiện dùng, tiền sử dị ứng thuốc và số liên lạc bác sĩ điều trị) giúp Điều dưỡng viên và Chuyên viên chăm sóc xây dựng phác đồ can thiệp chuẩn xác nhất ngay từ buổi đầu tiên.',
-    badgeHipaa: 'Mã hóa dữ liệu HIPAA',
+      'Hồ sơ y tế được cập nhật đầy đủ (bao gồm toa thuốc hiện dùng, tiền sử dị ứng thuốc và số liên lạc bác sĩ điều trị) giúp người chăm sóc lên kế hoạch chăm sóc phù hợp ngay từ buổi đầu tiên.',
+    badgeHipaa: 'Thông tin được mã hóa',
     badgePrivacy: 'Bảo mật quyền riêng tư y khoa',
     badgeSync: 'Chia sẻ với đội ngũ chăm sóc',
     viewDoc: 'Xem tài liệu hướng dẫn'

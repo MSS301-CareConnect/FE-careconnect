@@ -39,10 +39,10 @@ describe('Admin caregiver quality preview', () => {
 
   it('keeps live verification unavailable and supports English', async () => {
     renderPage()
-    expect(screen.getByText(/Chưa kết nối cổng dữ liệu Bộ Y tế/)).toBeInTheDocument()
+    expect(screen.getByText(/Các trạng thái trong bảng chỉ mang tính minh họa/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Bắt đầu cuộc gọi kiểm tra' })).toBeDisabled()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Caregiver verification & quality control')
-    expect(screen.getByText(/No live Ministry of Health data connection/)).toBeInTheDocument()
+    expect(screen.getByText(/Table statuses are samples only/)).toBeInTheDocument()
   })
 })

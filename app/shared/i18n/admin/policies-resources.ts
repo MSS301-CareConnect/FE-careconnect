@@ -1,19 +1,19 @@
 export const adminPoliciesVi = {
-  documentTitle: 'Cấu hình chính sách | CareConnect Admin',
+  documentTitle: 'Cấu hình chính sách | Quản trị CareConnect',
   breadcrumb: 'Thiết lập quy chuẩn',
   title: 'Cấu hình Chính sách & Đối soát Tài chính',
-  version: 'Bản thiết kế mẫu v3.2 · 01/10/2025',
+  version: 'Bản minh họa v3.2 · 01/10/2025',
   intro: 'Xem trước tỷ lệ đặt cọc, quy tắc hoàn tiền, phân bổ doanh thu và chu kỳ đối soát.',
   sample: 'Chỉ là cấu hình minh họa; chưa phải chính sách đang áp dụng.',
   history: 'Lịch sử phiên bản',
   simulate: 'Mô phỏng tính toán',
   save: 'Lưu thay đổi chính sách',
-  unavailable: 'Cần API, phê duyệt và quyền Admin để thực hiện',
+  unavailable: 'Chức năng này sắp ra mắt và cần được phê duyệt trước khi áp dụng.',
   tabs: {
     deposit: 'Đặt cọc & hoàn tiền',
     commission: 'Hoa hồng & dòng tiền',
     payout: 'Đối soát & thanh toán',
-    risk: 'Quỹ rủi ro & Escrow'
+    risk: 'Quỹ rủi ro & tiền tạm giữ'
   },
   depositTitle: 'Chính sách đặt cọc lịch hẹn',
   depositHint: 'Bản nháp mức ứng trước để mô phỏng ca chăm sóc.',
@@ -29,11 +29,11 @@ export const adminPoliciesVi = {
     day: '8–12 giờ · chăm sóc ban ngày',
     liveIn: '24/7 · chăm sóc dài ngày'
   },
-  escrowTitle: 'Cơ chế ký quỹ y tế trong bản thiết kế',
+  escrowTitle: 'Cơ chế ký quỹ (minh họa)',
   escrowHint:
-    'Quy trình giữ và giải ngân tiền cọc cần được xác nhận bằng hợp đồng, API thanh toán và quy tắc backend trước khi vận hành.',
+    'Quy trình giữ và giải ngân tiền cọc cần được xác nhận bằng hợp đồng và quy định thanh toán chính thức trước khi áp dụng.',
   refundTitle: 'Ma trận hoàn tiền khi hủy ca',
-  refundHint: 'Các mức hoàn tiền sau đây chỉ mô phỏng theo mẫu giao diện.',
+  refundHint: 'Các mức hoàn tiền dưới đây chỉ mang tính minh họa.',
   autoRefund: 'Tự động hoàn tiền',
   refundSteps: {
     early: 'Trước hơn 24 giờ',
@@ -74,29 +74,29 @@ export const adminPoliciesVi = {
   cutoffValue: 'Trước kỳ chi trả 24 giờ',
   minimum: 'Hạn mức giải ngân tối thiểu',
   riskTitle: 'Quỹ rủi ro & dự phòng',
-  riskHint: 'Mẫu giao diện đề xuất giữ lại 5% trong 7 ngày; đây chưa phải quy tắc vận hành.',
-  gatewayTitle: 'Cổng thanh toán trong bản thiết kế',
-  gatewayHint: 'Chưa có dữ liệu kết nối hoặc trạng thái giao dịch trực tiếp.',
+  riskHint: 'Đề xuất minh họa: giữ lại 5% trong 7 ngày; chưa phải quy định chính thức.',
+  gatewayTitle: 'Cổng thanh toán (minh họa)',
+  gatewayHint: 'Chưa có dữ liệu giao dịch thực tế.',
   legalTitle: 'Căn cứ pháp lý & tuân thủ',
-  legalHint: 'Các điều khoản và căn cứ pháp lý trong bản thiết kế cần được bộ phận pháp chế xác nhận trước khi công bố.'
+  legalHint: 'Các điều khoản và căn cứ pháp lý dưới đây cần được bộ phận pháp chế xác nhận trước khi công bố.'
 } as const
 
 export const adminPoliciesEn = {
   documentTitle: 'Platform policy settings | CareConnect Admin',
   breadcrumb: 'Platform standards',
   title: 'Policy settings & financial reconciliation',
-  version: 'Design sample v3.2 · October 1, 2025',
+  version: 'Sample v3.2 · October 1, 2025',
   intro: 'Preview deposit rates, refund rules, revenue allocation and payout cycles.',
   sample: 'Illustrative settings only; these are not active platform policies.',
   history: 'Version history',
   simulate: 'Run calculation preview',
   save: 'Save policy changes',
-  unavailable: 'Requires the backend API, approval and Admin authorization',
+  unavailable: 'Coming soon; changes must be approved before they apply.',
   tabs: {
     deposit: 'Deposits & refunds',
     commission: 'Commission & cash flow',
     payout: 'Reconciliation & payout',
-    risk: 'Risk reserve & escrow'
+    risk: 'Risk reserve & held funds'
   },
   depositTitle: 'Booking deposit policy',
   depositHint: 'Draft advance rate for a care shift preview.',
@@ -112,10 +112,10 @@ export const adminPoliciesEn = {
     day: '8–12 hours · daytime care',
     liveIn: '24/7 · long-term care'
   },
-  escrowTitle: 'Medical escrow model in the design',
-  escrowHint: 'Deposit holding and payout flows need contracts, payment APIs and backend rules before operation.',
+  escrowTitle: 'Deposit holding model (sample)',
+  escrowHint: 'Deposit holding and payouts must be confirmed by contracts and official payment rules before use.',
   refundTitle: 'Cancellation refund matrix',
-  refundHint: 'The refund percentages below are design examples only.',
+  refundHint: 'The refund percentages below are examples only.',
   autoRefund: 'Automatic refunds',
   refundSteps: {
     early: 'More than 24 hours before',
@@ -156,9 +156,9 @@ export const adminPoliciesEn = {
   cutoffValue: '24 hours before payout',
   minimum: 'Minimum payout',
   riskTitle: 'Risk reserve',
-  riskHint: 'The design proposes a 5% hold for 7 days; this is not an operational rule.',
-  gatewayTitle: 'Payment gateways in the design',
+  riskHint: 'Sample proposal: hold 5% for 7 days; not an official rule.',
+  gatewayTitle: 'Payment gateways (sample)',
   gatewayHint: 'No live connection or transaction status is available.',
   legalTitle: 'Legal basis & compliance',
-  legalHint: 'Legal references and terms in the design require legal review before publication.'
+  legalHint: 'The legal references and terms below require legal review before publication.'
 } as const

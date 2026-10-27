@@ -11,7 +11,7 @@ export const patientCreateEn = {
     backToList: 'Back to profiles list'
   },
   header: {
-    badge: 'CareConnect Electronic Medical Record (EMR)',
+    badge: 'CareConnect health record',
     title: 'Create New Care Recipient Health Profile',
     subtitle:
       'Please provide accurate medical history, underlying conditions, and daily habits so nurses and caregivers can establish the safest care plan.',
@@ -39,7 +39,7 @@ export const patientCreateEn = {
     stepper: {
       title: 'Form Progress',
       status: '{{completed}}/{{total}} Completed',
-      step1Title: '1. Identity & Demographics',
+      step1Title: '1. Basic information',
       step1Subtitle: 'Name, date of birth, blood type, BMI',
       step2Title: '2. Physical & Pathologies',
       step2Subtitle: 'Chronic illnesses, allergy history',
@@ -48,7 +48,7 @@ export const patientCreateEn = {
     },
     security: {
       badge: 'Medical Grade Security',
-      desc: 'Health records encrypted with AES-256 complying with HIPAA and personal data protection regulations.',
+      desc: 'Health information is encrypted and protected under international standards and personal data protection regulations.',
       subdesc: 'Only caregivers approved for the active shift are granted monitoring access.'
     },
     hotline: {
@@ -63,7 +63,7 @@ export const patientCreateEn = {
   },
   section1: {
     title: 'Identity & Basic Information',
-    subtitle: 'Demographics and initial biometric metrics',
+    subtitle: 'Name, date of birth, sex, height and weight',
     requiredNote: '* Required fields',
     fullNameLabel: 'Patient full name',
     fullNamePlaceholder: 'E.g., NGUYEN VAN AN',
@@ -90,7 +90,7 @@ export const patientCreateEn = {
       overweight: 'Overweight',
       obese: 'Obese'
     },
-    bloodTypeLabel: 'Blood type (ABO & Rh system)',
+    bloodTypeLabel: 'Blood type',
     bloodTypeUnknown: 'Unknown'
   },
   section2: {
@@ -111,7 +111,8 @@ export const patientCreateEn = {
     otherChronicPlaceholder: 'Add other conditions (if any, comma-separated)...',
     allergiesTitle: 'DRUG & FOOD ALLERGY HISTORY',
     allergiesBadge: 'Crucial',
-    allergiesDesc: 'Record any anaphylaxis, rashes, urticaria, or bronchospasm caused by antibiotics, NSAIDs, or food.',
+    allergiesDesc:
+      'Note any severe allergic reaction, rash, hives or trouble breathing after antibiotics, painkillers or certain foods.',
     allergyInputPlaceholder: 'Enter drug or food allergen name...',
     addAllergyBtn: '+ Add allergy',
     removeAllergy: 'Remove allergy',
@@ -151,7 +152,7 @@ export const patientCreateEn = {
   },
   modal: {
     title: 'Profile Created Successfully!',
-    desc: 'Health profile for {{name}} has been securely created and is ready for booking home care sessions now.',
+    desc: 'Health profile for {{name}} has been created and is ready for booking home care sessions now.',
     viewProfile: 'View the new profile',
     findCaregiver: 'Find caregivers for this patient',
     backToList: 'Back to profiles list'
@@ -171,10 +172,10 @@ export const patientCreateVi = {
     backToList: 'Quay lại danh sách hồ sơ'
   },
   header: {
-    badge: 'Hồ sơ y tế điện tử CareConnect (EMR)',
+    badge: 'Hồ sơ sức khỏe CareConnect',
     title: 'Tạo mới Hồ sơ Người bệnh cần chăm sóc',
     subtitle:
-      'Vui lòng cung cấp đầy đủ và chính xác thông tin y tế, bệnh nền và thói quen sinh hoạt để nhân viên y tế / điều dưỡng xây dựng phác đồ chăm sóc phù hợp và an toàn nhất.',
+      'Vui lòng cung cấp đầy đủ và chính xác thông tin y tế, bệnh nền và thói quen sinh hoạt để điều dưỡng lên kế hoạch chăm sóc phù hợp và an toàn nhất.',
     cancel: 'Hủy bỏ',
     saveProfile: 'Lưu hồ sơ người bệnh'
   },
@@ -199,8 +200,8 @@ export const patientCreateVi = {
     stepper: {
       title: 'Tiến trình hoàn thiện',
       status: '{{completed}}/{{total}} Hoàn thành',
-      step1Title: '1. Định danh & Nhân khẩu học',
-      step1Subtitle: 'Tên, ngày sinh, nhóm máu, BMI',
+      step1Title: '1. Thông tin cơ bản',
+      step1Subtitle: 'Họ tên, ngày sinh, nhóm máu, chiều cao, cân nặng',
       step2Title: '2. Thể chất & Bệnh nền',
       step2Subtitle: 'Bệnh mạn tính, tiền sử dị ứng',
       step3Title: '3. Đơn thuốc & Lịch uống',
@@ -208,8 +209,8 @@ export const patientCreateVi = {
     },
     security: {
       badge: 'Bảo mật chuẩn y tế',
-      desc: 'Dữ liệu y tế được mã hóa AES-256 theo chuẩn HIPAA & Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.',
-      subdesc: 'Chỉ điều dưỡng viên được phê duyệt trong ca trực mới được cấp quyền truy cập theo dõi.'
+      desc: 'Thông tin sức khỏe được mã hóa và bảo vệ theo tiêu chuẩn quốc tế và Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.',
+      subdesc: 'Chỉ điều dưỡng được giao chăm sóc người thân của bạn mới xem được hồ sơ này.'
     },
     hotline: {
       label: 'Tổng đài điều dưỡng 24/7',
@@ -222,8 +223,8 @@ export const patientCreateVi = {
     }
   },
   section1: {
-    title: 'Thông tin định danh & Cơ bản',
-    subtitle: 'Thông tin nhân khẩu học và các chỉ số sinh trắc ban đầu',
+    title: 'Thông tin cơ bản',
+    subtitle: 'Họ tên, ngày sinh, giới tính, chiều cao và cân nặng',
     requiredNote: '* Trường bắt buộc',
     fullNameLabel: 'Họ và tên người bệnh',
     fullNamePlaceholder: 'Ví dụ: NGUYỄN VĂN AN',
@@ -250,16 +251,16 @@ export const patientCreateVi = {
       overweight: 'Tiền béo phì',
       obese: 'Béo phì'
     },
-    bloodTypeLabel: 'Nhóm máu (Hệ ABO & Rh)',
+    bloodTypeLabel: 'Nhóm máu',
     bloodTypeUnknown: 'Chưa rõ'
   },
   section2: {
-    title: 'Tình trạng Bệnh nền & Tiền sử Y khoa',
-    subtitle: 'Hồ sơ bệnh án quan trọng giúp cảnh báo sớm nguy cơ sốc hoặc tương tác thuốc',
+    title: 'Bệnh nền & tiền sử bệnh',
+    subtitle: 'Giúp điều dưỡng sớm nhận biết nguy cơ sốc thuốc hoặc thuốc dùng chung gây hại',
     chronicLabel: 'Bệnh lý nền đang điều trị',
     multiSelectHint: 'Có thể chọn nhiều mục',
     chronicOptions: {
-      hypertension: 'Tăng huyết áp vô căn',
+      hypertension: 'Tăng huyết áp (cao huyết áp)',
       diabetes: 'Đái tháo đường Type 2 (Tiểu đường)',
       strokeHistory: 'Tiền sử Tai biến / Đột quỵ não',
       heartDisease: 'Bệnh mạch vành / Tim mạch',
@@ -270,13 +271,13 @@ export const patientCreateVi = {
     },
     otherChronicPlaceholder: 'Thêm bệnh nền khác (nếu có, cách nhau bằng dấu phẩy)...',
     allergiesTitle: 'Tiền sử dị ứng THUỐC & THỰC PHẨM',
-    allergiesBadge: 'Tối quan trọng',
+    allergiesBadge: 'Rất quan trọng',
     allergiesDesc:
-      'Ghi nhận các phản ứng phản vệ, ngứa, mề đay, co thắt phế quản khi dùng thuốc kháng sinh, giảm đau hoặc thức ăn.',
+      'Ghi lại các trường hợp từng bị sốc thuốc, ngứa, nổi mề đay hoặc khó thở sau khi dùng thuốc kháng sinh, thuốc giảm đau hoặc ăn món nào đó.',
     allergyInputPlaceholder: 'Nhập tên thuốc hoặc thực phẩm gây dị ứng...',
     addAllergyBtn: '+ Thêm dị ứng',
     removeAllergy: 'Xóa dị ứng',
-    surgeryHistoryLabel: 'Tiền sử phẫu thuật & Can thiệp ngoại khoa',
+    surgeryHistoryLabel: 'Tiền sử phẫu thuật',
     surgeryHistoryPlaceholder:
       'Ví dụ: Thay khớp gối nhân tạo chân phải (Năm 2021, Bệnh viện Chợ Rẫy); Mổ sỏi túi mật nội soi (Năm 2018)...',
     emergencyTitle: 'Người liên hệ khẩn cấp',
@@ -291,11 +292,11 @@ export const patientCreateVi = {
   },
   section3: {
     title: 'Đơn thuốc đang sử dụng & Lịch uống',
-    subtitle: 'Lập danh mục thuốc điều dưỡng viên cần nhắc nhở hoặc hỗ trợ cho uống',
+    subtitle: 'Liệt kê các loại thuốc cần điều dưỡng nhắc hoặc hỗ trợ uống',
     addMedicineBtn: '+ Thêm thuốc mới',
     empty: 'Chưa có thuốc nào. Bấm "+ Thêm thuốc mới" nếu người bệnh đang dùng thuốc.',
     medicineNameLabel: 'Tên thuốc',
-    medicineNamePlaceholder: 'Tên biệt dược / hoạt chất...',
+    medicineNamePlaceholder: 'Tên thuốc ghi trên vỏ hộp...',
     dosageLabel: 'Liều lượng',
     dosagePlaceholder: 'Ví dụ: 1 viên / lần...',
     timeLabel: 'Thời điểm uống',
@@ -312,7 +313,7 @@ export const patientCreateVi = {
   },
   modal: {
     title: 'Tạo hồ sơ thành công!',
-    desc: 'Hồ sơ người bệnh {{name}} đã được khởi tạo an toàn và sẵn sàng để bạn đặt lịch chăm sóc tại nhà ngay bây giờ.',
+    desc: 'Hồ sơ người bệnh {{name}} đã được tạo và sẵn sàng để bạn đặt lịch chăm sóc tại nhà ngay bây giờ.',
     viewProfile: 'Xem hồ sơ vừa tạo',
     findCaregiver: 'Tìm điều dưỡng cho người bệnh này',
     backToList: 'Quay về danh sách hồ sơ'

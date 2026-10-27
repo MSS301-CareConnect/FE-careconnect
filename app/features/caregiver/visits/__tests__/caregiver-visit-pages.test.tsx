@@ -94,9 +94,9 @@ describe('Caregiver assigned visits', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Nhận buổi' }))
     await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Check-in' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu ca' }))
     await waitFor(() => expect(checkIn).toHaveBeenCalledWith({ occurrenceId: 'occ-1' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Chưa tới giờ check-in')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Chưa tới giờ bắt đầu ca')
     // The visit has not started, so a no-show cannot be reported yet.
     expect(screen.queryByRole('button', { name: 'Báo khách vắng mặt' })).not.toBeInTheDocument()
   })
@@ -123,8 +123,8 @@ describe('Caregiver assigned visits', () => {
     vi.mocked(checkOut).mockResolvedValue({ ...session, status: 'ENDED' })
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
 
-    expect(await screen.findByText('Còn 1 việc trước khi check-out.')).toBeInTheDocument()
-    const checkOutButton = screen.getByRole('button', { name: 'Check-out' })
+    expect(await screen.findByText('Còn 1 việc trước khi kết thúc ca.')).toBeInTheDocument()
+    const checkOutButton = screen.getByRole('button', { name: 'Kết thúc ca' })
     expect(checkOutButton).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Bỏ qua' }))
@@ -135,8 +135,8 @@ describe('Caregiver assigned visits', () => {
     await waitFor(() =>
       expect(saveSessionTask).toHaveBeenCalledWith('s-1', 't-2', { status: 'SKIPPED', skipReason: 'Đang ngủ' })
     )
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Check-out' })).toBeEnabled())
-    fireEvent.click(screen.getByRole('button', { name: 'Check-out' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Kết thúc ca' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: 'Kết thúc ca' }))
     await waitFor(() => expect(checkOut).toHaveBeenCalledWith('s-1', {}))
   })
 })

@@ -1,5 +1,5 @@
 export const adminServicesVi = {
-  documentTitle: 'Danh mục & bảng giá | CareConnect Admin',
+  documentTitle: 'Danh mục & bảng giá | Quản trị CareConnect',
   title: 'Quản lý Danh mục & Bảng giá Dịch vụ Trung tâm',
   subtitle: 'Quản lý danh mục dịch vụ chuẩn của nền tảng và theo dõi bảng giá mà từng trung tâm đang áp dụng.',
   scope: 'Thay đổi danh mục chuẩn được áp dụng ngay cho các trung tâm và khách hàng.',
@@ -105,7 +105,7 @@ export const adminServicesVi = {
   },
   centerPricing: {
     title: 'Bảng giá dịch vụ theo trung tâm',
-    hint: 'Quản lý trung tâm đăng ký dịch vụ và cấu hình bảng giá. Admin xem để đối soát giá hiển thị cho khách hàng.',
+    hint: 'Quản lý trung tâm đăng ký dịch vụ và cấu hình bảng giá. Quản trị viên xem để đối chiếu giá hiển thị cho khách hàng.',
     centerSearch: 'Tìm trung tâm',
     center: 'Trung tâm',
     chooseCenter: 'Chọn trung tâm',

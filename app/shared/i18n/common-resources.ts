@@ -22,7 +22,7 @@ export const commonEn = {
       validation: {
         count: 'Select up to 10 files at a time.',
         type: 'This file type is not supported.',
-        size: 'Each file must be larger than 0 bytes and no more than {{maxSize}} MB.'
+        size: 'Files cannot be empty and must be no larger than {{maxSize}} MB.'
       }
     },
     language: {
@@ -73,7 +73,7 @@ export const commonVi = {
       validation: {
         count: 'Mỗi lần chỉ được chọn tối đa 10 tệp.',
         type: 'Loại tệp này không được hỗ trợ.',
-        size: 'Mỗi tệp phải lớn hơn 0 byte và không vượt quá {{maxSize}} MB.'
+        size: 'Tệp không được để trống và không vượt quá {{maxSize}} MB.'
       }
     },
     language: {
@@ -88,7 +88,7 @@ export const commonVi = {
   errors: {
     genericDetails: 'Đã xảy ra lỗi không mong muốn.',
     genericTitle: 'Lỗi',
-    loading: 'Đang khởi tạo CareConnect…',
+    loading: 'Đang mở CareConnect…',
     notFoundDetails: 'Không tìm thấy trang bạn yêu cầu.',
     notFoundTitle: '404'
   },

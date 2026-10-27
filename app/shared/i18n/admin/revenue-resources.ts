@@ -1,31 +1,31 @@
 export const adminRevenueVi = {
-  documentTitle: 'Giao dịch & doanh thu | CareConnect Admin',
+  documentTitle: 'Giao dịch & doanh thu | Quản trị CareConnect',
   title: 'Quản lý Giao dịch & Doanh thu',
   breadcrumb: 'Báo cáo & Đối soát tài chính',
   period: 'Chu kỳ mẫu: Tháng 09/2026',
-  subtitle: 'Theo dõi dòng tiền Escrow, phí nền tảng và giao dịch quyết toán trong dữ liệu minh họa.',
+  subtitle: 'Theo dõi tiền tạm giữ, phí nền tảng và các khoản quyết toán (số liệu minh họa).',
   export: 'Xuất CSV mẫu',
   reconcile: 'Đối soát ngân hàng tự động',
-  payout: 'Xử lý lệnh payout',
+  payout: 'Xử lý lệnh chi trả',
   kpis: {
-    gmv: 'Tổng dòng tiền GMV mẫu',
+    gmv: 'Tổng giá trị giao dịch (mẫu)',
     net: 'Doanh thu nền tảng mẫu (15%)',
     escrow: 'Ký quỹ tạm giữ mẫu',
     payout: 'Chờ quyết toán mẫu',
     gmvHint: '1.240 ca hoàn tất trong mẫu thiết kế',
-    netHint: 'Phí sàn tính từ GMV mẫu',
+    netHint: 'Phí nền tảng tính trên tổng giá trị giao dịch (mẫu)',
     escrowHint: '142 ca đang chờ nghiệm thu trong mẫu',
     payoutHint: '24 yêu cầu rút ví trong mẫu'
   },
   chart: 'Biến động Doanh thu & Dòng tiền',
-  chartHint: 'So sánh GMV và phí nền tảng 15% trong mẫu',
+  chartHint: 'So sánh tổng giá trị giao dịch và phí nền tảng 15% (mẫu)',
   chartPeriods: { week: '7 ngày qua', month: '30 ngày mẫu', quarter: 'Quý III', year: 'Năm 2026' },
   chartLegend: { gmv: 'Dòng tiền GMV', net: 'Phí nền tảng' },
   average: 'Doanh thu TB/ngày',
   refundRate: 'Tỷ lệ hoàn tiền ròng',
   reconciliationTime: 'Thời gian đối soát TB',
   hours: '{{value}} giờ',
-  escrowModel: 'Mô hình Phân bổ Escrow',
+  escrowModel: 'Phân bổ tiền tạm giữ',
   escrowHint: 'Tỷ lệ phân bổ minh họa theo giao diện mẫu, chưa là chính sách chính thức.',
   split: {
     caregiver: 'Quyết toán điều dưỡng',
@@ -35,7 +35,7 @@ export const adminRevenueVi = {
   },
   gatewayStatus: 'Cổng thanh toán',
   gatewayHint: 'Chưa có dữ liệu giám sát cổng thanh toán trực tiếp.',
-  search: 'Tìm mã giao dịch, booking hoặc tên bên liên quan...',
+  search: 'Tìm mã giao dịch, mã lịch đặt hoặc tên người liên quan...',
   type: 'Loại giao dịch',
   gateway: 'Phương thức',
   status: 'Trạng thái',
@@ -43,24 +43,24 @@ export const adminRevenueVi = {
   reset: 'Xóa bộ lọc',
   tabs: {
     all: 'Tất cả',
-    escrow: 'Ký quỹ Escrow',
-    pending: 'Chờ payout',
+    escrow: 'Ký quỹ tạm giữ',
+    pending: 'Chờ chi trả',
     settled: 'Thành công',
     refunded: 'Hoàn tiền',
     failed: 'Thất bại'
   },
   types: {
-    deposit: 'Cọc Escrow (30%)',
+    deposit: 'Tiền cọc tạm giữ (30%)',
     settlement: 'Quyết toán sau ca',
-    payout: 'Lệnh rút payout',
+    payout: 'Lệnh rút tiền',
     refund: 'Hoàn tiền hủy ca',
     fee: 'Phí sàn thu hộ'
   },
   gateways: { visa: 'Visa / Mastercard', vietqr: 'VietQR', bank: 'Chuyển khoản ngân hàng', system: 'Hệ thống' },
   statuses: {
-    escrow: 'Đang giữ Escrow',
+    escrow: 'Đang tạm giữ',
     settled: 'Đã tất toán',
-    pending: 'Chờ duyệt payout',
+    pending: 'Chờ duyệt chi trả',
     refunded: 'Đã hoàn tiền',
     reconciled: 'Đã đối soát',
     failed: 'Thất bại'
@@ -72,7 +72,7 @@ export const adminRevenueVi = {
   method: 'Phương thức',
   amount: 'Số tiền (VND)',
   actions: 'Thao tác',
-  noBooking: 'Không gắn booking',
+  noBooking: 'Không gắn lịch đặt',
   services: {
     night: 'Chăm sóc người cao tuổi ca đêm',
     infusion: 'Tiêm truyền & vô khuẩn',
@@ -81,7 +81,7 @@ export const adminRevenueVi = {
     therapy: 'Vật lý trị liệu'
   },
   sampleParty: 'Hệ thống kế toán mẫu',
-  escrowParty: 'Quỹ Escrow CareConnect',
+  escrowParty: 'Quỹ tạm giữ CareConnect',
   empty: 'Không tìm thấy giao dịch',
   emptyHint: 'Thử thay đổi hoặc xóa bộ lọc.',
   showing: 'Hiển thị {{from}}–{{to}} / {{total}} giao dịch mẫu',
@@ -92,10 +92,10 @@ export const adminRevenueVi = {
   detailTitle: 'Giao dịch #{{id}}',
   detailHint: 'Đây là dữ liệu mẫu, không phải hóa đơn hoặc kết quả đối soát thực tế.',
   close: 'Đóng',
-  approval: 'Duyệt payout',
+  approval: 'Duyệt chi trả',
   trustTitle: 'An toàn ký quỹ & đối soát',
   trustText:
-    'Việc giữ tiền, giải ngân và hoàn tiền phải do backend cùng cổng thanh toán xác nhận. Trang này chưa thực hiện giao dịch thật.'
+    'Việc giữ tiền, giải ngân và hoàn tiền phải được hệ thống và cổng thanh toán xác nhận. Trang này chưa thực hiện giao dịch thật.'
 } as const
 
 export const adminRevenueEn = {
@@ -103,30 +103,30 @@ export const adminRevenueEn = {
   title: 'Transactions & Revenue Management',
   breadcrumb: 'Financial reports & reconciliation',
   period: 'Sample period: September 2026',
-  subtitle: 'Review illustrative escrow flows, platform fees and settlement transactions.',
+  subtitle: 'Review sample held funds, platform fees and settlements.',
   export: 'Export sample CSV',
   reconcile: 'Automated bank reconciliation',
   payout: 'Process payouts',
   kpis: {
-    gmv: 'Sample gross GMV',
+    gmv: 'Sample total transaction value',
     net: 'Sample platform revenue (15%)',
-    escrow: 'Sample escrow holding',
+    escrow: 'Sample held funds',
     payout: 'Sample pending payouts',
-    gmvHint: '1,240 completed shifts in the design sample',
-    netHint: 'Platform fee calculated from sample GMV',
+    gmvHint: '1,240 completed shifts (sample)',
+    netHint: 'Platform fee based on sample transaction value',
     escrowHint: '142 shifts await sign-off in the sample',
     payoutHint: '24 wallet requests in the sample'
   },
   chart: 'Revenue & Cash Flow Trend',
-  chartHint: 'Sample GMV compared with a 15% platform fee',
+  chartHint: 'Sample transaction value compared with a 15% platform fee',
   chartPeriods: { week: 'Past 7 days', month: 'Sample 30 days', quarter: 'Q3', year: 'Year 2026' },
   chartLegend: { gmv: 'Gross GMV', net: 'Platform fee' },
   average: 'Average revenue per day',
   refundRate: 'Net refund rate',
   reconciliationTime: 'Average reconciliation time',
   hours: '{{value}} hours',
-  escrowModel: 'Escrow Distribution Model',
-  escrowHint: 'Illustrative allocation from the design; not an approved policy.',
+  escrowModel: 'Held Funds Allocation',
+  escrowHint: 'Sample allocation; not an approved policy.',
   split: {
     caregiver: 'Caregiver settlement',
     platform: 'Platform fee',
@@ -143,14 +143,14 @@ export const adminRevenueEn = {
   reset: 'Clear filters',
   tabs: {
     all: 'All',
-    escrow: 'Escrow holding',
+    escrow: 'Held funds',
     pending: 'Payout pending',
     settled: 'Successful',
     refunded: 'Refunded',
     failed: 'Failed'
   },
   types: {
-    deposit: 'Escrow deposit (30%)',
+    deposit: 'Held deposit (30%)',
     settlement: 'Shift settlement',
     payout: 'Payout request',
     refund: 'Cancellation refund',
@@ -158,7 +158,7 @@ export const adminRevenueEn = {
   },
   gateways: { visa: 'Visa / Mastercard', vietqr: 'VietQR', bank: 'Bank transfer', system: 'System' },
   statuses: {
-    escrow: 'Held in escrow',
+    escrow: 'Funds on hold',
     settled: 'Settled',
     pending: 'Payout approval pending',
     refunded: 'Refunded',
@@ -181,7 +181,7 @@ export const adminRevenueEn = {
     therapy: 'Physical therapy'
   },
   sampleParty: 'Sample accounting system',
-  escrowParty: 'CareConnect escrow fund',
+  escrowParty: 'CareConnect held funds',
   empty: 'No transactions found',
   emptyHint: 'Change or clear the filters.',
   showing: 'Showing {{from}}–{{to}} of {{total}} sample transactions',
@@ -193,7 +193,7 @@ export const adminRevenueEn = {
   detailHint: 'This is sample data, not an invoice or actual reconciliation result.',
   close: 'Close',
   approval: 'Approve payout',
-  trustTitle: 'Escrow safety & reconciliation',
+  trustTitle: 'Held funds safety & reconciliation',
   trustText:
-    'Holding, disbursing and refunding funds must be confirmed by the backend and payment gateway. This screen does not process real transactions.'
+    'Holding, disbursing and refunding funds must be confirmed by the platform and payment gateway. This screen does not process real transactions.'
 } as const

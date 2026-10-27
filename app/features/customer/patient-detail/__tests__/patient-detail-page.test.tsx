@@ -90,7 +90,7 @@ describe('PatientDetailPage', () => {
     vi.mocked(fetchCareRecipient).mockResolvedValue(detail)
     renderPage()
 
-    expect(screen.getByRole('status')).toHaveTextContent('Đang tải hồ sơ bệnh án...')
+    expect(screen.getByRole('status')).toHaveTextContent('Đang tải hồ sơ sức khỏe...')
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Hồ sơ y tế: Nguyễn Văn An')
     expect(fetchCareRecipient).toHaveBeenCalledWith('rec-1')
     expect(screen.getByText('Quyền của bạn: Chủ sở hữu')).toBeInTheDocument()
@@ -212,7 +212,7 @@ describe('PatientDetailPage', () => {
     vi.mocked(fetchCareRecipient).mockRejectedValue(Object.assign(new Error('Missing'), { status: 404 }))
     renderPage()
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Hồ sơ không tồn tại hoặc đã được lưu trữ.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Hồ sơ không tồn tại hoặc đã bị xóa.')
     expect(screen.getByRole('link', { name: 'Quay lại danh sách hồ sơ' })).toHaveAttribute(
       'href',
       '/customer/patient-profiles'
@@ -227,7 +227,7 @@ describe('PatientDetailPage', () => {
     await setAppLanguage('en', false)
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Medical Record: Nguyễn Văn An')
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Health record: Nguyễn Văn An')
     })
     expect(screen.getByText('View mode')).toBeInTheDocument()
     expect(screen.getByText('Needs assistance')).toBeInTheDocument()

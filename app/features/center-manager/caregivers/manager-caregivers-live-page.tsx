@@ -272,7 +272,8 @@ export function ManagerCaregiversPage() {
                   <div>
                     <strong>{person.fullName}</strong>
                     <p className='text-sm text-outline'>
-                      {person.verificationStatus} · {person.caregiverStatus}
+                      {t(`${key}.${verificationOptions[person.verificationStatus]}`)} ·{' '}
+                      {t(`${key}.${statusOptions[person.caregiverStatus]}`)}
                     </p>
                   </div>
                   <Link className='text-primary underline' to={`/center-manager/caregivers/${person.id}`}>

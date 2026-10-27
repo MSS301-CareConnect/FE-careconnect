@@ -3,7 +3,7 @@ export const caregiverScheduleVi = {
   documentTitle: 'Lịch trực Điều dưỡng | CareConnect',
   title: 'Lịch trực & Phân ca Điều dưỡng',
   breadcrumb: 'Đường dẫn lịch trực',
-  demo: 'Bản xem thử • Lịch, tiến độ và thu nhập là dữ liệu mẫu tại ngày {{date}}. Chưa kết nối điều phối ca trực.',
+  demo: 'Bản xem thử • Lịch, tiến độ và thu nhập là dữ liệu mẫu tại ngày {{date}}. Chưa phải lịch phân ca thực tế.',
   list: 'Danh sách',
   calendar: 'Lịch biểu',
   view: 'Chế độ xem lịch trực',
@@ -51,13 +51,13 @@ export const caregiverScheduleVi = {
     guardian: 'Người giám hộ: {{name}}',
     map: 'Bản đồ chỉ đường',
     checklist: 'Tình trạng mẫu: Đã đo huyết áp & Nhắc uống thuốc sáng',
-    checklistCount: 'Đã xong {{done}}/{{total}} mục checklist (mẫu)',
+    checklistCount: 'Đã xong {{done}}/{{total}} mục công việc (mẫu)',
     call: 'Gọi người nhà',
     report: 'Vào ca / Báo cáo',
     note: 'Ghi chú điều dưỡng',
     route: 'Xem lộ trình di chuyển',
     record: 'Xem bệnh án',
-    gps: 'Chỉ đường GPS'
+    gps: 'Chỉ đường'
   },
   patients: {
     a: {
@@ -106,7 +106,7 @@ export const caregiverScheduleVi = {
   },
   support: {
     title: 'Hỗ trợ Điều dưỡng',
-    description: 'Thông tin tổng đài và giao thông sẽ được cập nhật từ hệ thống.'
+    description: 'Thông tin tổng đài và giao thông sẽ sớm được cập nhật.'
   },
   empty: {
     title: 'Không có ca trực phù hợp',
@@ -123,7 +123,7 @@ export const caregiverScheduleEn = {
   documentTitle: 'Caregiver schedule | CareConnect',
   title: 'Caregiver Schedule & Assignments',
   breadcrumb: 'Schedule breadcrumb',
-  demo: 'Preview • Schedules, progress and earnings are sample data as of {{date}}. Assignment coordination is not connected.',
+  demo: 'Preview • Schedules, progress and earnings are sample data as of {{date}}. These are not real shift assignments.',
   list: 'List',
   calendar: 'Calendar',
   view: 'Schedule view',
@@ -171,13 +171,13 @@ export const caregiverScheduleEn = {
     guardian: 'Guardian: {{name}}',
     map: 'Directions map',
     checklist: 'Sample status: Blood pressure measured & Morning medication reminder',
-    checklistCount: '{{done}}/{{total}} checklist items completed (sample)',
+    checklistCount: '{{done}}/{{total}} tasks completed (sample)',
     call: 'Call family',
     report: 'Start session / Report',
     note: 'Care notes',
     route: 'View travel route',
     record: 'View medical record',
-    gps: 'GPS directions'
+    gps: 'Directions'
   },
   patients: {
     a: {
@@ -226,7 +226,7 @@ export const caregiverScheduleEn = {
   },
   support: {
     title: 'Caregiver support',
-    description: 'Support contacts and traffic updates will be supplied by the system.'
+    description: 'Support contacts and traffic updates will be added soon.'
   },
   empty: {
     title: 'No matching sessions',

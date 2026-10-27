@@ -5,7 +5,7 @@ export const authEn = {
   forbiddenTitle: 'Access denied',
   goToMyPortal: 'Go to my portal',
   invalidCredentials: 'The email or password is incorrect.',
-  loading: 'Checking your session…',
+  loading: 'Checking your sign-in…',
   loginDescription: 'Sign in with your CareConnect account.',
   loginFailed: 'Unable to sign in. Please try again.',
   loginTitle: 'Welcome back',
@@ -22,7 +22,7 @@ export const authEn = {
   signOut: 'Sign out',
   signingOut: 'Signing out…',
   signOutFailed: 'Unable to sign out. Please try again.',
-  unavailableDescription: 'We could not check your session. Please try again.',
+  unavailableDescription: 'We could not check your sign-in status. Please try again.',
   unavailableTitle: 'Connection unavailable'
 } as const
 
@@ -31,16 +31,16 @@ export const authVi = {
   email: 'Địa chỉ email',
   forbiddenDescription: 'Tài khoản của bạn không có quyền vào khu vực này.',
   forbiddenTitle: 'Không có quyền truy cập',
-  goToMyPortal: 'Đến khu vực của tôi',
+  goToMyPortal: 'Đến trang của tôi',
   invalidCredentials: 'Email hoặc mật khẩu không đúng.',
-  loading: 'Đang kiểm tra phiên đăng nhập…',
+  loading: 'Đang kiểm tra đăng nhập…',
   loginDescription: 'Đăng nhập bằng tài khoản CareConnect của bạn.',
   loginFailed: 'Không thể đăng nhập. Vui lòng thử lại.',
   loginTitle: 'Chào mừng bạn trở lại',
   visualLabel: 'Chăm sóc tại nhà',
   visualHeadline: 'An tâm khi người thân được chăm sóc.',
   visualDescription: 'Để mỗi ngày bên gia đình thêm nhẹ lòng và ấm áp.',
-  noPortal: 'Tài khoản này chưa có quyền truy cập khu vực web.',
+  noPortal: 'Tài khoản này chưa được phép đăng nhập trên trang web.',
   password: 'Mật khẩu',
   showPassword: 'Hiện mật khẩu',
   hidePassword: 'Ẩn mật khẩu',
@@ -50,6 +50,6 @@ export const authVi = {
   signOut: 'Đăng xuất',
   signingOut: 'Đang đăng xuất…',
   signOutFailed: 'Không thể đăng xuất. Vui lòng thử lại.',
-  unavailableDescription: 'Không thể kiểm tra phiên đăng nhập. Vui lòng thử lại.',
+  unavailableDescription: 'Không thể kiểm tra trạng thái đăng nhập. Vui lòng thử lại.',
   unavailableTitle: 'Không thể kết nối'
 } as const

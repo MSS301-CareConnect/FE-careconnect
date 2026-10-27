@@ -52,7 +52,7 @@ export const bookingsEn = {
       caregiverRole: 'Emergency care specialist',
       service: 'Advanced elderly care',
       location: 'Apartment 18.04, Landmark 2, Vinhomes Central Park, Binh Thanh',
-      note: 'Checked in at 07:55 · 4h 15m of 9h completed',
+      note: 'Started at 07:55 · 4 h 15 min of 9 h done',
       payment: '50% deposit paid · 800,000 ₫ remaining'
     },
     upcoming: {
@@ -97,8 +97,8 @@ export const bookingsVi = {
     label: 'Lọc lịch đặt',
     status: 'Trạng thái lịch đặt',
     all: 'Tất cả',
-    search: 'Tìm theo mã booking',
-    searchPlaceholder: 'Mã booking, ví dụ 6 ký tự cuối',
+    search: 'Tìm theo mã lịch đặt',
+    searchPlaceholder: 'Mã lịch đặt (có thể nhập 6 ký tự cuối)',
     sort: 'Sắp xếp lịch đặt',
     reset: 'Xóa bộ lọc'
   },
@@ -126,7 +126,7 @@ export const bookingsVi = {
     title: 'Chưa có lịch đặt nào',
     description: 'Các lịch đặt bạn gửi sẽ hiện ở đây để bạn theo dõi từng lịch.',
     filteredTitle: 'Không có lịch đặt phù hợp',
-    filteredDescription: 'Thử trạng thái hoặc mã booking khác.'
+    filteredDescription: 'Thử trạng thái hoặc mã lịch đặt khác.'
   },
   pagination: {
     label: 'Trang lịch đặt',
@@ -136,13 +136,13 @@ export const bookingsVi = {
   },
   items: {
     ongoing: {
-      status: 'Đang trong ca trực',
+      status: 'Đang được chăm sóc',
       patient: 'Cụ Nguyễn Văn An',
       relation: '78 tuổi · Bố ruột (cao huyết áp)',
       caregiverRole: 'Chuyên khoa Hồi sức cấp cứu',
       service: 'Chăm sóc người cao tuổi chuyên sâu',
       location: 'Phòng 18.04, Tòa Landmark 2, Vinhomes Central Park, Bình Thạnh',
-      note: 'Check-in 07:55 · Đã thực hiện 4h 15m / 9h',
+      note: 'Bắt đầu lúc 07:55 · Đã chăm sóc 4 giờ 15 phút / 9 giờ',
       payment: 'Đã thanh toán cọc 50% · Còn lại 800.000 ₫'
     },
     upcoming: {
@@ -152,7 +152,7 @@ export const bookingsVi = {
       caregiverRole: 'Cử nhân Điều dưỡng · Đánh giá 4,9',
       service: 'Chăm sóc phục hồi & hỗ trợ vận động',
       location: 'Biệt thự 42, Đường số 12, Thảo Điền, TP. Thủ Đức',
-      note: 'Đã khóa lịch · Điều dưỡng đã nhận ca',
+      note: 'Lịch đã chốt · Điều dưỡng đã nhận lịch',
       payment: 'Đã cọc 750.000 ₫ · Còn lại 700.000 ₫'
     },
     completed: {

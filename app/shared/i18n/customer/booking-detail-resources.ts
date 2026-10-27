@@ -34,7 +34,7 @@ export const bookingDetailEn = {
     },
     IN_PROGRESS: {
       title: 'Care is under way',
-      body: 'Visits are being carried out. Each one updates below as the caregiver checks in and out.'
+      body: 'Visits are in progress. Each one updates below when the caregiver starts and finishes it.'
     },
     COMPLETED: {
       title: 'All visits are done',
@@ -105,7 +105,7 @@ export const bookingDetailVi = {
     },
     IN_PROGRESS: {
       title: 'Đang trong thời gian chăm sóc',
-      body: 'Các buổi đang được thực hiện và cập nhật bên dưới khi người chăm sóc check-in, check-out.'
+      body: 'Các buổi bên dưới được cập nhật mỗi khi người chăm sóc bắt đầu và kết thúc buổi chăm sóc.'
     },
     COMPLETED: {
       title: 'Đã hoàn tất mọi buổi',

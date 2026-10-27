@@ -109,7 +109,9 @@ describe('Center Manager Provider caregivers', () => {
     fireEvent.change(screen.getByLabelText('Sign-in email'), { target: { value: 'lan@example.com' } })
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Lan Nguyen' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('user-1')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The account was created, but the profile was not saved.'
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Retry saving profile' }))
 
     await waitFor(() => expect(createCaregiver).toHaveBeenCalledTimes(2))

@@ -1,5 +1,5 @@
 export const adminDashboardVi = {
-  documentTitle: 'Tổng quan nền tảng | CareConnect Admin',
+  documentTitle: 'Tổng quan nền tảng | Quản trị CareConnect',
   title: 'Tổng quan nền tảng',
   subtitle: 'Theo dõi hoạt động chăm sóc, nhân sự y tế và doanh thu của nền tảng.',
   snapshot: 'Kỳ báo cáo: 01–30/09/2026',
@@ -10,7 +10,7 @@ export const adminDashboardVi = {
     customers: 'Tổng khách hàng',
     caregivers: 'Tổng điều dưỡng',
     bookings: 'Lịch đặt đang hoạt động',
-    revenue: 'GMV trong tháng',
+    revenue: 'Tổng giá trị giao dịch trong tháng',
     customersHint: '138 khách hàng mới trong tháng',
     caregiversHint: '198/210 hồ sơ có CCHN',
     bookingsHint: '34 ca đang trực · 52 ca đã chốt',
@@ -22,8 +22,8 @@ export const adminDashboardVi = {
   week: 'Tuần {{count, number}}',
   completion: 'Tỷ lệ hoàn thành ca trực',
   completionHint: 'Mục tiêu: trên 95%',
-  revenueChart: 'GMV theo dịch vụ',
-  revenueChartHint: 'Phân bổ GMV mẫu {{amount}}',
+  revenueChart: 'Giá trị giao dịch theo dịch vụ',
+  revenueChartHint: 'Phân bổ giá trị giao dịch (mẫu) {{amount}}',
   viewRevenue: 'Xem báo cáo doanh thu',
   services: {
     recovery: 'Phục hồi sau tai biến & đột quỵ',
@@ -51,7 +51,7 @@ export const adminDashboardVi = {
     skill: 'Kỹ thuật chuyên môn',
     communication: 'Giao tiếp & y đức'
   },
-  hotline: 'Đường dây nóng QA y khoa',
+  hotline: 'Đường dây nóng kiểm soát chất lượng y khoa',
   hotlineHint: 'Số đường dây nóng đang được cập nhật',
   call: 'Gọi trực tiếp'
 } as const
@@ -68,7 +68,7 @@ export const adminDashboardEn = {
     customers: 'Total customers',
     caregivers: 'Total caregivers',
     bookings: 'Active bookings',
-    revenue: 'Monthly GMV',
+    revenue: 'Monthly transaction value',
     customersHint: '138 new customers this month',
     caregiversHint: '198/210 profiles have licenses',
     bookingsHint: '34 shifts in progress · 52 confirmed',
@@ -80,8 +80,8 @@ export const adminDashboardEn = {
   week: 'Week {{count, number}}',
   completion: 'Shift completion rate',
   completionHint: 'Target: above 95%',
-  revenueChart: 'GMV by service',
-  revenueChartHint: 'Breakdown of sample GMV {{amount}}',
+  revenueChart: 'Transaction value by service',
+  revenueChartHint: 'Breakdown of sample transaction value {{amount}}',
   viewRevenue: 'View revenue report',
   services: { recovery: 'Stroke rehabilitation', elderly: 'Older adult care', motherBaby: 'Mother & infant care' },
   customerGrowth: 'Customer growth',
@@ -105,7 +105,7 @@ export const adminDashboardEn = {
     skill: 'Clinical skills',
     communication: 'Communication & ethics'
   },
-  hotline: 'Medical QA hotline',
+  hotline: 'Medical quality hotline',
   hotlineHint: 'Hotline number is being updated',
   call: 'Call directly'
 } as const

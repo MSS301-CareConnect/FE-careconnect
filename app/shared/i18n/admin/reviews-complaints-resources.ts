@@ -3,20 +3,20 @@ export const adminReviewsComplaintsVi = {
   breadcrumb: 'Đánh giá & Chăm sóc khách hàng',
   title: 'Quản lý Đánh giá & Xử lý Khiếu nại Khách hàng',
   subtitle: 'Trung tâm Tiếp nhận & Phân giải Tranh chấp Y tế 24/7',
-  sample: 'Dữ liệu minh họa theo mẫu giao diện. Chưa kết nối hồ sơ, GPS, ký quỹ hoặc quyền xử lý từ backend.',
-  unavailable: 'Cần API và quyền Admin để thực hiện thao tác này.',
+  sample: 'Số liệu minh họa. Chưa có dữ liệu hồ sơ, vị trí, ký quỹ thực tế và chưa thể xử lý trực tiếp tại đây.',
+  unavailable: 'Chức năng này sắp ra mắt.',
   actions: {
     policies: 'Chính sách đền bù & sự cố',
-    export: 'Xuất báo cáo CSAT mẫu',
-    sos: 'Quy chuẩn Escalation SOS',
+    export: 'Xuất báo cáo mức độ hài lòng (mẫu)',
+    sos: 'Quy trình chuyển cấp sự cố khẩn cấp',
     archive: 'Lịch sử giải quyết tranh chấp',
     create: 'Tạo hồ sơ xử lý sự cố đặc biệt'
   },
   metrics: {
-    csat: 'Điểm CSAT trung bình',
+    csat: 'Điểm hài lòng trung bình',
     csatHint: '94,2% đánh giá 5 sao · 2.450 lượt',
     urgent: 'Khiếu nại khẩn cấp',
-    urgentHint: 'SLA phản hồi mục tiêu: dưới 2 giờ',
+    urgentHint: 'Thời gian phản hồi mục tiêu: dưới 2 giờ',
     resolved: 'Đã giải quyết thỏa đáng',
     resolvedHint: 'Hoàn tiền đúng hạn: 100%',
     satisfaction: 'Hài lòng sau giải quyết',
@@ -51,8 +51,8 @@ export const adminReviewsComplaintsVi = {
       center: 'TT Chăm sóc Y tế Gia đình An Nhiên',
       statement:
         'Điều dưỡng đến trễ 45 phút không báo trước. Gia đình yêu cầu đổi điều dưỡng và hoàn lại 50% tiền cọc.',
-      evidence: 'GPS check-in: 08:45 (trễ 45 phút) · Ký quỹ mẫu: 1.250.000 ₫ · Giải trình: sự cố ngập đường.',
-      outcome: 'Hồ sơ cần xác minh y khoa và đối soát SLA trước khi đưa ra phán quyết.'
+      evidence: 'Định vị lúc đến: 08:45 (trễ 45 phút) · Ký quỹ mẫu: 1.250.000 ₫ · Giải trình: sự cố ngập đường.',
+      outcome: 'Hồ sơ cần xác minh y khoa và đối chiếu thời gian phản hồi cam kết trước khi đưa ra quyết định.'
     },
     clinical: {
       context: 'Chăm sóc hậu phẫu tại gia',
@@ -80,12 +80,12 @@ export const adminReviewsComplaintsVi = {
     record: 'Xem biên bản lưu trữ'
   },
   protocol: {
-    title: 'Cơ chế CareProtect Escrow 4 bước',
-    hint: 'Quy trình minh họa; điều kiện thanh toán thực tế do backend quyết định.',
+    title: 'Quy trình tạm giữ tiền CareProtect 4 bước',
+    hint: 'Quy trình minh họa; điều kiện thanh toán thực tế do hệ thống thanh toán quyết định.',
     steps: {
       receive: 'Tiếp nhận phản ánh 24/7',
       hold: 'Tạm giữ ký quỹ',
-      verify: 'Thẩm định y khoa & GPS',
+      verify: 'Thẩm định y khoa & vị trí',
       decide: 'Phán quyết & bồi hoàn'
     }
   },
@@ -100,10 +100,10 @@ export const adminReviewsComplaintsVi = {
     secondQuote: 'Điều dưỡng có chuyên môn, chăm sóc vết thương cẩn thận và tác phong chu đáo.',
     more: 'Xem tất cả đánh giá mẫu'
   },
-  reviewsHint: 'Bộ lọc đánh giá mẫu hiển thị các phản hồi được chọn trong thiết kế.',
-  violationsHint: 'Báo cáo vi phạm trong thiết kế cần kết nối nguồn dữ liệu và quy trình xác minh.',
+  reviewsHint: 'Bộ lọc đang hiển thị các đánh giá minh họa.',
+  violationsHint: 'Chức năng báo cáo vi phạm sắp ra mắt.',
   support: 'Hội đồng Đạo đức Y tế & Giám sát Ca trực',
-  supportHint: 'Kênh đối thoại ba bên và quyết định xử lý cần backend cùng quyền truy cập phù hợp.'
+  supportHint: 'Kênh trao đổi ba bên và quyết định xử lý sắp ra mắt.'
 } as const
 
 export const adminReviewsComplaintsEn = {
@@ -111,20 +111,20 @@ export const adminReviewsComplaintsEn = {
   breadcrumb: 'Reviews & customer care',
   title: 'Customer reviews & complaint management',
   subtitle: '24/7 medical dispute intake and resolution center',
-  sample: 'Illustrative design data. Cases, GPS, escrow, and Admin permissions are not connected to the backend.',
-  unavailable: 'This action requires backend APIs and Admin permissions.',
+  sample: 'Sample data. Case files, locations and held funds are not live, and cases cannot be handled here yet.',
+  unavailable: 'This feature is coming soon.',
   actions: {
     policies: 'Compensation & incident policy',
-    export: 'Export sample CSAT report',
-    sos: 'SOS escalation standard',
+    export: 'Export sample satisfaction report',
+    sos: 'Emergency escalation process',
     archive: 'Dispute resolution archive',
     create: 'Create special incident case'
   },
   metrics: {
-    csat: 'Average CSAT score',
+    csat: 'Average satisfaction score',
     csatHint: '94.2% five-star ratings · 2,450 reviews',
     urgent: 'Urgent complaints',
-    urgentHint: 'Target response SLA: under 2 hours',
+    urgentHint: 'Target response time: under 2 hours',
     resolved: 'Resolved satisfactorily',
     resolvedHint: 'On-time refunds: 100%',
     satisfaction: 'Post-resolution satisfaction',
@@ -160,8 +160,8 @@ export const adminReviewsComplaintsEn = {
       statement:
         'The caregiver arrived 45 minutes late without notice. The family requested a replacement and a refund of 50% of the deposit.',
       evidence:
-        'Sample GPS check-in: 08:45 (45 minutes late) · Sample escrow: VND 1,250,000 · Explanation: flooded roads.',
-      outcome: 'Clinical verification and SLA reconciliation are needed before any decision.'
+        'Sample arrival time: 08:45 (45 minutes late) · Sample held deposit: VND 1,250,000 · Explanation: flooded roads.',
+      outcome: 'Clinical verification and a response-time check are needed before any decision.'
     },
     clinical: {
       context: 'Post-surgery care at home',
@@ -183,19 +183,19 @@ export const adminReviewsComplaintsEn = {
   outcome: 'Sample case status',
   caseActions: {
     replace: 'Replace tomorrow’s caregiver',
-    refund: 'Approve 50% escrow refund & voucher',
+    refund: 'Approve 50% deposit refund & voucher',
     discipline: 'Discipline caregiver',
     medical: 'View medical record',
     resolve: 'Record settlement & close case',
     record: 'View archived record'
   },
   protocol: {
-    title: 'Four-step CareProtect escrow process',
-    hint: 'Illustrative process; the backend determines actual payment rules.',
+    title: 'Four-step CareProtect fund holding process',
+    hint: 'Sample process; the payment system determines the actual rules.',
     steps: {
       receive: 'Receive reports 24/7',
-      hold: 'Hold escrow',
-      verify: 'Clinical & GPS review',
+      hold: 'Hold funds',
+      verify: 'Clinical & location review',
       decide: 'Decision & refund'
     }
   },
@@ -211,8 +211,8 @@ export const adminReviewsComplaintsEn = {
     secondQuote: 'The caregiver was skilled, dressed the wound carefully, and acted with care.',
     more: 'View all sample reviews'
   },
-  reviewsHint: 'The sample reviews tab shows selected feedback from the design.',
-  violationsHint: 'Conduct reports in the design require a data source and verification workflow.',
+  reviewsHint: 'This tab shows sample reviews.',
+  violationsHint: 'Conduct reports are coming soon.',
   support: 'Medical Ethics Council & Shift Oversight',
-  supportHint: 'Three-party communication and decisions require backend support and appropriate access.'
+  supportHint: 'Three-party conversations and decisions are coming soon.'
 } as const

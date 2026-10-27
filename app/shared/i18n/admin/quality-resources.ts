@@ -1,32 +1,32 @@
 export const adminQualityVi = {
-  documentTitle: 'Kiểm soát chất lượng caregiver | CareConnect Admin',
+  documentTitle: 'Kiểm soát chất lượng điều dưỡng | Quản trị CareConnect',
   breadcrumb: 'Kiểm soát chất lượng & an toàn y tế',
   title: 'Xác minh & Kiểm soát chất lượng hồ sơ Điều dưỡng',
   subtitle: 'Xem trước hồ sơ năng lực, chứng chỉ và các bước kiểm định trước khi mở quyền nhận ca.',
-  sample: 'Dữ liệu minh họa tháng 10/2025 · Chưa liên thông Bộ Y tế hoặc dữ liệu xác minh trực tiếp.',
+  sample: 'Số liệu minh họa tháng 10/2025 · Chưa đối chiếu với dữ liệu của Bộ Y tế.',
   tier: 'Cổng thẩm định cuối · bản xem trước',
   standards: 'Quy chuẩn thẩm định',
   export: 'Xuất CSV mẫu',
   history: 'Lịch sử duyệt',
-  unavailable: 'Cần dữ liệu kiểm định, API và quyền Admin để thực hiện',
+  unavailable: 'Chức năng này sắp ra mắt.',
   metrics: {
     urgent: 'Cần xử lý',
     approved: 'Đạt chuẩn tháng này',
     review: 'Yêu cầu phúc tra CCHN',
-    rejected: 'Từ chối / Blacklist'
+    rejected: 'Từ chối / Cấm hoạt động'
   },
   metricHints: {
-    urgent: '14 hồ sơ trong mẫu thiết kế',
+    urgent: '14 hồ sơ (minh họa)',
     approved: 'Tỷ lệ thông qua mẫu: 89,4%',
     review: '6 hồ sơ cần đối chiếu',
     rejected: '2 hồ sơ bị đánh dấu trong mẫu'
   },
   process: 'Quy trình thẩm định y tế ba lớp',
-  processHint: 'Luồng tham chiếu từ bản thiết kế; chưa phải kết quả xác minh tự động.',
+  processHint: 'Quy trình minh họa; chưa phải kết quả xác minh thực tế.',
   steps: {
     center: 'Trung tâm đối tác sơ tuyển',
     license: 'Đối chiếu CCHN và giấy tờ',
-    admin: 'Hội đồng y khoa & Admin chốt'
+    admin: 'Hội đồng y khoa & quản trị viên chốt'
   },
   search: 'Tìm tên điều dưỡng, mã hồ sơ, số CCHN hoặc trung tâm',
   center: 'Trung tâm đề xuất',
@@ -48,7 +48,7 @@ export const adminQualityVi = {
     license: 'Chứng chỉ CCHN',
     background: 'Lý lịch & sức khỏe',
     assessment: 'Đánh giá chuyên môn',
-    status: 'Trạng thái Audit',
+    status: 'Trạng thái kiểm tra',
     actions: 'Quyết định quản trị'
   },
   age: '{{count}} tuổi',
@@ -60,7 +60,7 @@ export const adminQualityVi = {
   statuses: { ready: 'Chờ Admin phê duyệt', discrepancy: 'Cần đối chiếu phôi bằng', clinical: 'Chờ chốt thẩm định' },
   licenseStates: { match: 'Khớp dữ liệu trong mẫu', mismatch: 'Cần đối chiếu lại số phôi', valid: 'Hợp lệ trong mẫu' },
   actions: {
-    approve: 'Phê duyệt & cấp Verified',
+    approve: 'Phê duyệt & cấp huy hiệu Đã xác minh',
     review: 'Yêu cầu phúc tra',
     details: 'Xem hồ sơ mẫu',
     reject: 'Từ chối hồ sơ'
@@ -70,17 +70,17 @@ export const adminQualityVi = {
   previous: 'Trang trước',
   next: 'Trang sau',
   page: 'Trang {{page}} / {{pages}}',
-  diagnostics: 'Đối chiếu OCR & CCHN',
-  diagnosticsHint: 'Chưa kết nối cổng dữ liệu Bộ Y tế. Các trạng thái trong bảng chỉ là mẫu thiết kế.',
+  diagnostics: 'Đối chiếu giấy tờ & CCHN',
+  diagnosticsHint: 'Chưa đối chiếu với dữ liệu của Bộ Y tế. Các trạng thái trong bảng chỉ mang tính minh họa.',
   diagnosticsRows: { identity: 'Họ tên & giấy tờ', license: 'Hiệu lực chứng chỉ', revoke: 'Lịch sử thu hồi' },
   diagnosticsValue: 'Chưa xác minh trực tiếp',
   clinical: 'Trạm phỏng vấn lâm sàng',
-  clinicalHint: 'Cuộc gọi và bài kiểm tra thực tế cần tích hợp dịch vụ và quy trình kiểm định.',
+  clinicalHint: 'Chức năng gọi kiểm tra và bài kiểm tra thực tế sắp ra mắt.',
   call: 'Bắt đầu cuộc gọi kiểm tra',
   guarantor: 'Bảo lãnh trách nhiệm dân sự',
   guarantorHint: 'Thông tin ký quỹ và bảo hiểm trong mẫu cần đối chiếu với hợp đồng đối tác.',
   previewTitle: 'Hồ sơ điều dưỡng mẫu',
-  previewHint: 'Thông tin này chưa được kiểm chứng từ hệ thống thẩm định.',
+  previewHint: 'Thông tin này chưa được thẩm định.',
   close: 'Đóng',
   candidateNotes: {
     huong: 'Bài kiểm tra chuyên môn mẫu đạt 96/100; chờ quyết định cuối.',
@@ -99,21 +99,21 @@ export const adminQualityEn = {
   standards: 'Review standards',
   export: 'Export sample CSV',
   history: 'Approval history',
-  unavailable: 'Requires verified records, backend APIs and Admin authorization',
+  unavailable: 'This feature is coming soon.',
   metrics: {
     urgent: 'Needs review',
     approved: 'Approved this month',
     review: 'License rechecks',
-    rejected: 'Rejected / blacklisted'
+    rejected: 'Rejected / banned'
   },
   metricHints: {
-    urgent: '14 files in the design',
+    urgent: '14 files (sample)',
     approved: 'Sample pass rate: 89.4%',
     review: '6 files need comparison',
-    rejected: '2 flagged files in the design'
+    rejected: '2 flagged files (sample)'
   },
   process: 'Three-layer clinical review',
-  processHint: 'Reference flow from the design; not automated verification results.',
+  processHint: 'Sample process; not real verification results.',
   steps: {
     center: 'Partner center prescreening',
     license: 'License and document comparison',
@@ -134,7 +134,7 @@ export const adminQualityEn = {
     license: 'Practice license',
     background: 'Background & health',
     assessment: 'Clinical assessment',
-    status: 'Audit status',
+    status: 'Review status',
     actions: 'Admin decision'
   },
   age: '{{count}} years old',
@@ -149,9 +149,9 @@ export const adminQualityEn = {
     clinical: 'Awaiting final review'
   },
   licenseStates: {
-    match: 'Matched in design sample',
+    match: 'Matched (sample)',
     mismatch: 'License number requires comparison',
-    valid: 'Valid in design sample'
+    valid: 'Valid (sample)'
   },
   actions: {
     approve: 'Approve & mark verified',
@@ -164,21 +164,21 @@ export const adminQualityEn = {
   previous: 'Previous page',
   next: 'Next page',
   page: 'Page {{page}} / {{pages}}',
-  diagnostics: 'OCR & license comparison',
-  diagnosticsHint: 'No live Ministry of Health data connection. Table statuses are design samples only.',
+  diagnostics: 'Document & license check',
+  diagnosticsHint: 'Not yet checked against Ministry of Health data. Table statuses are samples only.',
   diagnosticsRows: { identity: 'Name & identity', license: 'License validity', revoke: 'Revocation history' },
   diagnosticsValue: 'Not verified live',
   clinical: 'Clinical interview station',
   clinicalHint: 'Live calls and practical tests require an integrated service and review process.',
   call: 'Start assessment call',
   guarantor: 'Civil liability guarantee',
-  guarantorHint: 'Deposit and insurance details in the design require partner contract verification.',
+  guarantorHint: 'Sample deposit and insurance details must be checked against the partner contract.',
   previewTitle: 'Sample caregiver record',
-  previewHint: 'This information has not been verified against a live review system.',
+  previewHint: 'This information has not been reviewed yet.',
   close: 'Close',
   candidateNotes: {
     huong: 'Sample clinical score is 96/100; awaiting final decision.',
-    khanh: 'The design flags a license number for rechecking.',
+    khanh: 'A license number is flagged for rechecking (sample).',
     loan: 'Sample clinical score is 98/100; awaiting final review.'
   }
 } as const

@@ -28,7 +28,7 @@ describe('Caregiver report', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Thêm công việc' }))
     expect(screen.getByRole('checkbox', { name: 'Đã hoàn thành: Hỗ trợ thay áo' })).toBeChecked()
     fireEvent.click(screen.getAllByRole('button', { name: 'Lưu bản nháp' })[0])
-    expect(screen.getByRole('status')).toHaveTextContent('Đã giữ bản nháp')
+    expect(screen.getByRole('status')).toHaveTextContent('Đã lưu tạm bản nháp')
     view.unmount()
     renderReport()
     expect(screen.getByLabelText('Ghi chép chuyên môn của Điều dưỡng phụ trách')).toHaveValue('Ghi chú sau ca cần giữ.')

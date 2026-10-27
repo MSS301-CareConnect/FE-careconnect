@@ -330,7 +330,7 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
               <div>
                 <strong>{certificate.certificateName}</strong>
                 <p className='text-sm text-outline'>
-                  {certificate.issuedBy} · {certificate.verificationStatus}
+                  {certificate.issuedBy} · {t(`${key}.${verificationLabels[certificate.verificationStatus]}`)}
                 </p>
               </div>
               <div className='flex gap-3'>

@@ -40,7 +40,7 @@ describe('security sessions', () => {
     renderSessions()
 
     expect(await screen.findByText('Current browser')).toBeInTheDocument()
-    expect(screen.getByText('Current session')).toBeInTheDocument()
+    expect(screen.getByText('This device')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Sign out this device' }))
 
     await waitFor(() => expect(revokeSession).toHaveBeenCalledWith('other'))
@@ -52,8 +52,8 @@ describe('security sessions', () => {
     vi.mocked(fetchWebSessions).mockRejectedValueOnce(new Error('Unavailable')).mockResolvedValueOnce([])
     renderSessions()
 
-    expect(await screen.findByText('Unable to load sign-in sessions.')).toBeInTheDocument()
+    expect(await screen.findByText('Unable to load devices.')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
-    expect(await screen.findByText('No sign-in sessions found.')).toBeInTheDocument()
+    expect(await screen.findByText('No signed-in devices found.')).toBeInTheDocument()
   })
 })

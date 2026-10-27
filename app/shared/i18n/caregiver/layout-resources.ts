@@ -26,11 +26,11 @@ export const caregiverLayoutEn = {
     local: 'Changes apply to this preview only.',
     quickReport: 'Quick report'
   },
-  unavailable: 'This feature is not connected to the system yet.',
+  unavailable: 'This feature is coming soon.',
   footer: {
     brand: 'CareConnect Vietnam',
     description: 'Connecting families with home care and supporting caregivers across Vietnam.',
-    credential: 'Service registration details are supplied by the system',
+    credential: 'Service registration details will be added soon',
     support: 'Caregiver support',
     supportDetail: 'Support channels are being established',
     advice: 'Clinical Advisory Board',
@@ -75,11 +75,11 @@ export const caregiverLayoutVi = {
     local: 'Thay đổi chỉ áp dụng trong bản xem thử.',
     quickReport: 'Báo cáo nhanh'
   },
-  unavailable: 'Chức năng chưa được kết nối với hệ thống.',
+  unavailable: 'Chức năng này sắp ra mắt.',
   footer: {
     brand: 'CareConnect Việt Nam',
     description: 'Nền tảng kết nối y tế và điều dưỡng gia đình, đồng hành cùng đội ngũ điều dưỡng viên trên toàn quốc.',
-    credential: 'Thông tin đăng ký dịch vụ được cập nhật từ hệ thống',
+    credential: 'Thông tin đăng ký dịch vụ sẽ sớm được cập nhật',
     support: 'Hỗ trợ Điều dưỡng',
     supportDetail: 'Kênh hỗ trợ đang được thiết lập',
     advice: 'Ban Cố vấn Chuyên môn Y khoa',
@@ -90,7 +90,7 @@ export const caregiverLayoutVi = {
     benefits: 'Chính sách thù lao & phúc lợi',
     copyright: '© {{year}} CareConnect Việt Nam. Mọi quyền được bảo lưu.',
     audience: 'Dành riêng cho đối tác Điều dưỡng viên có Chứng chỉ Hành nghề.',
-    status: 'Bản xem thử cổng Điều dưỡng',
+    status: 'Bản xem thử trang Điều dưỡng',
     terms: 'Điều khoản dịch vụ',
     privacy: 'Bảo mật thông tin bệnh nhân'
   }

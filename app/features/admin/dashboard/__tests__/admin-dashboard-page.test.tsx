@@ -61,7 +61,7 @@ describe('Admin dashboard', () => {
     expect(screen.getByText(/dữ liệu minh họa tháng 09\/2026/)).toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Platform overview')
-    expect(screen.getByRole('heading', { name: 'GMV by service' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Transaction value by service' })).toBeInTheDocument()
   })
 
   it('groups the sidebar menu without a topbar breadcrumb', () => {
