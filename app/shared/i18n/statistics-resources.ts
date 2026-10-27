@@ -1,0 +1,61 @@
+export const statisticsVi = {
+  title: 'Thống kê vận hành',
+  period: 'Từ đầu tháng đến hôm nay',
+  loading: 'Đang tải thống kê...',
+  error: 'Không thể tải thống kê. Vui lòng thử lại.',
+  retry: 'Thử lại',
+  noData: 'Chưa có hoạt động trong kỳ này.',
+  bookings: 'Tổng lịch đặt',
+  completed: 'Hoàn thành',
+  cancelled: 'Đã hủy',
+  missed: 'Bỏ lỡ',
+  noShow: 'Khách không đến',
+  completionRate: 'Tỷ lệ hoàn thành',
+  occurrences: 'Kết quả các buổi chăm sóc',
+  rating: 'Đánh giá trung bình',
+  complaints: 'Khiếu nại đang mở',
+  providerTitle: 'Trung tâm và người chăm sóc',
+  centers: 'Trung tâm',
+  caregivers: 'Người chăm sóc',
+  verification: 'Thẩm định hồ sơ',
+  statuses: {
+    PENDING: 'Chờ duyệt',
+    ACTIVE: 'Đang hoạt động',
+    INACTIVE: 'Ngừng hoạt động',
+    SUSPENDED: 'Tạm khóa',
+    REJECTED: 'Từ chối',
+    ARCHIVED: 'Đã lưu trữ',
+    VERIFIED: 'Đã xác minh'
+  }
+} as const
+
+export const statisticsEn = {
+  title: 'Operational statistics',
+  period: 'Month to date',
+  loading: 'Loading statistics...',
+  error: 'Could not load statistics. Please try again.',
+  retry: 'Try again',
+  noData: 'No activity in this period yet.',
+  bookings: 'Total bookings',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  missed: 'Missed',
+  noShow: 'Customer no-show',
+  completionRate: 'Completion rate',
+  occurrences: 'Care session outcomes',
+  rating: 'Average rating',
+  complaints: 'Open complaints',
+  providerTitle: 'Centers and caregivers',
+  centers: 'Centers',
+  caregivers: 'Caregivers',
+  verification: 'Profile verification',
+  statuses: {
+    PENDING: 'Pending',
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+    SUSPENDED: 'Suspended',
+    REJECTED: 'Rejected',
+    ARCHIVED: 'Archived',
+    VERIFIED: 'Verified'
+  }
+} as const

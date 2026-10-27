@@ -1,14 +1,31 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { fetchMyCaregiverProfile, fetchProviderMedia } from '~/entities/provider/provider-api'
 import { AdminLayout } from '~/features/admin/layout/admin-layout'
 import { CaregiverLayout } from '~/features/caregiver/layout/caregiver-layout'
 import { CenterManagerLayout } from '~/features/center-manager/layout/center-manager-layout'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AuthUserContext } from './auth-user-context'
 
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchMyCaregiverProfile: vi.fn(),
+  fetchProviderMedia: vi.fn()
+}))
+
 beforeEach(async () => {
+  vi.mocked(fetchMyCaregiverProfile).mockResolvedValue({
+    id: 'profile-1',
+    centerId: 'center-1',
+    fullName: 'Test Caregiver',
+    caregiverStatus: 'ACTIVE',
+    verificationStatus: 'VERIFIED',
+    version: 1
+  })
+  vi.mocked(fetchProviderMedia).mockResolvedValue([])
   await setAppLanguage('en', false)
 })
 
@@ -19,15 +36,17 @@ describe('Portal account menus', () => {
     { role: 'CAREGIVER', path: '/caregiver/dashboard', layout: CaregiverLayout }
   ])('places account actions under the $role avatar', ({ role, path, layout: Layout }) => {
     render(
-      <AuthUserContext value={{ id: 'user-1', fullName: 'Test User', roles: [role], status: 'ACTIVE' }}>
-        <MemoryRouter initialEntries={[path]}>
-          <Routes>
-            <Route element={<Layout />} path={path}>
-              <Route index element={<div />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </AuthUserContext>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <AuthUserContext value={{ id: 'user-1', fullName: 'Test User', roles: [role], status: 'ACTIVE' }}>
+          <MemoryRouter initialEntries={[path]}>
+            <Routes>
+              <Route element={<Layout />} path={path}>
+                <Route index element={<div />} />
+              </Route>
+            </Routes>
+          </MemoryRouter>
+        </AuthUserContext>
+      </QueryClientProvider>
     )
     const button = screen.getByRole('button', { name: 'Account menu' })
     expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()

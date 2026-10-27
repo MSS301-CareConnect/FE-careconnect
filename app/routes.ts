@@ -27,6 +27,7 @@ export default [
   ...prefix('center-manager', [
     layout('routes/center-manager/layout.tsx', [
       index('routes/center-manager/index.tsx'),
+      route('statistics', 'routes/center-manager/statistics.tsx'),
       route('caregivers', 'routes/center-manager/caregivers.tsx'),
       route('caregivers/:id', 'routes/center-manager/caregiver-detail.tsx'),
       route('work-shifts', 'routes/center-manager/work-shifts.tsx'),

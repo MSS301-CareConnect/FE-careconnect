@@ -1,10 +1,18 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fetchProviderStatistics, fetchSystemStatistics } from '~/entities/statistics/statistics-api'
 import { AdminLayout } from '~/features/admin/layout/admin-layout'
 import { AdminRevenuePage } from '~/features/admin/revenue/admin-revenue-page'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AdminDashboardPage } from '../admin-dashboard-page'
+
+vi.mock('~/entities/statistics/statistics-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/statistics/statistics-api')>()),
+  fetchSystemStatistics: vi.fn(),
+  fetchProviderStatistics: vi.fn()
+}))
 
 function Location() {
   const location = useLocation()
@@ -17,20 +25,28 @@ function Location() {
 }
 function renderAdmin(path = '/admin/dashboard') {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route element={<AdminLayout />} path='/admin'>
-          <Route element={<AdminDashboardPage />} path='dashboard' />
-          <Route element={<AdminRevenuePage />} path='revenue' />
-        </Route>
-      </Routes>
-      <Location />
-    </MemoryRouter>
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route element={<AdminLayout />} path='/admin'>
+            <Route element={<AdminDashboardPage />} path='dashboard' />
+            <Route element={<AdminRevenuePage />} path='revenue' />
+          </Route>
+        </Routes>
+        <Location />
+      </MemoryRouter>
+    </QueryClientProvider>
   )
 }
 
 describe('Admin dashboard', () => {
   beforeEach(async () => {
+    vi.mocked(fetchSystemStatistics).mockResolvedValue({ bookingsByStatus: {}, occurrences: {} })
+    vi.mocked(fetchProviderStatistics).mockResolvedValue({
+      centersByStatus: {},
+      caregiversByStatus: {},
+      caregiversByVerification: {}
+    })
     await setAppLanguage('vi', false)
   })
 
@@ -44,8 +60,8 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('link', { name: /Dịch vụ & Bảng giá/ })).toHaveAttribute('href', '/admin/services')
     expect(screen.getByRole('link', { name: /Kiểm soát chất lượng/ })).toHaveAttribute('href', '/admin/quality')
     expect(screen.getByRole('link', { name: /Cấu hình chính sách/ })).toHaveAttribute('href', '/admin/policies')
-    expect(screen.getByRole('button', { name: 'Làm mới trực tiếp' })).toBeDisabled()
-    expect(screen.getByText('Kỳ báo cáo: 01–30/09/2026')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Làm mới trực tiếp' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Bản xem thử · Kỳ báo cáo: 01–30/09/2026')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('link', { name: /Giao dịch & Báo cáo/ }))
     expect(screen.getByTestId('location')).toHaveTextContent('/admin/revenue')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Quản lý Giao dịch & Doanh thu')
@@ -57,8 +73,8 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('heading', { name: 'Đội ngũ điều dưỡng & CCHN' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Xem báo cáo doanh thu' })).toHaveAttribute('href', '/admin/revenue')
     expect(screen.getAllByText(/1[.,]482[.,]500[.,]000\s*₫/).length).toBeGreaterThan(0)
-    expect(screen.getByText(/Phí nền tảng mẫu \(15%\):.*222[.,]375[.,]000\s*₫/)).toBeInTheDocument()
-    expect(screen.getByText(/dữ liệu minh họa tháng 09\/2026/)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Tổng khách hàng' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/dữ liệu minh họa tháng 09\/2026/)).not.toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Platform overview')
     expect(screen.getByRole('heading', { name: 'Transaction value by service' })).toBeInTheDocument()

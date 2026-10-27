@@ -80,7 +80,7 @@ export function CaregiverProviderProfilePage() {
       setCertificateFileError(null)
       setFileInputKey((current) => current + 1)
       setPendingCertificateId(null)
-      setSelectedCertificateId(null)
+      setSelectedCertificateId(certificateId)
       setCertificateSuccess(true)
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: providerKeys.certificates(profile.data!.id) }),
@@ -308,28 +308,51 @@ export function CaregiverProviderProfilePage() {
                 {certificates.isSuccess ? (
                   <ul className='mt-4 grid gap-3 sm:grid-cols-2'>
                     {certificates.data.map((certificate) => (
-                      <li className='rounded-xl bg-surface-container-low p-4' key={certificate.id}>
-                        <strong className='text-sm'>{certificate.certificateName}</strong>
-                        <p className='mt-1 text-xs text-outline'>{certificate.issuedBy}</p>
+                      <li
+                        className={`min-w-0 rounded-2xl border p-4 transition-colors ${
+                          selectedCertificateId === certificate.id
+                            ? 'border-primary/35 bg-primary/5 sm:col-span-2'
+                            : 'border-transparent bg-surface-container-low hover:border-primary/20'
+                        }`}
+                        key={certificate.id}
+                      >
                         <button
-                          className='mt-3 text-sm font-semibold text-primary underline'
-                          onClick={() => setSelectedCertificateId(certificate.id)}
+                          aria-controls={`certificate-files-${certificate.id}`}
+                          aria-expanded={selectedCertificateId === certificate.id}
+                          className='flex w-full items-center justify-between gap-4 text-left'
+                          onClick={() =>
+                            setSelectedCertificateId((current) => (current === certificate.id ? null : certificate.id))
+                          }
                           type='button'
                         >
-                          {t(`${key}.certificateFiles`)}
+                          <span className='min-w-0'>
+                            <strong className='block truncate text-sm font-semibold text-on-surface'>
+                              {certificate.certificateName}
+                            </strong>
+                            <span className='mt-1 block truncate text-xs text-outline'>{certificate.issuedBy}</span>
+                            <span className='mt-2 block text-sm font-semibold text-primary'>
+                              {t(
+                                selectedCertificateId === certificate.id
+                                  ? `${key}.hideCertificateFiles`
+                                  : `${key}.certificateFiles`
+                              )}
+                            </span>
+                          </span>
+                          <Icon
+                            className='shrink-0 text-primary'
+                            name={
+                              selectedCertificateId === certificate.id ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
+                            }
+                          />
                         </button>
+                        {selectedCertificateId === certificate.id ? (
+                          <div className='mt-4' id={`certificate-files-${certificate.id}`}>
+                            <ProviderMediaPanel embedded ownerId={certificate.id} ownerType='CERTIFICATE' />
+                          </div>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
-                ) : null}
-                {selectedCertificateId ? (
-                  <div className='mt-4'>
-                    <ProviderMediaPanel
-                      key={selectedCertificateId}
-                      ownerId={selectedCertificateId}
-                      ownerType='CERTIFICATE'
-                    />
-                  </div>
                 ) : null}
               </section>
             </div>

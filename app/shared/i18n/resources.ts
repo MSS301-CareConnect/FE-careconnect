@@ -1,6 +1,7 @@
 import { commonEn, commonVi } from './common-resources'
 import { bookingSharedEn, bookingSharedVi } from './booking-resources'
 import { paymentSharedEn, paymentSharedVi } from './payment-resources'
+import { statisticsEn, statisticsVi } from './statistics-resources'
 import { publicHomeEn, publicHomeVi } from './public/home-resources'
 import { authEn, authVi } from './auth/login-resources'
 import { registrationEn, registrationVi } from './auth/registration-resources'
@@ -45,6 +46,7 @@ import { managerBookingDetailEn, managerBookingDetailVi } from './center-manager
 import { managerProviderEn, managerProviderVi } from './center-manager/provider-resources'
 import { managerScheduleEn, managerScheduleVi } from './center-manager/schedule-resources'
 import { managerServicesEn, managerServicesVi } from './center-manager/services-resources'
+import { managerStatisticsEn, managerStatisticsVi } from './center-manager/statistics-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
 import { adminCustomersEn, adminCustomersVi } from './admin/customers-resources'
@@ -63,6 +65,7 @@ export const resources = {
       ...commonEn,
       booking: bookingSharedEn,
       payment: paymentSharedEn,
+      statistics: statisticsEn,
       home: publicHomeEn,
       auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn },
       customer: {
@@ -108,7 +111,8 @@ export const resources = {
         bookingDetail: managerBookingDetailEn,
         provider: managerProviderEn,
         schedules: managerScheduleEn,
-        services: managerServicesEn
+        services: managerServicesEn,
+        statisticsPage: managerStatisticsEn
       },
       admin: {
         ...adminLayoutEn,
@@ -130,6 +134,7 @@ export const resources = {
       ...commonVi,
       booking: bookingSharedVi,
       payment: paymentSharedVi,
+      statistics: statisticsVi,
       home: publicHomeVi,
       auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi },
       customer: {
@@ -175,7 +180,8 @@ export const resources = {
         bookingDetail: managerBookingDetailVi,
         provider: managerProviderVi,
         schedules: managerScheduleVi,
-        services: managerServicesVi
+        services: managerServicesVi,
+        statisticsPage: managerStatisticsVi
       },
       admin: {
         ...adminLayoutVi,

@@ -33,6 +33,14 @@ The browser owns presentation, navigation, and ephemeral interaction state. Back
 services own validation, authorization, workflow transitions, audit trails,
 persistence, and all decisions that affect money or access.
 
+The admin dashboard reads live operational aggregates from BookingService's
+`/api/v1/statistics/system` and provider status counts from ProviderService's
+`/api/v1/care-centers/statistics`. Center managers use the separate
+`/center-manager/statistics` page, backed by `/api/v1/statistics/centers`;
+BookingService scopes that request to the manager's center. These responses do
+not include revenue or time-series data. The existing admin financial charts
+remain explicitly labeled previews until a financial reporting contract exists.
+
 ### Web authentication and portal access
 
 IdentityService owns the web session behind the API gateway on local port 8080.

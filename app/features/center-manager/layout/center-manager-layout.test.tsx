@@ -35,6 +35,10 @@ describe('Center Manager sidebar layout', () => {
     const navigation = screen.getByRole('navigation', { name: 'Center manager menu' })
     expect(within(navigation).getByRole('list', { name: 'Care delivery' })).toBeInTheDocument()
     expect(within(navigation).getByRole('list', { name: 'Coordination' })).toBeInTheDocument()
+    expect(within(navigation).getByRole('link', { name: 'Center statistics' })).toHaveAttribute(
+      'href',
+      '/center-manager/statistics'
+    )
     expect(within(navigation).getByRole('link', { name: 'Services & pricing' })).toHaveAttribute('aria-current', 'page')
     expect(within(navigation).getByRole('link', { name: 'Caregiver management' })).toHaveAttribute(
       'href',

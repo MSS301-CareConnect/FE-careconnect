@@ -19,7 +19,15 @@ export function validateProviderFiles(ownerType: ProviderMediaOwner, files: File
   return null
 }
 
-export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: ProviderMediaOwner; ownerId: string }) {
+export function ProviderMediaPanel({
+  ownerType,
+  ownerId,
+  embedded = false
+}: {
+  ownerType: ProviderMediaOwner
+  ownerId: string
+  embedded?: boolean
+}) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [files, setFiles] = useState<File[]>([])
@@ -53,11 +61,22 @@ export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: Provider
     }
   })
   return (
-    <section className='space-y-4 rounded-2xl bg-white p-5 shadow-sm'>
-      <h2 className='flex items-center gap-2 text-lg font-bold'>
-        <Icon className='text-primary' name='perm_media' />
-        {t(titleKey[ownerType])}
-      </h2>
+    <section
+      className={
+        embedded ? 'space-y-4 border-t border-primary/15 pt-4' : 'space-y-4 rounded-2xl bg-white p-5 shadow-sm'
+      }
+    >
+      {embedded ? (
+        <h3 className='flex items-center gap-2 text-base font-bold'>
+          <Icon className='text-primary' name='perm_media' />
+          {t(titleKey[ownerType])}
+        </h3>
+      ) : (
+        <h2 className='flex items-center gap-2 text-lg font-bold'>
+          <Icon className='text-primary' name='perm_media' />
+          {t(titleKey[ownerType])}
+        </h2>
+      )}
       {ownerType === 'CAREGIVER_PROFILE' ? (
         <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.caregiverHint')}</p>
       ) : null}
@@ -75,7 +94,7 @@ export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: Provider
         <ul className='divide-y divide-outline-variant/20'>
           {media.data.map((item) => (
             <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={item.mediaFileId}>
-              <span className='flex min-w-0 items-center gap-2 text-sm font-medium'>
+              <span className='flex min-w-0 flex-1 items-center gap-2 text-sm font-medium'>
                 {item.downloadUrl && item.contentType?.startsWith('image/') ? (
                   <img
                     alt={item.originalFileName || t('common.providerMedia.image')}
@@ -85,7 +104,7 @@ export function ProviderMediaPanel({ ownerType, ownerId }: { ownerType: Provider
                 ) : (
                   <Icon className='shrink-0 text-primary' name='attach_file' />
                 )}
-                <span className='truncate'>{item.originalFileName || item.mediaFileType}</span>
+                <span className='min-w-0 truncate'>{item.originalFileName || item.mediaFileType}</span>
               </span>
               <div className='flex gap-3'>
                 {item.downloadUrl ? (

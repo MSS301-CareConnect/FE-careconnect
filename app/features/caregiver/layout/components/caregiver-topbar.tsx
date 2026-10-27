@@ -1,6 +1,8 @@
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 
+import { fetchMyCaregiverProfile, fetchProviderMedia, providerKeys } from '~/entities/provider/provider-api'
 import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
@@ -12,6 +14,15 @@ export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean;
   const { t } = useTranslation()
   const { pathname, hash } = useLocation()
   const active = activeCaregiverNavigation(pathname, hash)
+  const profile = useQuery({ queryKey: providerKeys.myProfile, queryFn: fetchMyCaregiverProfile, retry: false })
+  const profileId = profile.data?.id ?? ''
+  const media = useQuery({
+    queryKey: providerKeys.media('CAREGIVER_PROFILE', profileId),
+    queryFn: () => fetchProviderMedia('CAREGIVER_PROFILE', profileId),
+    enabled: Boolean(profileId),
+    retry: false
+  })
+  const avatarUrl = media.data?.find((item) => item.mediaFileType === 'IMAGE' && item.downloadUrl)?.downloadUrl
 
   return (
     <header className='sticky top-0 z-30 border-b border-outline-variant/25 bg-white/95 shadow-sm backdrop-blur print:hidden'>
@@ -45,6 +56,7 @@ export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean;
           </Link>
           <PortalAccountMenu
             avatarIcon='clinical_notes'
+            avatarUrl={avatarUrl}
             fallbackName={t('caregiver.identity.name')}
             profileLink={{ to: '/caregiver/profile', label: t('caregiver.nav.profile') }}
             roleLabel={t('caregiver.identity.role')}

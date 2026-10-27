@@ -10,16 +10,19 @@ export function PortalAccountMenu({
   roleLabel,
   fallbackName,
   avatarIcon,
+  avatarUrl,
   profileLink
 }: {
   roleLabel: string
   fallbackName: string
   avatarIcon?: string
+  avatarUrl?: string
   profileLink?: { to: string; label: string }
 }) {
   const { t } = useTranslation()
   const user = useAuthUser()
   const [open, setOpen] = useState(false)
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const name = user?.fullName || user?.email || fallbackName
@@ -66,7 +69,18 @@ export function PortalAccountMenu({
           aria-hidden='true'
           className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white'
         >
-          {avatarIcon ? <Icon name={avatarIcon} /> : initials}
+          {avatarUrl && failedAvatarUrl !== avatarUrl ? (
+            <img
+              alt=''
+              className='h-full w-full rounded-full object-cover'
+              onError={() => setFailedAvatarUrl(avatarUrl)}
+              src={avatarUrl}
+            />
+          ) : avatarIcon ? (
+            <Icon name={avatarIcon} />
+          ) : (
+            initials
+          )}
         </span>
         <span className='hidden min-w-0 max-w-36 text-xs sm:block'>
           <strong className='block truncate'>{name}</strong>

@@ -4,6 +4,12 @@ export const managerNavigation = [
     key: 'careDelivery',
     items: [
       {
+        key: 'statistics',
+        label: 'centerManager.statisticsPage.menu',
+        to: '/center-manager/statistics',
+        icon: 'monitoring'
+      },
+      {
         key: 'caregivers',
         label: 'centerManager.caregivers',
         to: '/center-manager/caregivers',
