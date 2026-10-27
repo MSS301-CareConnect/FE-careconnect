@@ -8,7 +8,11 @@
 
 export * from './archiveProviderCertificateParams'
 export * from './certificateRequest'
+export * from './certificateVerificationRequest'
+export * from './listPendingAuditProviderCertificatesParams'
 export * from './providerCertificateListResponse'
+export * from './providerCertificatePage'
+export * from './providerCertificatePageResponse'
 export * from './providerCertificateRecord'
 export * from './providerCertificateRecordVerificationStatus'
 export * from './providerCertificateResponse'

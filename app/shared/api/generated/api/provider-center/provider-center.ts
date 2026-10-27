@@ -24,14 +24,19 @@ import type {
 import type {
   ArchiveProviderCenterParams,
   CenterCreateRequest,
+  CenterSelfUpdateRequest,
   CenterStatusUpdateRequest,
   CenterUpdateRequest,
   EmptyActionResponse,
   ListProviderCenterSchedulesParams,
   ListProviderCentersParams,
+  ListPublicProviderCentersParams,
   ProviderCenterPageResponse,
   ProviderCenterResponse,
-  ProviderSchedulePageResponse
+  ProviderSchedulePageResponse,
+  ProviderStatisticsResponse,
+  PublicCenterPageResponse,
+  PublicCenterResponse
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -378,6 +383,385 @@ export const useCreateProviderCenter = <
 > => {
   return useMutation(getCreateProviderCenterMutationOptions(options), queryClient)
 }
+export type listPublicProviderCentersResponse200 = {
+  data: PublicCenterPageResponse
+  status: 200
+}
+
+export type listPublicProviderCentersResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listPublicProviderCentersResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listPublicProviderCentersResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listPublicProviderCentersResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listPublicProviderCentersResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listPublicProviderCentersResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listPublicProviderCentersResponseSuccess = listPublicProviderCentersResponse200 & {
+  headers: Headers
+}
+export type listPublicProviderCentersResponseError = (
+  | listPublicProviderCentersResponse400
+  | listPublicProviderCentersResponse401
+  | listPublicProviderCentersResponse403
+  | listPublicProviderCentersResponse404
+  | listPublicProviderCentersResponse500
+  | listPublicProviderCentersResponse503
+) & {
+  headers: Headers
+}
+
+export const getListPublicProviderCentersUrl = (params?: ListPublicProviderCentersParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/care-centers/public?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/care-centers/public`
+}
+
+/**
+ * @summary Khách xem trung tâm ACTIVE (SRCH-02)
+ */
+export const listPublicProviderCenters = async (
+  params?: ListPublicProviderCentersParams,
+  options?: RequestInit
+): Promise<listPublicProviderCentersResponseSuccess> => {
+  const res = await fetch(getListPublicProviderCentersUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listPublicProviderCentersResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listPublicProviderCentersResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listPublicProviderCentersResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listPublicProviderCentersResponseSuccess
+}
+
+export const getListPublicProviderCentersQueryKey = (params?: ListPublicProviderCentersParams) => {
+  return [`${env.API_BASE_URL}/v1/care-centers/public`, ...(params ? [params] : [])] as const
+}
+
+export const getListPublicProviderCentersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPublicProviderCenters>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPublicProviderCentersParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPublicProviderCenters>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListPublicProviderCentersQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPublicProviderCenters>>> = ({ signal }) =>
+    listPublicProviderCenters(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPublicProviderCenters>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListPublicProviderCentersQueryResult = NonNullable<Awaited<ReturnType<typeof listPublicProviderCenters>>>
+export type ListPublicProviderCentersQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListPublicProviderCenters<
+  TData = Awaited<ReturnType<typeof listPublicProviderCenters>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListPublicProviderCentersParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPublicProviderCenters>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPublicProviderCenters>>,
+          TError,
+          Awaited<ReturnType<typeof listPublicProviderCenters>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPublicProviderCenters<
+  TData = Awaited<ReturnType<typeof listPublicProviderCenters>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPublicProviderCentersParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPublicProviderCenters>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPublicProviderCenters>>,
+          TError,
+          Awaited<ReturnType<typeof listPublicProviderCenters>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPublicProviderCenters<
+  TData = Awaited<ReturnType<typeof listPublicProviderCenters>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPublicProviderCentersParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPublicProviderCenters>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Khách xem trung tâm ACTIVE (SRCH-02)
+ */
+
+export function useListPublicProviderCenters<
+  TData = Awaited<ReturnType<typeof listPublicProviderCenters>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPublicProviderCentersParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPublicProviderCenters>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListPublicProviderCentersQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getPublicProviderCenterResponse200 = {
+  data: PublicCenterResponse
+  status: 200
+}
+
+export type getPublicProviderCenterResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getPublicProviderCenterResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getPublicProviderCenterResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getPublicProviderCenterResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getPublicProviderCenterResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getPublicProviderCenterResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getPublicProviderCenterResponseSuccess = getPublicProviderCenterResponse200 & {
+  headers: Headers
+}
+export type getPublicProviderCenterResponseError = (
+  | getPublicProviderCenterResponse400
+  | getPublicProviderCenterResponse401
+  | getPublicProviderCenterResponse403
+  | getPublicProviderCenterResponse404
+  | getPublicProviderCenterResponse500
+  | getPublicProviderCenterResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetPublicProviderCenterUrl = (centerId: string) => {
+  return `${env.API_BASE_URL}/v1/care-centers/public/${centerId}`
+}
+
+/**
+ * @summary Khách xem chi tiết một trung tâm ACTIVE (SRCH-02)
+ */
+export const getPublicProviderCenter = async (
+  centerId: string,
+  options?: RequestInit
+): Promise<getPublicProviderCenterResponseSuccess> => {
+  const res = await fetch(getGetPublicProviderCenterUrl(centerId), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getPublicProviderCenterResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getPublicProviderCenterResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getPublicProviderCenterResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getPublicProviderCenterResponseSuccess
+}
+
+export const getGetPublicProviderCenterQueryKey = (centerId: string) => {
+  return [`${env.API_BASE_URL}/v1/care-centers/public/${centerId}`] as const
+}
+
+export const getGetPublicProviderCenterQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicProviderCenter>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCenter>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicProviderCenterQueryKey(centerId)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicProviderCenter>>> = ({ signal }) =>
+    getPublicProviderCenter(centerId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: centerId !== null && centerId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCenter>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type GetPublicProviderCenterQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicProviderCenter>>>
+export type GetPublicProviderCenterQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetPublicProviderCenter<
+  TData = Awaited<ReturnType<typeof getPublicProviderCenter>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCenter>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicProviderCenter>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicProviderCenter>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicProviderCenter<
+  TData = Awaited<ReturnType<typeof getPublicProviderCenter>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCenter>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicProviderCenter>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicProviderCenter>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicProviderCenter<
+  TData = Awaited<ReturnType<typeof getPublicProviderCenter>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCenter>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Khách xem chi tiết một trung tâm ACTIVE (SRCH-02)
+ */
+
+export function useGetPublicProviderCenter<
+  TData = Awaited<ReturnType<typeof getPublicProviderCenter>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProviderCenter>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPublicProviderCenterQueryOptions(centerId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
 export type getProviderCenterResponse200 = {
   data: ProviderCenterResponse
   status: 200
@@ -1193,4 +1577,322 @@ export function useListProviderCenterSchedules<
   }
 
   return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getProviderStatisticsResponse200 = {
+  data: ProviderStatisticsResponse
+  status: 200
+}
+
+export type getProviderStatisticsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getProviderStatisticsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getProviderStatisticsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getProviderStatisticsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getProviderStatisticsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getProviderStatisticsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getProviderStatisticsResponseSuccess = getProviderStatisticsResponse200 & {
+  headers: Headers
+}
+export type getProviderStatisticsResponseError = (
+  | getProviderStatisticsResponse400
+  | getProviderStatisticsResponse401
+  | getProviderStatisticsResponse403
+  | getProviderStatisticsResponse404
+  | getProviderStatisticsResponse500
+  | getProviderStatisticsResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetProviderStatisticsUrl = () => {
+  return `${env.API_BASE_URL}/v1/care-centers/statistics`
+}
+
+/**
+ * @summary ADMIN xem thống kê trung tâm và caregiver
+ */
+export const getProviderStatistics = async (options?: RequestInit): Promise<getProviderStatisticsResponseSuccess> => {
+  const res = await fetch(getGetProviderStatisticsUrl(), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getProviderStatisticsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getProviderStatisticsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getProviderStatisticsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getProviderStatisticsResponseSuccess
+}
+
+export const getGetProviderStatisticsQueryKey = () => {
+  return [`${env.API_BASE_URL}/v1/care-centers/statistics`] as const
+}
+
+export const getGetProviderStatisticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProviderStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderStatistics>>, TError, TData>>
+  fetch?: RequestInit
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProviderStatisticsQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProviderStatistics>>> = ({ signal }) =>
+    getProviderStatistics({ signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProviderStatistics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProviderStatisticsQueryResult = NonNullable<Awaited<ReturnType<typeof getProviderStatistics>>>
+export type GetProviderStatisticsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetProviderStatistics<
+  TData = Awaited<ReturnType<typeof getProviderStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderStatistics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProviderStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getProviderStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProviderStatistics<
+  TData = Awaited<ReturnType<typeof getProviderStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderStatistics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProviderStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getProviderStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProviderStatistics<
+  TData = Awaited<ReturnType<typeof getProviderStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary ADMIN xem thống kê trung tâm và caregiver
+ */
+
+export function useGetProviderStatistics<
+  TData = Awaited<ReturnType<typeof getProviderStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetProviderStatisticsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type updateMyProviderCenterResponse200 = {
+  data: ProviderCenterResponse
+  status: 200
+}
+
+export type updateMyProviderCenterResponse400 = {
+  data: void
+  status: 400
+}
+
+export type updateMyProviderCenterResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updateMyProviderCenterResponse403 = {
+  data: void
+  status: 403
+}
+
+export type updateMyProviderCenterResponse404 = {
+  data: void
+  status: 404
+}
+
+export type updateMyProviderCenterResponse500 = {
+  data: void
+  status: 500
+}
+
+export type updateMyProviderCenterResponse503 = {
+  data: void
+  status: 503
+}
+
+export type updateMyProviderCenterResponseSuccess = updateMyProviderCenterResponse200 & {
+  headers: Headers
+}
+export type updateMyProviderCenterResponseError = (
+  | updateMyProviderCenterResponse400
+  | updateMyProviderCenterResponse401
+  | updateMyProviderCenterResponse403
+  | updateMyProviderCenterResponse404
+  | updateMyProviderCenterResponse500
+  | updateMyProviderCenterResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateMyProviderCenterUrl = () => {
+  return `${env.API_BASE_URL}/v1/care-centers/me`
+}
+
+/**
+ * @summary CENTER_MANAGER cập nhật trung tâm của mình
+ */
+export const updateMyProviderCenter = async (
+  centerSelfUpdateRequest: CenterSelfUpdateRequest,
+  options?: RequestInit
+): Promise<updateMyProviderCenterResponseSuccess> => {
+  const res = await fetch(getUpdateMyProviderCenterUrl(), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(centerSelfUpdateRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateMyProviderCenterResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateMyProviderCenterResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateMyProviderCenterResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateMyProviderCenterResponseSuccess
+}
+
+export const getUpdateMyProviderCenterMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMyProviderCenter>>,
+    TError,
+    { data: CenterSelfUpdateRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMyProviderCenter>>,
+  TError,
+  { data: CenterSelfUpdateRequest },
+  TContext
+> => {
+  const mutationKey = ['updateMyProviderCenter']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMyProviderCenter>>,
+    { data: CenterSelfUpdateRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return updateMyProviderCenter(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateMyProviderCenterMutationResult = NonNullable<Awaited<ReturnType<typeof updateMyProviderCenter>>>
+export type UpdateMyProviderCenterMutationBody = CenterSelfUpdateRequest
+export type UpdateMyProviderCenterMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CENTER_MANAGER cập nhật trung tâm của mình
+ */
+export const useUpdateMyProviderCenter = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateMyProviderCenter>>,
+      TError,
+      { data: CenterSelfUpdateRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateMyProviderCenter>>,
+  TError,
+  { data: CenterSelfUpdateRequest },
+  TContext
+> => {
+  return useMutation(getUpdateMyProviderCenterMutationOptions(options), queryClient)
 }
