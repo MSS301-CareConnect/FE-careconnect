@@ -237,7 +237,7 @@ export const caregiversVi = {
       regularNurse: 'Điều dưỡng viên chính quy',
       verified100: 'Xác thực CareConnect 100%',
       icuNurse: 'Cử nhân Điều dưỡng Hồi sức',
-      topRated: 'Top Rated Điều Dưỡng',
+      topRated: 'Điều dưỡng được đánh giá cao',
       elderlySpecialist: 'Chuyên viên Chăm sóc Người cao tuổi',
       dedicated: 'Tận tâm & Kiên nhẫn'
     },

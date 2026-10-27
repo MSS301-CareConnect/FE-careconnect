@@ -79,7 +79,7 @@ describe('CustomerBookingDetailPage', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Bà Lan' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Đang chờ trung tâm duyệt' })).toBeInTheDocument()
     expect(screen.getByText(/Buổi 1/)).toBeInTheDocument()
-    expect(await screen.findByText('Booking đổi trạng thái')).toBeInTheDocument()
+    expect(await screen.findByText('Lịch đặt được cập nhật trạng thái')).toBeInTheDocument()
   })
 
   it('cancels an unpaid booking as a whole without a refund preview', async () => {

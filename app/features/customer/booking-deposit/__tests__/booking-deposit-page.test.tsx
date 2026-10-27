@@ -20,7 +20,7 @@ describe('BookingDepositPage', () => {
     // Breadcrumb & Banner
     expect(screen.getByText('Trang chủ')).toBeInTheDocument()
     expect(screen.getByText('Lịch hẹn đang được giữ chỗ tạm thời')).toBeInTheDocument()
-    expect(screen.getByText('Ca trực độc quyền')).toBeInTheDocument()
+    expect(screen.getByText('Ca chăm sóc riêng')).toBeInTheDocument()
     expect(screen.getByText('Thời gian giữ chỗ')).toBeInTheDocument()
 
     // Overview Header & Details
@@ -97,7 +97,7 @@ describe('BookingDepositPage', () => {
     )
 
     expect(
-      screen.getByText(/Điều dưỡng viên ĐĐ\. Nguyễn Thị Bích Loan đã chính thức nhận ca trực/i)
+      screen.getByText(/Điều dưỡng viên ĐĐ\. Nguyễn Thị Bích Loan đã chính thức nhận lịch chăm sóc/i)
     ).toBeInTheDocument()
 
     const closeBtn = screen.getByRole('button', { name: 'Đóng' })

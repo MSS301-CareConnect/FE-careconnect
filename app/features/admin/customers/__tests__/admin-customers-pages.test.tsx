@@ -47,13 +47,13 @@ describe('Admin customer preview', () => {
   it('does not reuse one customer’s clinical details for another account', () => {
     renderCustomers('/admin/customers/CUST-1045')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Trần Quang Huy')
-    expect(screen.getByText('Bản thiết kế chưa cung cấp thông tin chi tiết cho khách hàng này.')).toBeInTheDocument()
+    expect(screen.getByText('Chưa có thông tin chi tiết cho khách hàng này.')).toBeInTheDocument()
     expect(screen.queryByText('Nguyễn Văn Hùng')).not.toBeInTheDocument()
   })
 
   it('handles unknown IDs and translates navigation into English', async () => {
     renderCustomers('/admin/customers/UNKNOWN')
-    expect(screen.getByText('Không tìm thấy khách hàng trong dữ liệu mẫu.')).toBeInTheDocument()
+    expect(screen.getByText('Không tìm thấy khách hàng.')).toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('link', { name: 'Back to customer list' })).toHaveAttribute('href', '/admin/customers')
   })

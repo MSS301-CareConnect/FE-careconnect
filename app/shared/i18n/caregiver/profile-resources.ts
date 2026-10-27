@@ -75,7 +75,7 @@ export const caregiverProfileVi = {
     }
   },
   certificatesTitle: 'Chứng chỉ hành nghề & Hồ sơ pháp lý',
-  certificatesHint: 'Giấy tờ minh họa; trạng thái xác minh sẽ do hệ thống cung cấp.',
+  certificatesHint: 'Giấy tờ minh họa; trạng thái xác minh sẽ được cập nhật sau khi kiểm tra.',
   certificateList: {
     license: { title: 'Chứng chỉ Hành nghề Khám chữa bệnh', issuer: 'Số #0084920/BYT • Sở Y tế TP.HCM' },
     degree: { title: 'Bằng Cử nhân Điều dưỡng Đa khoa', issuer: 'Đại học Y Dược TP.HCM • Năm tốt nghiệp 2018' },
@@ -86,12 +86,12 @@ export const caregiverProfileVi = {
   expired: 'Mốc hiệu lực trong mẫu: 2025 • Cần cập nhật',
   viewPdf: 'Xem bản scan PDF',
   upload: 'Chọn chứng chỉ hoặc văn bằng mới',
-  uploadHint: 'PDF, JPG, PNG • Tối đa 15 MB/tệp, 5 tệp. Chỉ xem trước, chưa tải lên hệ thống.',
+  uploadHint: 'PDF, JPG, PNG • Tối đa 15 MB/tệp, 5 tệp. Chỉ để xem trước, chưa được lưu lại.',
   uploadError: 'Chọn tối đa 5 tệp PDF, JPG hoặc PNG, mỗi tệp không quá 15 MB.',
   remove: 'Xóa tệp {{name}}',
   previewFile: 'Xem tệp {{name}}',
   verification: 'Thẩm định hồ sơ y tế',
-  verificationHint: 'Chưa kết nối hệ thống xác minh.',
+  verificationHint: 'Chưa thể xác minh tự động.',
   verificationList: {
     identity: 'Định danh cá nhân',
     license: 'Chứng chỉ hành nghề điều dưỡng',
@@ -107,7 +107,7 @@ export const caregiverProfileVi = {
   schedule: 'Xem lịch nhận ca',
   security: 'Bảo mật & Quyền lợi',
   password: 'Đổi mật khẩu tài khoản',
-  twoFactor: 'Xác thực 2 bước • Chưa kết nối',
+  twoFactor: 'Xác thực 2 bước • Sắp ra mắt',
   policy: 'Quy chế hoạt động & Quyền lợi điều dưỡng'
 } as const
 export const caregiverProfileEn = {
@@ -187,7 +187,7 @@ export const caregiverProfileEn = {
     }
   },
   certificatesTitle: 'Professional Credentials & Documents',
-  certificatesHint: 'Illustrative documents; verification status will come from the system.',
+  certificatesHint: 'Sample documents; verification status will be updated after review.',
   certificateList: {
     license: { title: 'Medical Practice License', issuer: '#0084920/BYT • HCMC Department of Health' },
     degree: { title: 'Bachelor of Nursing', issuer: 'University of Medicine and Pharmacy, HCMC • Class of 2018' },
@@ -203,7 +203,7 @@ export const caregiverProfileEn = {
   remove: 'Remove file {{name}}',
   previewFile: 'View file {{name}}',
   verification: 'Medical Credential Review',
-  verificationHint: 'Verification service is not connected.',
+  verificationHint: 'Automatic verification is not available yet.',
   verificationList: {
     identity: 'Personal identity',
     license: 'Nursing practice license',
@@ -219,6 +219,6 @@ export const caregiverProfileEn = {
   schedule: 'View assignment schedule',
   security: 'Security & Benefits',
   password: 'Change account password',
-  twoFactor: 'Two-factor authentication • Not connected',
+  twoFactor: 'Two-factor authentication • Coming soon',
   policy: 'Caregiver policies & Benefits'
 } as const

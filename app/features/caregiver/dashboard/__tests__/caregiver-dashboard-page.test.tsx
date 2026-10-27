@@ -28,7 +28,7 @@ describe('Caregiver dashboard portal', () => {
   it('renders a dedicated caregiver shell and explicitly labeled sample sessions', () => {
     renderPortal()
     expect(screen.getByRole('heading', { level: 1, name: 'Xin chào, ĐĐ. Nguyễn Mai' })).toBeInTheDocument()
-    expect(screen.getByText(/Bản xem thử • Dữ liệu mẫu/)).toBeInTheDocument()
+    expect(screen.getByText(/Bản xem thử • Số liệu minh họa/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Cụ Nguyễn Văn B' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Bà Trần Thị C' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
@@ -82,7 +82,7 @@ describe('Caregiver dashboard portal', () => {
     }
     expect(screen.getByText(/Y lệnh minh họa/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Nộp báo cáo sinh hiệu/ })).toBeDisabled()
-    expect(screen.getByText(/chưa liên thông VNeID/)).toBeInTheDocument()
+    expect(screen.getByText(/chưa kiểm tra qua VNeID/)).toBeInTheDocument()
   })
 
   it('switches the entire portal to English and updates the document title', async () => {

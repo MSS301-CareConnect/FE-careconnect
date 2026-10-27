@@ -8,14 +8,14 @@ export const caregiverActiveSessionVi = {
     currentSession: 'Ca trực đang diễn ra #{{code}}'
   },
   sync: {
-    realTime: 'Đồng bộ dữ liệu thời gian thực'
+    realTime: 'Cập nhật liên tục'
   },
   hero: {
-    liveGps: 'CA TRỰC ĐANG DIỄN RA • LIVE GPS',
+    liveGps: 'CA TRỰC ĐANG DIỄN RA • ĐANG ĐỊNH VỊ',
     orderCode: 'Mã đơn: #CC-BK-882194',
     title: 'Ca sáng: Chăm sóc phục hồi sau tai biến',
     timeSlot: 'Khung giờ: 08:00 - 12:00',
-    checkIn: 'Check-in định vị: 08:30 (Đúng địa điểm)',
+    checkIn: 'Giờ đến: 08:30 (đúng địa điểm)',
     verified: 'Đã xác minh vân tay/hình ảnh',
     elapsedTitle: 'Thời gian đã thực hiện',
     elapsedProgress: '44%',
@@ -73,7 +73,7 @@ export const caregiverActiveSessionVi = {
   },
   nursingNotes: {
     title: 'Nhật ký diễn tiến điều dưỡng',
-    subtitle: 'Ghi chép lâm sàng đồng bộ tức thì cho Bác sĩ gia đình và Người thân',
+    subtitle: 'Ghi chép được gửi ngay cho bác sĩ gia đình và người thân',
     autoSaved: 'Đã tự động lưu 1 phút trước',
     label: 'Nội dung ghi nhận lâm sàng:',
     placeholder: 'Nhập chi tiết tình trạng thể trạng, tinh thần và các biến cố nếu có...',
@@ -112,13 +112,13 @@ export const caregiverActiveSessionVi = {
   commandCenter: {
     title: 'Kiểm soát an toàn ca trực',
     subtitle: 'Bảo vệ quyền lợi và an toàn y đức',
-    gpsTitle: 'GPS kết nối liên tục',
-    gpsDesc: 'Tọa độ khớp địa chỉ bệnh nhân (Sai số < 5m)',
+    gpsTitle: 'Định vị đang bật',
+    gpsDesc: 'Vị trí khớp địa chỉ nhà bệnh nhân (sai số dưới 5 m)',
     completeBtn: 'HOÀN TẤT & KÝ NHẬN CA TRỰC',
     breakBtn: 'Nghỉ giữa ca (15 phút)',
     incidentBtn: 'Báo cáo sự cố y tế / Cần hỗ trợ khẩn',
     breakActiveNotice: 'Đang trong thời gian nghỉ 15 phút giữa ca.',
-    completeSuccess: 'Ca trực đã hoàn tất và lưu chữ ký số vào hệ thống!'
+    completeSuccess: 'Ca trực đã hoàn tất và chữ ký đã được lưu!'
   },
   equipment: {
     title: 'Thiết bị y tế tại nhà',
@@ -137,14 +137,14 @@ export const caregiverActiveSessionVi = {
   modals: {
     sosTitle: 'XÁC NHẬN KÍCH HOẠT SOS KHẨN CẤP',
     sosDesc:
-      'Tín hiệu SOS sẽ kích hoạt chuông cảnh báo tới Điều phối viên trưởng, Trung tâm cấp cứu 115 và gia đình bệnh nhân kèm tọa độ GPS trực tiếp.',
+      'Tín hiệu SOS sẽ kích hoạt chuông cảnh báo tới Điều phối viên trưởng, Trung tâm cấp cứu 115 và gia đình bệnh nhân kèm vị trí hiện tại của bạn.',
     sosConfirm: 'KÍCH HOẠT NGAY',
     sosAlertSuccess: 'Đã phát tín hiệu SOS! Đội cấp cứu và điều phối viên đang liên hệ trong 60 giây.',
     signTitle: 'Ký nhận & Hoàn tất ca trực #BK-8821',
     signDesc: 'Xác nhận toàn bộ quy trình chăm sóc đã hoàn tất. Ký tên điện tử xác thực bàn giao cùng gia đình.',
     nurseSignLabel: 'Chữ ký số Điều dưỡng viên:',
     nurseName: 'ĐĐ. Nguyễn Mai',
-    shaVerified: 'Xác thực SHA-256',
+    shaVerified: 'Chữ ký đã được xác thực',
     signConfirm: 'Xác nhận hoàn tất ca trực',
     addTaskTitle: 'Thêm nhiệm vụ phát sinh trong ca',
     taskTitlePlaceholder: 'Tên nhiệm vụ phát sinh (ví dụ: Thay băng vết thương nhẹ)',
@@ -163,9 +163,9 @@ export const caregiverActiveSessionVi = {
     scheduleLabel: 'Khung giờ quy định',
     scheduleVal: '08:00 – 12:00',
     scheduleSub: 'Ca sáng tiêu chuẩn (4h)',
-    checkInOutLabel: 'Check-in / Check-out',
+    checkInOutLabel: 'Giờ đến / Giờ về',
     checkInOutVal: '08:30 • 12:00',
-    gpsVerifiedSub: 'Đúng định vị GPS tại nhà',
+    gpsVerifiedSub: 'Đúng vị trí nhà bệnh nhân',
     totalDurationLabel: 'Tổng thời lượng tích lũy',
     totalDurationVal: '4 giờ 00 phút',
     totalDurationSub: 'Đủ 240 phút chăm sóc',
@@ -189,12 +189,11 @@ export const caregiverActiveSessionVi = {
     item5Desc: 'Máy đo HA điện tử Omron, kẹp SpO2, thanh chắn giường bệnh đã được khử khuẩn và hoàn trả đúng vị trí.',
     dispatchNoticeTitle: 'Quy trình bàn giao điện tử CareConnect:',
     dispatchNoticeDesc:
-      'Hệ thống sẽ chuyển tiếp sang màn hình Báo cáo chăm sóc ca trực (Care Report) để bạn ký số xác thực và gửi đồng bộ ngay lập tức tới ứng dụng của gia đình và Bác sĩ bảo trợ chuyên môn theo quy chuẩn BYT.',
+      'Tiếp theo, bạn sẽ chuyển sang trang Báo cáo chăm sóc để ký xác nhận và gửi ngay cho gia đình cùng bác sĩ phụ trách chuyên môn theo quy chuẩn của Bộ Y tế.',
     backBtn: 'Quay lại kiểm tra thêm',
     confirmBtn: 'XÁC NHẬN KẾT THÚC & LẬP BÁO CÁO',
-    syncingBtn: 'Đang đồng bộ dữ liệu lâm sàng...',
-    successAlert:
-      'Xác nhận thành công! Đang chuyển tiếp sang trang Ký Báo cáo chăm sóc (Care Report) và chuyển 350.000đ vào Ví CarePay.'
+    syncingBtn: 'Đang lưu thông tin chăm sóc...',
+    successAlert: 'Xác nhận thành công! Đang chuyển sang trang ký Báo cáo chăm sóc và cộng 350.000đ vào Ví CarePay.'
   }
 }
 
@@ -208,14 +207,14 @@ export const caregiverActiveSessionEn = {
     currentSession: 'Active Care Session #{{code}}'
   },
   sync: {
-    realTime: 'Real-time data synchronized'
+    realTime: 'Live updates on'
   },
   hero: {
-    liveGps: 'ACTIVE CARE SESSION • LIVE GPS',
+    liveGps: 'ACTIVE CARE SESSION • LOCATION ON',
     orderCode: 'Order Code: #CC-BK-882194',
     title: 'Morning Shift: Stroke Recovery & Rehabilitation Care',
     timeSlot: 'Schedule: 08:00 - 12:00',
-    checkIn: 'GPS Check-in: 08:30 (On Location)',
+    checkIn: 'Arrived: 08:30 (at the right address)',
     verified: 'Verified with fingerprint & photo ID',
     elapsedTitle: 'Elapsed session time',
     elapsedProgress: '44%',
@@ -273,7 +272,7 @@ export const caregiverActiveSessionEn = {
   },
   nursingNotes: {
     title: 'Nursing Progress Log',
-    subtitle: 'Synchronized clinical notes for family physician and relatives',
+    subtitle: 'Notes are shared right away with the family doctor and relatives',
     autoSaved: 'Auto-saved 1 minute ago',
     label: 'Clinical observation notes:',
     placeholder: 'Enter physical condition, mental alertness, and any incidents...',
@@ -312,13 +311,13 @@ export const caregiverActiveSessionEn = {
   commandCenter: {
     title: 'Session Safety & Protocol Control',
     subtitle: 'Protecting professional practice and ethical care',
-    gpsTitle: 'GPS Continuously Connected',
-    gpsDesc: 'Coordinates match patient residence (Tolerance < 5m)',
+    gpsTitle: 'Location sharing on',
+    gpsDesc: 'Location matches the patient’s home (within 5 m)',
     completeBtn: 'COMPLETE & SIGN-OFF SESSION',
     breakBtn: 'Take Shift Break (15 min)',
     incidentBtn: 'Report Medical Incident / Request Urgent Support',
     breakActiveNotice: 'Currently on a 15-minute shift break.',
-    completeSuccess: 'Care session completed and digitally signed in the system!'
+    completeSuccess: 'Care session completed and your signature has been saved!'
   },
   equipment: {
     title: 'Home Medical Equipment',
@@ -337,14 +336,14 @@ export const caregiverActiveSessionEn = {
   modals: {
     sosTitle: 'CONFIRM EMERGENCY SOS ACTIVATION',
     sosDesc:
-      'SOS signal will immediately trigger alerts to Chief Dispatcher, 115 Emergency Services, and family members with real-time GPS coordinates.',
+      'SOS signal will immediately trigger alerts to Chief Dispatcher, 115 Emergency Services, and family members with your current location.',
     sosConfirm: 'TRIGGER NOW',
     sosAlertSuccess: 'SOS signal transmitted! Emergency team and dispatcher are contacting within 60 seconds.',
     signTitle: 'Sign-off & Complete Session #BK-8821',
     signDesc: 'Confirm that all standard care procedures are completed. Provide digital signature for family handover.',
     nurseSignLabel: 'Registered Nurse Signature:',
     nurseName: 'RN. Nguyen Mai',
-    shaVerified: 'SHA-256 Verified',
+    shaVerified: 'Signature verified',
     signConfirm: 'Confirm Session Completion',
     addTaskTitle: 'Add Ad-hoc Care Task',
     taskTitlePlaceholder: 'Task title (e.g., Minor wound dressing change)',
@@ -363,9 +362,9 @@ export const caregiverActiveSessionEn = {
     scheduleLabel: 'Scheduled Time',
     scheduleVal: '08:00 – 12:00',
     scheduleSub: 'Standard Morning Shift (4h)',
-    checkInOutLabel: 'Check-in / Check-out',
+    checkInOutLabel: 'Arrival / Departure',
     checkInOutVal: '08:30 • 12:00',
-    gpsVerifiedSub: 'GPS home location verified',
+    gpsVerifiedSub: 'At the patient’s home',
     totalDurationLabel: 'Cumulative Duration',
     totalDurationVal: '4 hours 00 minutes',
     totalDurationSub: 'Full 240 mins care delivered',
@@ -388,11 +387,10 @@ export const caregiverActiveSessionEn = {
     item5Desc: 'Omron BP monitor, SpO2 clip, and bed rails sanitized and stored in designated places.',
     dispatchNoticeTitle: 'CareConnect Electronic Handover Protocol:',
     dispatchNoticeDesc:
-      'The system will transition to the Care Report screen for digital signature verification and instant sync to family and supervising physician apps per MOH standards.',
+      'Next, you will go to the Care Report page to sign it and send it right away to the family and supervising doctor, following Ministry of Health standards.',
     backBtn: 'Back to Review',
     confirmBtn: 'CONFIRM COMPLETION & SUBMIT REPORT',
-    syncingBtn: 'Synchronizing clinical records...',
-    successAlert:
-      'Confirmation successful! Transitioning to Care Report signing and crediting 350,000 VND to CarePay wallet.'
+    syncingBtn: 'Saving care notes...',
+    successAlert: 'Confirmed! Opening the Care Report to sign and adding 350,000 VND to your CarePay wallet.'
   }
 }

@@ -22,27 +22,28 @@ export const customerPaymentVi = {
       VNBANK: 'Thẻ ATM / tài khoản ngân hàng nội địa',
       INTCARD: 'Thẻ quốc tế Visa, Mastercard, JCB'
     },
-    methodHint: 'Bạn sẽ được chuyển sang cổng thanh toán. Phiên thanh toán có hiệu lực 15 phút.',
+    methodHint: 'Bạn sẽ được chuyển sang trang thanh toán và có 15 phút để hoàn tất.',
     pay: 'Thanh toán {{amount}}',
-    paying: 'Đang mở cổng thanh toán…',
+    paying: 'Đang mở trang thanh toán…',
     policy: 'Khoản cọc được hoàn theo chính sách hủy của trung tâm. Phần còn lại được lập hóa đơn khi lịch hoàn tất.',
     notAwaiting: 'Lịch đặt này không cần đặt cọc lúc này.',
     notAwaitingHint: 'Trạng thái hiện tại: {{status}}.'
   },
   gateway: {
-    documentTitle: 'Cổng thanh toán demo | CareConnect',
-    title: 'Cổng thanh toán demo',
-    subtitle: 'Môi trường thử nghiệm: không có khoản tiền thật nào bị trừ. Chọn kết quả để mô phỏng cổng thanh toán.',
+    documentTitle: 'Thanh toán thử nghiệm | CareConnect',
+    title: 'Thanh toán thử nghiệm',
+    subtitle:
+      'Đây là trang thanh toán thử nghiệm, không có khoản tiền thật nào bị trừ. Chọn một kết quả bên dưới để thử.',
     merchant: 'Đơn vị nhận',
     merchantName: 'CareConnect',
     orderInfo: 'Nội dung',
     orderValue: 'Cọc lịch đặt {{code}}',
     amount: 'Số tiền',
-    expiresAt: 'Phiên hết hạn lúc {{time}}',
+    expiresAt: 'Hết hạn thanh toán lúc {{time}}',
     succeed: 'Thanh toán thành công',
     fail: 'Thanh toán thất bại',
     processing: 'Đang xử lý…',
-    ended: 'Phiên thanh toán này đã kết thúc.',
+    ended: 'Giao dịch thanh toán này đã kết thúc.',
     viewResult: 'Xem kết quả'
   },
   success: {
@@ -61,10 +62,10 @@ export const customerPaymentVi = {
     title: 'Thanh toán chưa thành công',
     subtitle: 'Khoản cọc chưa được ghi nhận nên lịch đặt vẫn đang chờ đặt cọc.',
     reasons: {
-      CUSTOMER_DECLINED: 'Giao dịch đã bị hủy tại cổng thanh toán.',
+      CUSTOMER_DECLINED: 'Bạn đã hủy giao dịch ở trang thanh toán.',
       BOOKING_NOT_CONFIRMABLE: 'Trung tâm không thể xác nhận lịch đặt này nữa.',
-      EXPIRED: 'Phiên thanh toán đã hết hạn trước khi hoàn tất.',
-      UNKNOWN: 'Cổng thanh toán không xác nhận giao dịch.'
+      EXPIRED: 'Đã hết thời gian thanh toán trước khi bạn hoàn tất.',
+      UNKNOWN: 'Ngân hàng hoặc ví điện tử chưa xác nhận giao dịch.'
     },
     retry: 'Thử thanh toán lại',
     retryHint: 'Bạn có thể thanh toán lại trước hạn đặt cọc.'
@@ -98,7 +99,7 @@ export const customerPaymentEn = {
       VNBANK: 'Domestic ATM card / bank account',
       INTCARD: 'International card: Visa, Mastercard, JCB'
     },
-    methodHint: 'You will be taken to the payment gateway. The payment session lasts 15 minutes.',
+    methodHint: 'You will be taken to the payment page and have 15 minutes to finish.',
     pay: 'Pay {{amount}}',
     paying: 'Opening the payment gateway…',
     policy: 'The deposit is refunded under the center’s cancellation policy. The rest is invoiced when care ends.',
@@ -106,19 +107,19 @@ export const customerPaymentEn = {
     notAwaitingHint: 'Current status: {{status}}.'
   },
   gateway: {
-    documentTitle: 'Demo payment gateway | CareConnect',
-    title: 'Demo payment gateway',
-    subtitle: 'Test environment: no real money is charged. Choose a result to simulate the payment gateway.',
+    documentTitle: 'Test payment | CareConnect',
+    title: 'Test payment',
+    subtitle: 'This is a test payment page and no real money is charged. Choose a result below to try it.',
     merchant: 'Merchant',
     merchantName: 'CareConnect',
     orderInfo: 'Description',
     orderValue: 'Deposit for booking {{code}}',
     amount: 'Amount',
-    expiresAt: 'Session expires at {{time}}',
+    expiresAt: 'Payment expires at {{time}}',
     succeed: 'Payment succeeds',
     fail: 'Payment fails',
     processing: 'Processing…',
-    ended: 'This payment session has already ended.',
+    ended: 'This payment has already ended.',
     viewResult: 'See the result'
   },
   success: {
@@ -139,7 +140,7 @@ export const customerPaymentEn = {
     reasons: {
       CUSTOMER_DECLINED: 'The transaction was cancelled at the payment gateway.',
       BOOKING_NOT_CONFIRMABLE: 'The center can no longer confirm this booking.',
-      EXPIRED: 'The payment session expired before it was completed.',
+      EXPIRED: 'Time ran out before the payment was completed.',
       UNKNOWN: 'The payment gateway did not confirm the transaction.'
     },
     retry: 'Try paying again',

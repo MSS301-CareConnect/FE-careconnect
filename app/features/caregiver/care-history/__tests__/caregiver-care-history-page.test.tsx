@@ -43,7 +43,7 @@ describe('Caregiver history', () => {
     )
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'absent' } })
     expect(screen.getByRole('heading', { name: 'Không tìm thấy ca chăm sóc' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất danh sách (CSV)' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Tải danh sách về máy (CSV)' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Đặt lại bộ lọc' }))
     expect(screen.getAllByRole('article')).toHaveLength(4)
     await act(() => setAppLanguage('en', false))
@@ -55,7 +55,7 @@ describe('Caregiver history', () => {
     vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: create, revokeObjectURL: revoke }))
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
     renderHistory('/caregiver/history?q=BK-8790')
-    fireEvent.click(screen.getByRole('button', { name: 'Xuất danh sách (CSV)' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Tải danh sách về máy (CSV)' }))
     expect(create).toHaveBeenCalledOnce()
     const csv = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader()

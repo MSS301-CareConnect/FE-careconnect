@@ -42,7 +42,26 @@ export const customerProviderVi = {
   scopeGeneral:
     'Bạn đang xem người chăm sóc của tất cả trung tâm. Chọn một trung tâm để chỉ xem đội ngũ của trung tâm đó.',
   reminderTitle: 'Chọn trung tâm để xem đội ngũ chăm sóc',
-  reminderText: 'Người chăm sóc làm việc theo từng trung tâm. Chọn trung tâm gần bạn để xem hồ sơ và đặt lịch.'
+  reminderText: 'Người chăm sóc làm việc theo từng trung tâm. Chọn trung tâm gần bạn để xem hồ sơ và đặt lịch.',
+  detail: {
+    badge: 'Hồ sơ người chăm sóc',
+    avatar: 'Ảnh đại diện của {{name}}',
+    experience: 'Kinh nghiệm',
+    rating: 'Đánh giá',
+    noRating: 'Chưa có đánh giá',
+    gender: 'Giới tính',
+    about: 'Giới thiệu',
+    aboutEmpty: 'Người chăm sóc chưa cập nhật phần giới thiệu.',
+    services: 'Dịch vụ đảm nhận',
+    servicesEmpty: 'Người chăm sóc chưa đăng ký dịch vụ nào.',
+    issuedBy: 'Cấp bởi {{issuer}}',
+    issued: 'Cấp ngày {{date}}',
+    expires: 'Hiệu lực đến {{date}}',
+    noExpiry: 'Không thời hạn',
+    bookTitle: 'Đặt lịch chăm sóc',
+    bookHint: 'Trung tâm sẽ xác nhận lịch và phân công sau khi bạn gửi yêu cầu.',
+    errorHelp: 'Hồ sơ có thể đã ngừng hoạt động hoặc bạn cần đăng nhập để xem.'
+  }
 } as const
 
 export const customerProviderEn = {
@@ -88,5 +107,24 @@ export const customerProviderEn = {
   profileError: 'Unable to load the caregiver profile.',
   scopeGeneral: 'You are viewing caregivers from every center. Choose a center to see only its care team.',
   reminderTitle: 'Choose a center to see its care team',
-  reminderText: 'Caregivers work with a specific center. Choose one near you to view profiles and book.'
+  reminderText: 'Caregivers work with a specific center. Choose one near you to view profiles and book.',
+  detail: {
+    badge: 'Caregiver profile',
+    avatar: 'Profile photo of {{name}}',
+    experience: 'Experience',
+    rating: 'Rating',
+    noRating: 'No reviews yet',
+    gender: 'Gender',
+    about: 'About',
+    aboutEmpty: 'This caregiver has not added an introduction yet.',
+    services: 'Services provided',
+    servicesEmpty: 'This caregiver has not registered any services yet.',
+    issuedBy: 'Issued by {{issuer}}',
+    issued: 'Issued {{date}}',
+    expires: 'Valid until {{date}}',
+    noExpiry: 'No expiry',
+    bookTitle: 'Book care',
+    bookHint: 'The center confirms the schedule and assignment after you send the request.',
+    errorHelp: 'The profile may no longer be active, or you may need to sign in to view it.'
+  }
 } as const

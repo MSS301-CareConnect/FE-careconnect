@@ -60,7 +60,10 @@ describe('Customer caregiver catalog', () => {
 
     expect(screen.getByRole('heading', { name: 'Find the right caregiver' })).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Lan Nguyen' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'View profile' })).toHaveAttribute('href', '/customer/caregivers/user-1')
+    expect(screen.getByRole('link', { name: 'View profile' })).toHaveAttribute(
+      'href',
+      '/customer/caregivers/caregiver-1'
+    )
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search caregivers by name…' }), {
       target: { value: 'Lan' }
     })

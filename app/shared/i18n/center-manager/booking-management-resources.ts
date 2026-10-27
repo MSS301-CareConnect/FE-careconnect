@@ -20,7 +20,7 @@ export const managerBookingManagementVi = {
     label: 'Lọc lịch đặt',
     status: 'Trạng thái',
     all: 'Tất cả',
-    search: 'Mã booking',
+    search: 'Mã lịch đặt',
     searchPlaceholder: 'Nhập mã hoặc 6 ký tự cuối',
     from: 'Từ ngày',
     to: 'Đến ngày',

@@ -1,6 +1,6 @@
 export const caregiverDashboardEn = {
   title: 'Caregiver dashboard | CareConnect',
-  demo: 'Preview • Sample data. Live schedules, earnings, GPS and medical orders are not connected.',
+  demo: 'Preview • Sample data. Schedules, earnings, locations and medical orders are not real yet.',
   stats: {
     shifts: 'Sessions today',
     shiftsValue: '{{count, number}} sessions',
@@ -62,7 +62,7 @@ export const caregiverDashboardEn = {
     credential: 'Medical credential verification',
     preview: 'Preview',
     credentialDetail:
-      'License record 0084920/BYT. Verification will come from the system; this preview is not connected to VNeID.'
+      'License record 0084920/BYT. Verification status will be updated after review; not yet checked through VNeID.'
   },
   tools: {
     heading: 'Quick care tools',
@@ -74,13 +74,13 @@ export const caregiverDashboardEn = {
     guide: 'Care procedure handbook',
     guideDetail: 'Ministry of Health technical standards',
     hotline: 'Clinical support',
-    hotlineDetail: 'Support contact details will appear once confirmed by the system.'
+    hotlineDetail: 'Support contact details will be added soon.'
   }
 } as const
 
 export const caregiverDashboardVi = {
   title: 'Trang chủ Điều dưỡng | CareConnect',
-  demo: 'Bản xem thử • Dữ liệu mẫu. Chưa kết nối lịch trực, thu nhập, GPS và y lệnh thực tế.',
+  demo: 'Bản xem thử • Số liệu minh họa. Lịch trực, thu nhập, vị trí và y lệnh chưa phải dữ liệu thực tế.',
   stats: {
     shifts: 'Số ca hôm nay',
     shiftsValue: '{{count, number}} ca',
@@ -142,10 +142,10 @@ export const caregiverDashboardVi = {
     credential: 'Xác thực chứng chỉ Y tế',
     preview: 'Minh họa',
     credentialDetail:
-      'Hồ sơ CCHN số 0084920/BYT. Trạng thái xác thực sẽ được cập nhật từ hệ thống; bản xem thử chưa liên thông VNeID.'
+      'Hồ sơ CCHN số 0084920/BYT. Trạng thái xác thực sẽ được cập nhật sau khi đối chiếu; hiện chưa kiểm tra qua VNeID.'
   },
   tools: {
-    heading: 'Công cụ tác nghiệp nhanh',
+    heading: 'Thao tác nhanh',
     shortcut: 'Phím tắt',
     report: 'Nộp báo cáo sinh hiệu',
     reportDetail: 'Ghi nhận huyết áp, mạch, SpO₂',
@@ -154,6 +154,6 @@ export const caregiverDashboardVi = {
     guide: 'Cẩm nang quy trình',
     guideDetail: 'Quy chuẩn kỹ thuật Bộ Y tế',
     hotline: 'Tổng đài chuyên môn',
-    hotlineDetail: 'Thông tin tổng đài sẽ hiển thị khi được hệ thống xác nhận.'
+    hotlineDetail: 'Số tổng đài sẽ sớm được cập nhật.'
   }
 } as const

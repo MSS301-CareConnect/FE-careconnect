@@ -2,7 +2,7 @@ export const managerDetailVi = {
   documentTitle: '{{name}} | CareConnect',
   back: 'Quay lại danh sách Người chăm sóc',
   notFound: 'Không tìm thấy hồ sơ người chăm sóc',
-  preview: 'Hồ sơ minh họa. Thông tin CCHN, định danh, doanh thu và xác minh chưa được đối soát với hệ thống.',
+  preview: 'Hồ sơ minh họa. Thông tin CCHN, giấy tờ tùy thân, doanh thu và xác minh chưa được kiểm tra thực tế.',
   joined: 'Gia nhập: {{date}}',
   reviewCount: '{{reviews, number}} đánh giá • {{sessions, number}} ca',
   licenseBadge: 'CCHN trong hồ sơ mẫu: #{{license}}',
@@ -28,7 +28,7 @@ export const managerDetailVi = {
   bioValue:
     'Cử nhân Điều dưỡng với kinh nghiệm tại Khoa Tim mạch Bệnh viện Chợ Rẫy. Tập trung chăm sóc sau tai biến, phục hồi vận động và người cao tuổi.',
   verification: 'Thẩm định Pháp lý & CCHN',
-  verificationHint: 'Các mục dưới đây chỉ là dữ liệu mẫu; trạng thái pháp lý cần xác minh qua hệ thống.',
+  verificationHint: 'Các mục dưới đây chỉ là dữ liệu minh họa; giấy tờ pháp lý cần được xác minh thực tế.',
   checklist: {
     identity: 'CCCD gắn chip / Định danh',
     license: 'Chứng chỉ hành nghề',
@@ -36,7 +36,7 @@ export const managerDetailVi = {
     background: 'Phiếu lý lịch tư pháp'
   },
   documents: 'Tài liệu Y tế đính kèm',
-  documentsHint: 'Tệp minh họa; bản scan và chức năng tải xuống cần API.',
+  documentsHint: 'Tệp minh họa; chức năng xem và tải bản scan sắp ra mắt.',
   downloadAll: 'Tải về tất cả (ZIP)',
   viewDoc: 'Xem {{name}}',
   downloadDoc: 'Tải {{name}}',
@@ -77,7 +77,7 @@ export const managerDetailVi = {
     careconnect: 'Điều dưỡng cao cấp nền tảng CareConnect'
   },
   schedule: 'Lịch biểu Trực Hàng tuần',
-  scheduleHint: 'Lịch tuần mẫu; chưa kết nối phân công thực tế.',
+  scheduleHint: 'Lịch tuần minh họa, chưa phải lịch phân công thực tế.',
   editSchedule: 'Chỉnh sửa ca',
   slot: 'Khung giờ',
   morning: 'Ca sáng',
@@ -88,14 +88,13 @@ export const managerDetailVi = {
   off: 'Nghỉ',
   hospitalDuty: 'Trực bệnh viện',
   scheduleDetails: 'Xem chi tiết lịch đặt của nhân sự',
-  extraUnavailable: 'Dữ liệu chi tiết cho hồ sơ này sẽ được cung cấp từ API quản lý trung tâm.'
+  extraUnavailable: 'Thông tin chi tiết của hồ sơ này sẽ sớm được cập nhật.'
 } as const
 export const managerDetailEn = {
   documentTitle: '{{name}} | CareConnect',
   back: 'Back to caregiver list',
   notFound: 'Caregiver profile not found',
-  preview:
-    'Illustrative profile. License, identity, earnings and verification details have not been checked against the system.',
+  preview: 'Sample profile. License, identity, earnings and verification details have not been checked yet.',
   joined: 'Joined: {{date}}',
   reviewCount: '{{reviews, number}} reviews • {{sessions, number}} sessions',
   licenseBadge: 'Sample profile license: #{{license}}',
@@ -121,7 +120,7 @@ export const managerDetailEn = {
   bioValue:
     'Nursing graduate with experience in the cardiology department at Chợ Rẫy Hospital. Focuses on post-stroke care, rehabilitation and older adults.',
   verification: 'Legal & License Review',
-  verificationHint: 'The items below are sample data; legal status requires system verification.',
+  verificationHint: 'The items below are sample data; legal documents still need to be verified.',
   checklist: {
     identity: 'Chip identity card / Identity',
     license: 'Practice license',
@@ -129,7 +128,7 @@ export const managerDetailEn = {
     background: 'Criminal record certificate'
   },
   documents: 'Attached Medical Documents',
-  documentsHint: 'Illustrative filenames; scans and downloads require the API.',
+  documentsHint: 'Sample files; viewing and downloading scans is coming soon.',
   downloadAll: 'Download all (ZIP)',
   viewDoc: 'View {{name}}',
   downloadDoc: 'Download {{name}}',
@@ -170,7 +169,7 @@ export const managerDetailEn = {
     careconnect: 'Senior caregiver at CareConnect'
   },
   schedule: 'Weekly Shift Schedule',
-  scheduleHint: 'Sample weekly schedule; actual assignments are not connected.',
+  scheduleHint: 'Sample weekly schedule; not real assignments.',
   editSchedule: 'Edit shifts',
   slot: 'Time slot',
   morning: 'Morning',
@@ -181,5 +180,5 @@ export const managerDetailEn = {
   off: 'Off',
   hospitalDuty: 'Hospital duty',
   scheduleDetails: 'View caregiver bookings',
-  extraUnavailable: 'Further details for this profile require the center manager API.'
+  extraUnavailable: 'More details for this profile are coming soon.'
 } as const

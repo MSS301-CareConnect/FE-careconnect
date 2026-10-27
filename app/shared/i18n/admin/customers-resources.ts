@@ -1,7 +1,7 @@
 export const adminCustomersVi = {
-  documentTitle: 'Quản lý khách hàng | CareConnect Admin',
-  detailTitle: 'Chi tiết khách hàng | CareConnect Admin',
-  sample: 'Dữ liệu mẫu từ bản thiết kế • 14/10/2026',
+  documentTitle: 'Quản lý khách hàng | Quản trị CareConnect',
+  detailTitle: 'Chi tiết khách hàng | Quản trị CareConnect',
+  sample: 'Số liệu minh họa • 14/10/2026',
   title: 'Quản lý Khách hàng',
   subtitle: 'Theo dõi hồ sơ, lịch đặt và trạng thái tài khoản khách hàng.',
   export: 'Xuất CSV mẫu',
@@ -16,7 +16,7 @@ export const adminCustomersVi = {
     total: '1.188 đang hoạt động',
     new: 'Mục tiêu 120',
     locked: 'Cần xử lý theo quy trình',
-    retention: 'Theo mẫu thiết kế'
+    retention: 'Số liệu minh họa'
   },
   search: 'Tìm theo tên, email, số điện thoại hoặc mã khách hàng',
   status: 'Trạng thái',
@@ -61,7 +61,7 @@ export const adminCustomersVi = {
   next: 'Trang sau',
   page: 'Trang {{page}} / {{pages}}',
   back: 'Quay lại danh sách khách hàng',
-  unknown: 'Không tìm thấy khách hàng trong dữ liệu mẫu.',
+  unknown: 'Không tìm thấy khách hàng.',
   customerId: 'Mã KH',
   lastActivity: 'Hoạt động gần nhất',
   kpis: {
@@ -77,18 +77,18 @@ export const adminCustomersVi = {
   email: 'Email',
   address: 'Địa chỉ chăm sóc mặc định',
   payment: 'Phương thức thanh toán',
-  paymentSample: 'Các phương thức trong bản thiết kế là dữ liệu mẫu.',
+  paymentSample: 'Các phương thức thanh toán dưới đây là dữ liệu minh họa.',
   visaSample: 'Visa •••• 4589',
   momoSample: 'MoMo •••• •56',
-  notes: 'Ghi chú nội bộ (Admin)',
-  notesHint: 'Nội dung mẫu, chỉ dành cho nhân sự được cấp quyền khi có API.',
+  notes: 'Ghi chú nội bộ (chỉ quản trị viên)',
+  notesHint: 'Nội dung minh họa. Chỉ nhân sự được cấp quyền mới xem được ghi chú này.',
   sampleNote:
     'Khách hàng thân thiết, thường đặt ca đêm cho bố và mẹ cao tuổi, yêu cầu điều dưỡng có CCHN đa khoa nhẹ nhàng chu đáo.',
   notesPlaceholder: 'Nhập ghi chú mới...',
   saveNote: 'Lưu ghi chú',
-  notesLocal: 'Bản nháp ghi chú chỉ lưu trong phiên này.',
+  notesLocal: 'Ghi chú nháp sẽ mất khi tải lại trang.',
   patients: 'Người bệnh được bảo hộ',
-  patientsHint: 'Hồ sơ trong bản thiết kế mẫu',
+  patientsHint: 'Hồ sơ minh họa',
   addPatient: 'Thêm người thân',
   patientHistory: 'Tiền sử bệnh lý & lưu ý',
   relations: { father: 'Bố ruột', mother: 'Mẹ ruột' },
@@ -98,7 +98,7 @@ export const adminCustomersVi = {
   },
   viewPatient: 'Xem hồ sơ bệnh án',
   recentBookings: 'Lịch sử đặt lịch gần đây',
-  recentBookingsHint: 'Các ca trong bản thiết kế mẫu',
+  recentBookingsHint: 'Các ca minh họa',
   bookingColumns: {
     code: 'Mã ca & dịch vụ',
     patient: 'Người bệnh',
@@ -114,7 +114,7 @@ export const adminCustomersVi = {
     day: 'Chăm sóc toàn diện ban ngày (8h)'
   },
   audit: 'Nhật ký bảo mật & hoạt động',
-  auditHint: 'Các mốc hoạt động trong bản thiết kế mẫu',
+  auditHint: 'Hoạt động minh họa',
   auditEntries: {
     booking: 'Đặt thêm ca trực đêm cho Cụ Nguyễn Văn Hùng (#BK-8821)',
     rating: 'Đánh giá 5 sao cho điều dưỡng Trần Thuỳ Dương',
@@ -124,14 +124,14 @@ export const adminCustomersVi = {
   notify: 'Gửi thông báo',
   resetPassword: 'Cấp lại mật khẩu',
   security: 'Tạm khóa tài khoản',
-  noExtra: 'Bản thiết kế chưa cung cấp thông tin chi tiết cho khách hàng này.',
-  unavailable: 'Cần API và quyền Admin để thực hiện thao tác này'
+  noExtra: 'Chưa có thông tin chi tiết cho khách hàng này.',
+  unavailable: 'Chức năng này sắp ra mắt.'
 } as const
 
 export const adminCustomersEn = {
   documentTitle: 'Customer management | CareConnect Admin',
   detailTitle: 'Customer details | CareConnect Admin',
-  sample: 'Design sample data • October 14, 2026',
+  sample: 'Sample data • October 14, 2026',
   title: 'Customer management',
   subtitle: 'Review customer profiles, bookings and account status.',
   export: 'Export sample CSV',
@@ -197,18 +197,18 @@ export const adminCustomersEn = {
   email: 'Email',
   address: 'Default care address',
   payment: 'Payment methods',
-  paymentSample: 'These payment methods come from the design sample.',
+  paymentSample: 'These payment methods are sample data.',
   visaSample: 'Visa •••• 4589',
   momoSample: 'MoMo •••• •56',
   notes: 'Internal Admin notes',
-  notesHint: 'Sample content, restricted to authorized staff when the API is available.',
+  notesHint: 'Sample content. Only authorized staff can see these notes.',
   sampleNote:
     'A loyal customer who often books night shifts for her older parents and prefers a considerate licensed general care nurse.',
   notesPlaceholder: 'Enter a new note...',
   saveNote: 'Save note',
-  notesLocal: 'The draft note stays in this session only.',
+  notesLocal: 'The draft note will be lost when you reload the page.',
   patients: 'Managed patients',
-  patientsHint: 'Profiles in the design sample',
+  patientsHint: 'Sample profiles',
   addPatient: 'Add family member',
   patientHistory: 'Medical history & notes',
   relations: { father: 'Father', mother: 'Mother' },
@@ -218,7 +218,7 @@ export const adminCustomersEn = {
   },
   viewPatient: 'View medical record',
   recentBookings: 'Recent bookings',
-  recentBookingsHint: 'Bookings in the design sample',
+  recentBookingsHint: 'Sample bookings',
   bookingColumns: {
     code: 'Booking & service',
     patient: 'Patient',
@@ -234,7 +234,7 @@ export const adminCustomersEn = {
     day: 'Comprehensive daytime care (8h)'
   },
   audit: 'Security & activity log',
-  auditHint: 'Activity entries in the design sample',
+  auditHint: 'Sample activity',
   auditEntries: {
     booking: 'Booked another night shift for Nguyễn Văn Hùng (#BK-8821)',
     rating: 'Left a five-star rating for caregiver Trần Thuỳ Dương',
@@ -244,6 +244,6 @@ export const adminCustomersEn = {
   notify: 'Send notification',
   resetPassword: 'Reset password',
   security: 'Suspend account',
-  noExtra: 'The design does not include detailed information for this customer.',
-  unavailable: 'Requires the Admin API and authorization'
+  noExtra: 'No detailed information is available for this customer yet.',
+  unavailable: 'This feature is coming soon.'
 } as const

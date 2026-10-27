@@ -41,7 +41,7 @@ describe('Admin reviews and complaints preview', () => {
     renderPage()
     fireEvent.click(screen.getByRole('tab', { name: 'Báo cáo Vi phạm Tác phong & Kỷ luật' }))
     expect(screen.getByTestId('location')).toHaveTextContent('tab=violations')
-    expect(screen.getByText(/cần kết nối nguồn dữ liệu/)).toBeInTheDocument()
+    expect(screen.getByText(/Chức năng báo cáo vi phạm sắp ra mắt/)).toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Customer reviews & complaint management')
   })

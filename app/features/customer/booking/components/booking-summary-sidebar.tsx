@@ -14,7 +14,7 @@ export function BookingSummarySidebar({ form }: { form: Form }) {
   const language = i18n.language
   const { quote, create } = form
   const occurrences = quote.data?.occurrences ?? []
-  const caregiver = form.centerCaregivers.find((item) => (item.caregiverId ?? item.id) === form.selectedCaregiverId)
+  const caregiver = form.centerCaregivers.find((item) => item.id === form.selectedCaregiverId)
 
   return (
     <aside

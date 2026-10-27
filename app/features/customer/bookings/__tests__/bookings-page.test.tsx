@@ -67,7 +67,7 @@ describe('CustomerBookingsPage', () => {
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Chờ trung tâm duyệt' }))
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Tìm theo mã booking' }), { target: { value: 'A1B2C3' } })
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Tìm theo mã lịch đặt' }), { target: { value: 'A1B2C3' } })
     fireEvent.submit(screen.getByRole('search'))
 
     await waitFor(() =>

@@ -35,7 +35,7 @@ export const bookingReviewEn = {
 
 export const bookingReviewVi = {
   title: 'Đánh giá & nhận xét người chăm sóc',
-  subtitle: 'Ca trực {{code}} · Hoàn thành ngày {{date}}',
+  subtitle: 'Buổi chăm sóc {{code}} · Hoàn thành ngày {{date}}',
   close: 'Đóng đánh giá',
   caregiver: 'Điều dưỡng phụ trách',
   satisfaction: 'Bạn hài lòng về {{caregiver}} như thế nào?',
@@ -58,12 +58,12 @@ export const bookingReviewVi = {
   comment: 'Nhận xét & góp ý chi tiết',
   commentPlaceholder: 'Chia sẻ trải nghiệm của bạn với điều dưỡng…',
   counter: '{{count}} / {{max}} ký tự',
-  tip: 'Gửi lời cảm ơn & tiền tip điều dưỡng (tùy chọn)',
-  noTip: 'Không tip',
+  tip: 'Gửi lời cảm ơn & tiền bồi dưỡng cho điều dưỡng (không bắt buộc)',
+  noTip: 'Không gửi',
   public: 'Hiển thị nhận xét công khai trên hồ sơ điều dưỡng',
   anonymous: 'Hiển thị đánh giá ẩn danh',
   later: 'Để sau',
   submit: 'Gửi đánh giá',
-  draft: 'Đây là bản nháp. Chức năng gửi đánh giá và thanh toán tip chưa khả dụng; không có khoản tiền nào được thu.',
+  draft: 'Đây là bản nháp. Chức năng gửi đánh giá và tiền bồi dưỡng sắp ra mắt; không có khoản tiền nào được thu.',
   privacy: 'Chọn cách hiển thị nhận xét trước khi gửi đánh giá.'
 } as const

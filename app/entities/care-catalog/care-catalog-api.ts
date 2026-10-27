@@ -4,7 +4,7 @@ import {
   listCatalogItems,
   updateCatalogItem
 } from '~/shared/api/generated/api/catalog-item/catalog-item'
-import { listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
+import { getCenterOffering, listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
 import { createCenterOffering, updateCenterOffering } from '~/shared/api/generated/api/center-offering/center-offering'
 import { createPricePlan, listPricePlans, updatePricePlan } from '~/shared/api/generated/api/price-plan/price-plan'
 import type {
@@ -53,6 +53,7 @@ export const careCatalogKeys = {
   all: ['care-catalog'] as const,
   items: ['care-catalog', 'items'] as const,
   centerOfferings: (centerId: string) => ['care-catalog', 'center-offerings', centerId] as const,
+  centerOffering: (id: string) => ['care-catalog', 'center-offering', id] as const,
   pricePlans: (centerOfferingId: string) => ['care-catalog', 'price-plans', centerOfferingId] as const
 }
 
@@ -73,6 +74,10 @@ export async function removeCatalog(id: string) {
 
 export async function fetchCenterOfferings(centerId: string): Promise<CenterOfferingRecord[]> {
   return collectPages((page) => listCenterOfferings(centerId, { page, size: pageSize }, readOptions).then(result))
+}
+/** One offering; customers only see it while it is sellable, otherwise the backend answers 404. */
+export async function fetchCenterOffering(id: string): Promise<CenterOfferingRecord> {
+  return result(await getCenterOffering(id, readOptions))
 }
 export async function createOffering(request: CenterOfferingRequest) {
   return result(await createCenterOffering(request, await writeOptions()))

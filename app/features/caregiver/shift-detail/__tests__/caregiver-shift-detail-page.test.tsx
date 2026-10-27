@@ -27,7 +27,7 @@ describe('CaregiverShiftDetailPage', () => {
 
     // Countdown banner
     expect(screen.getByText('Đếm ngược giờ bắt đầu')).toBeInTheDocument()
-    expect(screen.getByText('Tọa độ di chuyển đã sẵn sàng')).toBeInTheDocument()
+    expect(screen.getByText('Đã có chỉ đường tới nhà bệnh nhân')).toBeInTheDocument()
 
     // Patient Profile & Guardian
     expect(screen.getByText('Hồ sơ người cần chăm sóc')).toBeInTheDocument()
@@ -37,7 +37,7 @@ describe('CaregiverShiftDetailPage', () => {
     expect(screen.getByText('Anh Nguyễn Bình (Con trai)')).toBeInTheDocument()
 
     // Checklist
-    expect(screen.getByText('Dịch vụ can thiệp y tế & Checklist nhiệm vụ')).toBeInTheDocument()
+    expect(screen.getByText('Dịch vụ & danh sách công việc')).toBeInTheDocument()
     expect(screen.getByText('1. Đo sinh hiệu đầu ca')).toBeInTheDocument()
     expect(screen.getByText('5. Bàn giao & Lập phiếu báo cáo')).toBeInTheDocument()
 
@@ -158,7 +158,7 @@ describe('CaregiverShiftDetailPage', () => {
 
     expect(screen.getByText('Ready for shift')).toBeInTheDocument()
     expect(screen.getByText('Care Recipient Profile')).toBeInTheDocument()
-    expect(screen.getByText('Clinical Interventions & Task Checklist')).toBeInTheDocument()
+    expect(screen.getByText('Services & Task List')).toBeInTheDocument()
     expect(screen.getByText('START SHIFT NOW')).toBeInTheDocument()
     expect(screen.getByText('Special Requirements & Clinical Warnings')).toBeInTheDocument()
   })

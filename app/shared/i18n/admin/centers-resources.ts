@@ -1,16 +1,16 @@
 export const adminCentersVi = {
-  documentTitle: 'Quản lý trung tâm đối tác | CareConnect Admin',
+  documentTitle: 'Quản lý trung tâm đối tác | Quản trị CareConnect',
   title: 'Quản lý Trung tâm Chăm sóc Đối tác',
   subtitle: 'Thẩm định hồ sơ trung tâm mới và theo dõi trạng thái tài khoản đối tác trên toàn quốc.',
   breadcrumb: 'Đối tác y tế',
-  sample: 'Dữ liệu minh họa theo bản thiết kế tháng 10/2025; chưa kết nối hệ thống.',
+  sample: 'Số liệu minh họa (tháng 10/2025), chưa phải dữ liệu thực tế.',
   history: 'Lịch sử kiểm duyệt & khóa',
   export: 'Xuất CSV mẫu',
   add: 'Thêm trung tâm thủ công',
-  unavailable: 'Cần API và quyền Admin để thực hiện thao tác này',
+  unavailable: 'Chức năng này sắp ra mắt.',
   metrics: {
     total: 'Tổng trung tâm đối tác',
-    pending: 'Chờ duyệt Onboard',
+    pending: 'Chờ duyệt hồ sơ',
     suspended: 'Bị tạm khóa / cảnh cáo',
     staff: 'Điều dưỡng trực thuộc'
   },
@@ -22,10 +22,10 @@ export const adminCentersVi = {
   },
   safety: 'Quy chuẩn an toàn tài khoản đối tác',
   safetyHint:
-    'Việc khóa hoặc mở khóa trung tâm phải được backend xác thực và xử lý thông báo, điều phối ca theo quy trình chính thức.',
+    'Việc khóa hoặc mở khóa trung tâm phải được hệ thống xác nhận, kèm thông báo và điều phối lại ca theo quy trình chính thức.',
   tabs: {
     all: 'Tất cả trung tâm',
-    pending: 'Chờ duyệt Onboard',
+    pending: 'Chờ duyệt hồ sơ',
     active: 'Đang hoạt động',
     suspended: 'Tạm khóa / đình chỉ'
   },
@@ -35,7 +35,7 @@ export const adminCentersVi = {
   accreditation: 'Phân hạng y tế',
   all: 'Tất cả',
   regions: { HN: 'Hà Nội', HCM: 'TP. Hồ Chí Minh', DN: 'Đà Nẵng', CT: 'Cần Thơ', BD: 'Bình Dương' },
-  statuses: { pending: 'Chờ duyệt Onboard', active: 'Đang hoạt động', suspended: 'Đã tạm khóa' },
+  statuses: { pending: 'Chờ duyệt hồ sơ', active: 'Đang hoạt động', suspended: 'Đã tạm khóa' },
   accreditations: { BYT: 'Chuẩn GPHĐ Bộ Y tế', CLINIC: 'Phòng khám đa khoa', PRIVATE: 'Trung tâm điều dưỡng tư nhân' },
   columns: {
     center: 'Thông tin trung tâm & mã',
@@ -53,7 +53,7 @@ export const adminCentersVi = {
   results: '{{count}} trung tâm trong mẫu',
   empty: 'Không tìm thấy trung tâm phù hợp.',
   details: 'Xem hồ sơ',
-  approve: 'Duyệt Onboard',
+  approve: 'Duyệt hồ sơ',
   request: 'Yêu cầu bổ sung',
   lock: 'Khóa tài khoản',
   unlock: 'Mở khóa',
@@ -62,14 +62,14 @@ export const adminCentersVi = {
   page: 'Trang {{page}} / {{pages}}',
   close: 'Đóng',
   detailTitle: 'Hồ sơ trung tâm đối tác',
-  recordHint: 'Thông tin hồ sơ trong bản thiết kế; chưa có xác minh trực tiếp từ backend.',
-  process: 'Quy trình thẩm định & Onboard 4 bước',
+  recordHint: 'Thông tin hồ sơ minh họa, chưa được xác minh thực tế.',
+  process: 'Quy trình thẩm định & tiếp nhận 4 bước',
   processHint: 'Lộ trình minh họa cho trung tâm mới',
   steps: {
     first: 'Tiếp nhận hồ sơ & GPKD',
     second: 'Kiểm tra CCHN & danh mục kỹ thuật',
     third: 'Ký quỹ & cam kết bảo hiểm',
-    fourth: 'Bàn giao tài khoản quản trị Portal'
+    fourth: 'Bàn giao tài khoản quản trị cho trung tâm'
   },
   notes: {
     anNhien: 'Hồ sơ chờ thẩm định chuyên môn.',
@@ -77,7 +77,7 @@ export const adminCentersVi = {
     saiGon: 'Trung tâm đang nhận lịch chăm sóc.',
     thuDo: 'Trung tâm đang nhận lịch chăm sóc.',
     songHan: 'Trung tâm đang nhận lịch chăm sóc.',
-    phucAn: 'Mẫu thiết kế ghi nhận chứng chỉ chuyên môn cần gia hạn.'
+    phucAn: 'Chứng chỉ chuyên môn cần gia hạn (minh họa).'
   }
 } as const
 
@@ -86,11 +86,11 @@ export const adminCentersEn = {
   title: 'Partner care center management',
   subtitle: 'Review new center applications and monitor partner account status nationwide.',
   breadcrumb: 'Healthcare partners',
-  sample: 'Illustrative October 2025 design data; not connected to the platform.',
+  sample: 'Sample figures (October 2025), not live data.',
   history: 'Review & suspension history',
   export: 'Export sample CSV',
   add: 'Add center manually',
-  unavailable: 'Requires the backend API and Admin authorization',
+  unavailable: 'This feature is coming soon.',
   metrics: {
     total: 'Partner centers',
     pending: 'Pending onboarding',
@@ -105,7 +105,7 @@ export const adminCentersEn = {
   },
   safety: 'Partner account safety protocol',
   safetyHint:
-    'Center suspension and reactivation require backend authorization, notifications and official shift coordination.',
+    'Suspending or reactivating a center must be confirmed by the platform, with notifications and shift coordination following the official process.',
   tabs: { all: 'All centers', pending: 'Pending onboarding', active: 'Active', suspended: 'Suspended' },
   search: 'Search center name, partner ID, business license or representative',
   region: 'Region',
@@ -140,7 +140,7 @@ export const adminCentersEn = {
   page: 'Page {{page}} / {{pages}}',
   close: 'Close',
   detailTitle: 'Partner center application',
-  recordHint: 'Application details from the design; not verified against the backend.',
+  recordHint: 'Sample application details, not yet verified.',
   process: 'Four-step center onboarding',
   processHint: 'Illustrative process for new centers',
   steps: {
@@ -155,6 +155,6 @@ export const adminCentersEn = {
     saiGon: 'Center is accepting care bookings.',
     thuDo: 'Center is accepting care bookings.',
     songHan: 'Center is accepting care bookings.',
-    phucAn: 'The design marks a clinical credential as due for renewal.'
+    phucAn: 'A clinical credential is due for renewal (sample).'
   }
 } as const

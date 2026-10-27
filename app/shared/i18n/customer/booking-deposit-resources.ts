@@ -22,7 +22,7 @@ export const bookingDepositEn = {
     caregiver: {
       avatarAlt: 'Portrait of friendly Vietnamese nurse Nguyen Thi Bich Loan in jade scrubs',
       name: 'Nurse Nguyen Thi Bich Loan',
-      verifiedBadge: 'Medical License & VNeID',
+      verifiedBadge: 'License & identity verified',
       bio: 'Bachelor of Nursing • University of Medicine and Pharmacy HCMC (7 years clinical experience)',
       ratingValue: '4.9',
       reviewsCount: '(124 reviews)',
@@ -46,7 +46,7 @@ export const bookingDepositEn = {
       datesValue: '28/10 - 01/11/2024',
       shiftHoursLabel: 'Shift Hours',
       shiftHoursValue: '08:00 - 16:00 (Day shift)',
-      reportFrequencyLabel: 'Clinical Report',
+      reportFrequencyLabel: 'Health report',
       reportFrequencyValue: 'Updated every 4 hours',
       protocolsTitle: 'Package Care Scope Items:',
       protocols: {
@@ -66,17 +66,17 @@ export const bookingDepositEn = {
       insuranceTitle: 'Medical Liability Insurance',
       insuranceDesc:
         'All shifts are covered by a medical liability insurance policy worth 2,000,000,000 VND from partner Bao Viet.',
-      escrowTitle: 'Safe Deposit Escrow',
-      escrowDesc: 'Deposit is safely held in CareConnect escrow account until the caregiver checks in on time.',
+      escrowTitle: 'Safely held deposit',
+      escrowDesc: 'Your deposit is safely held by CareConnect until the caregiver arrives on time.',
       supportTitle: '24/7 Care Coordinator Support',
       supportDesc:
-        'Clinical hotline and consultant doctors ready to dispatch immediate replacement if caregiver has emergency.'
+        'Care hotline and consultant doctors ready to dispatch immediate replacement if caregiver has emergency.'
     }
   },
   payment: {
     stepLabel: 'Final Step',
     title: 'Pay Deposit',
-    subtitle: 'Reserve shift schedule and activate caregiver preparation record',
+    subtitle: 'Hold the schedule so the caregiver can prepare',
     shiftsCostLabel: 'Shift costs (5 shifts × 8h)',
     shiftsCostValue: '$95 (2,375,000 đ)',
     suppliesCostLabel: 'Basic medical supplies & shift insurance',
@@ -103,7 +103,7 @@ export const bookingDepositEn = {
       },
       card: {
         label: 'International Card (Visa / Master / JCB)',
-        desc: 'PCI-DSS 3D-Secure certified security'
+        desc: 'International-standard payment security'
       },
       wallet: {
         label: 'MoMo / ZaloPay E-Wallet',
@@ -118,7 +118,7 @@ export const bookingDepositEn = {
     andText: ' and ',
     refundLink: 'Cancellation & Refund Policy',
     agreementSuffix: '.',
-    sslNotice: '256-bit SSL banking-standard encrypted checkout',
+    sslNotice: 'Bank-level encrypted checkout',
     caregiverNotice:
       'Nurse Bich Loan has received the schedule reservation notice and is preparing medical equipment upon successful deposit.',
     modalTitle: 'Deposit Confirmed Successfully!',
@@ -138,8 +138,8 @@ export const bookingDepositVi = {
   },
   banner: {
     title: 'Lịch hẹn đang được giữ chỗ tạm thời',
-    exclusiveBadge: 'Ca trực độc quyền',
-    desc: 'Vui lòng hoàn tất thanh toán tiền cọc 30% để điều dưỡng viên tiếp nhận ca và chốt lịch di chuyển.',
+    exclusiveBadge: 'Ca chăm sóc riêng',
+    desc: 'Vui lòng hoàn tất thanh toán tiền cọc 30% để điều dưỡng nhận lịch và sắp xếp thời gian đến nhà.',
     reservedTimeLabel: 'Thời gian giữ chỗ',
     expired: 'Hết hạn'
   },
@@ -153,7 +153,7 @@ export const bookingDepositVi = {
     caregiver: {
       avatarAlt: 'Chân dung nữ điều dưỡng viên Việt Nam thân thiện Nguyễn Thị Bích Loan trong đồng phục ngọc bích',
       name: 'ĐĐ. Nguyễn Thị Bích Loan',
-      verifiedBadge: 'CCHN & VNeID',
+      verifiedBadge: 'Đã xác minh chứng chỉ & danh tính',
       bio: 'Cử nhân Điều dưỡng • ĐH Y Dược TP.HCM (7 năm kinh nghiệm lâm sàng)',
       ratingValue: '4.9',
       reviewsCount: '(124 đánh giá)',
@@ -171,13 +171,13 @@ export const bookingDepositVi = {
       address: 'Khu đô thị Vinhomes Central Park, 208 Nguyễn Hữu Cảnh, P. 22, Q. Bình Thạnh, TP. Hồ Chí Minh'
     },
     schedule: {
-      title: 'Phác đồ chăm sóc & Lịch trình',
+      title: 'Kế hoạch chăm sóc & lịch trình',
       shiftsCountBadge: '5 ca liên tục • 40 giờ',
       datesLabel: 'Ngày thực hiện',
       datesValue: '28/10 - 01/11/2024',
       shiftHoursLabel: 'Khung giờ mỗi ca',
       shiftHoursValue: '08:00 - 16:00 (Ca ngày)',
-      reportFrequencyLabel: 'Báo cáo lâm sàng',
+      reportFrequencyLabel: 'Báo cáo sức khỏe',
       reportFrequencyValue: 'Cập nhật mỗi 4 giờ',
       protocolsTitle: 'Hạng mục công việc trong gói:',
       protocols: {
@@ -196,22 +196,22 @@ export const bookingDepositVi = {
         'Miễn phí hủy và nhận hoàn lại 100% tiền đặt cọc nếu hủy trước 12 giờ so với thời gian bắt đầu ca đầu tiên.',
       insuranceTitle: 'Bảo hiểm y tế trách nhiệm',
       insuranceDesc:
-        'Toàn bộ ca trực được bảo vệ bởi gói bảo hiểm trách nhiệm y tế trị giá 2.000.000.000 đ từ đối tác Bảo Việt.',
+        'Mọi buổi chăm sóc đều được bảo vệ bởi gói bảo hiểm trách nhiệm y tế trị giá 2.000.000.000 đ từ đối tác Bảo Việt.',
       escrowTitle: 'Bảo lưu tiền cọc an toàn',
       escrowDesc:
-        'Tiền cọc được tạm giữ an toàn trong tài khoản trung gian của CareConnect cho đến khi điều dưỡng viên check-in đúng giờ.',
+        'Tiền cọc được tạm giữ an toàn trong tài khoản trung gian của CareConnect cho đến khi điều dưỡng có mặt đúng giờ.',
       supportTitle: 'Điều phối viên hỗ trợ 24/7',
       supportDesc:
-        'Tổng đài lâm sàng và bác sĩ cố vấn sẵn sàng hỗ trợ đổi nhân sự ngay tức thì nếu điều dưỡng viên gặp sự cố y tế khẩn cấp.'
+        'Tổng đài chuyên môn và bác sĩ cố vấn sẵn sàng hỗ trợ đổi nhân sự ngay tức thì nếu điều dưỡng viên gặp sự cố y tế khẩn cấp.'
     }
   },
   payment: {
     stepLabel: 'Bước cuối cùng',
     title: 'Thanh toán tiền cọc',
-    subtitle: 'Giữ lịch ca trực và kích hoạt hồ sơ chuẩn bị của điều dưỡng',
-    shiftsCostLabel: 'Chi phí ca trực (5 ca × 8h)',
+    subtitle: 'Giữ lịch chăm sóc để điều dưỡng chuẩn bị trước',
+    shiftsCostLabel: 'Chi phí chăm sóc (5 ca × 8 giờ)',
     shiftsCostValue: '$95 (2.375.000 đ)',
-    suppliesCostLabel: 'Vật tư y tế cơ bản & Bảo hiểm ca',
+    suppliesCostLabel: 'Vật tư y tế cơ bản & bảo hiểm',
     suppliesCostValue: '$15 (375.000 đ)',
     promoLabel: 'Mã ưu đãi Khách hàng mới',
     promoValue: '-$10 (-250.000 đ)',
@@ -226,16 +226,16 @@ export const bookingDepositVi = {
     methods: {
       vietqr: {
         label: 'Quét mã VietQR 24/7',
-        freeBadge: 'Miễn phí GD',
+        freeBadge: 'Miễn phí giao dịch',
         desc: 'Chuyển khoản tức thì mọi ngân hàng',
         bankAccountLabel: 'Tài khoản: ',
         bankAccountValue: '0381000599999 (Vietcombank)',
-        transferNoteLabel: 'Nội dung CK: ',
+        transferNoteLabel: 'Nội dung chuyển khoản: ',
         transferNoteValue: 'CC 9284 COC'
       },
       card: {
         label: 'Thẻ quốc tế (Visa / Master / JCB)',
-        desc: 'Bảo mật chuẩn PCI-DSS 3D-Secure'
+        desc: 'Bảo mật thanh toán theo chuẩn quốc tế'
       },
       wallet: {
         label: 'Ví MoMo / ZaloPay',
@@ -250,12 +250,12 @@ export const bookingDepositVi = {
     andText: ' và ',
     refundLink: 'Chính sách hủy hoàn cọc',
     agreementSuffix: ' của CareConnect.',
-    sslNotice: 'Mã hóa thanh toán SSL 256-bit tiêu chuẩn ngân hàng',
+    sslNotice: 'Thông tin thanh toán được mã hóa an toàn như ngân hàng',
     caregiverNotice:
-      'Điều dưỡng viên ĐĐ. Bích Loan đã nhận thông báo giữ lịch và sẵn sàng trang thiết bị ngay khi giao dịch cọc thành công.',
+      'Điều dưỡng viên ĐĐ. Bích Loan đã nhận thông báo giữ lịch và sẽ chuẩn bị dụng cụ ngay khi bạn đặt cọc thành công.',
     modalTitle: 'Đặt cọc thành công!',
     modalDesc:
-      'Xác nhận đặt cọc thành công! Điều dưỡng viên ĐĐ. Nguyễn Thị Bích Loan đã chính thức nhận ca trực. CareConnect đã gửi mã xác nhận & thông tin qua SMS / Email của bạn.',
+      'Xác nhận đặt cọc thành công! Điều dưỡng viên ĐĐ. Nguyễn Thị Bích Loan đã chính thức nhận lịch chăm sóc. CareConnect đã gửi mã xác nhận & thông tin qua SMS / Email của bạn.',
     viewBookingsBtn: 'Xem Lịch đặt của tôi',
     closeModalBtn: 'Đóng'
   }

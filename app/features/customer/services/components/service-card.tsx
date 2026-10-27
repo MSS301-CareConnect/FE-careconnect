@@ -85,17 +85,25 @@ export function ServiceCard({ service }: { service: CustomerService }) {
             )}
           </span>
           {service.center ? (
-            <Link
-              className='inline-flex items-center gap-2 rounded-lg bg-[#075b31] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#064925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
-              to={`/customer/booking?center=${service.center.id}&service=${service.catalogItemId}`}
-            >
-              {t(`${key}.card.book`)}
-              <Icon
-                aria-hidden='true'
-                className='text-lg transition-transform group-hover:translate-x-0.5'
-                name='arrow_forward'
-              />
-            </Link>
+            <div className='flex flex-wrap items-center gap-2'>
+              <Link
+                className='inline-flex items-center gap-2 rounded-lg border border-[#b9c9bb] bg-white px-4 py-2.5 text-sm font-bold text-[#075b31] transition-colors hover:bg-[#eaf2e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+                to={`/customer/services/${service.id}`}
+              >
+                {t(`${key}.card.details`)}
+              </Link>
+              <Link
+                className='inline-flex items-center gap-2 rounded-lg bg-[#075b31] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#064925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+                to={`/customer/booking?center=${service.center.id}&service=${service.catalogItemId}`}
+              >
+                {t(`${key}.card.book`)}
+                <Icon
+                  aria-hidden='true'
+                  className='text-lg transition-transform group-hover:translate-x-0.5'
+                  name='arrow_forward'
+                />
+              </Link>
+            </div>
           ) : (
             <button
               className='inline-flex items-center gap-2 rounded-lg border border-[#b9c9bb] bg-white px-4 py-2.5 text-sm font-bold text-[#075b31] transition-colors hover:bg-[#eaf2e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'

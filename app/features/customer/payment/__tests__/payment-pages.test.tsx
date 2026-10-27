@@ -108,7 +108,7 @@ describe('Deposit payment flow', () => {
         expect.stringMatching(/^[0-9a-f-]{36}$/)
       )
     )
-    expect(await screen.findByRole('heading', { level: 1, name: 'Cổng thanh toán demo' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Thanh toán thử nghiệm' })).toBeInTheDocument()
   })
 
   it('does not offer a payment for a booking that no longer awaits its deposit', async () => {

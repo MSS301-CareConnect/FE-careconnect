@@ -12,9 +12,9 @@ export const managerLayoutVi = {
   serviceMenu: 'Dịch vụ & bảng giá',
   feedback: 'Đánh giá phản hồi',
   notifications: 'Thông báo',
-  unavailable: 'Chức năng cần kết nối hệ thống.',
+  unavailable: 'Chức năng này sắp ra mắt.',
   portal: 'Hệ thống Quản trị',
-  footer: 'CareConnect • Cổng quản lý trung tâm (bản xem thử)'
+  footer: 'CareConnect • Trang quản lý trung tâm (bản xem thử)'
 } as const
 export const managerLayoutEn = {
   role: 'Center manager',
@@ -30,7 +30,7 @@ export const managerLayoutEn = {
   serviceMenu: 'Services & pricing',
   feedback: 'Reviews and feedback',
   notifications: 'Notifications',
-  unavailable: 'This action requires a system connection.',
+  unavailable: 'This feature is coming soon.',
   portal: 'Management portal',
   footer: 'CareConnect • Center manager preview'
 } as const

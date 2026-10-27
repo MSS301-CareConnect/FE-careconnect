@@ -14,7 +14,7 @@ export function BookingProviderSection({ form }: { form: Form }) {
   const centerFieldId = useId()
   const { centers: centerList } = form.providers
   const centers = centerList.data ?? []
-  const loading = centerList.isPending || (Boolean(form.caregiverUserId) && form.caregiver.isPending)
+  const loading = centerList.isPending || (Boolean(form.caregiverParam) && form.caregiver.isPending)
   const knownCenter = centers.some((center) => center.id === form.centerId)
 
   return (
@@ -93,7 +93,7 @@ export function BookingProviderSection({ form }: { form: Form }) {
                   </span>
                 </label>
                 {form.centerCaregivers.map((caregiver) => {
-                  const id = caregiver.caregiverId ?? caregiver.id
+                  const id = caregiver.id
                   const checked = form.selectedCaregiverId === id
                   return (
                     <label

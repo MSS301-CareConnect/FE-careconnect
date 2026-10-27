@@ -57,7 +57,8 @@ export default [
     layout('routes/customer/browse-layout.tsx', [
       route('caregivers', 'routes/customer/caregivers.tsx'),
       route('services', 'routes/customer/services.tsx'),
-      route('caregivers/:userId', 'routes/customer/caregiver-profile.tsx')
+      route('services/:offeringId', 'routes/customer/service-detail.tsx'),
+      route('caregivers/:caregiverId', 'routes/customer/caregiver-profile.tsx')
     ]),
     layout('routes/customer/layout.tsx', [
       index('routes/customer/index.tsx'),

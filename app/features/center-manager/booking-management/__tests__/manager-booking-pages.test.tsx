@@ -168,7 +168,7 @@ describe('Center Manager bookings', () => {
 
     await waitFor(() => expect(rejectBookingRequest).toHaveBeenCalledWith('bk-1', 'Không đủ nhân sự'))
     expect(await within(dialog).findByRole('alert')).toHaveTextContent(
-      'Không thể thực hiện thao tác này ở trạng thái hiện tại của booking.'
+      'Không thể thực hiện thao tác này với lịch đặt ở tình trạng hiện tại.'
     )
   })
 

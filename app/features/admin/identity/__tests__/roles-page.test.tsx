@@ -59,7 +59,7 @@ describe('RolesPage', () => {
     vi.mocked(saveRolePermissions).mockResolvedValue({})
     renderPage()
     fireEvent.click(await screen.findByRole('button', { name: /Admin \(ADMIN\)/ }))
-    expect(screen.getByText('Built-in role permissions are managed by the backend.')).toBeInTheDocument()
+    expect(screen.getByText('Built-in role permissions are preset and cannot be edited.')).toBeInTheDocument()
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Auditor \(AUDITOR\)/ }))
     expect(screen.getByRole('checkbox', { name: /Read users/ })).toBeChecked()

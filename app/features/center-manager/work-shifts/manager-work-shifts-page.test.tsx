@@ -96,7 +96,7 @@ describe('Center Manager work shifts', () => {
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
     fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
-    fireEvent.change(screen.getByLabelText('Capacity'), { target: { value: '2' } })
+    fireEvent.change(screen.getByLabelText('Spots needed'), { target: { value: '2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() =>

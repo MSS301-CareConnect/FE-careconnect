@@ -5,7 +5,7 @@ export const profileEn = {
     memberSince: 'Member since {{date}}',
     notProvided: 'Not provided',
     formHint: 'Your name and phone number are saved to your CareConnect account.',
-    securityHint: 'Manage your password and active sessions.',
+    securityHint: 'Manage your password and signed-in devices.',
     openSecurity: 'Open security settings',
     familyHint: 'View and manage the care profiles of your family members.',
     description: 'Update the account details used by CareConnect.',
@@ -103,7 +103,7 @@ export const profileEn = {
     updating: 'Updating...',
     updated: 'Password updated',
     twoFactorTitle: 'Two-factor authentication (2FA via SMS)',
-    twoFactorDesc: 'Receive an OTP when logging in from an unfamiliar device to protect family profiles.'
+    twoFactorDesc: 'Receive a verification code when signing in from an unfamiliar device to protect family profiles.'
   },
   familyInsight: {
     title: 'Family members with established health profiles',
@@ -140,12 +140,11 @@ export const profileVi = {
     verifiedAccount: 'Tài khoản đã xác minh',
     online: 'Đang trực tuyến',
     verified: 'Đã xác minh',
-    securityLevel2: 'Bảo mật cấp 2'
+    securityLevel2: 'Đã bật bảo mật hai lớp'
   },
   header: {
     title: 'Hồ sơ cá nhân',
-    subtitle:
-      'Quản lý thông tin cá nhân, cập nhật địa chỉ hỗ trợ điều phối viên và bảo mật tài khoản gia đình CareConnect.'
+    subtitle: 'Quản lý thông tin cá nhân, địa chỉ nhận chăm sóc và bảo mật tài khoản CareConnect của gia đình.'
   },
   overview: {
     avatarAlt: 'Ảnh đại diện Nguyễn Mai Anh',
@@ -160,7 +159,7 @@ export const profileVi = {
     }
   },
   nav: {
-    title: 'Quản trị tài khoản',
+    title: 'Quản lý tài khoản',
     personalInfo: 'Thông tin cá nhân & Chỉnh sửa',
     security: 'Đổi mật khẩu & Bảo mật',
     familyProfiles: 'Hồ sơ người thân cần chăm sóc',
@@ -173,14 +172,14 @@ export const profileVi = {
   },
   form: {
     title: 'Thông tin chi tiết',
-    subtitle: 'Cập nhật thông tin nhận diện định danh y tế và địa điểm thực hiện dịch vụ.',
+    subtitle: 'Cập nhật thông tin cá nhân và địa chỉ nhận chăm sóc.',
     cancel: 'Hủy',
     saveChanges: 'Lưu thay đổi',
     saving: 'Đang lưu...',
     saveSuccess: 'Thay đổi hồ sơ vừa được lưu thành công!',
     autoSaved: 'Đã lưu tự động cách đây 2 phút',
     fullName: 'Họ và tên',
-    matchCccd: 'Trùng CCCD',
+    matchCccd: 'Khớp với CCCD',
     gender: 'Giới tính',
     genderFemale: 'Nữ',
     genderMale: 'Nam',
@@ -190,13 +189,13 @@ export const profileVi = {
     phone: 'Số điện thoại di động',
     email: 'Email nhận hóa đơn & báo cáo',
     change: 'Thay đổi',
-    addressSectionTitle: 'Địa chỉ lưu trú tiếp nhận chăm sóc',
+    addressSectionTitle: 'Địa chỉ nhận chăm sóc',
     city: 'Tỉnh / Thành phố',
     district: 'Quận / Huyện',
     ward: 'Phường / Xã',
     addressDetail: 'Địa chỉ cụ thể (Số nhà, tòa nhà, tên đường)',
     notes: 'Ghi chú chỉ đường / Liên hệ khẩn cấp',
-    notesHint: 'Dành riêng cho điều dưỡng & điều phối'
+    notesHint: 'Chỉ điều dưỡng và nhân viên điều phối xem được'
   },
   security: {
     title: 'Đổi mật khẩu tài khoản',
@@ -216,8 +215,8 @@ export const profileVi = {
     updatePassword: 'Cập nhật mật khẩu',
     updating: 'Cập nhật...',
     updated: 'Đã đổi mật khẩu',
-    twoFactorTitle: 'Xác thực 2 yếu tố (2FA qua SMS)',
-    twoFactorDesc: 'Nhận mã OTP khi đăng nhập từ thiết bị lạ để bảo vệ hồ sơ người thân.'
+    twoFactorTitle: 'Xác thực hai lớp qua tin nhắn SMS',
+    twoFactorDesc: 'Nhận mã xác thực khi đăng nhập từ thiết bị lạ để bảo vệ hồ sơ người thân.'
   },
   familyInsight: {
     title: 'Người thân đã thiết lập hồ sơ sức khỏe',

@@ -35,12 +35,12 @@ export const registrationEn = {
   invalidEmail: 'Enter a valid email address.',
   invalidPhone: 'Enter a phone number with 10 or 11 digits.',
   passwordRules:
-    'Use 8 or more characters with uppercase, lowercase, a number, and a special character (up to 72 bytes).',
+    'Use 8 or more characters with uppercase, lowercase, a number, and a special character (up to 72 characters without accents).',
   passwordMismatch: 'The passwords do not match.',
   invalidOtp: 'The code is invalid, expired, or has already been used. Check it or request a new one.',
   emailInUse: 'This email is already registered. Sign in or use another email.',
   resendTooSoon: 'Please wait before requesting another code.',
-  sessionExpired: 'Your registration session has expired. Start registration again.',
+  sessionExpired: 'Your registration timed out. Please start again.',
   registerFailed: 'Could not start registration. Please try again.',
   verifyFailed: 'Could not verify your email. Please try again.',
   resendFailed: 'Could not send a new code. Please try again.'
@@ -82,12 +82,13 @@ export const registrationVi = {
   invalidName: 'Nhập họ và tên (tối đa 255 ký tự).',
   invalidEmail: 'Nhập địa chỉ email hợp lệ.',
   invalidPhone: 'Số điện thoại phải có 10 hoặc 11 chữ số.',
-  passwordRules: 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt (tối đa 72 byte).',
+  passwordRules:
+    'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt (tối đa 72 ký tự không dấu).',
   passwordMismatch: 'Mật khẩu xác nhận không khớp.',
   invalidOtp: 'Mã không đúng, đã hết hạn hoặc đã được sử dụng. Hãy kiểm tra hoặc yêu cầu mã mới.',
   emailInUse: 'Email này đã được đăng ký. Hãy đăng nhập hoặc dùng email khác.',
   resendTooSoon: 'Vui lòng chờ trước khi yêu cầu mã mới.',
-  sessionExpired: 'Phiên đăng ký đã hết hạn. Vui lòng đăng ký lại.',
+  sessionExpired: 'Đã quá thời gian đăng ký. Vui lòng đăng ký lại.',
   registerFailed: 'Không thể bắt đầu đăng ký. Vui lòng thử lại.',
   verifyFailed: 'Không thể xác thực email. Vui lòng thử lại.',
   resendFailed: 'Không thể gửi mã mới. Vui lòng thử lại.'
