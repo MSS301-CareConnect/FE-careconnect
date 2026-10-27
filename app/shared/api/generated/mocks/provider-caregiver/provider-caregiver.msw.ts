@@ -10,21 +10,40 @@ import type { RequestHandlerOptions } from 'msw'
 
 import type {
   EmptyActionResponse,
+  ProviderAvailabilityCheckResponse,
+  ProviderAvailabilityWindowListResponse,
+  ProviderCaregiverCardPageResponse,
   ProviderCaregiverPageResponse,
+  ProviderCaregiverPublicResponse,
   ProviderCaregiverResponse,
+  ProviderCaregiverSkillListResponse,
   ProviderSchedulePageResponse,
-  ProviderScheduleResponse
+  ProviderScheduleResponse,
+  ProviderTimeOffListResponse,
+  ProviderTimeOffResponse
 } from '../../contracts'
 
 import {
   getArchiveProviderCaregiverResponseMock,
   getCatalogProviderCaregiversResponseMock,
+  getCheckProviderCaregiverAvailabilityResponseMock,
   getCreateProviderCaregiverResponseMock,
+  getCreateProviderCaregiverTimeOffResponseMock,
+  getDeleteProviderCaregiverTimeOffResponseMock,
   getGetMyProviderCaregiverProfileResponseMock,
+  getGetProviderCaregiverAvailabilityResponseMock,
   getGetProviderCaregiverByUserResponseMock,
   getGetProviderCaregiverResponseMock,
+  getGetPublicProviderCaregiverResponseMock,
   getListCenterCaregiversResponseMock,
   getListMyProviderCaregiverSchedulesResponseMock,
+  getListPendingVerificationProviderCaregiversResponseMock,
+  getListProviderCaregiverServicesResponseMock,
+  getListProviderCaregiverTimeOffsResponseMock,
+  getReplaceProviderCaregiverServicesResponseMock,
+  getSearchProviderCaregiversResponseMock,
+  getSetProviderCaregiverStatusResponseMock,
+  getUpdateProviderCaregiverRatingResponseMock,
   getUpdateProviderCaregiverResponseMock,
   getUpdateProviderCaregiverScheduleStatusResponseMock,
   getVerifyProviderCaregiverResponseMock
@@ -41,7 +60,19 @@ export {
   getCatalogProviderCaregiversResponseMock,
   getGetMyProviderCaregiverProfileResponseMock,
   getListMyProviderCaregiverSchedulesResponseMock,
-  getGetProviderCaregiverByUserResponseMock
+  getGetProviderCaregiverByUserResponseMock,
+  getListPendingVerificationProviderCaregiversResponseMock,
+  getSearchProviderCaregiversResponseMock,
+  getCheckProviderCaregiverAvailabilityResponseMock,
+  getGetPublicProviderCaregiverResponseMock,
+  getListProviderCaregiverServicesResponseMock,
+  getReplaceProviderCaregiverServicesResponseMock,
+  getUpdateProviderCaregiverRatingResponseMock,
+  getSetProviderCaregiverStatusResponseMock,
+  getGetProviderCaregiverAvailabilityResponseMock,
+  getListProviderCaregiverTimeOffsResponseMock,
+  getCreateProviderCaregiverTimeOffResponseMock,
+  getDeleteProviderCaregiverTimeOffResponseMock
 } from './provider-caregiver.faker'
 
 export const getListCenterCaregiversMockHandler = (
@@ -327,6 +358,314 @@ export const getGetProviderCaregiverByUserMockHandler = (
     options
   )
 }
+
+export const getListPendingVerificationProviderCaregiversMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCaregiverPageResponse> | ProviderCaregiverPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/pending-verification',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListPendingVerificationProviderCaregiversResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getSearchProviderCaregiversMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverCardPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCaregiverCardPageResponse> | ProviderCaregiverCardPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/search',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getSearchProviderCaregiversResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getCheckProviderCaregiverAvailabilityMockHandler = (
+  overrideResponse?:
+    | ProviderAvailabilityCheckResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<ProviderAvailabilityCheckResponse> | ProviderAvailabilityCheckResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/caregivers/availability-checks',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getCheckProviderCaregiverAvailabilityResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetPublicProviderCaregiverMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverPublicResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCaregiverPublicResponse> | ProviderCaregiverPublicResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/:caregiverId/public',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetPublicProviderCaregiverResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListProviderCaregiverServicesMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverSkillListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCaregiverSkillListResponse> | ProviderCaregiverSkillListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/:caregiverId/services',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListProviderCaregiverServicesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getReplaceProviderCaregiverServicesMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverSkillListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0]
+      ) => Promise<ProviderCaregiverSkillListResponse> | ProviderCaregiverSkillListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/v1/caregivers/:caregiverId/services',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getReplaceProviderCaregiverServicesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdateProviderCaregiverRatingMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/v1/caregivers/:caregiverId/rating',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateProviderCaregiverRatingResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getSetProviderCaregiverStatusMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverResponse
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<ProviderCaregiverResponse> | ProviderCaregiverResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/caregivers/:caregiverId/status',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getSetProviderCaregiverStatusResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetProviderCaregiverAvailabilityMockHandler = (
+  overrideResponse?:
+    | ProviderAvailabilityWindowListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderAvailabilityWindowListResponse> | ProviderAvailabilityWindowListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/:caregiverId/availability',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetProviderCaregiverAvailabilityResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListProviderCaregiverTimeOffsMockHandler = (
+  overrideResponse?:
+    | ProviderTimeOffListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderTimeOffListResponse> | ProviderTimeOffListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/:caregiverId/time-offs',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListProviderCaregiverTimeOffsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getCreateProviderCaregiverTimeOffMockHandler = (
+  overrideResponse?:
+    | ProviderTimeOffResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<ProviderTimeOffResponse> | ProviderTimeOffResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/caregivers/:caregiverId/time-offs',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getCreateProviderCaregiverTimeOffResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeleteProviderCaregiverTimeOffMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    '*/v1/caregivers/:caregiverId/time-offs/:timeOffId',
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeleteProviderCaregiverTimeOffResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 export const getProviderCaregiverMock = () => [
   getListCenterCaregiversMockHandler(),
   getCreateProviderCaregiverMockHandler(),
@@ -338,5 +677,17 @@ export const getProviderCaregiverMock = () => [
   getCatalogProviderCaregiversMockHandler(),
   getGetMyProviderCaregiverProfileMockHandler(),
   getListMyProviderCaregiverSchedulesMockHandler(),
-  getGetProviderCaregiverByUserMockHandler()
+  getGetProviderCaregiverByUserMockHandler(),
+  getListPendingVerificationProviderCaregiversMockHandler(),
+  getSearchProviderCaregiversMockHandler(),
+  getCheckProviderCaregiverAvailabilityMockHandler(),
+  getGetPublicProviderCaregiverMockHandler(),
+  getListProviderCaregiverServicesMockHandler(),
+  getReplaceProviderCaregiverServicesMockHandler(),
+  getUpdateProviderCaregiverRatingMockHandler(),
+  getSetProviderCaregiverStatusMockHandler(),
+  getGetProviderCaregiverAvailabilityMockHandler(),
+  getListProviderCaregiverTimeOffsMockHandler(),
+  getCreateProviderCaregiverTimeOffMockHandler(),
+  getDeleteProviderCaregiverTimeOffMockHandler()
 ]

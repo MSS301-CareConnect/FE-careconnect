@@ -9,6 +9,8 @@ import {
   fetchVerifiedCertificates,
   providerKeys
 } from '~/entities/provider/provider-api'
+import { CenterReminder, CenterScope } from '~/entities/care-center/center-scope'
+import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -95,11 +97,15 @@ export function CustomerProviderCatalogPage() {
   const [view, setView] = useState<'list' | 'grid'>('list')
   const page = Math.max(0, Number(params.get('page')) || 0)
   const keyword = params.get('q') ?? ''
+  const { center } = useSelectedCenter()
+  const centerId = center?.id
   const catalog = useQuery({
-    queryKey: [...providerKeys.catalog, { page, keyword }],
-    queryFn: () => fetchCaregiverCatalog({ page, size: 20, keyword: keyword.trim() || undefined }),
+    queryKey: [...providerKeys.catalog, { page, keyword, centerId }],
+    queryFn: () => fetchCaregiverCatalog({ page, size: 20, keyword: keyword.trim() || undefined, centerId }),
     retry: false
   })
+  // Without a center, a failed platform-wide list asks for a center instead of reporting an error.
+  const needsCenter = !center && catalog.isError
   const visible = useMemo(
     () =>
       (catalog.data?.items ?? []).filter(
@@ -172,6 +178,9 @@ export function CustomerProviderCatalogPage() {
             </p>
           </aside>
           <div className='min-w-0'>
+            <div className='mb-6'>
+              <CenterScope generalText={t(`${key}.scopeGeneral`)} />
+            </div>
             <div className='flex flex-wrap items-end justify-between gap-4 border-b border-[#dce5dc] pb-5'>
               <div>
                 <h2 className='text-2xl font-bold tracking-[-0.04em]'>{t(`${key}.resultsTitle`)}</h2>
@@ -184,7 +193,7 @@ export function CustomerProviderCatalogPage() {
                       {t(`${key}.results`)}
                     </>
                   ) : (
-                    t(catalog.isError ? `${key}.error` : `${key}.loading`)
+                    t(needsCenter ? `${key}.reminderTitle` : catalog.isError ? `${key}.error` : `${key}.loading`)
                   )}
                 </p>
               </div>
@@ -212,7 +221,12 @@ export function CustomerProviderCatalogPage() {
                 <p>{t(`${key}.loading`)}</p>
               </div>
             )}
-            {catalog.isError && (
+            {needsCenter && (
+              <div className='mt-6'>
+                <CenterReminder text={t(`${key}.reminderText`)} title={t(`${key}.reminderTitle`)} />
+              </div>
+            )}
+            {catalog.isError && !needsCenter && (
               <div className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center' role='alert'>
                 <Icon className='text-4xl text-[#075b31]' name='wifi_off' />
                 <h3 className='mt-4 text-xl font-bold'>{t(`${key}.error`)}</h3>

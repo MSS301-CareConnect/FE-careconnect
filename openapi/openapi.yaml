@@ -28,6 +28,10 @@ tags:
   - name: Feedback
   - name: Notification
   - name: Statistics
+  - name: Payment
+    description: PaymentService customer APIs (PAY-05/06); served by the pnpm dev payment demo until PaymentService exists.
+  - name: PaymentDemo
+    description: Development-only demo gateway answered by the pnpm dev server, never by a backend service.
 paths:
   /v1/auth/csrf:
     get:
@@ -670,6 +674,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/care-centers/public:
+    get:
+      tags:
+        - ProviderCenter
+      summary: Khách xem trung tâm ACTIVE (SRCH-02)
+      operationId: listPublicProviderCenters
+      parameters:
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: careServiceId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: minPrice
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCenterPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/care-centers/public/{centerId}:
+    get:
+      tags:
+        - ProviderCenter
+      summary: Khách xem chi tiết một trung tâm ACTIVE (SRCH-02)
+      operationId: getPublicProviderCenter
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCenterResponse'
         '400':
           description: ProviderService error
         '401':
@@ -5738,6 +5835,785 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/payments/deposits:
+    post:
+      tags:
+        - Payment
+      summary: CUSTOMER opens a deposit payment session for a booking awaiting its deposit
+      operationId: createDepositPayment
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositPaymentRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSessionResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/{id}:
+    get:
+      tags:
+        - Payment
+      summary: CUSTOMER owner reads a payment after returning from the gateway
+      operationId: getPayment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/{id}/demo-results:
+    post:
+      tags:
+        - PaymentDemo
+      summary: Development-only demo gateway result; SUCCESS confirms the booking deposit
+      operationId: submitPaymentDemoResult
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentDemoResultRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/care-centers/statistics:
+    get:
+      tags:
+        - ProviderCenter
+      summary: ADMIN xem thống kê trung tâm và caregiver
+      operationId: getProviderStatistics
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderStatisticsResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/care-centers/me:
+    put:
+      tags:
+        - ProviderCenter
+      summary: CENTER_MANAGER cập nhật trung tâm của mình
+      operationId: updateMyProviderCenter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterSelfUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/pending-verification:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: ADMIN xem caregiver chờ xác minh
+      operationId: listPendingVerificationProviderCaregivers
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/search:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Tìm caregiver theo trung tâm, dịch vụ và khung giờ
+      operationId: searchProviderCaregivers
+      parameters:
+        - name: centerId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: careServiceIds
+          in: query
+          required: true
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 10
+            items:
+              type: string
+              format: uuid
+        - name: gender
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - MALE
+              - FEMALE
+              - OTHER
+        - name: minExperienceYears
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: minRating
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 5
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+        - name: slotStart
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: slotEnd
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: slots
+          in: query
+          required: false
+          schema:
+            type: array
+            maxItems: 60
+            items:
+              type: string
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - RATING_DESC
+              - EXPERIENCE_DESC
+              - NAME_ASC
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverCardPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/availability-checks:
+    post:
+      tags:
+        - ProviderCaregiver
+      summary: SERVICE kiểm tra caregiver rảnh theo khung giờ
+      operationId: checkProviderCaregiverAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityCheckRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderAvailabilityCheckResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/public:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Khách xem hồ sơ công khai của caregiver
+      operationId: getPublicProviderCaregiver
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverPublicResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/services:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Xem dịch vụ caregiver đảm nhận
+      operationId: listProviderCaregiverServices
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverSkillListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    put:
+      tags:
+        - ProviderCaregiver
+      summary: CENTER_MANAGER gán dịch vụ cho caregiver
+      operationId: replaceProviderCaregiverServices
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverSkillRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverSkillListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/rating:
+    put:
+      tags:
+        - ProviderCaregiver
+      summary: SERVICE cập nhật điểm đánh giá caregiver
+      operationId: updateProviderCaregiverRating
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverRatingRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/status:
+    patch:
+      tags:
+        - ProviderCaregiver
+      summary: ADMIN/CENTER_MANAGER đổi trạng thái caregiver
+      operationId: setProviderCaregiverStatus
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverStatusRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/availability:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Xem khung giờ rảnh của caregiver
+      operationId: getProviderCaregiverAvailability
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderAvailabilityWindowListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/time-offs:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: Xem ngày nghỉ của caregiver
+      operationId: listProviderCaregiverTimeOffs
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderTimeOffListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+    post:
+      tags:
+        - ProviderCaregiver
+      summary: Tạo ngày nghỉ cho caregiver
+      operationId: createProviderCaregiverTimeOff
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeOffRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderTimeOffResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/time-offs/{timeOffId}:
+    delete:
+      tags:
+        - ProviderCaregiver
+      summary: Xóa ngày nghỉ của caregiver
+      operationId: deleteProviderCaregiverTimeOff
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: timeOffId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/certificates/pending-audit:
+    get:
+      tags:
+        - ProviderCertificate
+      summary: ADMIN xem chứng chỉ chờ hậu kiểm
+      operationId: listPendingAuditProviderCertificates
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificatePageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/certificates/{id}/center-verification:
+    patch:
+      tags:
+        - ProviderCertificate
+      summary: CENTER_MANAGER duyệt chứng chỉ cấp trung tâm
+      operationId: verifyProviderCertificateByCenter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateVerificationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCertificateResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
 components:
   responses:
     '400':
@@ -6068,6 +6944,552 @@ components:
           type: integer
         totalPages:
           type: integer
+    PublicCenterRecord:
+      type: object
+      description: Customer-facing center card; no internal email, manager, status or version.
+      required:
+        - centerId
+        - centerName
+      properties:
+        centerId:
+          type: string
+          format: uuid
+        centerName:
+          type: string
+        address:
+          type: string
+        operatingHours:
+          type: string
+        phoneNumber:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        minPrice:
+          type: number
+          description: Lowest catalog price; absent when CareCatalogService does not return it.
+        serviceCount:
+          type: integer
+    PublicCenterPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicCenterRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    PublicCenterPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PublicCenterPage'
+    PublicCenterResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PublicCenterRecord'
+    CenterSelfUpdateRequest:
+      type: object
+      required:
+        - address
+        - phoneNumber
+      properties:
+        centerName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phoneNumber:
+          type: string
+          minLength: 1
+          pattern: '[0-9+]{10,15}'
+        address:
+          type: string
+          maxLength: 2000
+        operatingHours:
+          type: string
+          maxLength: 500
+    CaregiverSkillRequest:
+      type: object
+      required:
+        - centerServiceIds
+      properties:
+        centerServiceIds:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            format: uuid
+    CaregiverRatingRequest:
+      type: object
+      required:
+        - ratingAverage
+        - ratingCount
+      properties:
+        ratingAverage:
+          type: number
+          minimum: 0
+          maximum: 5
+        ratingCount:
+          type: integer
+          format: int32
+          minimum: 0
+    CaregiverStatusRequest:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - SUSPENDED
+            - ARCHIVED
+        version:
+          type: integer
+          format: int64
+    TimeOffRequest:
+      type: object
+      required:
+        - startAt
+        - endAt
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          maxLength: 500
+    TimeSlotRequest:
+      type: object
+      required:
+        - startAt
+        - endAt
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+    AvailabilityCheckRequest:
+      type: object
+      required:
+        - caregiverId
+        - slots
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        slots:
+          type: array
+          maxItems: 60
+          items:
+            $ref: '#/components/schemas/TimeSlotRequest'
+    CertificateVerificationRequest:
+      type: object
+      required:
+        - approved
+        - version
+      properties:
+        approved:
+          type: boolean
+        reason:
+          type: string
+          maxLength: 500
+        version:
+          type: integer
+          format: int64
+    ProviderStatisticsRecord:
+      type: object
+      properties:
+        centersByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        caregiversByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        caregiversByVerification:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+    ProviderCaregiverCardRecord:
+      type: object
+      required:
+        - caregiverId
+        - fullName
+        - verifiedCertificateCount
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        experienceYears:
+          type: integer
+        ratingAverage:
+          type: number
+        ratingCount:
+          type: integer
+        avatarUrl:
+          type: string
+        careServiceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        verifiedCertificateCount:
+          type: integer
+    ProviderCaregiverPublicRecord:
+      type: object
+      required:
+        - caregiverId
+        - fullName
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        centerName:
+          type: string
+        fullName:
+          type: string
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        experienceYears:
+          type: integer
+        bio:
+          type: string
+        ratingAverage:
+          type: number
+        ratingCount:
+          type: integer
+        avatarUrl:
+          type: string
+        services:
+          type: array
+          items:
+            type: object
+            properties:
+              careServiceId:
+                type: string
+                format: uuid
+              serviceName:
+                type: string
+        certificates:
+          type: array
+          items:
+            type: object
+            properties:
+              certificateName:
+                type: string
+              issuedBy:
+                type: string
+              issuedDate:
+                type: string
+                format: date
+              expiryDate:
+                type: string
+                format: date
+    ProviderCaregiverSkillRecord:
+      type: object
+      properties:
+        centerServiceId:
+          type: string
+          format: uuid
+        careServiceId:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        assignedAt:
+          type: string
+          format: date-time
+    ProviderTimeOffRecord:
+      type: object
+      required:
+        - id
+        - caregiverId
+        - startAt
+        - endAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        createdBy:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProviderAvailabilityWindowRecord:
+      type: object
+      required:
+        - startAt
+        - endAt
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+    ProviderAvailabilityCheckRecord:
+      type: object
+      required:
+        - available
+      properties:
+        available:
+          type: boolean
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              startAt:
+                type: string
+                format: date-time
+              endAt:
+                type: string
+                format: date-time
+              reason:
+                type: string
+                enum:
+                  - NO_SCHEDULE
+                  - TIME_OFF
+    ProviderCaregiverCardPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCaregiverCardRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderCertificatePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCertificateRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderStatisticsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderStatisticsRecord'
+    ProviderCaregiverCardPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCaregiverCardPage'
+    ProviderCertificatePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCertificatePage'
+    ProviderCaregiverPublicResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderCaregiverPublicRecord'
+    ProviderCaregiverSkillListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCaregiverSkillRecord'
+    ProviderTimeOffListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderTimeOffRecord'
+    ProviderTimeOffResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderTimeOffRecord'
+    ProviderAvailabilityWindowListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderAvailabilityWindowRecord'
+    ProviderAvailabilityCheckResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderAvailabilityCheckRecord'
     ProviderCenterPageResponse:
       type: object
       required:
@@ -10452,3 +11874,124 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/OperationalStatisticsRecord'
+    PaymentStatus:
+      type: string
+      enum:
+        - PENDING
+        - SUCCESS
+        - FAILED
+        - EXPIRED
+        - PARTIALLY_REFUNDED
+        - REFUNDED
+    DepositPaymentRequest:
+      type: object
+      required:
+        - bookingId
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        bankCode:
+          type: string
+          enum:
+            - VNPAYQR
+            - VNBANK
+            - INTCARD
+        locale:
+          type: string
+          enum:
+            - vn
+            - en
+    PaymentDemoResultRequest:
+      type: object
+      required:
+        - outcome
+      properties:
+        outcome:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILED
+    PaymentSessionRecord:
+      type: object
+      required:
+        - paymentId
+        - bookingId
+        - amount
+        - paymentUrl
+        - expiresAt
+        - status
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        paymentUrl:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+    PaymentRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - type
+        - amount
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - DEPOSIT
+            - REMAINING
+        amount:
+          type: number
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        paidAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        failureReason:
+          type: string
+    PaymentSessionResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentSessionRecord'
+    PaymentResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentRecord'

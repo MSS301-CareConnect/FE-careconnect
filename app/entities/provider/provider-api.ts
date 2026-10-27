@@ -2,7 +2,9 @@ import {
   archiveProviderCenter,
   createProviderCenter,
   getProviderCenter,
+  getPublicProviderCenter,
   listProviderCenters,
+  listPublicProviderCenters,
   setProviderCenterStatus,
   updateProviderCenter,
   listProviderCenterSchedules
@@ -54,6 +56,7 @@ import type {
   CertificateRequest,
   ListCenterCaregiversParams,
   ListProviderCentersParams,
+  ListPublicProviderCentersParams,
   ListProviderWorkShiftsParams,
   RegistrationReviewRequest,
   VerificationRequest,
@@ -81,6 +84,8 @@ function success(response: { data: { code: number } }): void {
 
 export const providerKeys = {
   centers: ['provider', 'centers'] as const,
+  publicCenters: ['provider', 'public-centers'] as const,
+  publicCenter: (id: string) => ['provider', 'public-center', id] as const,
   center: (id: string) => ['provider', 'center', id] as const,
   caregivers: (centerId: string) => ['provider', 'caregivers', centerId] as const,
   caregiver: (id: string) => ['provider', 'caregiver', id] as const,
@@ -103,6 +108,13 @@ export async function fetchCenters(params: ListProviderCentersParams = {}) {
 }
 export async function fetchCenter(id: string) {
   return result(await getProviderCenter(id, readOptions))
+}
+/** Customer-facing ACTIVE centers (SRCH-02). */
+export async function fetchPublicCenters(params: ListPublicProviderCentersParams = {}) {
+  return result(await listPublicProviderCenters(params, readOptions))
+}
+export async function fetchPublicCenter(id: string) {
+  return result(await getPublicProviderCenter(id, readOptions))
 }
 export async function createCenter(request: CenterCreateRequest) {
   return result(await createProviderCenter(request, await writeOptions()))

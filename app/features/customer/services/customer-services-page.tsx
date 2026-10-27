@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { CenterScope } from '~/entities/care-center/center-scope'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
@@ -52,11 +53,12 @@ export function CustomerServicesPage() {
         </div>
       </section>
       <section className='mx-auto w-full max-w-[1440px] px-5 pt-2 sm:px-8 lg:px-12'>
+        <div className='mt-7'>
+          <CenterScope generalText={t(`${key}.scope.general`)} />
+        </div>
         <ServicesFilters
           categories={list.categories}
           category={list.category}
-          centerId={list.centerId}
-          centers={list.centerOptions}
           keyword={list.keyword}
           onChange={list.update}
           onReset={list.reset}

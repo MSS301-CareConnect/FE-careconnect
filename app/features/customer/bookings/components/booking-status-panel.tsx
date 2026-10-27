@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
@@ -41,6 +42,18 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
         </p>
         {booking.refund?.totalRefund !== undefined ? (
           <p className='mt-2 text-sm font-semibold text-primary'>{t('customer.bookingDetail.refunded', values)}</p>
+        ) : null}
+        {booking.status === 'AWAITING_DEPOSIT' ? (
+          <Link
+            className='group mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#075b31] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#064a29] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+            to={`/customer/bookings/${booking.id}/deposit`}
+          >
+            {t('customer.bookingDetail.payDeposit', values)}
+            <Icon
+              className='text-lg transition-transform duration-300 group-hover:translate-x-1'
+              name='arrow_forward'
+            />
+          </Link>
         ) : null}
       </div>
     </section>

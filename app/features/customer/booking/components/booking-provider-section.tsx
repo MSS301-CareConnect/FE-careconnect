@@ -12,8 +12,9 @@ type Form = ReturnType<typeof useBookingForm>
 export function BookingProviderSection({ form }: { form: Form }) {
   const { t, i18n } = useTranslation()
   const centerFieldId = useId()
-  const { catalog, centers } = form.providers
-  const loading = catalog.isPending || (Boolean(form.caregiverUserId) && form.caregiver.isPending)
+  const { centers: centerList } = form.providers
+  const centers = centerList.data ?? []
+  const loading = centerList.isPending || (Boolean(form.caregiverUserId) && form.caregiver.isPending)
   const knownCenter = centers.some((center) => center.id === form.centerId)
 
   return (
@@ -28,12 +29,12 @@ export function BookingProviderSection({ form }: { form: Form }) {
           {t('customer.booking.provider.loading')}
         </p>
       ) : null}
-      {catalog.isError ? (
+      {centerList.isError ? (
         <p className='text-sm text-[#ba1a1a]' role='alert'>
           {t('customer.booking.provider.error')}
         </p>
       ) : null}
-      {catalog.isSuccess && centers.length === 0 && !form.centerId ? (
+      {centerList.isSuccess && centers.length === 0 && !form.centerId ? (
         <p className='rounded-xl bg-[#f5f9f4] p-4 text-sm text-[#526a57]'>{t('customer.booking.provider.empty')}</p>
       ) : null}
 

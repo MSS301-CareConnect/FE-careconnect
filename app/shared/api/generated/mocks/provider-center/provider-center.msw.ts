@@ -12,27 +12,38 @@ import type {
   EmptyActionResponse,
   ProviderCenterPageResponse,
   ProviderCenterResponse,
-  ProviderSchedulePageResponse
+  ProviderSchedulePageResponse,
+  ProviderStatisticsResponse,
+  PublicCenterPageResponse,
+  PublicCenterResponse
 } from '../../contracts'
 
 import {
   getArchiveProviderCenterResponseMock,
   getCreateProviderCenterResponseMock,
   getGetProviderCenterResponseMock,
+  getGetProviderStatisticsResponseMock,
+  getGetPublicProviderCenterResponseMock,
   getListProviderCenterSchedulesResponseMock,
   getListProviderCentersResponseMock,
+  getListPublicProviderCentersResponseMock,
   getSetProviderCenterStatusResponseMock,
+  getUpdateMyProviderCenterResponseMock,
   getUpdateProviderCenterResponseMock
 } from './provider-center.faker'
 
 export {
   getListProviderCentersResponseMock,
   getCreateProviderCenterResponseMock,
+  getListPublicProviderCentersResponseMock,
+  getGetPublicProviderCenterResponseMock,
   getGetProviderCenterResponseMock,
   getUpdateProviderCenterResponseMock,
   getArchiveProviderCenterResponseMock,
   getSetProviderCenterStatusResponseMock,
-  getListProviderCenterSchedulesResponseMock
+  getListProviderCenterSchedulesResponseMock,
+  getGetProviderStatisticsResponseMock,
+  getUpdateMyProviderCenterResponseMock
 } from './provider-center.faker'
 
 export const getListProviderCentersMockHandler = (
@@ -80,6 +91,56 @@ export const getCreateProviderCenterMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getCreateProviderCenterResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListPublicProviderCentersMockHandler = (
+  overrideResponse?:
+    | PublicCenterPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<PublicCenterPageResponse> | PublicCenterPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-centers/public',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListPublicProviderCentersResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetPublicProviderCenterMockHandler = (
+  overrideResponse?:
+    | PublicCenterResponse
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PublicCenterResponse> | PublicCenterResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-centers/public/:centerId',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetPublicProviderCenterResponseMock(),
         { status: 200 }
       )
     },
@@ -214,12 +275,68 @@ export const getListProviderCenterSchedulesMockHandler = (
     options
   )
 }
+
+export const getGetProviderStatisticsMockHandler = (
+  overrideResponse?:
+    | ProviderStatisticsResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderStatisticsResponse> | ProviderStatisticsResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-centers/statistics',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetProviderStatisticsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdateMyProviderCenterMockHandler = (
+  overrideResponse?:
+    | ProviderCenterResponse
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0]
+      ) => Promise<ProviderCenterResponse> | ProviderCenterResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/v1/care-centers/me',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateMyProviderCenterResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 export const getProviderCenterMock = () => [
   getListProviderCentersMockHandler(),
   getCreateProviderCenterMockHandler(),
+  getListPublicProviderCentersMockHandler(),
+  getGetPublicProviderCenterMockHandler(),
   getGetProviderCenterMockHandler(),
   getUpdateProviderCenterMockHandler(),
   getArchiveProviderCenterMockHandler(),
   getSetProviderCenterStatusMockHandler(),
-  getListProviderCenterSchedulesMockHandler()
+  getListProviderCenterSchedulesMockHandler(),
+  getGetProviderStatisticsMockHandler(),
+  getUpdateMyProviderCenterMockHandler()
 ]

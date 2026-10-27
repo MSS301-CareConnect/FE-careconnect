@@ -3,13 +3,15 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { closeCenterPicker, selectCenter } from '~/entities/care-center/selected-center'
 import { fetchCaregiverCatalog } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { CustomerProviderCatalogPage } from './customer-provider-pages'
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
-  fetchCaregiverCatalog: vi.fn()
+  fetchCaregiverCatalog: vi.fn(),
+  fetchPublicCenter: vi.fn(async (id: string) => ({ centerId: id, centerName: 'Care One' }))
 }))
 
 function renderCatalog() {
@@ -24,6 +26,8 @@ function renderCatalog() {
 }
 
 beforeEach(async () => {
+  selectCenter(null)
+  closeCenterPicker()
   vi.mocked(fetchCaregiverCatalog).mockReset()
   await setAppLanguage('en', false)
 })
@@ -66,12 +70,24 @@ describe('Customer caregiver catalog', () => {
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Lan Nguyen' })).not.toBeInTheDocument())
   })
 
-  it('keeps the banner and filter layout when the gateway fails', async () => {
+  it('keeps the banner and filter layout when the chosen center fails', async () => {
+    selectCenter({ id: 'center-1', name: 'Care One' })
     vi.mocked(fetchCaregiverCatalog).mockRejectedValue(new Error('Unavailable'))
     renderCatalog()
 
     expect(screen.getByRole('heading', { name: 'Find the right caregiver' })).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load caregivers.')
+    expect(fetchCaregiverCatalog).toHaveBeenCalledWith({ page: 0, size: 20, keyword: undefined, centerId: 'center-1' })
     expect(screen.getByRole('combobox', { name: 'Gender' })).toBeInTheDocument()
+  })
+
+  it('asks for a center instead of an error while browsing every center', async () => {
+    vi.mocked(fetchCaregiverCatalog).mockRejectedValue(Object.assign(new Error('Unauthorized'), { status: 401 }))
+    renderCatalog()
+
+    expect(await screen.findByRole('heading', { name: 'Choose a center to see its care team' })).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.queryByText('Unable to load caregivers.')).not.toBeInTheDocument()
+    expect(screen.getByText(/You are viewing caregivers from every center/)).toBeInTheDocument()
   })
 })

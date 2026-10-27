@@ -1,17 +1,70 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { act, fireEvent, render as renderUi, screen, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { closeCenterPicker, selectCenter } from '~/entities/care-center/selected-center'
+import { fetchPublicCenter, fetchPublicCenters } from '~/entities/provider/provider-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { CustomerLayout } from '../customer-layout'
 
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchPublicCenters: vi.fn(),
+  fetchPublicCenter: vi.fn()
+}))
+
 const customer = { id: 'customer-1', fullName: 'An', status: 'ACTIVE' as const, roles: ['CUSTOMER'] }
+const PROMPTED_KEY = 'careconnect.center-prompted'
+
+function render(ui: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return renderUi(<QueryClientProvider client={client}>{ui}</QueryClientProvider>)
+}
+
+const centers = [
+  { centerId: 'center-b', centerName: 'Trung tâm Bình An', address: '12 Lê Lợi, Quận 1' },
+  { centerId: 'center-a', centerName: 'Phòng khám An Khang' }
+]
+
+function renderPortal(path = '/customer/services') {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route
+          element={
+            <AuthUserContext value={customer}>
+              <CustomerLayout />
+            </AuthUserContext>
+          }
+        >
+          <Route path='/customer/services' element={<div />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  )
+}
 
 describe('CustomerLayout', () => {
   beforeEach(async () => {
     localStorage.clear()
+    selectCenter(null)
+    closeCenterPicker()
+    // Header tests run as a returning visit; the first-visit dialog has its own tests below.
+    sessionStorage.setItem(PROMPTED_KEY, '1')
+    vi.mocked(fetchPublicCenters)
+      .mockReset()
+      .mockResolvedValue({ items: centers, page: 0, size: 100, totalElements: 2, totalPages: 1 })
+    vi.mocked(fetchPublicCenter)
+      .mockReset()
+      .mockImplementation(async (id) => {
+        const center = centers.find((item) => item.centerId === id)
+        if (!center) throw Object.assign(new Error('not found'), { status: 404 })
+        return center
+      })
     await setAppLanguage('vi', false)
   })
 
@@ -180,5 +233,91 @@ describe('CustomerLayout', () => {
     ).not.toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Trang chủ' })[1]).toHaveAttribute('href', '/customer')
     expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
+  })
+
+  it('asks for a center on the first visit and applies the choice to the header selector', async () => {
+    sessionStorage.clear()
+    renderPortal()
+
+    const dialog = await screen.findByRole('dialog', { name: 'Bạn muốn đặt chăm sóc tại trung tâm nào?' })
+    expect(dialog).toHaveAttribute('open')
+    fireEvent.click(await within(dialog).findByRole('button', { name: /Phòng khám An Khang/ }))
+
+    expect(dialog).not.toHaveAttribute('open')
+    expect(within(screen.getByRole('banner')).getByRole('button', { name: /Phòng khám An Khang/ })).toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem('careconnect.selected-center') ?? 'null')).toEqual({
+      id: 'center-a',
+      name: 'Phòng khám An Khang'
+    })
+  })
+
+  it('lets the visitor skip the first-visit dialog and browse the platform-wide configuration', async () => {
+    sessionStorage.clear()
+    renderPortal()
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /Để sau, xem tất cả trước/ }))
+    expect(dialog).not.toHaveAttribute('open')
+    expect(within(screen.getByRole('banner')).getByRole('button', { name: /Tất cả trung tâm/ })).toBeInTheDocument()
+  })
+
+  it('changes the center from the dropdown beneath the header selector', async () => {
+    selectCenter({ id: 'center-b', name: 'Trung tâm Bình An' })
+    renderPortal()
+
+    const selector = within(screen.getByRole('banner')).getByRole('button', { name: /Trung tâm Bình An/ })
+    fireEvent.click(selector)
+    expect(selector).toHaveAttribute('aria-expanded', 'true')
+    const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
+    expect(await within(menu).findByRole('button', { name: /Trung tâm Bình An/ })).toHaveAttribute(
+      'aria-current',
+      'true'
+    )
+
+    fireEvent.click(within(menu).getByRole('button', { name: /Phòng khám An Khang/ }))
+    expect(screen.queryByRole('region', { name: 'Danh sách trung tâm chăm sóc' })).not.toBeInTheDocument()
+    expect(selector).toHaveAccessibleName(/Phòng khám An Khang/)
+    expect(selector).toHaveFocus()
+  })
+
+  it('asks guests to sign in when the center list needs a session', async () => {
+    vi.mocked(fetchPublicCenters).mockRejectedValue(Object.assign(new Error('unauthorized'), { status: 401 }))
+    renderPortal()
+
+    act(() => {
+      fireEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: /Tất cả trung tâm/ }))
+    })
+    const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
+    expect(await within(menu).findByText('Đăng nhập để chọn trung tâm')).toBeInTheDocument()
+    expect(within(menu).getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login')
+    expect(within(menu).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('lists active centers with their address from the customer center endpoint', async () => {
+    renderPortal()
+
+    fireEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: /Tất cả trung tâm/ }))
+    const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
+    expect(await within(menu).findByRole('button', { name: /Trung tâm Bình An/ })).toHaveTextContent(
+      '12 Lê Lợi, Quận 1'
+    )
+    expect(fetchPublicCenters).toHaveBeenCalledWith({ page: 0, size: 100 })
+  })
+
+  it('shows the current name of the chosen center and forgets a center that no longer takes bookings', async () => {
+    selectCenter({ id: 'center-b', name: 'Tên cũ' })
+    const { unmount } = renderPortal()
+
+    const banner = within(screen.getByRole('banner'))
+    expect(await banner.findByRole('button', { name: /Trung tâm Bình An/ })).toBeInTheDocument()
+    expect(fetchPublicCenter).toHaveBeenCalledWith('center-b')
+    unmount()
+
+    selectCenter({ id: 'center-closed', name: 'Trung tâm đã đóng' })
+    renderPortal()
+    expect(
+      await within(screen.getByRole('banner')).findByRole('button', { name: /Tất cả trung tâm/ })
+    ).toBeInTheDocument()
+    expect(localStorage.getItem('careconnect.selected-center')).toBeNull()
   })
 })

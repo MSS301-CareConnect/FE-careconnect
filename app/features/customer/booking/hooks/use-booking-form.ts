@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { bookingKeys, fetchBookingQuote, placeBooking } from '~/entities/booking/booking-api'
 import { bookingDay } from '~/entities/booking/booking-format'
 import { careCatalogKeys, fetchCenterOfferings } from '~/entities/care-catalog/care-catalog-api'
+import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import { careRecipientKeys, fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
 import { fetchCaregiverByUser } from '~/entities/provider/provider-api'
 import type {
@@ -57,7 +58,9 @@ export function useBookingForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const caregiverUserId = params.get('caregiver') ?? ''
-  const centerParam = params.get('center') ?? ''
+  const { center: headerCenter } = useSelectedCenter()
+  // The URL's center or caregiver wins; otherwise the center chosen in the header is the starting point.
+  const centerParam = params.get('center') || (caregiverUserId ? '' : (headerCenter?.id ?? ''))
   const preselectedService = params.get('service') ?? ''
 
   const [recipientId, setRecipientId] = useState(params.get('patientId') ?? '')
@@ -75,9 +78,9 @@ export function useBookingForm() {
     enabled: Boolean(caregiverUserId),
     retry: false
   })
-  const providers = useBookingProviders()
   const centerId = centerChoice ?? caregiver.data?.centerId ?? centerParam
-  const center = providers.centers.find((item) => item.id === centerId)
+  const providers = useBookingProviders(centerId)
+  const center = providers.centers.data?.find((item) => item.id === centerId)
   const urlCaregiverId = caregiver.data ? (caregiver.data.caregiverId ?? caregiver.data.id) : undefined
   // Empty means the center assigns the caregiver when it accepts the booking.
   const selectedCaregiverId =
@@ -167,7 +170,7 @@ export function useBookingForm() {
   }
 
   // The URL caregiver stays selectable even when the catalog pages do not include them.
-  const centerCaregivers = [...(center?.caregivers ?? [])]
+  const centerCaregivers = [...(providers.caregivers.data ?? [])]
   if (caregiver.data && caregiver.data.centerId === centerId) {
     if (!centerCaregivers.some((item) => (item.caregiverId ?? item.id) === urlCaregiverId)) {
       centerCaregivers.unshift(caregiver.data)

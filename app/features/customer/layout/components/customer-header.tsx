@@ -7,6 +7,8 @@ import { SignOutButton } from '~/features/shared/auth/sign-out-button'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
+import { CenterSelector } from './center-selector'
+
 export function CustomerHeader() {
   const authUser = useAuthUser()
   const isCustomer = authUser?.status === 'ACTIVE' && authUser.roles?.includes('CUSTOMER')
@@ -46,15 +48,18 @@ export function CustomerHeader() {
     <header className='relative z-50 border-b border-[#dfe6dc] bg-[#f7f8f5] text-[#1b2922]'>
       <div className='mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12'>
         <div className='flex min-h-20 items-center justify-between gap-3'>
-          <Link
-            className='inline-flex shrink-0 items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em] text-[#075b31]'
-            to={homePath}
-          >
-            <span aria-hidden='true' className='grid h-9 w-9 place-items-center rounded-lg bg-[#075b31] text-white'>
-              <Icon className='text-[22px]' name='volunteer_activism' />
-            </span>
-            {t('common.brand')}
-          </Link>
+          <div className='flex min-w-0 items-center gap-3 sm:gap-4 xl:gap-5'>
+            <Link
+              className='inline-flex shrink-0 items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em] text-[#075b31]'
+              to={homePath}
+            >
+              <span aria-hidden='true' className='grid h-9 w-9 place-items-center rounded-lg bg-[#075b31] text-white'>
+                <Icon className='text-[22px]' name='volunteer_activism' />
+              </span>
+              <span className='max-sm:sr-only'>{t('common.brand')}</span>
+            </Link>
+            <CenterSelector />
+          </div>
 
           <nav
             aria-label={t('home.navigation')}

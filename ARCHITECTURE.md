@@ -75,14 +75,27 @@ caregiver search and detail, verified certificates, catalog items, center offeri
 and price plans. Guest browse routes remain reachable, but their data requests return
 401 until the backend enables anonymous reads or the product requires sign-in for browsing.
 
-Customer `/customer/services` lists the care services customers can book. Customers
-cannot list ProviderService centers, so the page collects center IDs and names from the
-active caregiver catalog (up to five pages of 100), then reads each center's offerings and
-price plans through `entities/care-catalog`. Only active offerings of active catalog items
-and active price plans are shown; active catalog items no loaded center offers yet appear
-in a separate "coming soon" group. Search, center and category filters, sort (by center,
-name or lowest price) and page live in URL search parameters and work on the cached data.
-Centers without an active caregiver do not appear.
+The Customer header carries a center selector beside the logo, and the public `/` home
+page uses the same Customer layout so the selector appears from the first visit.
+`entities/care-center` lists ACTIVE centers through ProviderService's customer endpoint
+`GET /v1/care-centers/public` (up to five pages of 100) and reads the chosen center's current
+name through `GET /v1/care-centers/public/{centerId}`; a 404 there clears the choice. Both
+endpoints still require a signed-in session. The chosen
+center is a per-browser preference in `localStorage` (only its ID and name) shared through
+a small external store; a dialog opens once per browser session while no center is chosen,
+and any "choose a center" action reopens it. A 401 on the center list shows a sign-in step
+instead of an error. Null means the platform-wide configuration.
+
+Customer `/customer/services` follows that choice. With a center it reads the center's
+offerings and price plans through `entities/care-catalog`, showing only active offerings
+of active catalog items and active price plans. Without one it lists the active global
+catalog items without prices and asks the customer to choose a center; a failed or empty
+platform-wide list shows that request, not an error. Search, category, sort (name or
+price) and page live in URL search parameters and work on the cached data. Customer
+`/customer/caregivers` passes the chosen `centerId` to the caregiver catalog in the same
+way. The booking form lists centers from the same public center query, reads only the
+chosen center's caregivers, and starts from the header's center when its URL names neither a
+center nor a caregiver. Changing the center drops a stale `page` parameter.
 
 Customer `/customer/patient-profiles` and `/customer/patient-profiles/:id` read
 CareRecipientService through `entities/care-recipient`, which owns the gateway
@@ -617,6 +630,15 @@ Contract update workflow:
   production API prefix therefore requires a rebuild unless the deployment keeps the
   stable `/api` ingress contract.
 - No token, private key, or service credential belongs in a `VITE_*` variable.
+- `PAYMENT_DEMO_SERVICE_CLIENT_ID/SECRET` are read only by the `pnpm dev` server
+  (`scripts/payment-demo.mjs`). Until PaymentService exists, that server answers the
+  `Payment` tag (`POST /payments/deposits`, `GET /payments/{id}`, contract PAY-05/06)
+  and the dev-only `PaymentDemo` tag; every other `/api/v1/payments/*` request still
+  goes through the proxy to the gateway and `BE/scripts/e2e/payment_stub.py`. A
+  successful demo payment takes a SERVICE token and calls BookingService
+  `deposit-paid`, so the booking becomes CONFIRMED as after a real IPN. Builds never
+  include the demo, and its gateway page is reached only through the returned
+  `paymentUrl`.
 
 ### Testing and debugging
 

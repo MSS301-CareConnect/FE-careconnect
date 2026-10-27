@@ -9,17 +9,30 @@ import { faker } from '@faker-js/faker'
 
 import type {
   EmptyActionResponse,
+  ProviderAvailabilityCheckResponse,
+  ProviderAvailabilityWindowListResponse,
+  ProviderCaregiverCardPageResponse,
   ProviderCaregiverPageResponse,
+  ProviderCaregiverPublicResponse,
   ProviderCaregiverResponse,
+  ProviderCaregiverSkillListResponse,
   ProviderSchedulePageResponse,
-  ProviderScheduleResponse
+  ProviderScheduleResponse,
+  ProviderTimeOffListResponse,
+  ProviderTimeOffResponse
 } from '../../contracts'
 
 import {
+  getProviderAvailabilityCheckRecordMock,
+  getProviderAvailabilityWindowRecordMock,
+  getProviderCaregiverCardPageMock,
   getProviderCaregiverPageMock,
+  getProviderCaregiverPublicRecordMock,
   getProviderCaregiverRecordMock,
+  getProviderCaregiverSkillRecordMock,
   getProviderSchedulePageMock,
-  getProviderScheduleRecordMock
+  getProviderScheduleRecordMock,
+  getProviderTimeOffRecordMock
 } from '../../contracts/index.faker'
 
 export const getListCenterCaregiversResponseMock = (
@@ -118,5 +131,121 @@ export const getGetProviderCaregiverByUserResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderCaregiverRecordMock() },
+  ...overrideResponse
+})
+
+export const getListPendingVerificationProviderCaregiversResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverPageResponse, object>> = {}
+): ProviderCaregiverPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCaregiverPageMock() },
+  ...overrideResponse
+})
+
+export const getSearchProviderCaregiversResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverCardPageResponse, object>> = {}
+): ProviderCaregiverCardPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCaregiverCardPageMock() },
+  ...overrideResponse
+})
+
+export const getCheckProviderCaregiverAvailabilityResponseMock = (
+  overrideResponse: Partial<Extract<ProviderAvailabilityCheckResponse, object>> = {}
+): ProviderAvailabilityCheckResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderAvailabilityCheckRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetPublicProviderCaregiverResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverPublicResponse, object>> = {}
+): ProviderCaregiverPublicResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCaregiverPublicRecordMock() },
+  ...overrideResponse
+})
+
+export const getListProviderCaregiverServicesResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverSkillListResponse, object>> = {}
+): ProviderCaregiverSkillListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderCaregiverSkillRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getReplaceProviderCaregiverServicesResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverSkillListResponse, object>> = {}
+): ProviderCaregiverSkillListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderCaregiverSkillRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getUpdateProviderCaregiverRatingResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getSetProviderCaregiverStatusResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverResponse, object>> = {}
+): ProviderCaregiverResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCaregiverRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetProviderCaregiverAvailabilityResponseMock = (
+  overrideResponse: Partial<Extract<ProviderAvailabilityWindowListResponse, object>> = {}
+): ProviderAvailabilityWindowListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderAvailabilityWindowRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getListProviderCaregiverTimeOffsResponseMock = (
+  overrideResponse: Partial<Extract<ProviderTimeOffListResponse, object>> = {}
+): ProviderTimeOffListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderTimeOffRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getCreateProviderCaregiverTimeOffResponseMock = (
+  overrideResponse: Partial<Extract<ProviderTimeOffResponse, object>> = {}
+): ProviderTimeOffResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderTimeOffRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeleteProviderCaregiverTimeOffResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
   ...overrideResponse
 })

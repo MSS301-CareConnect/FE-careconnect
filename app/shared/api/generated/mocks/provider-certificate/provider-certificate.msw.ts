@@ -8,14 +8,21 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { EmptyActionResponse, ProviderCertificateListResponse, ProviderCertificateResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  ProviderCertificateListResponse,
+  ProviderCertificatePageResponse,
+  ProviderCertificateResponse
+} from '../../contracts'
 
 import {
   getArchiveProviderCertificateResponseMock,
   getCreateProviderCertificateResponseMock,
+  getListPendingAuditProviderCertificatesResponseMock,
   getListProviderCertificatesResponseMock,
   getListVerifiedProviderCertificatesResponseMock,
   getUpdateProviderCertificateResponseMock,
+  getVerifyProviderCertificateByCenterResponseMock,
   getVerifyProviderCertificateResponseMock
 } from './provider-certificate.faker'
 
@@ -25,7 +32,9 @@ export {
   getUpdateProviderCertificateResponseMock,
   getArchiveProviderCertificateResponseMock,
   getVerifyProviderCertificateResponseMock,
-  getListVerifiedProviderCertificatesResponseMock
+  getListVerifiedProviderCertificatesResponseMock,
+  getListPendingAuditProviderCertificatesResponseMock,
+  getVerifyProviderCertificateByCenterResponseMock
 } from './provider-certificate.faker'
 
 export const getListProviderCertificatesMockHandler = (
@@ -181,11 +190,65 @@ export const getListVerifiedProviderCertificatesMockHandler = (
     options
   )
 }
+
+export const getListPendingAuditProviderCertificatesMockHandler = (
+  overrideResponse?:
+    | ProviderCertificatePageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCertificatePageResponse> | ProviderCertificatePageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/certificates/pending-audit',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListPendingAuditProviderCertificatesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getVerifyProviderCertificateByCenterMockHandler = (
+  overrideResponse?:
+    | ProviderCertificateResponse
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<ProviderCertificateResponse> | ProviderCertificateResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/certificates/:id/center-verification',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getVerifyProviderCertificateByCenterResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 export const getProviderCertificateMock = () => [
   getListProviderCertificatesMockHandler(),
   getCreateProviderCertificateMockHandler(),
   getUpdateProviderCertificateMockHandler(),
   getArchiveProviderCertificateMockHandler(),
   getVerifyProviderCertificateMockHandler(),
-  getListVerifiedProviderCertificatesMockHandler()
+  getListVerifiedProviderCertificatesMockHandler(),
+  getListPendingAuditProviderCertificatesMockHandler(),
+  getVerifyProviderCertificateByCenterMockHandler()
 ]

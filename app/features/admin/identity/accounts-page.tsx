@@ -6,9 +6,18 @@ import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { useCenterOptions } from './hooks/use-center-options'
 import { addUser, fetchUsers } from './identity-api'
 
 const key = 'admin.identity' as const
+const centerStatusKeys = {
+  PENDING: 'admin.provider.pending',
+  ACTIVE: 'admin.provider.active',
+  INACTIVE: 'admin.provider.inactive',
+  SUSPENDED: 'admin.provider.suspended',
+  REJECTED: 'admin.provider.rejected',
+  ARCHIVED: 'admin.provider.archived'
+} as const
 const size = 20
 const inputClass =
   'mt-1 block w-full rounded-lg bg-surface-container-low px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30'
@@ -30,6 +39,7 @@ export function AccountsPage() {
   const [roleCode, setRoleCode] = useState<'CUSTOMER' | 'CENTER_MANAGER'>('CUSTOMER')
   const [centerId, setCenterId] = useState('')
   const [message, setMessage] = useState('')
+  const centerOptions = useCenterOptions(showCreate && roleCode === 'CENTER_MANAGER')
   const canCreateCustomer = authUser?.permissions?.includes('user:manage')
   const canCreateManager = authUser?.permissions?.includes('manager:create')
   const rows = users.data?.content ?? []
@@ -69,7 +79,7 @@ export function AccountsPage() {
         fullName: fullName.trim(),
         phoneNumber: phone.trim() || undefined,
         roleCode,
-        centerId: roleCode === 'CENTER_MANAGER' ? centerId.trim() : undefined
+        centerId: roleCode === 'CENTER_MANAGER' ? centerId : undefined
       }),
     onSuccess: () => {
       setMessage(t(`${key}.created`))
@@ -89,7 +99,7 @@ export function AccountsPage() {
       setMessage(t(`${key}.invalidPhone`))
       return
     }
-    if (roleCode === 'CENTER_MANAGER' && !centerId.trim()) {
+    if (roleCode === 'CENTER_MANAGER' && !centerId) {
       setMessage(t(`${key}.requiredCenter`))
       return
     }
@@ -384,14 +394,51 @@ export function AccountsPage() {
                 </select>
               </label>
               {roleCode === 'CENTER_MANAGER' && (
-                <label className='text-sm font-semibold sm:col-span-2'>
-                  {t(`${key}.centerId`)}
-                  <input
-                    className={inputClass}
-                    onChange={(event) => setCenterId(event.target.value)}
-                    value={centerId}
-                  />
-                </label>
+                <div className='text-sm font-semibold sm:col-span-2'>
+                  <label>
+                    {t(`${key}.centerId`)}
+                    <select
+                      className={inputClass}
+                      disabled={!centerOptions.isSuccess}
+                      onChange={(event) => setCenterId(event.target.value)}
+                      value={centerId}
+                    >
+                      <option disabled value=''>
+                        {t(
+                          centerOptions.isPending
+                            ? `${key}.centerLoading`
+                            : centerOptions.isError
+                              ? `${key}.centerUnavailable`
+                              : `${key}.chooseCenter`
+                        )}
+                      </option>
+                      {(centerOptions.data ?? []).map((center) => (
+                        <option key={center.id} value={center.id}>
+                          {center.centerStatus === 'ACTIVE'
+                            ? center.centerName
+                            : t(`${key}.centerWithStatus`, {
+                                name: center.centerName,
+                                status: t(centerStatusKeys[center.centerStatus])
+                              })}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {centerOptions.isError ? (
+                    <p className='mt-1 text-xs font-normal text-outline'>
+                      {t(`${key}.centerError`)}{' '}
+                      <button
+                        className='text-primary underline'
+                        onClick={() => void centerOptions.refetch()}
+                        type='button'
+                      >
+                        {t(`${key}.retry`)}
+                      </button>
+                    </p>
+                  ) : centerOptions.isSuccess && centerOptions.data.length === 0 ? (
+                    <p className='mt-1 text-xs font-normal text-outline'>{t(`${key}.centerEmpty`)}</p>
+                  ) : null}
+                </div>
               )}
               <div className='flex justify-end gap-3 sm:col-span-2'>
                 <button

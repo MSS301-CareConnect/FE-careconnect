@@ -9,9 +9,7 @@ export const customerServicesVi = {
     title: 'Bộ lọc',
     reset: 'Đặt lại',
     search: 'Tìm dịch vụ',
-    searchPlaceholder: 'Tên dịch vụ, nhóm hoặc cơ sở...',
-    center: 'Cơ sở y tế',
-    allCenters: 'Tất cả cơ sở',
+    searchPlaceholder: 'Tên dịch vụ hoặc nhóm dịch vụ...',
     category: 'Nhóm dịch vụ',
     allCategories: 'Tất cả nhóm',
     hint: 'Giá hiển thị là giá cơ bản của từng gói. Giá cuối cùng được xác nhận khi bạn đặt lịch.'
@@ -19,21 +17,26 @@ export const customerServicesVi = {
   results: 'dịch vụ',
   sort: {
     label: 'Sắp xếp',
-    center: 'Theo cơ sở y tế',
     name: 'Theo tên dịch vụ',
     priceAsc: 'Giá thấp đến cao',
     priceDesc: 'Giá cao đến thấp'
   },
-  groupCount: '{{count, number}} dịch vụ',
-  unassignedGroup: 'Sắp có tại các cơ sở',
+  scope: {
+    general: 'Bạn đang xem dịch vụ của tất cả trung tâm. Chọn một trung tâm để xem giá và đặt lịch.'
+  },
+  reminder: {
+    title: 'Chọn trung tâm để xem dịch vụ',
+    text: 'Mỗi trung tâm có danh mục dịch vụ và bảng giá riêng. Chọn trung tâm gần bạn để bắt đầu.'
+  },
   card: {
     plans: 'Bảng giá',
     planMeta: '{{unit}} · {{minutes, number}} phút',
     morePlans: '+{{count, number}} gói khác',
     from: 'Từ',
     contactPrice: 'Liên hệ để nhận báo giá',
-    comingSoon: 'Sắp ra mắt',
-    noCenter: 'Chưa có cơ sở y tế cung cấp',
+    pricePerCenter: 'Giá theo từng trung tâm',
+    chooseCenter: 'Chọn trung tâm để xem giá',
+    noCenter: 'Chưa chọn trung tâm',
     findCaregivers: 'Tìm người chăm sóc',
     book: 'Đặt lịch dịch vụ này'
   },
@@ -41,9 +44,8 @@ export const customerServicesVi = {
   states: {
     loading: 'Đang tải danh sách dịch vụ...',
     error: 'Không thể tải danh sách dịch vụ.',
-    partial: 'Một số cơ sở y tế chưa tải được dịch vụ.',
     retry: 'Thử lại',
-    empty: 'Chưa có dịch vụ nào được cập nhật.',
+    empty: 'Trung tâm này chưa cập nhật dịch vụ nào.',
     noResults: 'Không có dịch vụ phù hợp với bộ lọc hiện tại.'
   },
   pagination: 'Phân trang dịch vụ',
@@ -63,9 +65,7 @@ export const customerServicesEn = {
     title: 'Filters',
     reset: 'Reset',
     search: 'Search services',
-    searchPlaceholder: 'Service, category or center...',
-    center: 'Medical center',
-    allCenters: 'All centers',
+    searchPlaceholder: 'Service or category...',
     category: 'Service category',
     allCategories: 'All categories',
     hint: 'Prices shown are the base price of each plan. The final price is confirmed when you book.'
@@ -73,21 +73,26 @@ export const customerServicesEn = {
   results: 'services',
   sort: {
     label: 'Sort by',
-    center: 'Medical center',
     name: 'Service name',
     priceAsc: 'Price: low to high',
     priceDesc: 'Price: high to low'
   },
-  groupCount: '{{count, number}} services',
-  unassignedGroup: 'Coming soon to centers',
+  scope: {
+    general: 'You are viewing services from all centers. Choose a center to see prices and book.'
+  },
+  reminder: {
+    title: 'Choose a center to see services',
+    text: 'Each center has its own services and prices. Choose one near you to get started.'
+  },
   card: {
     plans: 'Price plans',
     planMeta: '{{unit}} · {{minutes, number}} min',
     morePlans: '+{{count, number}} more plans',
     from: 'From',
     contactPrice: 'Contact us for a quote',
-    comingSoon: 'Coming soon',
-    noCenter: 'Not yet offered by a medical center',
+    pricePerCenter: 'Prices vary by center',
+    chooseCenter: 'Choose a center for prices',
+    noCenter: 'No center chosen yet',
     findCaregivers: 'Find caregivers',
     book: 'Book this service'
   },
@@ -95,9 +100,8 @@ export const customerServicesEn = {
   states: {
     loading: 'Loading services...',
     error: 'Services could not be loaded.',
-    partial: 'Services from some medical centers could not be loaded.',
     retry: 'Try again',
-    empty: 'No services have been added yet.',
+    empty: 'This center has not added any services yet.',
     noResults: 'No services match the current filters.'
   },
   pagination: 'Service pages',

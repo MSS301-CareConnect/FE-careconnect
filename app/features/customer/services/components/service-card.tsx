@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { openCenterPicker } from '~/entities/care-center/selected-center'
 import { Icon } from '~/shared/ui/icon'
 
 import { lowestPrice, type CustomerService } from '../services-data'
@@ -36,7 +37,7 @@ export function ServiceCard({ service }: { service: CustomerService }) {
           <Icon
             aria-hidden='true'
             className='text-lg text-[#075b31]'
-            name={service.center ? 'home_health' : 'schedule'}
+            name={service.center ? 'home_health' : 'public'}
           />
           {service.center?.name ?? t(`${key}.card.noCenter`)}
         </p>
@@ -75,7 +76,7 @@ export function ServiceCard({ service }: { service: CustomerService }) {
         >
           <span className='text-sm text-[#526a57]'>
             {fromPrice === undefined ? (
-              t(service.center ? `${key}.card.contactPrice` : `${key}.card.comingSoon`)
+              t(service.center ? `${key}.card.contactPrice` : `${key}.card.pricePerCenter`)
             ) : (
               <>
                 {t(`${key}.card.from`)}{' '}
@@ -95,7 +96,16 @@ export function ServiceCard({ service }: { service: CustomerService }) {
                 name='arrow_forward'
               />
             </Link>
-          ) : null}
+          ) : (
+            <button
+              className='inline-flex items-center gap-2 rounded-lg border border-[#b9c9bb] bg-white px-4 py-2.5 text-sm font-bold text-[#075b31] transition-colors hover:bg-[#eaf2e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+              onClick={openCenterPicker}
+              type='button'
+            >
+              <Icon aria-hidden='true' className='text-lg' name='home_health' />
+              {t(`${key}.card.chooseCenter`)}
+            </button>
+          )}
         </div>
       </div>
     </article>
