@@ -14,6 +14,7 @@ export const paymentSharedVi = {
     e6203: 'Giao dịch thanh toán này đã kết thúc.',
     e6204: 'Cổng thanh toán thử nghiệm chưa sẵn sàng.',
     e6205: 'Trung tâm không thể xác nhận khoản cọc cho lịch đặt này.',
+    e6207: 'Lịch đặt này chưa có giá nên chưa tính được tiền cọc.',
     unavailable: 'Hệ thống thanh toán đang tạm gián đoạn, vui lòng thử lại sau ít phút.',
     generic: 'Không thực hiện được thanh toán, vui lòng thử lại.'
   }
@@ -35,6 +36,7 @@ export const paymentSharedEn = {
     e6203: 'This payment has already ended.',
     e6204: 'The test payment page is not ready yet.',
     e6205: 'The center could not confirm the deposit for this booking.',
+    e6207: 'This booking has no price yet, so its deposit cannot be calculated.',
     unavailable: 'Payment is temporarily unavailable. Please try again in a few minutes.',
     generic: 'The payment could not be completed. Please try again.'
   }

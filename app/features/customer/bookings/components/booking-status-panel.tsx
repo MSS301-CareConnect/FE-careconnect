@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { formatDateTime, formatMoney } from '~/entities/booking/booking-format'
+import { useDepositAmount } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -20,9 +21,12 @@ const ICONS: Record<BookingStatus, string> = {
 export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
+  const deposit = useDepositAmount(booking)
+  // Without a known amount the copy still asks for the deposit, just without a figure.
+  const depositKnown = deposit.amount !== undefined
   const values = {
     acceptanceDue: formatDateTime(booking.acceptanceDueAt, language),
-    deposit: formatMoney(booking.depositAmount, language),
+    deposit: formatMoney(deposit.amount, language),
     depositDue: formatDateTime(booking.depositDueAt, language),
     reason: booking.rejectedReason ?? booking.cancelReason ?? '',
     refund: formatMoney(booking.refund?.totalRefund, language)
@@ -38,7 +42,9 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
           {t(`customer.bookingDetail.next.${booking.status}.title`)}
         </h2>
         <p className='mt-1 text-sm leading-6 text-on-surface-variant'>
-          {t(`customer.bookingDetail.next.${booking.status}.body`, values)}
+          {booking.status === 'AWAITING_DEPOSIT' && !depositKnown
+            ? t('customer.bookingDetail.next.AWAITING_DEPOSIT.bodyNoAmount', values)
+            : t(`customer.bookingDetail.next.${booking.status}.body`, values)}
         </p>
         {booking.refund?.totalRefund !== undefined ? (
           <p className='mt-2 text-sm font-semibold text-primary'>{t('customer.bookingDetail.refunded', values)}</p>
@@ -48,7 +54,9 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
             className='group mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#075b31] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#064a29] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
             to={`/customer/bookings/${booking.id}/deposit`}
           >
-            {t('customer.bookingDetail.payDeposit', values)}
+            {depositKnown
+              ? t('customer.bookingDetail.payDeposit', values)
+              : t('customer.bookingDetail.payDepositNoAmount')}
             <Icon
               className='text-lg transition-transform duration-300 group-hover:translate-x-1'
               name='arrow_forward'

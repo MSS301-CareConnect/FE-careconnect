@@ -647,6 +647,12 @@ Contract update workflow:
   `deposit-paid`, so the booking becomes CONFIRMED as after a real IPN. Builds never
   include the demo, and its gateway page is reached only through the returned
   `paymentUrl`.
+- BookingService leaves `depositAmount` empty: PaymentService decides the deposit as
+  the booking total times the `depositPercent` of the center's policy in effect
+  (`PaymentPolicy` tag, C2.1 `GET /payment-policies/effective`, answered by the payment
+  stub). The demo charges that amount, and `useDepositAmount` in `entities/payment`
+  shows the same figure as an estimate until PaymentService records the real one; the
+  gateway page always shows the amount of the opened session.
 
 ### Testing and debugging
 

@@ -27,7 +27,9 @@ export const PAYMENT_DEMO_ERRORS = Object.freeze({
   PAYMENT_NOT_PENDING: 6203,
   DEMO_NOT_CONFIGURED: 6204,
   DEPOSIT_CONFIRMATION_FAILED: 6205,
-  INVALID_REQUEST: 6206
+  INVALID_REQUEST: 6206,
+  BOOKING_PRICE_MISSING: 6207,
+  NO_EFFECTIVE_POLICY: 6208
 })
 
 class DemoError extends Error {
@@ -109,6 +111,18 @@ export function createPaymentDemo({
     return payment
   }
 
+  // BookingService leaves the deposit to PaymentService (PAY-05): the total times the deposit percent of the
+  // policy in effect for the center (C2.1, answered by payment_stub.py through the gateway), in whole dong.
+  async function depositAmount(cookie, centerId, total) {
+    const query = new URLSearchParams({ centerId, at: new Date(now()).toISOString() })
+    const policy = await call(`/api/v1/payment-policies/effective?${query}`, { headers: { cookie } })
+    const percent = Number(policy.body.result?.depositPercent)
+    if (policy.status !== 200 || !(percent > 0)) {
+      throw new DemoError(503, PAYMENT_DEMO_ERRORS.NO_EFFECTIVE_POLICY, 'No payment policy in effect for the center')
+    }
+    return Math.round((total * percent) / 100)
+  }
+
   async function createDeposit(cookie, request) {
     if (!request?.bookingId) throw new DemoError(400, PAYMENT_DEMO_ERRORS.INVALID_REQUEST, 'bookingId is required')
     const userId = await currentUserId(cookie)
@@ -123,8 +137,9 @@ export function createPaymentDemo({
     }
     const dueAt = detail.depositDueAt ? Date.parse(detail.depositDueAt) : Number.POSITIVE_INFINITY
     if (dueAt <= now()) throw new DemoError(409, PAYMENT_DEMO_ERRORS.DEPOSIT_DUE_PASSED, 'The deposit is overdue')
-    const amount = Number(detail.depositAmount ?? 0)
-    if (!(amount > 0)) throw new DemoError(409, PAYMENT_DEMO_ERRORS.BOOKING_NOT_AWAITING_DEPOSIT, 'No deposit amount')
+    const total = Number(detail.totalAmount ?? 0)
+    if (!(total > 0)) throw new DemoError(409, PAYMENT_DEMO_ERRORS.BOOKING_PRICE_MISSING, 'The booking has no price')
+    const amount = await depositAmount(cookie, detail.centerId, total)
 
     // Same booking and amount with a live session returns that session (PAY-05 idempotency).
     for (const existing of payments.values()) {

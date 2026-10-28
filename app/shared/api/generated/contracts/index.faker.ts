@@ -160,6 +160,8 @@ import type {
   PasswordResetActionResponse,
   PasswordResetEmailRequest,
   PaymentDemoResultRequest,
+  PaymentPolicyRecord,
+  PaymentPolicyResponse,
   PaymentRecord,
   PaymentResponse,
   PaymentSessionRecord,
@@ -3337,6 +3339,23 @@ export const getPaymentRecordMock = (overrideResponse: Partial<PaymentRecord> = 
   paidAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   expiresAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   failureReason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  ...overrideResponse
+})
+
+export const getPaymentPolicyRecordMock = (
+  overrideResponse: Partial<PaymentPolicyRecord> = {}
+): PaymentPolicyRecord => ({
+  policyId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  depositPercent: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse
+})
+
+export const getPaymentPolicyResponseMock = (
+  overrideResponse: Partial<PaymentPolicyResponse> = {}
+): PaymentPolicyResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPaymentPolicyRecordMock() },
   ...overrideResponse
 })
 

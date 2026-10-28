@@ -13,10 +13,12 @@ export const bookingDetailEn = {
   history: 'History',
   refunded: 'Refund: {{refund}}',
   payDeposit: 'Pay the {{deposit}} deposit',
+  payDepositNoAmount: 'Pay the deposit',
   summary: {
     schedule: 'Schedule',
     services: 'Services',
     deposit: 'Deposit',
+    depositEstimated: 'Estimated deposit',
     total: 'Total'
   },
   next: {
@@ -26,7 +28,8 @@ export const bookingDetailEn = {
     },
     AWAITING_DEPOSIT: {
       title: 'Pay the deposit to confirm',
-      body: 'The center accepted. Pay the deposit of {{deposit}} by {{depositDue}}, or the booking expires.'
+      body: 'The center accepted. Pay the deposit of {{deposit}} by {{depositDue}}, or the booking expires.',
+      bodyNoAmount: 'The center accepted. Pay the deposit by {{depositDue}}, or the booking expires.'
     },
     CONFIRMED: {
       title: 'Confirmed',
@@ -84,10 +87,12 @@ export const bookingDetailVi = {
   history: 'Lịch sử',
   refunded: 'Tiền hoàn: {{refund}}',
   payDeposit: 'Đặt cọc {{deposit}}',
+  payDepositNoAmount: 'Đặt cọc',
   summary: {
     schedule: 'Lịch chăm sóc',
     services: 'Dịch vụ',
     deposit: 'Tiền cọc',
+    depositEstimated: 'Tiền cọc dự kiến',
     total: 'Tổng cộng'
   },
   next: {
@@ -97,7 +102,8 @@ export const bookingDetailVi = {
     },
     AWAITING_DEPOSIT: {
       title: 'Đặt cọc để xác nhận lịch',
-      body: 'Trung tâm đã duyệt. Hãy đặt cọc {{deposit}} trước {{depositDue}}, nếu không lịch sẽ hết hạn.'
+      body: 'Trung tâm đã duyệt. Hãy đặt cọc {{deposit}} trước {{depositDue}}, nếu không lịch sẽ hết hạn.',
+      bodyNoAmount: 'Trung tâm đã duyệt. Hãy đặt cọc trước {{depositDue}}, nếu không lịch sẽ hết hạn.'
     },
     CONFIRMED: {
       title: 'Đã xác nhận',

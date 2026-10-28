@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router'
 
 import { bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
 import { bookingErrorKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
-import { paymentErrorKey, startDepositPayment } from '~/entities/payment/payment-api'
+import { paymentErrorKey, startDepositPayment, useDepositAmount } from '~/entities/payment/payment-api'
 import type { DepositPaymentRequestBankCode } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -43,6 +43,8 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
       else window.location.assign(session.paymentUrl)
     }
   })
+  // PaymentService decides the charged amount when the session opens; this is what the customer sees first.
+  const deposit = useDepositAmount(booking.data)
   useDocumentTitle(t('customer.payment.deposit.documentTitle', { code: booking.data?.bookingCode ?? '' }))
 
   const data = booking.data
@@ -123,10 +125,12 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
           <aside aria-labelledby='deposit-summary' className={`${paymentPanel} flex flex-col gap-5 lg:sticky lg:top-6`}>
             <div>
               <h2 className='text-sm font-semibold text-[#5e7063]' id='deposit-summary'>
-                {t('customer.payment.deposit.amountLabel')}
+                {deposit.estimated
+                  ? t('customer.payment.deposit.amountEstimatedLabel')
+                  : t('customer.payment.deposit.amountLabel')}
               </h2>
               <p className='mt-1 text-4xl font-extrabold tracking-[-0.045em] text-[#075b31] tabular-nums'>
-                {formatMoney(data.depositAmount, language)}
+                {deposit.amount !== undefined ? formatMoney(deposit.amount, language) : '—'}
               </p>
               {data.depositDueAt ? (
                 <p className='mt-2 flex items-center gap-1.5 text-sm font-semibold text-[#8a5a00]'>
@@ -162,7 +166,9 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
               <div className='flex justify-between gap-3'>
                 <dt className='text-[#637469]'>{t('customer.payment.deposit.remaining')}</dt>
                 <dd className='font-semibold tabular-nums'>
-                  {formatMoney(Math.max(0, (data.totalAmount ?? 0) - (data.depositAmount ?? 0)), language)}
+                  {deposit.amount !== undefined
+                    ? formatMoney(Math.max(0, (data.totalAmount ?? 0) - deposit.amount), language)
+                    : '—'}
                 </dd>
               </div>
             </dl>
@@ -172,10 +178,17 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
                 {t(paymentErrorKey(pay.error))}
               </p>
             ) : null}
-            <button className={primaryAction} disabled={pay.isPending} onClick={() => pay.mutate()} type='button'>
+            <button
+              className={primaryAction}
+              disabled={pay.isPending || deposit.isPending}
+              onClick={() => pay.mutate()}
+              type='button'
+            >
               {pay.isPending
                 ? t('customer.payment.deposit.paying')
-                : t('customer.payment.deposit.pay', { amount: formatMoney(data.depositAmount, language) })}
+                : deposit.amount !== undefined
+                  ? t('customer.payment.deposit.pay', { amount: formatMoney(deposit.amount, language) })
+                  : t('customer.payment.deposit.payNoAmount')}
               <Icon
                 className='text-lg transition-transform duration-300 group-hover:translate-x-1'
                 name='arrow_forward'

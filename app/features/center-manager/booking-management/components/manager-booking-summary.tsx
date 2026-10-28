@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
+import { useDepositAmount } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -8,6 +9,7 @@ import { Icon } from '~/shared/ui/icon'
 export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecord }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
+  const deposit = useDepositAmount(booking)
   const milestones = [
     ['createdAt', booking.createdAt],
     ['acceptedAt', booking.acceptedAt],
@@ -62,10 +64,16 @@ export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecor
           ))}
         </ul>
         <dl className='mt-3 flex flex-col gap-1.5 rounded-lg bg-surface-container-low p-3'>
-          <div className='flex justify-between gap-3 text-on-surface-variant'>
-            <dt>{t('centerManager.bookingDetail.deposit')}</dt>
-            <dd className='tabular-nums'>{formatMoney(booking.depositAmount, language)}</dd>
-          </div>
+          {deposit.amount !== undefined ? (
+            <div className='flex justify-between gap-3 text-on-surface-variant'>
+              <dt>
+                {deposit.estimated
+                  ? t('centerManager.bookingDetail.depositEstimated')
+                  : t('centerManager.bookingDetail.deposit')}
+              </dt>
+              <dd className='tabular-nums'>{formatMoney(deposit.amount, language)}</dd>
+            </div>
+          ) : null}
           <div className='flex justify-between gap-3 font-bold'>
             <dt>{t('centerManager.bookingDetail.total')}</dt>
             <dd className='text-primary tabular-nums'>{formatMoney(booking.totalAmount, language)}</dd>

@@ -16,6 +16,7 @@ export const managerBookingDetailVi = {
   schedule: 'Lịch chăm sóc',
   services: 'Dịch vụ',
   deposit: 'Tiền cọc',
+  depositEstimated: 'Tiền cọc dự kiến',
   total: 'Tổng cộng',
   milestones: {
     createdAt: 'Gửi yêu cầu',
@@ -84,6 +85,7 @@ export const managerBookingDetailEn = {
   schedule: 'Schedule',
   services: 'Services',
   deposit: 'Deposit',
+  depositEstimated: 'Estimated deposit',
   total: 'Total',
   milestones: {
     createdAt: 'Requested',

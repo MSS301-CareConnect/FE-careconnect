@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { formatDay, formatMoney, shortTime, weekdayKey } from '~/entities/booking/booking-format'
+import { useDepositAmount } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -8,6 +9,7 @@ import { Icon } from '~/shared/ui/icon'
 export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
+  const deposit = useDepositAmount(booking)
   const weekdays = (booking.daysOfWeek ?? [])
     .flatMap((day) => {
       const key = weekdayKey(day)
@@ -65,10 +67,16 @@ export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord
       </div>
 
       <dl className='flex flex-col gap-2 rounded-lg bg-surface-container-low p-4 text-sm'>
-        <div className='flex justify-between gap-3 text-on-surface-variant'>
-          <dt>{t('customer.bookingDetail.summary.deposit')}</dt>
-          <dd className='tabular-nums'>{formatMoney(booking.depositAmount, language)}</dd>
-        </div>
+        {deposit.amount !== undefined ? (
+          <div className='flex justify-between gap-3 text-on-surface-variant'>
+            <dt>
+              {deposit.estimated
+                ? t('customer.bookingDetail.summary.depositEstimated')
+                : t('customer.bookingDetail.summary.deposit')}
+            </dt>
+            <dd className='tabular-nums'>{formatMoney(deposit.amount, language)}</dd>
+          </div>
+        ) : null}
         <div className='flex items-baseline justify-between gap-3'>
           <dt className='font-semibold text-on-surface'>{t('customer.bookingDetail.summary.total')}</dt>
           <dd className='text-xl font-bold text-primary tabular-nums'>{formatMoney(booking.totalAmount, language)}</dd>

@@ -11,8 +11,18 @@ function json(status, body) {
   return { status, text: async () => JSON.stringify(body) }
 }
 
-/** A gateway double: the customer owns one booking awaiting a 60 000 VND deposit. */
-function gateway({ bookingStatus = 'AWAITING_DEPOSIT', depositPaidStatus = 200 } = {}) {
+const CENTER_ID = '33333333-3333-4333-8333-333333333333'
+
+/**
+ * A gateway double: the customer owns one 200 000 VND booking awaiting its deposit. Like BookingService it
+ * sends no deposit amount; the payment stub's policy charges 30%, so the deposit is 60 000 VND.
+ */
+function gateway({
+  bookingStatus = 'AWAITING_DEPOSIT',
+  depositPaidStatus = 200,
+  totalAmount = 200000,
+  policyStatus = 200
+} = {}) {
   const calls = []
   const fetchImpl = async (url, init = {}) => {
     const path = new URL(url).pathname
@@ -27,11 +37,17 @@ function gateway({ bookingStatus = 'AWAITING_DEPOSIT', depositPaidStatus = 200 }
         code: 200,
         result: {
           id: BOOKING_ID,
+          centerId: CENTER_ID,
           status: bookingStatus,
-          depositAmount: 60000,
+          totalAmount,
           depositDueAt: new Date(NOW + 60 * 60 * 1000).toISOString()
         }
       })
+    }
+    if (path === '/api/v1/payment-policies/effective') {
+      return new URL(url).searchParams.get('centerId') === CENTER_ID && policyStatus === 200
+        ? json(200, { code: 200, result: { policyId: 'policy-1', depositPercent: 30 } })
+        : json(policyStatus, { code: policyStatus })
     }
     if (path === '/api/v1/auth/service-token') {
       return json(200, { code: 200, result: { accessToken: 'service-token', expiresInSeconds: 900 } })
@@ -109,6 +125,26 @@ test('refuses a booking that is not awaiting a deposit and an anonymous caller',
     body: { bookingId: BOOKING_ID }
   })
   assert.equal(anonymous.status, 401)
+})
+
+test('refuses a booking without a price and a center without a policy', async () => {
+  const unpriced = await demo(gateway({ totalAmount: 0 }).fetchImpl).handle({
+    method: 'POST',
+    path: '/api/v1/payments/deposits',
+    cookie: customer,
+    body: { bookingId: BOOKING_ID }
+  })
+  assert.equal(unpriced.status, 409)
+  assert.equal(unpriced.body.code, PAYMENT_DEMO_ERRORS.BOOKING_PRICE_MISSING)
+
+  const noPolicy = await demo(gateway({ policyStatus: 404 }).fetchImpl).handle({
+    method: 'POST',
+    path: '/api/v1/payments/deposits',
+    cookie: customer,
+    body: { bookingId: BOOKING_ID }
+  })
+  assert.equal(noPolicy.status, 503)
+  assert.equal(noPolicy.body.code, PAYMENT_DEMO_ERRORS.NO_EFFECTIVE_POLICY)
 })
 
 test('confirms the deposit at BookingService with a SERVICE token when the demo gateway succeeds', async () => {

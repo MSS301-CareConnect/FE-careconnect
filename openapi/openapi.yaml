@@ -32,6 +32,8 @@ tags:
     description: PaymentService customer APIs (PAY-05/06); served by the pnpm dev payment demo until PaymentService exists.
   - name: PaymentDemo
     description: Development-only demo gateway answered by the pnpm dev server, never by a backend service.
+  - name: PaymentPolicy
+    description: PaymentService platform policy in effect for a center (C2.1); answered by the payment stub until PaymentService exists.
 paths:
   /v1/auth/csrf:
     get:
@@ -5835,6 +5837,38 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/payment-policies/effective:
+    get:
+      tags:
+        - PaymentPolicy
+      summary: Any signed-in user reads the payment policy in effect for a center (deposit percent)
+      operationId: getEffectivePaymentPolicy
+      parameters:
+        - name: centerId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: at
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentPolicyResponse'
+        '401':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
   /v1/payments/deposits:
     post:
       tags:
@@ -11969,6 +12003,30 @@ components:
           format: date-time
         failureReason:
           type: string
+    PaymentPolicyRecord:
+      type: object
+      required:
+        - depositPercent
+      properties:
+        policyId:
+          type: string
+          format: uuid
+        depositPercent:
+          type: number
+          description: Percent of the booking total, e.g. 30 for 30%.
+    PaymentPolicyResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentPolicyRecord'
     PaymentSessionResponse:
       type: object
       required:

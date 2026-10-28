@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { fetchBooking } from '~/entities/booking/booking-api'
 import { fetchPayment, startDepositPayment, submitDemoPayment } from '~/entities/payment/payment-api'
+import { getEffectivePaymentPolicy } from '~/shared/api/generated/api/payment-policy/payment-policy'
 import type { BookingDetailRecord, PaymentRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
@@ -22,6 +23,9 @@ vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
   fetchPayment: vi.fn(),
   submitDemoPayment: vi.fn()
 }))
+vi.mock('~/shared/api/generated/api/payment-policy/payment-policy', () => ({
+  getEffectivePaymentPolicy: vi.fn()
+}))
 
 const BOOKING_ID = 'bk-1'
 const PAYMENT_ID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
@@ -36,7 +40,6 @@ const booking: BookingDetailRecord = {
   startTime: '08:00',
   endTime: '10:00',
   totalAmount: 200000,
-  depositAmount: 60000,
   depositDueAt: '2026-11-01T00:00:00Z',
   recipientSnapshot: { fullName: 'Bà Lan' },
   occurrences: []
@@ -82,6 +85,11 @@ beforeEach(async () => {
   vi.clearAllMocks()
   await setAppLanguage('vi', false)
   vi.mocked(fetchBooking).mockResolvedValue(booking)
+  vi.mocked(getEffectivePaymentPolicy).mockResolvedValue({
+    data: { code: 200, message: 'OK', result: { policyId: 'policy-1', depositPercent: 30 } },
+    status: 200,
+    headers: new Headers()
+  })
 })
 
 describe('Deposit payment flow', () => {
@@ -99,8 +107,12 @@ describe('Deposit payment flow', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Đặt cọc giữ lịch' })).toBeInTheDocument()
     expect(await screen.findByText('Bà Lan')).toBeInTheDocument()
+    // BookingService sends no deposit amount, so the page shows 30% of the total from the center's policy.
+    expect(await screen.findByRole('heading', { name: 'Số tiền cọc dự kiến' })).toBeInTheDocument()
+    expect(screen.getByText(/140\.000/)).toBeInTheDocument()
+    expect(getEffectivePaymentPolicy).toHaveBeenCalledWith({ centerId: 'center-1' }, expect.anything())
     fireEvent.click(screen.getByRole('radio', { name: /Thẻ quốc tế/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Thanh toán 60\.000/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /Thanh toán 60\.000/ }))
 
     await waitFor(() =>
       expect(startDepositPayment).toHaveBeenCalledWith(
