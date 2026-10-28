@@ -37,8 +37,7 @@ describe('Customer caregiver catalog', () => {
     vi.mocked(fetchCaregiverCatalog).mockResolvedValue({
       items: [
         {
-          id: 'caregiver-1',
-          userId: 'user-1',
+          caregiverId: 'caregiver-1',
           centerId: 'center-1',
           centerName: 'Care One',
           fullName: 'Lan Nguyen',
@@ -46,9 +45,7 @@ describe('Customer caregiver catalog', () => {
           gender: 'FEMALE',
           ratingAverage: 4.8,
           ratingCount: 12,
-          verificationStatus: 'VERIFIED',
-          caregiverStatus: 'ACTIVE',
-          version: 1
+          verifiedCertificateCount: 2
         }
       ],
       page: 0,

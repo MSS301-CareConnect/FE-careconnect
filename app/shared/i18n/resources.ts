@@ -21,19 +21,11 @@ import { serviceDetailEn, serviceDetailVi } from './customer/service-detail-reso
 import { caregiversEn, caregiversVi } from './customer/caregivers-resources'
 import { customerProviderEn, customerProviderVi } from './customer/provider-resources'
 import { bookingEn, bookingVi } from './customer/booking-resources'
-import { bookingDepositEn, bookingDepositVi } from './customer/booking-deposit-resources'
 import { careReportEn, careReportVi } from './customer/care-report-resources'
 import { bookingReviewEn, bookingReviewVi } from './customer/booking-review-resources'
 import { customerPaymentEn, customerPaymentVi } from './customer/payment-resources'
 import { centerPickerEn, centerPickerVi } from './customer/center-picker-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
-import { caregiverDashboardEn, caregiverDashboardVi } from './caregiver/dashboard-resources'
-import { caregiverScheduleEn, caregiverScheduleVi } from './caregiver/schedule-resources'
-import { caregiverShiftDetailEn, caregiverShiftDetailVi } from './caregiver/shift-detail-resources'
-import { caregiverActiveSessionEn, caregiverActiveSessionVi } from './caregiver/active-session-resources'
-import { caregiverRecordsEn, caregiverRecordsVi } from './caregiver/care-record-resources'
-import { caregiverReportEn, caregiverReportVi } from './caregiver/care-report-resources'
-import { caregiverHistoryEn, caregiverHistoryVi } from './caregiver/care-history-resources'
 import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
 import { caregiverProviderEn, caregiverProviderVi } from './caregiver/provider-resources'
 import { caregiverVisitsEn, caregiverVisitsVi } from './caregiver/visits-resources'
@@ -83,7 +75,6 @@ export const resources = {
         caregivers: caregiversEn,
         provider: customerProviderEn,
         booking: bookingEn,
-        bookingDeposit: bookingDepositEn,
         careReport: careReportEn,
         bookingReview: bookingReviewEn,
         payment: customerPaymentEn,
@@ -91,13 +82,6 @@ export const resources = {
       },
       caregiver: {
         ...caregiverLayoutEn,
-        ...caregiverDashboardEn,
-        schedulePage: caregiverScheduleEn,
-        shiftDetail: caregiverShiftDetailEn,
-        activeSession: caregiverActiveSessionEn,
-        careRecords: caregiverRecordsEn,
-        careReport: caregiverReportEn,
-        careHistory: caregiverHistoryEn,
         profile: caregiverProfileEn,
         provider: caregiverProviderEn,
         visits: caregiverVisitsEn,
@@ -152,7 +136,6 @@ export const resources = {
         caregivers: caregiversVi,
         provider: customerProviderVi,
         booking: bookingVi,
-        bookingDeposit: bookingDepositVi,
         careReport: careReportVi,
         bookingReview: bookingReviewVi,
         payment: customerPaymentVi,
@@ -160,13 +143,6 @@ export const resources = {
       },
       caregiver: {
         ...caregiverLayoutVi,
-        ...caregiverDashboardVi,
-        schedulePage: caregiverScheduleVi,
-        shiftDetail: caregiverShiftDetailVi,
-        activeSession: caregiverActiveSessionVi,
-        careRecords: caregiverRecordsVi,
-        careReport: caregiverReportVi,
-        careHistory: caregiverHistoryVi,
         profile: caregiverProfileVi,
         provider: caregiverProviderVi,
         visits: caregiverVisitsVi,

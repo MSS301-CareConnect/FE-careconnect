@@ -180,7 +180,7 @@ export function useBookingForm() {
 
   // The URL caregiver stays selectable even when the catalog pages do not include them.
   const centerCaregivers: BookingCaregiverOption[] = (providers.caregivers.data ?? []).map((item) => ({
-    id: item.caregiverId ?? item.id,
+    id: item.caregiverId,
     fullName: item.fullName,
     experienceYears: item.experienceYears,
     ratingAverage: item.ratingAverage

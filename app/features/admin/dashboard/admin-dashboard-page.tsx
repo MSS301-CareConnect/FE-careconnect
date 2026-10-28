@@ -17,8 +17,18 @@ export function AdminDashboardPage() {
       </header>
       <OperationalStatisticsPanel scope='system' />
       <ProviderStatusPanel />
-      <DashboardCharts />
-      <DashboardInsights />
+      {/* Live operational panels end here; the charts below are illustrative until a financial reporting contract exists. */}
+      <section aria-labelledby='dashboard-preview-label' className='space-y-6'>
+        <p
+          className='rounded-lg bg-secondary-container/40 px-4 py-3 text-xs leading-5 text-primary'
+          id='dashboard-preview-label'
+          role='note'
+        >
+          <strong className='font-bold'>{t(`${key}.snapshot`)}</strong> · {t('admin.preview')}
+        </p>
+        <DashboardCharts />
+        <DashboardInsights />
+      </section>
     </div>
   )
 }

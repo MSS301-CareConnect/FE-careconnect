@@ -1167,7 +1167,7 @@ export const useUpdateProviderCaregiverScheduleStatus = <
   return useMutation(getUpdateProviderCaregiverScheduleStatusMutationOptions(options), queryClient)
 }
 export type catalogProviderCaregiversResponse200 = {
-  data: ProviderCaregiverPageResponse
+  data: ProviderCaregiverCardPageResponse
   status: 200
 }
 
@@ -1232,7 +1232,7 @@ export const getCatalogProviderCaregiversUrl = (params?: CatalogProviderCaregive
 }
 
 /**
- * @summary Tìm kiếm caregiver đang hoạt động (Catalog)
+ * @summary Danh mục caregiver đang hoạt động cho khách — chỉ thẻ công khai (M-02)
  */
 export const catalogProviderCaregivers = async (
   params?: CatalogProviderCaregiversParams,
@@ -1337,7 +1337,7 @@ export function useCatalogProviderCaregivers<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm kiếm caregiver đang hoạt động (Catalog)
+ * @summary Danh mục caregiver đang hoạt động cho khách — chỉ thẻ công khai (M-02)
  */
 
 export function useCatalogProviderCaregivers<

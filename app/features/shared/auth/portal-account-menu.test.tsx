@@ -33,7 +33,7 @@ describe('Portal account menus', () => {
   it.each([
     { role: 'ADMIN', path: '/admin/dashboard', layout: AdminLayout },
     { role: 'CENTER_MANAGER', path: '/center-manager/caregivers', layout: CenterManagerLayout },
-    { role: 'CAREGIVER', path: '/caregiver/dashboard', layout: CaregiverLayout }
+    { role: 'CAREGIVER', path: '/caregiver/visits', layout: CaregiverLayout }
   ])('places account actions under the $role avatar', ({ role, path, layout: Layout }) => {
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>

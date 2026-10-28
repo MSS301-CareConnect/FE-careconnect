@@ -58,7 +58,7 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
     <main className='mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-12'>
       <header className='space-y-4'>
         <nav aria-label={title} className='flex items-center gap-1 text-xs text-on-surface-variant'>
-          <Link className='hover:text-primary' to={manager ? '/center-manager' : '/caregiver/dashboard'}>
+          <Link className='hover:text-primary' to={manager ? '/center-manager' : '/caregiver/visits'}>
             {t(manager ? 'centerManager.portal' : 'caregiver.nav.home')}
           </Link>
           <Icon className='text-sm' name='chevron_right' />
@@ -155,27 +155,8 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
                   </div>
                   {!manager ? (
                     <div className='mt-5 flex flex-wrap gap-2 border-t border-outline-variant/20 pt-4'>
+                      {/* Lịch là lịch rảnh (D11): caregiver chỉ được hủy; bắt đầu / kết thúc ca làm ở Buổi được giao. */}
                       {item.scheduleStatus === 'SCHEDULED' ? (
-                        <button
-                          className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50'
-                          disabled={update.isPending}
-                          onClick={() => update.mutate({ item, status: 'IN_PROGRESS' })}
-                          type='button'
-                        >
-                          {t(`${key}.start`)}
-                        </button>
-                      ) : null}
-                      {item.scheduleStatus === 'IN_PROGRESS' ? (
-                        <button
-                          className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50'
-                          disabled={update.isPending}
-                          onClick={() => update.mutate({ item, status: 'COMPLETED' })}
-                          type='button'
-                        >
-                          {t(`${key}.complete`)}
-                        </button>
-                      ) : null}
-                      {item.scheduleStatus === 'SCHEDULED' || item.scheduleStatus === 'IN_PROGRESS' ? (
                         <button
                           className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
                           disabled={update.isPending || !reason.trim()}

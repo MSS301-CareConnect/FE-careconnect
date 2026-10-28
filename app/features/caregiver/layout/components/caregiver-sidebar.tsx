@@ -9,8 +9,8 @@ export const CAREGIVER_SIDEBAR_ID = 'caregiver-sidebar'
 
 export function CaregiverSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation()
-  const { pathname, hash } = useLocation()
-  const active = activeCaregiverNavigation(pathname, hash)
+  const { pathname } = useLocation()
+  const active = activeCaregiverNavigation(pathname)
 
   return (
     <>
@@ -26,7 +26,7 @@ export function CaregiverSidebar({ open, onClose }: { open: boolean; onClose: ()
         id={CAREGIVER_SIDEBAR_ID}
       >
         <div className='flex h-16 shrink-0 items-center justify-between gap-2 border-b border-outline-variant/25 px-5'>
-          <Link className='flex min-w-0 items-center gap-2' onClick={onClose} to='/caregiver/dashboard'>
+          <Link className='flex min-w-0 items-center gap-2' onClick={onClose} to='/caregiver/visits'>
             <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white'>
               <Icon name='volunteer_activism' />
             </span>

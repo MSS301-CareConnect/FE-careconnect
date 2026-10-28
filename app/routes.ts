@@ -41,17 +41,11 @@ export default [
   ...prefix('caregiver', [
     layout('routes/caregiver/layout.tsx', [
       index('routes/caregiver/index.tsx'),
-      route('dashboard', 'routes/caregiver/dashboard.tsx'),
       route('schedule', 'routes/caregiver/schedule.tsx'),
       route('work-shifts', 'routes/caregiver/work-shifts.tsx'),
       route('visits', 'routes/caregiver/visits.tsx'),
       route('visits/:id', 'routes/caregiver/visit-detail.tsx'),
-      route('history', 'routes/caregiver/history.tsx'),
-      route('profile', 'routes/caregiver/profile.tsx'),
-      route('shifts/:id/report', 'routes/caregiver/care-report.tsx'),
-      route('shifts/:id?', 'routes/caregiver/shift-detail.tsx'),
-      route('shifts/:id/active', 'routes/caregiver/shift-active.tsx'),
-      route('active-session', 'routes/caregiver/active-session.tsx')
+      route('profile', 'routes/caregiver/profile.tsx')
     ])
   ]),
   ...prefix('customer', [
@@ -71,7 +65,6 @@ export default [
       route('payments/:paymentId/gateway', 'routes/customer/payment-gateway.tsx'),
       route('payments/:paymentId/success', 'routes/customer/payment-success.tsx'),
       route('payments/:paymentId/failure', 'routes/customer/payment-failure.tsx'),
-      route('booking/deposit', 'routes/customer/booking-deposit.tsx'),
       route('my-profile', 'routes/customer/my-profile.tsx'),
       route('patient-profiles', 'routes/customer/patient-profiles.tsx'),
       route('patient-profiles/new', 'routes/customer/patient-create.tsx'),

@@ -50,7 +50,7 @@ describe('Admin dashboard', () => {
     await setAppLanguage('vi', false)
   })
 
-  it('uses a separate Admin shell and navigates to revenue reporting', () => {
+  it('uses a separate Admin shell, hides preview-only pages and labels sample charts', () => {
     renderAdmin()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tổng quan nền tảng')
     expect(screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })).toBeInTheDocument()
@@ -58,11 +58,15 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('link', { name: /Quản lý Khách hàng/ })).toHaveAttribute('href', '/admin/customers')
     expect(screen.getByRole('link', { name: /Quản lý Trung tâm/ })).toHaveAttribute('href', '/admin/centers')
     expect(screen.getByRole('link', { name: /Dịch vụ & Bảng giá/ })).toHaveAttribute('href', '/admin/services')
-    expect(screen.getByRole('link', { name: /Kiểm soát chất lượng/ })).toHaveAttribute('href', '/admin/quality')
-    expect(screen.getByRole('link', { name: /Cấu hình chính sách/ })).toHaveAttribute('href', '/admin/policies')
+    // Pages without a backend stay out of the menu (D26).
+    expect(screen.queryByRole('link', { name: /Kiểm soát chất lượng/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Cấu hình chính sách/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Giao dịch & Báo cáo/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Làm mới trực tiếp' })).not.toBeInTheDocument()
-    expect(screen.queryByText('Bản xem thử · Kỳ báo cáo: 01–30/09/2026')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('link', { name: /Giao dịch & Báo cáo/ }))
+    // Sample charts below the live panels carry a visible preview label (H-03).
+    expect(screen.getByRole('note')).toHaveTextContent('Bản xem thử · Kỳ báo cáo: 01–30/09/2026')
+    expect(screen.getByRole('note')).toHaveTextContent(/dữ liệu minh họa tháng 09\/2026/)
+    fireEvent.click(screen.getByRole('link', { name: 'Xem báo cáo doanh thu' }))
     expect(screen.getByTestId('location')).toHaveTextContent('/admin/revenue')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Quản lý Giao dịch & Doanh thu')
   })
@@ -74,7 +78,6 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('link', { name: 'Xem báo cáo doanh thu' })).toHaveAttribute('href', '/admin/revenue')
     expect(screen.getAllByText(/1[.,]482[.,]500[.,]000\s*₫/).length).toBeGreaterThan(0)
     expect(screen.queryByRole('heading', { name: 'Tổng khách hàng' })).not.toBeInTheDocument()
-    expect(screen.queryByText(/dữ liệu minh họa tháng 09\/2026/)).not.toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Platform overview')
     expect(screen.getByRole('heading', { name: 'Transaction value by service' })).toBeInTheDocument()
@@ -110,7 +113,7 @@ describe('Admin dashboard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Mở menu quản trị' }))
     const navigation = screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })
-    fireEvent.click(within(navigation).getByRole('link', { name: /Giao dịch & Báo cáo/ }))
+    fireEvent.click(within(navigation).getByRole('link', { name: /Bảng điều khiển/ }))
     expect(screen.getByRole('button', { name: 'Mở menu quản trị' })).toHaveAttribute('aria-expanded', 'false')
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })

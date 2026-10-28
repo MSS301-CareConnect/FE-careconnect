@@ -9,8 +9,11 @@ import type { ProviderCaregiverCardRecordGender } from './providerCaregiverCardR
 
 export interface ProviderCaregiverCardRecord {
   caregiverId: string
+  centerId?: string
+  centerName?: string
   fullName: string
   gender?: ProviderCaregiverCardRecordGender
+  bio?: string
   experienceYears?: number
   ratingAverage?: number
   ratingCount?: number

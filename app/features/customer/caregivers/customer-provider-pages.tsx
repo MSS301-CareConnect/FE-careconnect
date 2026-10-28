@@ -6,7 +6,7 @@ import { Link, useSearchParams } from 'react-router'
 import { fetchCaregiverCatalog, providerKeys } from '~/entities/provider/provider-api'
 import { CenterReminder, CenterScope } from '~/entities/care-center/center-scope'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
-import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
+import type { ProviderCaregiverCardRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { ProviderCatalogSearch } from './components/provider-catalog-search'
@@ -14,7 +14,7 @@ import { ProviderCatalogSearch } from './components/provider-catalog-search'
 const key = 'customer.provider' as const
 type GenderFilter = 'ALL' | 'FEMALE' | 'MALE' | 'OTHER'
 
-function ProviderCaregiverCard({ person }: { person: ProviderCaregiverRecord }) {
+function ProviderCaregiverCard({ person }: { person: ProviderCaregiverCardRecord }) {
   const { t, i18n } = useTranslation()
   return (
     <article className='group flex h-full flex-col rounded-2xl border border-[#dbe4db] bg-white p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[#a8c2ad] sm:p-6'>
@@ -28,12 +28,11 @@ function ProviderCaregiverCard({ person }: { person: ProviderCaregiverRecord }) 
         <div className='min-w-0 flex-1'>
           <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
             <h2 className='text-xl font-bold tracking-[-0.025em] text-[#1b2922]'>{person.fullName}</h2>
-            {person.verificationStatus === 'VERIFIED' && (
-              <span className='inline-flex items-center gap-1 rounded-md bg-[#e8f0e8] px-2 py-1 text-xs font-bold text-[#075b31]'>
-                <Icon className='text-sm' name='verified' />
-                {t(`${key}.verified`)}
-              </span>
-            )}
+            {/* The catalog lists only verified, active caregivers. */}
+            <span className='inline-flex items-center gap-1 rounded-md bg-[#e8f0e8] px-2 py-1 text-xs font-bold text-[#075b31]'>
+              <Icon className='text-sm' name='verified' />
+              {t(`${key}.verified`)}
+            </span>
           </div>
           {person.centerName && (
             <p className='mt-2 flex items-center gap-1.5 text-sm text-[#637469]'>
@@ -70,7 +69,7 @@ function ProviderCaregiverCard({ person }: { person: ProviderCaregiverRecord }) 
         </span>
         <Link
           className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-[#075b31]'
-          to={`/customer/caregivers/${person.id}`}
+          to={`/customer/caregivers/${person.caregiverId}`}
         >
           {t(`${key}.details`)}
           <Icon className='text-lg transition-transform group-hover:translate-x-1' name='arrow_forward' />
@@ -241,7 +240,7 @@ export function CustomerProviderCatalogPage() {
             {catalog.isSuccess && visible.length > 0 && (
               <div className={view === 'grid' ? 'mt-6 grid gap-4 xl:grid-cols-2' : 'mt-6 flex flex-col gap-4'}>
                 {visible.map((person) => (
-                  <ProviderCaregiverCard key={person.id} person={person} />
+                  <ProviderCaregiverCard key={person.caregiverId} person={person} />
                 ))}
               </div>
             )}

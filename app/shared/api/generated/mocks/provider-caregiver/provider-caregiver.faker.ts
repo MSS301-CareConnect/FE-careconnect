@@ -99,11 +99,11 @@ export const getUpdateProviderCaregiverScheduleStatusResponseMock = (
 })
 
 export const getCatalogProviderCaregiversResponseMock = (
-  overrideResponse: Partial<Extract<ProviderCaregiverPageResponse, object>> = {}
-): ProviderCaregiverPageResponse => ({
+  overrideResponse: Partial<Extract<ProviderCaregiverCardPageResponse, object>> = {}
+): ProviderCaregiverCardPageResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getProviderCaregiverPageMock() },
+  result: { ...getProviderCaregiverCardPageMock() },
   ...overrideResponse
 })
 

@@ -598,8 +598,11 @@ export const getProviderCaregiverCardRecordMock = (
   overrideResponse: Partial<ProviderCaregiverCardRecord> = {}
 ): ProviderCaregiverCardRecord => ({
   caregiverId: faker.string.uuid(),
+  centerId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  centerName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   fullName: faker.string.alpha({ length: { min: 10, max: 20 } }),
   gender: faker.helpers.arrayElement([faker.helpers.arrayElement(['MALE', 'FEMALE', 'OTHER'] as const), undefined]),
+  bio: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   experienceYears: faker.helpers.arrayElement([faker.number.int(), undefined]),
   ratingAverage: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   ratingCount: faker.helpers.arrayElement([faker.number.int(), undefined]),

@@ -29,7 +29,7 @@ function renderCaregiver(path = '/caregiver/schedule') {
         <MemoryRouter initialEntries={[path]}>
           <Routes>
             <Route element={<CaregiverLayout />} path='/caregiver'>
-              <Route element={<div />} path='dashboard' />
+              <Route element={<div />} path='visits' />
               <Route element={<div />} path='schedule' />
               <Route element={<div />} path='profile' />
             </Route>
@@ -80,7 +80,7 @@ describe('Caregiver sidebar layout', () => {
     renderCaregiver()
     const navigation = screen.getByRole('navigation', { name: 'Caregiver navigation' })
     expect(document.getElementById('caregiver-sidebar')).toHaveClass('lg:translate-x-0')
-    expect(within(navigation).getByRole('link', { name: 'Schedule' })).toHaveAttribute('aria-current', 'page')
+    expect(within(navigation).getByRole('link', { name: 'Availability' })).toHaveAttribute('aria-current', 'page')
 
     fireEvent.click(screen.getByRole('button', { name: 'Account menu' }))
     const accountMenu = screen.getByRole('navigation', { name: 'Account menu' })
@@ -102,8 +102,8 @@ describe('Caregiver sidebar layout', () => {
 
     fireEvent.click(menuButton)
     const navigation = screen.getByRole('navigation', { name: 'Caregiver navigation' })
-    fireEvent.click(within(navigation).getByRole('link', { name: 'Home' }))
-    expect(screen.getByTestId('location')).toHaveTextContent('/caregiver/dashboard')
+    fireEvent.click(within(navigation).getByRole('link', { name: 'Assigned visits' }))
+    expect(screen.getByTestId('location')).toHaveTextContent('/caregiver/visits')
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
   })
 })

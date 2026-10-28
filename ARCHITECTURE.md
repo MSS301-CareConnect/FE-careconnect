@@ -228,7 +228,7 @@ app/
   providers/               root-only framework providers
   features/                business capabilities grouped by role/portal
     customer/              customer features (layout, search-caregivers, bookings, care-reports...)
-    caregiver/             caregiver-specific layout and dashboard
+    caregiver/             caregiver layout, visits, schedule, shifts, profile
     center-manager/        center manager features (layout, caregiver-management, booking-management...)
     admin/                 admin features (layout, center-management, service-catalog, policies...)
     shared/                cross-role features (auth, profile-settings, notifications)
@@ -281,31 +281,15 @@ on smaller screens, matching the Admin portal's navigation pattern. Its topbar
 shows the language switch and account menu without breadcrumbs. Navigation closes
 on selection or Escape; the role guard remains at the parent route.
 
-The Caregiver portal uses its own role guarded shell. `/caregiver/profile` reads the
-caregiver's ProviderService profile and manages its media; `/caregiver/schedule` reads
-assigned schedules and updates their status with the backend version and a required
-cancellation reason. `/caregiver/work-shifts` lists open shifts for the caregiver's
-center, registers for shifts, lists the caregiver's registrations, and cancels pending
-registrations. The dashboard and other Caregiver screens still contain dated sample
-data. Reports, SOS, directions, medical records, credentials, and earnings require
-separate backend contracts; their sample actions remain disabled.
-No live GPS, clinical completion, report submission, or payment result is simulated.
+The Caregiver portal uses its own role guarded shell and keeps only screens backed by the API (D25,
+2026-10-28): `/caregiver/visits` (the portal home) and `/caregiver/visits/:id` run assigned visits — acknowledge,
+check-in, tasks, no-show report and check-out; `/caregiver/schedule` lists availability slots, which a caregiver
+can only cancel with the backend version and a reason (starting and completing care happen on visits);
+`/caregiver/work-shifts` lists open shifts for the caregiver's center, registers for shifts, lists the caregiver's
+registrations, and cancels pending registrations; `/caregiver/profile` reads the ProviderService profile and manages
+its media. The former sample dashboard, history, shift-detail, active-session and care-report screens were removed;
+care reports and notifications return when their live flows are built.
 
-Caregiver report (`/caregiver/shifts/:id/report`) and history (`/caregiver/history`)
-use the same shell and portal translations. Thin route modules compose independent
-`care-report` and `care-history` features. `entities/care-session` owns the
-deterministic record metadata shared by
-history and reports, plus the in-memory draft handoff from the active-session
-feature. Confirming the end-care modal prepares a report and navigates; it does not
-submit a report, complete a backend session, or perform a digital signature.
-Actual task completion flags, custom tasks, nursing notes and measured vitals carry
-over to the draft. Unknown report IDs show a not-found state unless an active-session
-draft exists. Clinical content from one sample record is not reused for other history
-records. The report editor owns local form state. Patient notes and selected report
-files are never persisted to localStorage; saved report drafts last only for the
-current SPA session. Report file previews use revocable object URLs without uploads. Profile verification,
-report submission, signatures and payments await backend contracts. History filters
-and pagination use URL search parameters; exports contain the filtered sample rows.
 `shared/ui/section-card` provides the generic section presentation used by these
 features; it has no portal or domain imports.
 
@@ -360,7 +344,8 @@ remain local drafts. The booking list links to this route and retains its quick
 preview dialog.
 
 The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts` groups the
-menu into Overview, Operations, Customers and System; items without a route stay disabled.
+menu into Overview, Operations, Customers and System; items without a route stay disabled. Revenue,
+quality and policy previews keep their routes but are left out of the menu until a backend exists (D26).
 At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
 navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
 navigation. The topbar holds the language switch, notifications and the account menu;
@@ -375,7 +360,8 @@ The last route is the separate Admin review and complaint workspace;
 It does not import feature internals from the other roles. Both pages use distinct,
 dated September 2026 design snapshots because the supplied KPI totals describe
 different examples. They are not combined into a platform ledger or presented as
-live data. Dashboard charts are static sample visuals. The revenue list owns its
+live data. Dashboard charts are static sample visuals, rendered below the live operational panels under a
+visible preview note. The revenue list owns its
 sample transactions and URL-based search, filters, pagination, and selected-row
 preview; CSV export includes the filtered sample rows. Bank reconciliation,
 payout approval, invoices, live gateway status, refresh, and unimplemented Admin
@@ -583,7 +569,7 @@ app/shared/i18n/
     <feature>-resources.ts          other existing Customer feature copy
   caregiver/
     layout-resources.ts             Caregiver navigation, identity and footer
-    dashboard-resources.ts          Caregiver dashboard copy
+    visits-resources.ts             Caregiver visits copy
 ```
 
 Each resource module exports both language objects with matching key structures so

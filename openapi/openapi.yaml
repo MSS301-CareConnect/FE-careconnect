@@ -1966,7 +1966,7 @@ paths:
     get:
       tags:
         - ProviderCaregiver
-      summary: Tìm kiếm caregiver đang hoạt động (Catalog)
+      summary: Danh mục caregiver đang hoạt động cho khách — chỉ thẻ công khai (M-02)
       operationId: catalogProviderCaregivers
       parameters:
         - name: centerId
@@ -2000,7 +2000,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProviderCaregiverPageResponse'
+                $ref: '#/components/schemas/ProviderCaregiverCardPageResponse'
         '400':
           description: Invalid request
         '401':
@@ -7196,6 +7196,11 @@ components:
         caregiverId:
           type: string
           format: uuid
+        centerId:
+          type: string
+          format: uuid
+        centerName:
+          type: string
         fullName:
           type: string
         gender:
@@ -7204,6 +7209,8 @@ components:
             - MALE
             - FEMALE
             - OTHER
+        bio:
+          type: string
         experienceYears:
           type: integer
         ratingAverage:

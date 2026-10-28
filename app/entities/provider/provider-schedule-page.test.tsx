@@ -49,18 +49,22 @@ beforeEach(async () => {
 })
 
 describe('Provider schedules', () => {
-  it('starts a caregiver schedule using its current version', async () => {
+  it('only lets a caregiver cancel an availability slot, with its version and a reason', async () => {
     vi.mocked(fetchMySchedules).mockResolvedValue(page)
-    vi.mocked(updateCaregiverSchedule).mockResolvedValue({ ...schedule, scheduleStatus: 'IN_PROGRESS', version: 4 })
+    vi.mocked(updateCaregiverSchedule).mockResolvedValue({ ...schedule, scheduleStatus: 'CANCELLED', version: 4 })
     renderPage()
 
     expect(await screen.findByText('Lan Nguyen')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+    // Availability is not a care session: starting and completing happen on assigned visits (D11).
+    expect(screen.queryByRole('button', { name: 'Start' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Complete' })).not.toBeInTheDocument()
+    fireEvent.change(screen.getByRole('textbox', { name: 'Cancellation reason' }), { target: { value: 'Sick leave' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel schedule' }))
     await waitFor(() =>
       expect(updateCaregiverSchedule).toHaveBeenCalledWith('schedule-1', {
-        status: 'IN_PROGRESS',
+        status: 'CANCELLED',
         version: 3,
-        reason: undefined
+        reason: 'Sick leave'
       })
     )
     expect(fetchCenterSchedules).not.toHaveBeenCalled()

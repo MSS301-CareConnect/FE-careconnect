@@ -1,12 +1,11 @@
-/** Admin sidebar items grouped by area; an item without `to` awaits its backend contract. */
+/**
+ * Admin sidebar items grouped by area; an item without `to` awaits its backend contract. Revenue, quality and
+ * policy previews stay routable but are left out of the menu until their backend exists (D26).
+ */
 export const adminNavigation = [
   {
     key: 'overview',
-    items: [
-      { key: 'dashboard', to: '/admin/dashboard', icon: 'dashboard' },
-      { key: 'revenue', to: '/admin/revenue', icon: 'payments' },
-      { key: 'quality', to: '/admin/quality', icon: 'verified' }
-    ]
+    items: [{ key: 'dashboard', to: '/admin/dashboard', icon: 'dashboard' }]
   },
   {
     key: 'operations',
@@ -28,8 +27,7 @@ export const adminNavigation = [
     key: 'system',
     items: [
       { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
-      { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },
-      { key: 'policies', to: '/admin/policies', icon: 'policy' }
+      { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' }
     ]
   }
 ] as const

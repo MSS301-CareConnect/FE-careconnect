@@ -257,10 +257,10 @@ export const getUpdateProviderCaregiverScheduleStatusMockHandler = (
 
 export const getCatalogProviderCaregiversMockHandler = (
   overrideResponse?:
-    | ProviderCaregiverPageResponse
+    | ProviderCaregiverCardPageResponse
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0]
-      ) => Promise<ProviderCaregiverPageResponse> | ProviderCaregiverPageResponse),
+      ) => Promise<ProviderCaregiverCardPageResponse> | ProviderCaregiverCardPageResponse),
   options?: RequestHandlerOptions
 ) => {
   return http.get(

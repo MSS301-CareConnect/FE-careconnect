@@ -85,13 +85,6 @@ export function CustomerHeader() {
             </div>
             {isCustomer ? (
               <>
-                <button
-                  aria-label={t('customer.nav.notifications')}
-                  className='hidden h-11 w-11 place-items-center rounded-lg text-[#44594b] hover:bg-[#eaf2e9] sm:grid'
-                  type='button'
-                >
-                  <Icon name='notifications' />
-                </button>
                 <div className='relative' ref={accountMenuRef}>
                   <button
                     aria-controls='customer-account-menu'

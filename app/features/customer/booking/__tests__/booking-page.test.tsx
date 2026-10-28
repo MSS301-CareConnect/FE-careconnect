@@ -52,19 +52,15 @@ function renderPage(path: string) {
 }
 
 const hoa = {
-  id: 'cg-1',
-  userId: 'user-1',
+  caregiverId: 'cg-1',
   centerId: 'center-1',
   centerName: 'TT An Tâm',
   fullName: 'Chị Hoa',
-  verificationStatus: 'VERIFIED' as const,
-  caregiverStatus: 'ACTIVE' as const,
-  version: 1
+  verifiedCertificateCount: 1
 }
 const nam = {
   ...hoa,
-  id: 'cg-2',
-  userId: 'user-2',
+  caregiverId: 'cg-2',
   centerId: 'center-2',
   centerName: 'TT Bình An',
   fullName: 'Anh Nam'

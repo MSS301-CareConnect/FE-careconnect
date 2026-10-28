@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router'
+import { useLocation } from 'react-router'
 
 import { fetchMyCaregiverProfile, fetchProviderMedia, providerKeys } from '~/entities/provider/provider-api'
 import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
@@ -12,8 +12,8 @@ import { CAREGIVER_SIDEBAR_ID } from './caregiver-sidebar'
 
 export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean; onToggleMenu: () => void }) {
   const { t } = useTranslation()
-  const { pathname, hash } = useLocation()
-  const active = activeCaregiverNavigation(pathname, hash)
+  const { pathname } = useLocation()
+  const active = activeCaregiverNavigation(pathname)
   const profile = useQuery({ queryKey: providerKeys.myProfile, queryFn: fetchMyCaregiverProfile, retry: false })
   const profileId = profile.data?.id ?? ''
   const media = useQuery({
@@ -46,18 +46,10 @@ export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean;
           <div className='[&_button]:px-2'>
             <LanguageSwitch />
           </div>
-          <Link
-            aria-label={t('caregiver.nav.notifications')}
-            className='relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-secondary-container'
-            to='/caregiver/dashboard#reminders'
-          >
-            <Icon name='notifications' />
-            <span className='absolute right-1 top-1 h-2 w-2 rounded-full bg-error ring-2 ring-white' />
-          </Link>
           <PortalAccountMenu
             avatarIcon='clinical_notes'
             avatarUrl={avatarUrl}
-            fallbackName={t('caregiver.identity.name')}
+            fallbackName={t('caregiver.identity.role')}
             profileLink={{ to: '/caregiver/profile', label: t('caregiver.nav.profile') }}
             roleLabel={t('caregiver.identity.role')}
           />
