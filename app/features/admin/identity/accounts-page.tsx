@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -11,6 +11,13 @@ import { useCenterOptions } from './hooks/use-center-options'
 import { addUser, fetchUsers } from './identity-api'
 
 const key = 'admin.identity' as const
+// Built-in roles read as words; custom roles keep the code an administrator gave them.
+const roleLabels: Record<string, 'customer' | 'manager' | 'roleCaregiver' | 'roleAdmin'> = {
+  CUSTOMER: 'customer',
+  CENTER_MANAGER: 'manager',
+  CAREGIVER: 'roleCaregiver',
+  ADMIN: 'roleAdmin'
+}
 const centerStatusKeys = {
   PENDING: 'admin.provider.pending',
   ACTIVE: 'admin.provider.active',
@@ -25,6 +32,7 @@ const inputClass =
 
 export function AccountsPage() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const authUser = useAuthUser()
   const client = useQueryClient()
   const [search, setSearch] = useSearchParams()
@@ -187,7 +195,7 @@ export function AccountsPage() {
               <option value='all'>{t(`${key}.allRoles`)}</option>
               {['ADMIN', 'CENTER_MANAGER', 'CAREGIVER', 'CUSTOMER'].map((role) => (
                 <option key={role} value={role}>
-                  {role}
+                  {t(`${key}.${roleLabels[role]}`)}
                 </option>
               ))}
             </select>
@@ -237,7 +245,11 @@ export function AccountsPage() {
                 </thead>
                 <tbody className='divide-y divide-outline-variant/20'>
                   {visible.map((user) => (
-                    <tr className='hover:bg-surface-container-low/50' key={user.id}>
+                    <tr
+                      className={user.id ? 'cursor-pointer hover:bg-surface-container-low/60' : undefined}
+                      key={user.id}
+                      onClick={user.id ? () => navigate(`/admin/accounts/${user.id}`) : undefined}
+                    >
                       <td className='px-4 py-4'>
                         <div className='flex items-center gap-3'>
                           <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-container text-xs font-bold text-primary'>
@@ -255,7 +267,6 @@ export function AccountsPage() {
                             ) : (
                               <strong>{user.fullName || user.email}</strong>
                             )}
-                            <small className='block text-outline'>{user.id}</small>
                           </span>
                         </div>
                       </td>
@@ -268,7 +279,7 @@ export function AccountsPage() {
                               className='rounded-md bg-surface-container-low px-2 py-1 text-xs font-semibold'
                               key={role}
                             >
-                              {role}
+                              {roleLabels[role] ? t(`${key}.${roleLabels[role]}`) : role}
                             </span>
                           )) || '—'}
                         </div>

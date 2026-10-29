@@ -38,8 +38,8 @@ export const adminCentersVi = {
   statuses: { pending: 'Chờ duyệt hồ sơ', active: 'Đang hoạt động', suspended: 'Đã tạm khóa' },
   accreditations: { BYT: 'Chuẩn GPHĐ Bộ Y tế', CLINIC: 'Phòng khám đa khoa', PRIVATE: 'Trung tâm điều dưỡng tư nhân' },
   columns: {
-    center: 'Thông tin trung tâm & mã',
-    legal: 'Pháp lý & giấy phép',
+    center: 'Trung tâm & địa chỉ',
+    legal: 'Liên hệ',
     scale: 'Quy mô & hiệu suất',
     status: 'Trạng thái',
     actions: 'Thao tác quản trị'
@@ -116,8 +116,8 @@ export const adminCentersEn = {
   statuses: { pending: 'Pending onboarding', active: 'Active', suspended: 'Suspended' },
   accreditations: { BYT: 'Ministry of Health licensed', CLINIC: 'General clinic', PRIVATE: 'Private nursing center' },
   columns: {
-    center: 'Center & ID',
-    legal: 'Licenses & legal',
+    center: 'Center & address',
+    legal: 'Contact',
     scale: 'Scale & performance',
     status: 'Status',
     actions: 'Admin actions'

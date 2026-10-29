@@ -25,6 +25,17 @@ import { useCenterManagers } from './hooks/use-center-managers'
 const key = 'admin.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
 const statuses = ['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'REJECTED'] as const
+type CenterStatusOption = (typeof statuses)[number]
+// ProviderService's center transitions (PRV-04); ARCHIVED goes through the separate archive action.
+const transitions: Record<string, readonly CenterStatusOption[]> = {
+  PENDING: ['ACTIVE', 'REJECTED'],
+  ACTIVE: ['SUSPENDED', 'INACTIVE'],
+  SUSPENDED: ['ACTIVE'],
+  INACTIVE: ['ACTIVE']
+}
+// ProviderService rejects these without a reason (CENTER_STATUS_REASON_REQUIRED).
+const REASON_REQUIRED = new Set<CenterStatusOption>(['REJECTED', 'SUSPENDED', 'INACTIVE'])
+const HOURS = /^(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})$/
 const statusKeys = {
   PENDING: 'admin.provider.pending',
   ACTIVE: 'admin.provider.active',
@@ -41,7 +52,12 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
   const [email, setEmail] = useState(center?.email ?? '')
   const [phone, setPhone] = useState(center?.phoneNumber ?? '')
   const [address, setAddress] = useState(center?.address ?? '')
-  const [hours, setHours] = useState(center?.operatingHours ?? '')
+  // Hours are stored as one text field; the form edits them as an opening and closing time.
+  const storedHours = HOURS.exec(center?.operatingHours ?? '')
+  const [opensAt, setOpensAt] = useState(storedHours?.[1] ?? '')
+  const [closesAt, setClosesAt] = useState(storedHours?.[2] ?? '')
+  const [hoursInvalid, setHoursInvalid] = useState(false)
+  const legacyHours = center?.operatingHours && !storedHours ? center.operatingHours : ''
   const [managerId, setManagerId] = useState(center?.managerUserId ?? '')
   const mutation = useMutation({
     mutationFn: () => {
@@ -50,7 +66,7 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
         email: email.trim(),
         address: address.trim(),
         phoneNumber: phone.trim() || undefined,
-        operatingHours: hours.trim() || undefined
+        operatingHours: opensAt && closesAt ? `${opensAt} - ${closesAt}` : legacyHours || undefined
       }
       // H-12: a manager account belongs to one center in Identity, so it is assigned after the center exists.
       return center
@@ -65,6 +81,12 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
   })
   function submit(event: FormEvent) {
     event.preventDefault()
+    // Both times or neither; a center closes after it opens.
+    if (Boolean(opensAt) !== Boolean(closesAt) || (opensAt && closesAt && closesAt <= opensAt)) {
+      setHoursInvalid(true)
+      return
+    }
+    setHoursInvalid(false)
     mutation.mutate()
   }
   return (
@@ -76,8 +98,7 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
             [t(`${key}.centerName`), name, setName, 'text', true],
             [t(`${key}.email`), email, setEmail, 'email', true],
             [t(`${key}.phone`), phone, setPhone, 'tel', false],
-            [t(`${key}.address`), address, setAddress, 'text', true],
-            [t(`${key}.hours`), hours, setHours, 'text', false]
+            [t(`${key}.address`), address, setAddress, 'text', true]
           ] as const
         ).map(([label, value, setValue, type, required]) => (
           <label className='text-sm font-medium' key={label}>
@@ -91,6 +112,50 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
             />
           </label>
         ))}
+        <fieldset
+          aria-describedby={hoursInvalid ? 'center-hours-error' : legacyHours ? 'center-hours-current' : undefined}
+          className='text-sm font-medium sm:col-span-2'
+        >
+          <legend>{t(`${key}.hours`)}</legend>
+          <div className='mt-1 grid grid-cols-2 gap-3'>
+            <label className='font-normal'>
+              {t(`${key}.opensAt`)}
+              <input
+                aria-invalid={hoursInvalid}
+                className={inputClass}
+                onChange={(event) => {
+                  setOpensAt(event.target.value)
+                  setHoursInvalid(false)
+                }}
+                type='time'
+                value={opensAt}
+              />
+            </label>
+            <label className='font-normal'>
+              {t(`${key}.closesAt`)}
+              <input
+                aria-invalid={hoursInvalid}
+                className={inputClass}
+                onChange={(event) => {
+                  setClosesAt(event.target.value)
+                  setHoursInvalid(false)
+                }}
+                type='time'
+                value={closesAt}
+              />
+            </label>
+          </div>
+          {legacyHours ? (
+            <p className='mt-1 font-normal text-on-surface-variant' id='center-hours-current'>
+              {t(`${key}.currentHours`, { hours: legacyHours })}
+            </p>
+          ) : null}
+          {hoursInvalid ? (
+            <p className='mt-1 font-normal text-error' id='center-hours-error' role='alert'>
+              {t(`${key}.hoursInvalid`)}
+            </p>
+          ) : null}
+        </fieldset>
         {center ? (
           <CenterManagerSelect centerId={center.id} className={inputClass} onChange={setManagerId} value={managerId} />
         ) : null}
@@ -117,14 +182,19 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState(false)
-  const [status, setStatus] = useState<(typeof statuses)[number]>('ACTIVE')
+  const [chosenStatus, setChosenStatus] = useState<CenterStatusOption | ''>('')
   const [reason, setReason] = useState('')
+  const [reasonMissing, setReasonMissing] = useState(false)
   const center = useQuery({ queryKey: providerKeys.center(id), queryFn: () => fetchCenter(id), retry: false })
   const managers = useCenterManagers()
+  const allowed = transitions[center.data?.centerStatus ?? ''] ?? []
+  const status = chosenStatus && allowed.includes(chosenStatus) ? chosenStatus : allowed[0]
   const changeStatus = useMutation({
-    mutationFn: () =>
-      changeCenterStatus(id, { status, reason: reason.trim() || undefined, version: center.data!.version }),
+    mutationFn: (target: CenterStatusOption) =>
+      changeCenterStatus(id, { status: target, reason: reason.trim() || undefined, version: center.data!.version }),
     onSuccess: async () => {
+      setChosenStatus('')
+      setReason('')
       await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
       await queryClient.invalidateQueries({ queryKey: providerKeys.center(id) })
     }
@@ -163,7 +233,16 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
       <div className='flex items-start justify-between gap-3'>
         <div>
           <h2 className='text-xl font-semibold'>{center.data.centerName}</h2>
-          <p className='text-sm text-outline'>{center.data.id}</p>
+          <div className='mt-1'>
+            <ProviderStatusBadge status={center.data.centerStatus}>
+              {t(statusKeys[center.data.centerStatus])}
+            </ProviderStatusBadge>
+          </div>
+          {center.data.statusReason ? (
+            <p className='mt-1 text-sm text-on-surface-variant'>
+              {t(`${key}.statusReasonValue`, { reason: center.data.statusReason })}
+            </p>
+          ) : null}
         </div>
         <button className='text-primary underline' onClick={onClose} type='button'>
           {t(`${key}.close`)}
@@ -176,8 +255,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
             [t(`${key}.phone`), center.data.phoneNumber],
             [t(`${key}.address`), center.data.address],
             [t(`${key}.hours`), center.data.operatingHours],
-            [t(`${key}.manager.label`), managerName(center.data.managerUserId)],
-            [t(`${key}.status`), center.data.centerStatus]
+            [t(`${key}.manager.label`), managerName(center.data.managerUserId)]
           ] as const
         ).map(([label, value]) => (
           <div key={label}>
@@ -202,39 +280,73 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
           </button>
         </p>
       )}
-      <form
-        className='flex flex-wrap items-end gap-3 border-t pt-4'
-        onSubmit={(event) => {
-          event.preventDefault()
-          changeStatus.mutate()
-        }}
-      >
-        <label className='text-sm'>
-          {t(`${key}.status`)}
-          <select
-            className={inputClass}
-            onChange={(event) => setStatus(event.target.value as (typeof statuses)[number])}
-            value={status}
-          >
-            {statuses.map((item) => (
-              <option key={item} value={item}>
-                {t(statusKeys[item])}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.reason`)}
-          <input className={inputClass} onChange={(event) => setReason(event.target.value)} value={reason} />
-        </label>
-        <button
-          className='rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-50'
-          disabled={changeStatus.isPending}
-          type='submit'
+      {status ? (
+        <form
+          className='flex flex-wrap items-start gap-3 border-t pt-4'
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (REASON_REQUIRED.has(status) && !reason.trim()) {
+              setReasonMissing(true)
+              return
+            }
+            setReasonMissing(false)
+            changeStatus.mutate(status)
+          }}
         >
-          {t(`${key}.statusAction`)}
-        </button>
-      </form>
+          <label className='text-sm'>
+            {t(`${key}.newStatus`)}
+            <select
+              className={inputClass}
+              onChange={(event) => {
+                setChosenStatus(event.target.value as CenterStatusOption)
+                setReasonMissing(false)
+              }}
+              value={status}
+            >
+              {allowed.map((item) => (
+                <option key={item} value={item}>
+                  {t(statusKeys[item])}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className='min-w-56 flex-1 text-sm'>
+            <label htmlFor='center-status-reason'>
+              {REASON_REQUIRED.has(status) ? t(`${key}.reasonRequiredLabel`) : t(`${key}.reason`)}
+            </label>
+            <input
+              aria-describedby={reasonMissing ? 'center-status-reason-error' : undefined}
+              aria-invalid={reasonMissing}
+              className={inputClass}
+              id='center-status-reason'
+              onChange={(event) => {
+                setReason(event.target.value)
+                setReasonMissing(false)
+              }}
+              value={reason}
+            />
+            {reasonMissing ? (
+              <p className='mt-1 text-error' id='center-status-reason-error' role='alert'>
+                {t(`${key}.reasonMissing`)}
+              </p>
+            ) : null}
+          </div>
+          <button
+            className='mt-6 rounded-lg bg-primary px-3 py-2 text-on-primary disabled:opacity-50'
+            disabled={changeStatus.isPending}
+            type='submit'
+          >
+            {t(`${key}.statusAction`)}
+          </button>
+          {status === 'SUSPENDED' ? (
+            <p className='w-full rounded-lg bg-warning-container p-3 text-sm text-on-warning-container'>
+              {t(`${key}.suspendHint`)}
+            </p>
+          ) : null}
+        </form>
+      ) : (
+        <p className='border-t pt-4 text-sm text-on-surface-variant'>{t(`${key}.noTransitions`)}</p>
+      )}
       <button
         className='rounded-lg border border-error px-3 py-2 text-error disabled:opacity-50'
         disabled={archive.isPending}

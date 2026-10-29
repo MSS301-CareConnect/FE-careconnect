@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -37,10 +37,33 @@ export function AdminCentersPage() {
   const selected = params.get('center')
   const centers = useQuery({
     queryKey: [...providerKeys.centers, { page, status, keyword }],
-    queryFn: () => fetchCenters({ page, size: 20, status, keyword: keyword.trim() || undefined }),
+    queryFn: () =>
+      fetchCenters({
+        page,
+        size: 20,
+        status,
+        keyword: keyword.trim() || undefined,
+        // Archived centers are soft-deleted; ProviderService lists them only when asked to.
+        ...(status === 'ARCHIVED' ? { includeDeleted: true } : {})
+      }),
     retry: false
   })
   useDocumentTitle(t(`${key}.documentTitle`))
+  const overlayOpen = creating || Boolean(selected)
+  useEffect(() => {
+    if (!overlayOpen) return
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return
+      setCreating(false)
+      setParams((previous) => {
+        const next = new URLSearchParams(previous)
+        next.delete('center')
+        return next
+      })
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [overlayOpen, setParams])
 
   function update(name: string, value: string) {
     setParams((previous) => {
@@ -82,6 +105,7 @@ export function AdminCentersPage() {
     rows.filter((center) => center.centerStatus === statusValue).length
   const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN'
   const number = new Intl.NumberFormat(locale)
+  const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
 
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
@@ -220,41 +244,66 @@ export function AdminCentersPage() {
                 </tr>
               </thead>
               <tbody className='divide-y divide-outline-variant/25'>
-                {rows.map((center) => (
-                  <tr className='align-top hover:bg-surface-container-low/40' key={center.id}>
-                    <td className='px-4 py-4'>
-                      <button
-                        className='text-left font-bold hover:text-primary'
-                        onClick={() => update('center', center.id)}
-                        type='button'
-                      >
-                        {center.centerName}
-                      </button>
-                      <small className='mt-1 block text-outline'>{center.id}</small>
-                    </td>
-                    <td className='px-4 py-4'>
-                      <p>{center.email || '—'}</p>
-                      <small className='mt-1 block text-outline'>{center.address || '—'}</small>
-                    </td>
-                    <td className='px-4 py-4'>
-                      <ProviderStatusBadge status={center.centerStatus}>
-                        {t(`${providerKey}.${statusKeys[center.centerStatus]}`)}
-                      </ProviderStatusBadge>
-                    </td>
-                    <td className='px-4 py-4'>
-                      <button
-                        className='rounded-lg bg-surface-container-low px-2 py-1 text-xs font-semibold text-primary'
-                        onClick={() => update('center', center.id)}
-                        type='button'
-                      >
-                        {t(`${providerKey}.centerDetails`)}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((center) => {
+                  // ProviderService cannot open an archived center, so its row is read-only.
+                  const archived = center.centerStatus === 'ARCHIVED'
+                  return (
+                    <tr
+                      className={`align-top ${archived ? 'text-on-surface-variant' : 'cursor-pointer hover:bg-surface-container-low/60'}`}
+                      key={center.id}
+                      onClick={archived ? undefined : () => update('center', center.id)}
+                    >
+                      <td className='px-4 py-4'>
+                        {archived ? (
+                          <span className='font-bold'>{center.centerName}</span>
+                        ) : (
+                          <button
+                            className='text-left font-bold hover:text-primary focus-visible:outline-2 focus-visible:outline-primary'
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              update('center', center.id)
+                            }}
+                            type='button'
+                          >
+                            {center.centerName}
+                          </button>
+                        )}
+                        <small className='mt-1 block text-on-surface-variant'>{center.address || '—'}</small>
+                      </td>
+                      <td className='px-4 py-4'>
+                        <p>{center.email || '—'}</p>
+                        <small className='mt-1 block text-on-surface-variant'>{center.phoneNumber || '—'}</small>
+                      </td>
+                      <td className='px-4 py-4'>
+                        <ProviderStatusBadge status={center.centerStatus}>
+                          {t(`${providerKey}.${statusKeys[center.centerStatus]}`)}
+                        </ProviderStatusBadge>
+                      </td>
+                      <td className='px-4 py-4'>
+                        {archived ? (
+                          <small className='block max-w-48 text-on-surface-variant'>
+                            {center.updatedAt
+                              ? t(`${providerKey}.archivedOn`, { date: dateFormat.format(new Date(center.updatedAt)) })
+                              : t(`${providerKey}.archived`)}
+                          </small>
+                        ) : (
+                          <span className='inline-flex items-center gap-1 text-xs font-semibold text-primary'>
+                            {t(`${providerKey}.centerDetails`)}
+                            <Icon className='text-base' name='chevron_right' />
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
+        ) : null}
+        {centers.isSuccess && status === 'ARCHIVED' && rows.length ? (
+          <p className='border-t border-outline-variant/25 px-5 py-3 text-sm text-on-surface-variant'>
+            {t(`${providerKey}.archivedHint`)}
+          </p>
         ) : null}
         {centers.isSuccess && !rows.length ? (
           <p className='p-8 text-center text-sm text-outline'>{t(`${providerKey}.centersEmpty`)}</p>

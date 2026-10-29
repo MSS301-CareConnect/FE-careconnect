@@ -3,7 +3,13 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { changeCenterStatus, fetchCenter, fetchCenters, saveCenter } from '~/entities/provider/provider-api'
+import {
+  changeCenterStatus,
+  createCenter,
+  fetchCenter,
+  fetchCenters,
+  saveCenter
+} from '~/entities/provider/provider-api'
 import { fetchProviderStatistics } from '~/entities/statistics/statistics-api'
 import { listManagedUsers } from '~/shared/api/generated/api/account/account'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
@@ -15,7 +21,8 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchCenters: vi.fn(),
   fetchCenter: vi.fn(),
   changeCenterStatus: vi.fn(),
-  saveCenter: vi.fn()
+  saveCenter: vi.fn(),
+  createCenter: vi.fn()
 }))
 vi.mock('~/entities/statistics/statistics-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/statistics/statistics-api')>()),
@@ -108,7 +115,7 @@ describe('Admin provider centers', () => {
 
     expect(await screen.findByText('Care One')).toBeInTheDocument()
     expect(fetchCenters).toHaveBeenCalledWith({ page: 0, size: 20, status: undefined, keyword: undefined })
-    fireEvent.click(screen.getByRole('button', { name: 'Center details' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Care One' }))
     expect(await screen.findByText('center@example.com')).toBeInTheDocument()
     fireEvent.click(await screen.findByRole('button', { name: 'Update status' }))
     await waitFor(() =>
@@ -134,7 +141,7 @@ describe('Admin provider centers', () => {
     )
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Center details' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Care One' }))
     expect(await screen.findByText('A center needs a manager before it can be activated.')).toBeInTheDocument()
     fireEvent.click(await screen.findByRole('button', { name: 'Update status' }))
     expect(
@@ -148,7 +155,7 @@ describe('Admin provider centers', () => {
     vi.mocked(saveCenter).mockResolvedValue({ ...center, managerUserId: 'mgr-1', version: 3 })
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Center details' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Care One' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Choose a manager' }))
     const picker = screen.getByRole('combobox', { name: 'Center manager' })
     await waitFor(() => expect(picker).toBeEnabled())
@@ -168,5 +175,84 @@ describe('Admin provider centers', () => {
       )
     )
     expect(listManagedUsers).toHaveBeenCalledWith({ page: 0, size: 100 }, { credentials: 'include' })
+  })
+
+  it('lists archived centers read-only when that status is chosen', async () => {
+    vi.mocked(fetchCenters).mockResolvedValue({
+      items: [{ ...center, centerStatus: 'ARCHIVED', updatedAt: '2026-10-20T08:00:00Z' }],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1
+    })
+    renderPage()
+
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Status' }), { target: { value: 'ARCHIVED' } })
+    await waitFor(() =>
+      expect(fetchCenters).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: 'ARCHIVED', includeDeleted: true })
+      )
+    )
+    expect(await screen.findByText(/Archived Oct 20, 2026/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Care One' })).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Archived centers are kept for reference and cannot be opened or edited.')
+    ).toBeInTheDocument()
+  })
+
+  it('offers only allowed transitions and requires a reason to suspend', async () => {
+    const active = { ...center, centerStatus: 'ACTIVE' as const, managerUserId: 'mgr-1' }
+    vi.mocked(fetchCenters).mockResolvedValue({ items: [active], page: 0, size: 20, totalElements: 1, totalPages: 1 })
+    vi.mocked(fetchCenter).mockResolvedValue(active)
+    vi.mocked(changeCenterStatus).mockResolvedValue({ ...active, centerStatus: 'SUSPENDED', version: 3 })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Care One' }))
+    const select = await screen.findByRole('combobox', { name: 'Change to' })
+    expect(
+      within(select)
+        .getAllByRole('option')
+        .map((option) => option.textContent)
+    ).toEqual(['Suspended', 'Inactive'])
+    expect(screen.getByText(/locks its manager and caregiver accounts/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Update status' }))
+    expect(await screen.findByText(/Enter a reason so the center/)).toBeInTheDocument()
+    expect(changeCenterStatus).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Reason (required)' }), {
+      target: { value: 'License expired' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Update status' }))
+    await waitFor(() =>
+      expect(changeCenterStatus).toHaveBeenCalledWith('center-1', {
+        status: 'SUSPENDED',
+        reason: 'License expired',
+        version: 2
+      })
+    )
+  })
+
+  it('composes operating hours from an opening and closing time', async () => {
+    vi.mocked(fetchCenters).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    vi.mocked(createCenter).mockResolvedValue({ ...center, operatingHours: '07:00 - 21:00' })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add center manually' }))
+    fireEvent.change(screen.getByLabelText('Center name'), { target: { value: 'Care Two' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'two@example.com' } })
+    fireEvent.change(screen.getByLabelText('Address'), { target: { value: '1 Le Loi' } })
+    fireEvent.change(screen.getByLabelText('Opens at'), { target: { value: '21:00' } })
+    fireEvent.change(screen.getByLabelText('Closes at'), { target: { value: '07:00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByText(/the center must close after it opens/)).toBeInTheDocument()
+    expect(createCenter).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText('Opens at'), { target: { value: '07:00' } })
+    fireEvent.change(screen.getByLabelText('Closes at'), { target: { value: '21:00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() =>
+      expect(createCenter).toHaveBeenCalledWith(expect.objectContaining({ operatingHours: '07:00 - 21:00' }))
+    )
   })
 })

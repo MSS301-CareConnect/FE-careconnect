@@ -51,6 +51,11 @@ describe('AccountsPage', () => {
     expect(await screen.findByRole('link', { name: 'Mai Anh' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Account overview' })).toBeInTheDocument()
     expect(screen.getAllByRole('row')).toHaveLength(3)
+    // Rows read as people and roles, not as identifiers and role codes.
+    expect(screen.getAllByRole('row')[1]).toHaveTextContent('Customer')
+    expect(screen.getAllByRole('row')[2]).toHaveTextContent('Center manager')
+    expect(within(screen.getAllByRole('row')[1]).queryByText('one')).not.toBeInTheDocument()
+    expect(screen.queryByText('CENTER_MANAGER')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
     fireEvent.change(screen.getByRole('searchbox', { name: /Search by name/ }), { target: { value: 'Bao' } })
     expect(screen.queryByRole('link', { name: 'Mai Anh' })).not.toBeInTheDocument()
