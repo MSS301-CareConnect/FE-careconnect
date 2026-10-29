@@ -36,11 +36,24 @@ export const customerPaymentVi = {
     missing: 'Không có kết quả thanh toán để kiểm tra.',
     toPayments: 'Xem thanh toán của tôi'
   },
+  pending: {
+    documentTitle: 'Đang xác nhận thanh toán | CareConnect',
+    title: 'Đang xác nhận thanh toán',
+    subtitle: 'VNPay đã chuyển bạn về. Lịch đặt chỉ được cập nhật khi ngân hàng báo đã nhận tiền.',
+    waiting: 'Đang chờ ngân hàng xác nhận…',
+    hint: 'Thường chỉ mất vài giây. Vui lòng giữ trang này mở.',
+    timedOut: 'Chưa nhận được xác nhận từ ngân hàng',
+    timedOutHint:
+      'Bạn có thể kiểm tra lại hoặc đóng trang này. Kết quả sẽ hiện trong Thanh toán & hoàn tiền khi ngân hàng báo về.',
+    checkAgain: 'Kiểm tra lại',
+    toPayments: 'Xem thanh toán của tôi'
+  },
   success: {
     documentTitle: 'Thanh toán thành công | CareConnect',
     title: 'Đặt cọc thành công',
     subtitle: 'Lịch chăm sóc đã được xác nhận. Người chăm sóc sẽ nhận các buổi và đến đúng giờ.',
-    pending: 'Đang chờ xác nhận thanh toán…',
+    invoiceTitle: 'Đã thanh toán hóa đơn',
+    invoiceSubtitle: 'Phần còn lại của lịch đặt đã được thanh toán. Bạn có thể tiếp tục đặt lịch mới.',
     paidAt: 'Thanh toán lúc {{time}}',
     bookingStatus: 'Trạng thái lịch đặt',
     next: 'Tiếp theo',
@@ -52,14 +65,16 @@ export const customerPaymentVi = {
     documentTitle: 'Thanh toán thất bại | CareConnect',
     title: 'Thanh toán chưa thành công',
     subtitle: 'Khoản cọc chưa được ghi nhận nên lịch đặt vẫn đang chờ đặt cọc.',
+    invoiceSubtitle: 'Hóa đơn phần còn lại chưa được ghi nhận thanh toán.',
     reasons: {
-      CUSTOMER_DECLINED: 'Bạn đã hủy giao dịch ở trang thanh toán.',
+      DECLINED: 'Giao dịch đã bị hủy ở trang thanh toán hoặc bị ngân hàng từ chối.',
       BOOKING_NOT_CONFIRMABLE: 'Trung tâm không thể xác nhận lịch đặt này nữa.',
       EXPIRED: 'Đã hết thời gian thanh toán trước khi bạn hoàn tất.',
       UNKNOWN: 'Ngân hàng hoặc ví điện tử chưa xác nhận giao dịch.'
     },
     retry: 'Thử thanh toán lại',
     retryHint: 'Bạn có thể thanh toán lại trước hạn đặt cọc.',
+    invoiceRetryHint: 'Bạn có thể thanh toán lại hóa đơn trong trang Thanh toán & hoàn tiền.',
     payInvoiceAgain: 'Thanh toán lại hóa đơn'
   },
   reference: 'Mã giao dịch',
@@ -105,11 +120,24 @@ export const customerPaymentEn = {
     missing: 'There is no payment result to check.',
     toPayments: 'See my payments'
   },
+  pending: {
+    documentTitle: 'Confirming the payment | CareConnect',
+    title: 'Confirming the payment',
+    subtitle: 'VNPay sent you back. The booking changes only once the bank reports the money received.',
+    waiting: 'Waiting for the bank to confirm…',
+    hint: 'This usually takes a few seconds. Please keep this page open.',
+    timedOut: 'The bank has not confirmed yet',
+    timedOutHint:
+      'You can check again or close this page. The result appears in Payments & refunds once the bank reports it.',
+    checkAgain: 'Check again',
+    toPayments: 'See my payments'
+  },
   success: {
     documentTitle: 'Payment successful | CareConnect',
     title: 'Deposit paid',
     subtitle: 'The care schedule is confirmed. The caregiver will acknowledge each visit and arrive on time.',
-    pending: 'Waiting for the payment confirmation…',
+    invoiceTitle: 'Invoice paid',
+    invoiceSubtitle: 'The rest of the booking is paid. You can make new bookings again.',
     paidAt: 'Paid at {{time}}',
     bookingStatus: 'Booking status',
     next: 'Next',
@@ -121,14 +149,16 @@ export const customerPaymentEn = {
     documentTitle: 'Payment failed | CareConnect',
     title: 'Payment did not go through',
     subtitle: 'The deposit was not recorded, so the booking is still awaiting its deposit.',
+    invoiceSubtitle: 'The remaining-balance invoice was not recorded as paid.',
     reasons: {
-      CUSTOMER_DECLINED: 'The transaction was cancelled at the payment gateway.',
+      DECLINED: 'The transaction was cancelled at the payment page or declined by the bank.',
       BOOKING_NOT_CONFIRMABLE: 'The center can no longer confirm this booking.',
       EXPIRED: 'Time ran out before the payment was completed.',
       UNKNOWN: 'The payment gateway did not confirm the transaction.'
     },
     retry: 'Try paying again',
     retryHint: 'You can pay again before the deposit is due.',
+    invoiceRetryHint: 'You can pay the invoice again from Payments & refunds.',
     payInvoiceAgain: 'Pay the invoice again'
   },
   reference: 'Payment reference',

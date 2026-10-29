@@ -54,7 +54,7 @@ export function PaymentHistorySection() {
               <td className={bodyCell}>{t(`payment.status.${payment.status}`)}</td>
               <td className={bodyCell}>
                 <Link
-                  className='font-semibold text-[#075b31] hover:underline'
+                  className='font-semibold text-primary hover:underline'
                   to={`/customer/bookings/${payment.bookingId}`}
                 >
                   {t('customer.payments.viewBooking')}

@@ -40,7 +40,7 @@ export function PaymentReturnPage() {
       <section className={`${paymentPanel} mx-auto flex max-w-2xl flex-col items-start gap-4`}>
         {verification.isError || query.length === 0 ? (
           <>
-            <p className='text-sm text-[#93000a]' role='alert'>
+            <p className='text-sm text-on-error-container' role='alert'>
               {query.length === 0 ? t('customer.payment.return.missing') : t(paymentErrorKey(verification.error))}
             </p>
             <Link className={secondaryAction} to='/customer/payments'>
@@ -48,7 +48,7 @@ export function PaymentReturnPage() {
             </Link>
           </>
         ) : (
-          <p className='text-sm text-[#637469]' role='status'>
+          <p className='text-sm text-on-surface-variant' role='status'>
             {t('customer.payment.return.verifying')}
           </p>
         )}

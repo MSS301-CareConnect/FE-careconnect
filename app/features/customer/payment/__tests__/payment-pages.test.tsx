@@ -152,9 +152,13 @@ describe('Deposit payment flow', () => {
         vnp_SecureHash: 'abc'
       })
     )
-    expect(await screen.findByRole('heading', { level: 1, name: 'Đặt cọc thành công' })).toBeInTheDocument()
-    expect(await screen.findByText('Đang chờ xác nhận thanh toán…')).toBeInTheDocument()
-    expect(await screen.findByRole('heading', { name: 'Thanh toán thành công' }, { timeout: 4000 })).toBeInTheDocument()
+    // A pending payment is never presented as a success.
+    expect(await screen.findByRole('heading', { level: 1, name: 'Đang xác nhận thanh toán' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Đang chờ ngân hàng xác nhận…' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Đặt cọc thành công' }, { timeout: 4000 })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Thanh toán thành công' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Xem lịch đặt' })).toHaveAttribute(
       'href',
       `/customer/bookings/${BOOKING_ID}`
@@ -174,7 +178,9 @@ describe('Deposit payment flow', () => {
     renderAt(`/customer/payments/${PAYMENT_ID}/failure`)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Thanh toán chưa thành công' })).toBeInTheDocument()
-    expect(await screen.findByText('Bạn đã hủy giao dịch ở trang thanh toán.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Giao dịch đã bị hủy ở trang thanh toán hoặc bị ngân hàng từ chối.')
+    ).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: /Thử thanh toán lại/ })).toHaveAttribute(
       'href',
       `/customer/bookings/${BOOKING_ID}/deposit`
@@ -190,6 +196,36 @@ describe('Deposit payment flow', () => {
       'href',
       '/customer/payments'
     )
+  })
+
+  it('names a paid remaining-balance invoice instead of a deposit', async () => {
+    vi.mocked(fetchPayment).mockResolvedValue({ ...pending, paymentType: 'REMAINING', status: 'SUCCESS' })
+    vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'COMPLETED' })
+    renderAt(`/customer/payments/${PAYMENT_ID}/success`)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Đã thanh toán hóa đơn' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Đặt cọc thành công' })).not.toBeInTheDocument()
+  })
+
+  it('stops waiting after a minute and points to the payments list', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      vi.mocked(fetchPayment).mockResolvedValue(pending)
+      renderAt(`/customer/payments/${PAYMENT_ID}/success`)
+      expect(await screen.findByRole('heading', { name: 'Đang chờ ngân hàng xác nhận…' })).toBeInTheDocument()
+
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(await screen.findByRole('heading', { name: 'Chưa nhận được xác nhận từ ngân hàng' })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Xem thanh toán của tôi' })).toHaveAttribute('href', '/customer/payments')
+      const calls = vi.mocked(fetchPayment).mock.calls.length
+      await vi.advanceTimersByTimeAsync(10_000)
+      expect(vi.mocked(fetchPayment).mock.calls.length).toBe(calls)
+
+      fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra lại' }))
+      await waitFor(() => expect(vi.mocked(fetchPayment).mock.calls.length).toBeGreaterThan(calls))
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('sends the customer to the page that matches the real payment status', async () => {

@@ -37,14 +37,14 @@ export function InvoiceSection() {
     <div className='flex flex-col gap-4'>
       {outstanding.data?.hasDebt ? (
         <p
-          className='rounded-xl border border-[#f2c6c0] bg-[#fdecea] p-4 text-sm font-semibold text-[#93000a]'
+          className='rounded-xl border border-error/30 bg-error-container p-4 text-sm font-semibold text-on-error-container'
           role='alert'
         >
           {t('customer.payments.invoices.debt')}
         </p>
       ) : null}
       {pay.isError ? (
-        <p className='rounded-xl bg-[#fdecea] p-3 text-sm text-[#93000a]' role='alert'>
+        <p className='rounded-xl bg-error-container p-3 text-sm text-on-error-container' role='alert'>
           {t(paymentErrorKey(pay.error))}
         </p>
       ) : null}
@@ -76,7 +76,7 @@ export function InvoiceSection() {
               <tr key={invoice.id}>
                 <td className={bodyCell}>
                   <Link
-                    className='font-semibold text-[#075b31] hover:underline'
+                    className='font-semibold text-primary hover:underline'
                     to={`/customer/bookings/${invoice.bookingId}`}
                   >
                     {t('customer.payments.viewBooking')}
@@ -88,7 +88,7 @@ export function InvoiceSection() {
                 <td className={`${bodyCell} text-right`}>
                   {OPEN.has(invoice.status) ? (
                     <button
-                      className='rounded-lg bg-[#075b31] px-4 py-2 text-sm font-bold text-white hover:bg-[#064a29] disabled:bg-[#9fb5a4]'
+                      className='rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary hover:bg-primary-container disabled:bg-outline'
                       disabled={pay.isPending}
                       onClick={() => pay.mutate(invoice.id)}
                       type='button'

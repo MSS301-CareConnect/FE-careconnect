@@ -43,12 +43,12 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
       title={t('customer.payment.deposit.title')}
     >
       {booking.isPending ? (
-        <p className='text-sm text-[#637469]' role='status'>
+        <p className='text-sm text-on-surface-variant' role='status'>
           {t('customer.payment.loading')}
         </p>
       ) : null}
       {booking.isError ? (
-        <p className='rounded-xl bg-[#fdecea] p-4 text-sm text-[#93000a]' role='alert'>
+        <p className='rounded-xl bg-error-container p-4 text-sm text-on-error-container' role='alert'>
           {t(bookingErrorKey(booking.error))}
         </p>
       ) : null}
@@ -56,7 +56,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
       {data && data.status !== 'AWAITING_DEPOSIT' ? (
         <section className={`${paymentPanel} flex flex-col items-start gap-3`}>
           <h2 className='text-xl font-bold'>{t('customer.payment.deposit.notAwaiting')}</h2>
-          <p className='text-sm text-[#5e7063]'>
+          <p className='text-sm text-on-surface-variant'>
             {t('customer.payment.deposit.notAwaitingHint', { status: t(`booking.status.${data.status}`) })}
           </p>
           <Link className={secondaryAction} to={`/customer/bookings/${bookingId}`}>
@@ -69,62 +69,64 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
         <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8'>
           <section aria-labelledby='deposit-method' className={paymentPanel}>
             <h2 className='flex items-center gap-2 text-lg font-bold' id='deposit-method'>
-              <Icon className='text-[22px] text-[#075b31]' name='payments' />
+              <Icon className='text-[22px] text-primary' name='payments' />
               {t('customer.payment.deposit.method')}
             </h2>
-            <p className='mt-1 text-sm leading-6 text-[#637469]'>{t('customer.payment.deposit.methodHint')}</p>
+            <p className='mt-1 text-sm leading-6 text-on-surface-variant'>{t('customer.payment.deposit.methodHint')}</p>
             {deposit.estimated ? (
-              <p className='mt-3 text-sm leading-6 text-[#637469]'>{t('customer.payment.deposit.exactAmount')}</p>
+              <p className='mt-3 text-sm leading-6 text-on-surface-variant'>
+                {t('customer.payment.deposit.exactAmount')}
+              </p>
             ) : null}
-            <p className='mt-5 flex items-start gap-2 rounded-xl bg-[#f5f9f4] p-4 text-sm leading-6 text-[#526a57]'>
-              <Icon className='text-lg text-[#075b31]' name='verified_user' />
+            <p className='mt-5 flex items-start gap-2 rounded-xl bg-surface-container-low p-4 text-sm leading-6 text-on-surface-variant'>
+              <Icon className='text-lg text-primary' name='verified_user' />
               {t('customer.payment.deposit.policy')}
             </p>
           </section>
 
           <aside aria-labelledby='deposit-summary' className={`${paymentPanel} flex flex-col gap-5 lg:sticky lg:top-6`}>
             <div>
-              <h2 className='text-sm font-semibold text-[#5e7063]' id='deposit-summary'>
+              <h2 className='text-sm font-semibold text-on-surface-variant' id='deposit-summary'>
                 {deposit.estimated
                   ? t('customer.payment.deposit.amountEstimatedLabel')
                   : t('customer.payment.deposit.amountLabel')}
               </h2>
-              <p className='mt-1 text-4xl font-extrabold tracking-[-0.045em] text-[#075b31] tabular-nums'>
+              <p className='mt-1 text-4xl font-extrabold tracking-[-0.045em] text-primary tabular-nums'>
                 {deposit.amount !== undefined ? formatMoney(deposit.amount, language) : '—'}
               </p>
               {data.depositDueAt ? (
-                <p className='mt-2 flex items-center gap-1.5 text-sm font-semibold text-[#8a5a00]'>
+                <p className='mt-2 flex items-center gap-1.5 text-sm font-semibold text-warning'>
                   <Icon className='text-lg' name='schedule' />
                   {t('customer.payment.deposit.dueAt', { time: formatDateTime(data.depositDueAt, language) })}
                 </p>
               ) : null}
             </div>
 
-            <dl className='flex flex-col gap-2.5 rounded-xl bg-[#f5f9f4] p-4 text-sm'>
+            <dl className='flex flex-col gap-2.5 rounded-xl bg-surface-container-low p-4 text-sm'>
               <div className='flex justify-between gap-3'>
-                <dt className='text-[#637469]'>{t('customer.payment.deposit.patient')}</dt>
+                <dt className='text-on-surface-variant'>{t('customer.payment.deposit.patient')}</dt>
                 <dd className='text-right font-semibold'>{data.recipientSnapshot?.fullName ?? '—'}</dd>
               </div>
               <div className='flex justify-between gap-3'>
-                <dt className='text-[#637469]'>{t('customer.payment.deposit.schedule')}</dt>
+                <dt className='text-on-surface-variant'>{t('customer.payment.deposit.schedule')}</dt>
                 <dd className='text-right font-semibold'>
                   {formatDay(data.startDate, language)}
                   {data.endDate && data.endDate !== data.startDate ? ` – ${formatDay(data.endDate, language)}` : ''}
-                  <span className='block font-normal text-[#637469]'>
+                  <span className='block font-normal text-on-surface-variant'>
                     {shortTime(data.startTime)}–{shortTime(data.endTime)}
                   </span>
                 </dd>
               </div>
               <div className='flex justify-between gap-3'>
-                <dt className='text-[#637469]'>{t('customer.payment.deposit.visits')}</dt>
+                <dt className='text-on-surface-variant'>{t('customer.payment.deposit.visits')}</dt>
                 <dd className='font-semibold tabular-nums'>{data.occurrences?.length ?? 0}</dd>
               </div>
               <div className='flex justify-between gap-3'>
-                <dt className='text-[#637469]'>{t('customer.payment.deposit.total')}</dt>
+                <dt className='text-on-surface-variant'>{t('customer.payment.deposit.total')}</dt>
                 <dd className='font-semibold tabular-nums'>{formatMoney(data.totalAmount, language)}</dd>
               </div>
               <div className='flex justify-between gap-3'>
-                <dt className='text-[#637469]'>{t('customer.payment.deposit.remaining')}</dt>
+                <dt className='text-on-surface-variant'>{t('customer.payment.deposit.remaining')}</dt>
                 <dd className='font-semibold tabular-nums'>
                   {deposit.amount !== undefined
                     ? formatMoney(Math.max(0, (data.totalAmount ?? 0) - deposit.amount), language)
@@ -134,7 +136,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
             </dl>
 
             {pay.isError ? (
-              <p className='rounded-xl bg-[#fdecea] p-3 text-sm text-[#93000a]' role='alert'>
+              <p className='rounded-xl bg-error-container p-3 text-sm text-on-error-container' role='alert'>
                 {t(paymentErrorKey(pay.error))}
               </p>
             ) : null}
@@ -155,7 +157,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
               />
             </button>
             <Link
-              className='text-center text-sm font-bold text-[#075b31] underline-offset-4 hover:underline'
+              className='text-center text-sm font-bold text-primary underline-offset-4 hover:underline'
               to={`/customer/bookings/${bookingId}`}
             >
               {t('customer.payment.backToBooking')}
