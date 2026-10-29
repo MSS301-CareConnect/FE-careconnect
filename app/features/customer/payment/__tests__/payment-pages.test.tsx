@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { fetchBooking } from '~/entities/booking/booking-api'
 import { fetchPayment, redirectToCheckout, startDepositCheckout, verifyReturn } from '~/entities/payment/payment-api'
+import { fetchPublicCaregiver } from '~/entities/provider/provider-api'
 import { getEffectivePaymentPolicy } from '~/shared/api/generated/api/payment-policy/payment-policy'
 import type { BookingDetailRecord, PaymentRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -23,6 +24,10 @@ vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
   redirectToCheckout: vi.fn(),
   verifyReturn: vi.fn(),
   fetchPayment: vi.fn()
+}))
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchPublicCaregiver: vi.fn()
 }))
 vi.mock('~/shared/api/generated/api/payment-policy/payment-policy', () => ({
   getEffectivePaymentPolicy: vi.fn()
@@ -83,7 +88,21 @@ beforeEach(async () => {
   await setAppLanguage('vi', false)
   vi.mocked(fetchBooking).mockResolvedValue(booking)
   vi.mocked(getEffectivePaymentPolicy).mockResolvedValue({
-    data: { code: 200, message: 'OK', result: { policyId: 'policy-1', depositPercent: 30 } },
+    data: {
+      code: 200,
+      message: 'OK',
+      result: {
+        policyId: 'policy-1',
+        depositPercent: 30,
+        coolingOffMinutes: 60,
+        coolingOffMinLeadHours: 24,
+        refundTiers: [
+          { minLeadHours: 72, maxLeadHours: null, feePercent: 0 },
+          { minLeadHours: 0, maxLeadHours: 24, feePercent: 30 },
+          { minLeadHours: 24, maxLeadHours: 72, feePercent: 10 }
+        ]
+      }
+    },
     status: 200,
     headers: new Headers()
   })
@@ -110,10 +129,45 @@ describe('Deposit payment flow', () => {
     expect(await screen.findByRole('heading', { name: 'Số tiền cọc dự kiến' })).toBeInTheDocument()
     expect(screen.getByText(/140\.000/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Thanh toán qua VNPay' })).toBeInTheDocument()
-    fireEvent.click(await screen.findByRole('button', { name: /Thanh toán 60\.000/ }))
+    const payButton = await screen.findByRole('button', { name: 'Tiếp tục thanh toán qua VNPay' })
+    await waitFor(() => expect(payButton).toBeEnabled())
+    fireEvent.click(payButton)
 
     await waitFor(() => expect(startDepositCheckout).toHaveBeenCalledWith(BOOKING_ID))
     await waitFor(() => expect(redirectToCheckout).toHaveBeenCalledWith(CHECKOUT_URL))
+  })
+
+  it('shows who is coming and the refund tiers before the customer pays', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({ ...booking, caregiverId: 'cg-1' })
+    vi.mocked(fetchPublicCaregiver).mockResolvedValue({
+      caregiverId: 'cg-1',
+      fullName: 'Trần Thị Mai',
+      experienceYears: 5,
+      ratingAverage: 4.8,
+      ratingCount: 12
+    })
+    renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
+
+    expect(await screen.findByText('Trần Thị Mai')).toBeInTheDocument()
+    expect(screen.getByText('5 năm kinh nghiệm')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Xem hồ sơ của Trần Thị Mai' })).toHaveAttribute(
+      'href',
+      '/customer/caregivers/cg-1'
+    )
+    const rows = await screen.findAllByRole('row')
+    // Nearest visit first, with the fee each tier keeps.
+    expect(rows.slice(1).map((row) => row.textContent)).toEqual([
+      'Còn dưới 24 giờ trước buổi30% giá buổi',
+      'Còn 24–72 giờ trước buổi10% giá buổi',
+      'Còn từ 72 giờ trở lên trước buổiKhông giữ phí'
+    ])
+    expect(screen.getByText(/Hủy trong 60 phút sau khi đặt cọc/)).toBeInTheDocument()
+  })
+
+  it('says the caregiver is not assigned yet instead of leaving a blank', async () => {
+    renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
+    expect(await screen.findByText('Trung tâm sẽ phân công người chăm sóc khi duyệt lịch đặt.')).toBeInTheDocument()
+    expect(fetchPublicCaregiver).not.toHaveBeenCalled()
   })
 
   it('shows the PaymentService error when the checkout cannot open', async () => {
@@ -122,7 +176,9 @@ describe('Deposit payment flow', () => {
     )
     renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
 
-    fireEvent.click(await screen.findByRole('button', { name: /Thanh toán 60\.000/ }))
+    const payButton = await screen.findByRole('button', { name: 'Tiếp tục thanh toán qua VNPay' })
+    await waitFor(() => expect(payButton).toBeEnabled())
+    fireEvent.click(payButton)
     expect(await screen.findByRole('alert')).toHaveTextContent('còn buổi chưa có giá')
     expect(redirectToCheckout).not.toHaveBeenCalled()
   })

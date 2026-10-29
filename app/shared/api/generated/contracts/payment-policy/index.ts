@@ -9,3 +9,4 @@
 export * from './getEffectivePaymentPolicyParams'
 export * from './paymentPolicyRecord'
 export * from './paymentPolicyResponse'
+export * from './refundTier'

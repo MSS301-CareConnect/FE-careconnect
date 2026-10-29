@@ -67,6 +67,8 @@ export const bookingDetailEn = {
     preview: 'Preview refund',
     refund: 'Refund',
     previewExpires: 'Preview valid until {{time}}',
+    feeKept: 'Fee kept {{amount}}',
+    policyToggle: 'How refunds are calculated',
     reason: 'Reason for cancelling',
     confirm: 'Cancel booking'
   }
@@ -141,6 +143,8 @@ export const bookingDetailVi = {
     preview: 'Xem trước tiền hoàn',
     refund: 'Tiền hoàn',
     previewExpires: 'Hiệu lực tới {{time}}',
+    feeKept: 'Giữ lại {{amount}}',
+    policyToggle: 'Cách tính tiền hoàn',
     reason: 'Lý do hủy',
     confirm: 'Hủy lịch đặt'
   }

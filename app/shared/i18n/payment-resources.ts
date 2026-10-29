@@ -34,6 +34,32 @@ export const paymentSharedVi = {
     DUPLICATE: 'Thanh toán trùng',
     OTHER: 'Lý do khác'
   },
+  refundRule: {
+    NOT_PAID: 'Chưa thanh toán nên hủy miễn phí',
+    NOT_CANCELLABLE: 'Buổi đã bắt đầu, không hủy được',
+    COOLING_OFF: 'Trong thời gian cân nhắc, hoàn toàn bộ',
+    FULL_REFUND_CENTER: 'Trung tâm hủy, hoàn toàn bộ',
+    FULL_REFUND_MISSED: 'Người chăm sóc vắng mặt, hoàn toàn bộ',
+    FULL_REFUND_SYSTEM: 'Hệ thống hủy, hoàn toàn bộ',
+    tierRange: 'Còn {{min}}–{{max}} giờ trước buổi',
+    tierFrom: 'Còn từ {{min}} giờ trở lên trước buổi',
+    tierUnder: 'Còn dưới {{max}} giờ trước buổi',
+    other: 'Theo chính sách hoàn cọc'
+  },
+  refundPolicy: {
+    title: 'Hoàn cọc khi bạn hủy',
+    intro:
+      'Áp dụng cho từng buổi bị hủy, tính theo thời gian còn lại trước giờ bắt đầu buổi đó. Đây là chính sách chung của CareConnect.',
+    lead: 'Thời gian còn lại',
+    keep: 'Phí giữ lại',
+    fee: '{{percent}} giá buổi',
+    noFee: 'Không giữ phí',
+    feeCap: 'Phí không bao giờ vượt quá tiền cọc của buổi đó.',
+    coolingOff: 'Hủy trong {{minutes}} phút sau khi đặt cọc, khi buổi đầu còn ít nhất {{hours}} giờ: hoàn toàn bộ cọc.',
+    fullRefund: 'Trung tâm hủy hoặc người chăm sóc vắng mặt: hoàn toàn bộ số tiền đã trả.',
+    loading: 'Đang tải chính sách hoàn cọc…',
+    unavailable: 'Chưa tải được chính sách hoàn cọc. Bạn vẫn xem được số tiền hoàn trước khi xác nhận hủy.'
+  },
   errors: {
     e6004: 'Không tìm thấy giao dịch thanh toán.',
     e6005: 'Lịch đặt này không còn ở trạng thái chờ đặt cọc hoặc đã quá hạn đặt cọc.',
@@ -86,6 +112,34 @@ export const paymentSharedEn = {
     BOOKING_NOT_CONFIRMABLE: 'The booking could no longer be confirmed',
     DUPLICATE: 'Duplicate payment',
     OTHER: 'Other reason'
+  },
+  refundRule: {
+    NOT_PAID: 'Not paid yet, so free to cancel',
+    NOT_CANCELLABLE: 'The visit has started and cannot be cancelled',
+    COOLING_OFF: 'Within the cooling-off period, refunded in full',
+    FULL_REFUND_CENTER: 'Cancelled by the center, refunded in full',
+    FULL_REFUND_MISSED: 'The caregiver missed the visit, refunded in full',
+    FULL_REFUND_SYSTEM: 'Cancelled by the system, refunded in full',
+    tierRange: '{{min}}–{{max}} hours before the visit',
+    tierFrom: '{{min}} hours or more before the visit',
+    tierUnder: 'Less than {{max}} hours before the visit',
+    other: 'Under the deposit refund policy'
+  },
+  refundPolicy: {
+    title: 'Deposit refunds when you cancel',
+    intro:
+      'Applies to each cancelled visit, by the time left before that visit starts. This is the CareConnect platform policy.',
+    lead: 'Time left',
+    keep: 'Fee kept',
+    fee: '{{percent}} of the visit price',
+    noFee: 'No fee',
+    feeCap: 'The fee never exceeds the deposit paid for that visit.',
+    coolingOff:
+      'Cancel within {{minutes}} minutes of paying the deposit, while the first visit is at least {{hours}} hours away: full deposit refund.',
+    fullRefund: 'If the center cancels or the caregiver misses a visit, everything paid is refunded.',
+    loading: 'Loading the refund policy…',
+    unavailable:
+      'The refund policy could not be loaded. You can still preview the refund before confirming a cancellation.'
   },
   errors: {
     e6004: 'Payment not found.',

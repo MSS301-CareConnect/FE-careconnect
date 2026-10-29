@@ -9,6 +9,8 @@ import {
   fetchBookingHistory,
   previewCancellation
 } from '~/entities/booking/booking-api'
+import { fetchEffectivePolicy } from '~/entities/payment/payment-api'
+import { fetchPublicCaregiver } from '~/entities/provider/provider-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
@@ -20,6 +22,15 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   fetchBookingHistory: vi.fn(),
   previewCancellation: vi.fn(),
   cancelBookingRequest: vi.fn()
+}))
+
+vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
+  fetchEffectivePolicy: vi.fn()
+}))
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchPublicCaregiver: vi.fn()
 }))
 
 const future = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
@@ -61,6 +72,14 @@ function renderPage() {
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  vi.mocked(fetchEffectivePolicy).mockResolvedValue({
+    depositPercent: 30,
+    refundTiers: [
+      { minLeadHours: 0, maxLeadHours: 24, feePercent: 30 },
+      { minLeadHours: 24, maxLeadHours: 72, feePercent: 10 },
+      { minLeadHours: 72, maxLeadHours: null, feePercent: 0 }
+    ]
+  })
   await setAppLanguage('vi', false)
   vi.mocked(fetchBookingHistory).mockResolvedValue({
     items: [{ eventType: 'BOOKING_STATUS_CHANGED', toStatus: 'PENDING', changedAt: '2026-10-26T01:00:00Z' }],
@@ -107,7 +126,15 @@ describe('CustomerBookingDetailPage', () => {
   it('requires a refund preview before cancelling selected visits of a paid booking', async () => {
     vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'CONFIRMED' })
     vi.mocked(previewCancellation).mockResolvedValue({
-      items: [{ occurrenceId: 'occ-1', startAt: booking.occurrences![0].startAt, refundAmount: 60000, rule: 'FULL' }],
+      items: [
+        {
+          occurrenceId: 'occ-1',
+          startAt: booking.occurrences![0].startAt,
+          feeAmount: 20000,
+          refundAmount: 40000,
+          rule: 'TIER_24_72'
+        }
+      ],
       totalRefund: 60000,
       previewToken: 'preview-1'
     })
@@ -125,6 +152,11 @@ describe('CustomerBookingDetailPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Xem trước tiền hoàn' }))
 
     await waitFor(() => expect(previewCancellation).toHaveBeenCalledWith('bk-1', ['occ-1']))
+    // The rule code is read out in words, never shown raw.
+    const ruleLines = await within(dialog).findAllByText('Còn 24–72 giờ trước buổi')
+    expect(ruleLines.some((line) => line.closest('li'))).toBe(true)
+    expect(within(dialog).getByText(/Giữ lại 20/)).toBeInTheDocument()
+    expect(within(dialog).queryByText(/TIER_/)).not.toBeInTheDocument()
     await waitFor(() => expect(confirm).toBeEnabled())
     fireEvent.click(confirm)
     await waitFor(() =>
@@ -134,6 +166,16 @@ describe('CustomerBookingDetailPage', () => {
         previewToken: 'preview-1'
       })
     )
+  })
+
+  it('shows the assigned caregiver to the family', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'CONFIRMED', caregiverId: 'cg-1' })
+    vi.mocked(fetchPublicCaregiver).mockResolvedValue({ caregiverId: 'cg-1', fullName: 'Trần Thị Mai' })
+    renderPage()
+
+    expect(await screen.findByRole('heading', { name: 'Người chăm sóc được phân công' })).toBeInTheDocument()
+    expect(await screen.findByText('Trần Thị Mai')).toBeInTheDocument()
+    expect(fetchPublicCaregiver).toHaveBeenCalledWith('cg-1')
   })
 
   it('offers the deposit payment once the center has accepted the booking', async () => {

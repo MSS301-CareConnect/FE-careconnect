@@ -10,6 +10,8 @@ import {
   startDepositCheckout,
   useDepositAmount
 } from '~/entities/payment/payment-api'
+import { RefundPolicySummary } from '~/entities/payment/refund-policy'
+import { AssignedCaregiverCard } from '~/entities/provider/assigned-caregiver-card'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
@@ -67,22 +69,35 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
 
       {data && data.status === 'AWAITING_DEPOSIT' ? (
         <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8'>
-          <section aria-labelledby='deposit-method' className={paymentPanel}>
-            <h2 className='flex items-center gap-2 text-lg font-bold' id='deposit-method'>
-              <Icon className='text-[22px] text-primary' name='payments' />
-              {t('customer.payment.deposit.method')}
-            </h2>
-            <p className='mt-1 text-sm leading-6 text-on-surface-variant'>{t('customer.payment.deposit.methodHint')}</p>
-            {deposit.estimated ? (
-              <p className='mt-3 text-sm leading-6 text-on-surface-variant'>
-                {t('customer.payment.deposit.exactAmount')}
+          <div className={`${paymentPanel} flex flex-col divide-y divide-outline-variant/60`}>
+            <div className='pb-6'>
+              <AssignedCaregiverCard
+                caregiverId={data.caregiverId}
+                profileHref={data.caregiverId ? `/customer/caregivers/${data.caregiverId}` : undefined}
+              />
+            </div>
+            <div className='py-6'>
+              <RefundPolicySummary centerId={data.centerId} />
+            </div>
+            <section aria-labelledby='deposit-method' className='pt-6'>
+              <h2 className='flex items-center gap-2 text-lg font-bold' id='deposit-method'>
+                <Icon className='text-[22px] text-primary' name='payments' />
+                {t('customer.payment.deposit.method')}
+              </h2>
+              <p className='mt-1 text-sm leading-6 text-on-surface-variant'>
+                {t('customer.payment.deposit.methodHint')}
               </p>
-            ) : null}
-            <p className='mt-5 flex items-start gap-2 rounded-xl bg-surface-container-low p-4 text-sm leading-6 text-on-surface-variant'>
-              <Icon className='text-lg text-primary' name='verified_user' />
-              {t('customer.payment.deposit.policy')}
-            </p>
-          </section>
+              {deposit.estimated ? (
+                <p className='mt-3 text-sm leading-6 text-on-surface-variant'>
+                  {t('customer.payment.deposit.exactAmount')}
+                </p>
+              ) : null}
+              <p className='mt-5 flex items-start gap-2 rounded-xl bg-surface-container-low p-4 text-sm leading-6 text-on-surface-variant'>
+                <Icon className='text-lg text-primary' name='verified_user' />
+                {t('customer.payment.deposit.policy')}
+              </p>
+            </section>
+          </div>
 
           <aside aria-labelledby='deposit-summary' className={`${paymentPanel} flex flex-col gap-5 lg:sticky lg:top-6`}>
             <div>
@@ -148,7 +163,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
             >
               {pay.isPending
                 ? t('customer.payment.deposit.paying')
-                : deposit.amount !== undefined
+                : deposit.amount !== undefined && !deposit.estimated
                   ? t('customer.payment.deposit.pay', { amount: formatMoney(deposit.amount, language) })
                   : t('customer.payment.deposit.payNoAmount')}
               <Icon

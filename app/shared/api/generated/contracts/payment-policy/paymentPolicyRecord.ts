@@ -5,9 +5,19 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { RefundTier } from './refundTier'
 
 export interface PaymentPolicyRecord {
   policyId?: string
   /** Percent of the booking total, e.g. 30 for 30%. */
   depositPercent: number
+  depositDueHours?: number
+  /** Minutes after the deposit during which a cancellation is refunded in full. */
+  coolingOffMinutes?: number
+  /** The cooling-off refund applies only while the first visit is at least this many hours away. */
+  coolingOffMinLeadHours?: number
+  /** Fee kept per cancelled visit, by hours left before that visit starts. */
+  refundTiers?: RefundTier[]
+  customerNoShowChargePercent?: number
+  remainingDueHours?: number
 }

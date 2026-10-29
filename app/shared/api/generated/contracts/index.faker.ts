@@ -257,6 +257,7 @@ import type {
   RefundPageResponse,
   RefundRecord,
   RefundStatus,
+  RefundTier,
   RegisterRequest,
   RegisterResponse,
   RegistrationEmailRequest,
@@ -3664,11 +3665,29 @@ export const getRefundRecordMock = (overrideResponse: Partial<RefundRecord> = {}
   ...overrideResponse
 })
 
+export const getRefundTierMock = (overrideResponse: Partial<RefundTier> = {}): RefundTier => ({
+  minLeadHours: faker.number.int(),
+  maxLeadHours: faker.helpers.arrayElement([faker.number.int(), null]),
+  feePercent: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse
+})
+
 export const getPaymentPolicyRecordMock = (
   overrideResponse: Partial<PaymentPolicyRecord> = {}
 ): PaymentPolicyRecord => ({
   policyId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   depositPercent: faker.number.float({ fractionDigits: 2 }),
+  depositDueHours: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  coolingOffMinutes: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  coolingOffMinLeadHours: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  refundTiers: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      ...getRefundTierMock()
+    })),
+    undefined
+  ]),
+  customerNoShowChargePercent: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  remainingDueHours: faker.helpers.arrayElement([faker.number.int(), undefined]),
   ...overrideResponse
 })
 

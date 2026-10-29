@@ -13223,6 +13223,44 @@ components:
         depositPercent:
           type: number
           description: Percent of the booking total, e.g. 30 for 30%.
+        depositDueHours:
+          type: integer
+          format: int32
+        coolingOffMinutes:
+          type: integer
+          format: int32
+          description: Minutes after the deposit during which a cancellation is refunded in full.
+        coolingOffMinLeadHours:
+          type: integer
+          format: int32
+          description: The cooling-off refund applies only while the first visit is at least this many hours away.
+        refundTiers:
+          type: array
+          description: Fee kept per cancelled visit, by hours left before that visit starts.
+          items:
+            $ref: '#/components/schemas/RefundTier'
+        customerNoShowChargePercent:
+          type: number
+        remainingDueHours:
+          type: integer
+          format: int32
+    RefundTier:
+      type: object
+      required:
+        - minLeadHours
+        - feePercent
+      properties:
+        minLeadHours:
+          type: integer
+          format: int32
+        maxLeadHours:
+          type: integer
+          format: int32
+          nullable: true
+          description: Upper bound, exclusive; null means no upper bound.
+        feePercent:
+          type: number
+          description: Percent of the visit price kept as a cancellation fee.
     PaymentPolicyResponse:
       type: object
       required:

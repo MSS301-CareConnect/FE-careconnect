@@ -46,6 +46,17 @@ export const bookingSharedVi = {
   dialog: {
     minLength: 'Tối thiểu {{count}} ký tự.'
   },
+  caregiver: {
+    title: 'Người chăm sóc được phân công',
+    loading: 'Đang tải thông tin người chăm sóc…',
+    unavailable: 'Chưa xem được hồ sơ người chăm sóc lúc này.',
+    pending: 'Trung tâm sẽ phân công người chăm sóc khi duyệt lịch đặt.',
+    experience: '{{count}} năm kinh nghiệm',
+    rating: '{{rating}} điểm · {{count}} đánh giá',
+    noRating: 'Chưa có đánh giá',
+    photo: 'Ảnh của {{name}}',
+    viewProfile: 'Xem hồ sơ của {{name}}'
+  },
   occurrences: {
     title: 'Buổi {{number}}',
     empty: 'Chưa có buổi chăm sóc nào.',
@@ -186,6 +197,17 @@ export const bookingSharedEn = {
   },
   dialog: {
     minLength: 'At least {{count}} characters.'
+  },
+  caregiver: {
+    title: 'Assigned caregiver',
+    loading: 'Loading the caregiver…',
+    unavailable: 'The caregiver profile cannot be shown right now.',
+    pending: 'The center assigns a caregiver when it accepts the booking.',
+    experience: '{{count}} years of experience',
+    rating: '{{rating}} rating · {{count}} reviews',
+    noRating: 'No reviews yet',
+    photo: 'Photo of {{name}}',
+    viewProfile: 'View the profile of {{name}}'
   },
   occurrences: {
     title: 'Visit {{number}}',

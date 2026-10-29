@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { bookingKeys, cancelBookingRequest, previewCancellation } from '~/entities/booking/booking-api'
 import { bookingErrorKey, formatDateTime, formatMoney, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
+import { RefundPolicySummary, refundRuleLabel } from '~/entities/payment/refund-policy'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 
 /** Bookings without a deposit can only be cancelled whole and need no refund preview. */
@@ -103,16 +104,35 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
               ))}
             </ul>
           ) : null}
+          <details className='rounded-lg border border-outline-variant p-3'>
+            <summary className='cursor-pointer font-semibold text-primary'>
+              {t('customer.bookingDetail.cancel.policyToggle')}
+            </summary>
+            <div className='mt-3'>
+              <RefundPolicySummary centerId={booking.centerId} />
+            </div>
+          </details>
           {preview.data ? (
             <div className='rounded-lg bg-secondary-container/50 p-3'>
-              <ul className='flex flex-col gap-1 text-xs text-on-surface-variant'>
+              <ul className='flex flex-col gap-2 text-sm text-on-surface-variant'>
                 {preview.data.items.map((item) => (
                   <li className='flex justify-between gap-3' key={item.occurrenceId}>
-                    <span>
-                      {formatDateTime(item.startAt, language)}
-                      {item.rule ? ` · ${item.rule}` : ''}
+                    <span className='min-w-0'>
+                      <span className='block font-semibold text-on-surface'>
+                        {formatDateTime(item.startAt, language)}
+                      </span>
+                      {refundRuleLabel(t, item.rule)}
+                      {item.feeAmount ? (
+                        <span className='block'>
+                          {t('customer.bookingDetail.cancel.feeKept', {
+                            amount: formatMoney(item.feeAmount, language)
+                          })}
+                        </span>
+                      ) : null}
                     </span>
-                    <span className='tabular-nums'>{formatMoney(item.refundAmount, language)}</span>
+                    <span className='shrink-0 font-semibold text-on-surface tabular-nums'>
+                      {formatMoney(item.refundAmount, language)}
+                    </span>
                   </li>
                 ))}
               </ul>

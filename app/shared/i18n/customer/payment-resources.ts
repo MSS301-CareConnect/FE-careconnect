@@ -22,9 +22,9 @@ export const customerPaymentVi = {
       'Bạn sẽ được chuyển sang trang VNPay để chọn quét mã QR, thẻ ATM nội địa hoặc thẻ quốc tế, và có 15 phút để hoàn tất.',
     exactAmount: 'Số tiền chính xác được tính theo từng buổi và hiển thị trên trang VNPay.',
     pay: 'Thanh toán {{amount}}',
-    payNoAmount: 'Thanh toán',
+    payNoAmount: 'Tiếp tục thanh toán qua VNPay',
     paying: 'Đang mở trang thanh toán…',
-    policy: 'Khoản cọc được hoàn theo chính sách hủy của trung tâm. Phần còn lại được lập hóa đơn khi lịch hoàn tất.',
+    policy: 'Phần còn lại được lập hóa đơn khi lịch hoàn tất, thanh toán qua VNPay trong trang Thanh toán & hoàn tiền.',
     notAwaiting: 'Lịch đặt này không cần đặt cọc lúc này.',
     notAwaitingHint: 'Trạng thái hiện tại: {{status}}.'
   },
@@ -106,9 +106,9 @@ export const customerPaymentEn = {
       'You will be taken to VNPay to choose a QR code, a domestic ATM card or an international card, with 15 minutes to finish.',
     exactAmount: 'The exact amount is calculated per visit and shown on the VNPay page.',
     pay: 'Pay {{amount}}',
-    payNoAmount: 'Pay',
+    payNoAmount: 'Continue to VNPay',
     paying: 'Opening the payment gateway…',
-    policy: 'The deposit is refunded under the center’s cancellation policy. The rest is invoiced when care ends.',
+    policy: 'The rest is invoiced when care ends and paid with VNPay from Payments & refunds.',
     notAwaiting: 'This booking does not need a deposit right now.',
     notAwaitingHint: 'Current status: {{status}}.'
   },
