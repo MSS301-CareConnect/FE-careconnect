@@ -19,13 +19,13 @@ export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecor
   ] as const
 
   return (
-    <aside className='flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-24'>
+    <aside className='flex flex-col gap-5 rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-24'>
       <div>
         <h2 className='text-base font-bold'>{t('centerManager.bookingDetail.customer')}</h2>
         <p className='mt-2 font-semibold'>{booking.customer?.fullName ?? '—'}</p>
         {booking.customer?.phoneNumber ? (
           <a
-            className='mt-1 flex items-center gap-1.5 text-sm text-primary hover:underline'
+            className='mt-1 flex items-center gap-1.5 text-sm text-primary hover:underline tabular-nums'
             href={`tel:${booking.customer.phoneNumber}`}
           >
             <Icon className='text-base' name='call' />
@@ -39,11 +39,11 @@ export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecor
 
       <div className='text-sm'>
         <h2 className='text-base font-bold'>{t('centerManager.bookingDetail.schedule')}</h2>
-        <p className='mt-2'>
+        <p className='mt-2 tabular-nums'>
           {formatDay(booking.startDate, language)}
           {booking.endDate && booking.endDate !== booking.startDate ? ` – ${formatDay(booking.endDate, language)}` : ''}
         </p>
-        <p className='text-on-surface-variant'>
+        <p className='text-on-surface-variant tabular-nums'>
           {t(`booking.scheduleType.${booking.scheduleType}`)} · {shortTime(booking.startTime)}–
           {shortTime(booking.endTime)}
         </p>
@@ -87,7 +87,7 @@ export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecor
           .map(([key, value]) => (
             <div className='flex justify-between gap-3' key={key}>
               <dt className='text-on-surface-variant'>{t(`centerManager.bookingDetail.milestones.${key}`)}</dt>
-              <dd>{formatDateTime(value, language)}</dd>
+              <dd className='tabular-nums'>{formatDateTime(value, language)}</dd>
             </div>
           ))}
       </dl>

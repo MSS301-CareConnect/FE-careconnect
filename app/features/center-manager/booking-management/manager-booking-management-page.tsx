@@ -74,35 +74,35 @@ export function ManagerBookingManagementPage() {
         </div>
       ) : null}
       {bookings.isSuccess && bookings.data.items.length > 0 ? (
-        <div className='overflow-x-auto rounded-xl bg-white shadow-sm'>
+        <div className='overflow-x-auto rounded-2xl border border-outline-variant/20 bg-white shadow-sm'>
           <table className='w-full min-w-[880px] text-left text-sm'>
             <caption className='sr-only'>{t('centerManager.bookingManagement.title')}</caption>
-            <thead className='bg-surface-container-low text-xs text-on-surface-variant'>
+            <thead className='sticky top-0 z-10 border-b border-outline-variant/25 bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant'>
               <tr>
                 {COLUMNS.map((column) => (
-                  <th className='px-4 py-3 font-semibold' key={column} scope='col'>
+                  <th className='px-4 py-3.5 font-semibold' key={column} scope='col'>
                     {t(`centerManager.bookingManagement.columns.${column}`)}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className='divide-y divide-outline-variant/15'>
               {bookings.data.items.map((booking) => (
-                <tr className='border-t border-surface-container hover:bg-surface-container-lowest' key={booking.id}>
-                  <td className='px-4 py-3'>
+                <tr className='transition-colors hover:bg-surface-container-low/50' key={booking.id}>
+                  <td className='px-4 py-3.5'>
                     <Link
-                      className='font-semibold text-primary hover:underline'
+                      className='font-semibold text-primary hover:underline tabular-nums'
                       to={`/center-manager/bookings/${booking.id}`}
                     >
                       #{booking.bookingCode}
                     </Link>
                     <p className='text-xs text-on-surface-variant'>{booking.recipientName}</p>
                   </td>
-                  <td className='px-4 py-3'>
-                    <p className='font-semibold'>{booking.customer?.fullName ?? '—'}</p>
-                    <p className='text-xs text-on-surface-variant'>{booking.customer?.phoneNumber}</p>
+                  <td className='px-4 py-3.5'>
+                    <p className='font-semibold text-on-surface'>{booking.customer?.fullName ?? '—'}</p>
+                    <p className='text-xs text-on-surface-variant tabular-nums'>{booking.customer?.phoneNumber}</p>
                   </td>
-                  <td className='px-4 py-3'>
+                  <td className='px-4 py-3.5 tabular-nums'>
                     <p>
                       {formatDay(booking.startDate, language)}
                       {booking.endDate && booking.endDate !== booking.startDate
@@ -114,7 +114,7 @@ export function ManagerBookingManagementPage() {
                       {shortTime(booking.endTime)}
                     </p>
                   </td>
-                  <td className='px-4 py-3'>
+                  <td className='px-4 py-3.5 tabular-nums'>
                     {booking.nextOccurrenceAt ? formatDateTime(booking.nextOccurrenceAt, language) : '—'}
                     <p className='text-xs text-on-surface-variant'>
                       {t('centerManager.bookingManagement.progress', {
@@ -123,11 +123,15 @@ export function ManagerBookingManagementPage() {
                       })}
                     </p>
                   </td>
-                  <td className='px-4 py-3 font-semibold tabular-nums'>{formatMoney(booking.totalAmount, language)}</td>
-                  <td className='px-4 py-3'>
+                  <td className='px-4 py-3.5 font-semibold text-on-surface tabular-nums'>
+                    {formatMoney(booking.totalAmount, language)}
+                  </td>
+                  <td className='px-4 py-3.5'>
                     <BookingStatusBadge status={booking.status} />
                     {booking.caregiverId ? null : (
-                      <p className='mt-1 text-xs text-amber-800'>{t('centerManager.bookingManagement.noCaregiver')}</p>
+                      <p className='mt-1 text-xs font-medium text-on-warning-container'>
+                        {t('centerManager.bookingManagement.noCaregiver')}
+                      </p>
                     )}
                   </td>
                 </tr>
@@ -139,7 +143,7 @@ export function ManagerBookingManagementPage() {
       {bookings.isSuccess && bookings.data.totalPages > 1 ? (
         <nav
           aria-label={t('centerManager.bookingManagement.pagination.label')}
-          className='flex items-center justify-between rounded-xl bg-white p-3 text-sm shadow-sm'
+          className='flex items-center justify-between rounded-xl border border-outline-variant/20 bg-white p-3 text-sm shadow-sm'
         >
           <button
             className='rounded-lg px-3 py-2 font-semibold text-primary disabled:text-outline'
@@ -149,7 +153,7 @@ export function ManagerBookingManagementPage() {
           >
             {t('centerManager.bookingManagement.pagination.previous')}
           </button>
-          <span className='text-on-surface-variant'>
+          <span className='text-on-surface-variant tabular-nums'>
             {t('centerManager.bookingManagement.pagination.pageOf', {
               page: bookings.data.page + 1,
               total: bookings.data.totalPages

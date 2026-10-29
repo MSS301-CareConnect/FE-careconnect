@@ -34,7 +34,9 @@ export function ManagerBookingFilters({ list }: { list: List }) {
             >
               {item ? t(`booking.status.${item}`) : t('centerManager.bookingManagement.filters.all')}
               {item === 'PENDING' && list.pendingCount ? (
-                <span className={`rounded-md px-1.5 text-xs ${active ? 'bg-white/20' : 'bg-amber-100 text-amber-900'}`}>
+                <span
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-bold tabular-nums ${active ? 'bg-white/20 text-white' : 'bg-warning-container text-on-warning-container'}`}
+                >
                   {list.pendingCount}
                 </span>
               ) : null}
@@ -42,7 +44,7 @@ export function ManagerBookingFilters({ list }: { list: List }) {
           )
         })}
       </div>
-      <div className='grid gap-3 rounded-xl bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_160px_160px_200px]'>
+      <div className='grid gap-3 rounded-xl border border-outline-variant/20 bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_160px_160px_200px]'>
         <form
           onSubmit={(event) => {
             event.preventDefault()

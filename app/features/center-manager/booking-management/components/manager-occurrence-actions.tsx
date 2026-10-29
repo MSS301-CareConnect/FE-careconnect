@@ -73,7 +73,7 @@ export function ManagerOccurrenceActions({ bookingId, occurrence, caregivers }: 
       ) : null}
       {awaitingDecision ? (
         <>
-          <p className='w-full rounded-lg bg-amber-50 p-2 text-xs text-amber-900'>
+          <p className='w-full rounded-lg border border-warning/25 bg-warning-container p-2.5 text-xs font-medium text-on-warning-container'>
             {t('centerManager.bookingDetail.occurrence.noShowReported', { note: detail.data?.noShowNote ?? '' })}
           </p>
           <button className={action} onClick={() => setDialog('approve')} type='button'>

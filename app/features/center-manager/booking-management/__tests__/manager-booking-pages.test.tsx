@@ -13,7 +13,7 @@ import {
   fetchOccurrence,
   rejectBookingRequest
 } from '~/entities/booking/booking-api'
-import { fetchCaregivers } from '~/entities/provider/provider-api'
+import { fetchCaregivers, searchCaregiversByService } from '~/entities/provider/provider-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -33,7 +33,8 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
 }))
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
-  fetchCaregivers: vi.fn()
+  fetchCaregivers: vi.fn(),
+  searchCaregiversByService: vi.fn()
 }))
 
 const emptyPage = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
@@ -152,6 +153,33 @@ describe('Center Manager bookings', () => {
     fireEvent.click(confirm)
 
     await waitFor(() => expect(acceptBookingRequest).toHaveBeenCalledWith('bk-1', 'cg-2'))
+  })
+
+  it('marks which caregivers are free for every upcoming visit (M-16)', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({
+      ...booking,
+      services: [{ id: 'item-1', careServiceId: 'svc-1' }]
+    })
+    vi.mocked(searchCaregiversByService).mockResolvedValue({
+      items: [{ caregiverId: 'cg-2', centerId: 'center-1', fullName: 'Anh Nam' }],
+      page: 0,
+      size: 50,
+      totalElements: 1,
+      totalPages: 1
+    } as never)
+    wrap(<ManagerBookingDetailPage />, '/center-manager/bookings/bk-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Chấp nhận' }))
+    const dialog = screen.getByRole('dialog', { name: 'Chấp nhận lịch đặt #BK0001' })
+    expect(await within(dialog).findByRole('option', { name: 'Anh Nam — rảnh' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('option', { name: 'Chị Hoa — bận hoặc không làm đủ dịch vụ' })).toBeInTheDocument()
+    expect(searchCaregiversByService).toHaveBeenCalledWith(
+      expect.objectContaining({
+        centerId: 'center-1',
+        careServiceIds: ['svc-1'],
+        slots: [expect.stringContaining('/')]
+      })
+    )
   })
 
   it('rejects a pending booking with the reason the customer will see', async () => {

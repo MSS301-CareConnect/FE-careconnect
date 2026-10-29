@@ -14,6 +14,9 @@ export interface CaregiverAssignDialogProps {
   currentId?: string
   pending: boolean
   error?: string
+  /** M-16: caregivers free for every upcoming visit; undefined while unknown. */
+  freeIds?: ReadonlySet<string>
+  checking?: boolean
   onConfirm: (caregiverId: string | undefined) => void
   onClose: () => void
 }
@@ -28,6 +31,8 @@ export function CaregiverAssignDialog({
   currentId,
   pending,
   error,
+  freeIds,
+  checking = false,
   onConfirm,
   onClose
 }: CaregiverAssignDialogProps) {
@@ -37,6 +42,20 @@ export function CaregiverAssignDialog({
   const fieldId = useId()
   const [caregiverId, setCaregiverId] = useState(optional ? '' : (currentId ?? ''))
   const valid = optional || (caregiverId !== '' && caregiverId !== currentId)
+  // Free caregivers first; the order is otherwise the center's list.
+  const sorted = freeIds
+    ? [...options].sort((first, second) => Number(freeIds.has(second.id)) - Number(freeIds.has(first.id)))
+    : options
+
+  function label(option: { id: string; name: string }) {
+    if (option.id === currentId) return `${option.name} (${t('centerManager.bookingDetail.assign.current')})`
+    if (!freeIds) return option.name
+    return `${option.name} — ${
+      freeIds.has(option.id)
+        ? t('centerManager.bookingDetail.assign.free')
+        : t('centerManager.bookingDetail.assign.busy')
+    }`
+  }
 
   useEffect(() => {
     dialog.current?.showModal()
@@ -86,10 +105,9 @@ export function CaregiverAssignDialog({
                   ? t('centerManager.bookingDetail.assign.keep')
                   : t('centerManager.bookingDetail.assign.choose')}
               </option>
-              {options.map((option) => (
+              {sorted.map((option) => (
                 <option key={option.id} value={option.id}>
-                  {option.name}
-                  {option.id === currentId ? ` (${t('centerManager.bookingDetail.assign.current')})` : ''}
+                  {label(option)}
                 </option>
               ))}
             </select>
@@ -100,7 +118,13 @@ export function CaregiverAssignDialog({
               <p className='mt-1 text-xs text-on-surface-variant'>{t('centerManager.bookingDetail.assign.empty')}</p>
             ) : null}
           </div>
-          <p className='text-xs text-on-surface-variant'>{t('centerManager.bookingDetail.assign.availabilityHint')}</p>
+          <p className='text-xs text-on-surface-variant'>
+            {checking
+              ? t('centerManager.bookingDetail.assign.checking')
+              : freeIds
+                ? t('centerManager.bookingDetail.assign.freeHint', { count: freeIds.size })
+                : t('centerManager.bookingDetail.assign.availabilityHint')}
+          </p>
           {error ? (
             <p className='rounded-lg bg-error-container/40 p-3 text-error' role='alert'>
               {error}

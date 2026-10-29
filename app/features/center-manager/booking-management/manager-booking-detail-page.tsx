@@ -27,6 +27,7 @@ import { CaregiverAssignDialog } from './components/caregiver-assign-dialog'
 import { ManagerBookingSummary } from './components/manager-booking-summary'
 import { ManagerOccurrenceActions } from './components/manager-occurrence-actions'
 import { useCenterCaregivers } from './hooks/use-center-caregivers'
+import { useFreeCaregivers } from './hooks/use-free-caregivers'
 
 type Dialog = 'accept' | 'reject' | 'cancel' | 'reassign' | null
 // A PENDING booking is accepted or rejected; cancel and reassign apply once the center has accepted it.
@@ -47,6 +48,7 @@ export function ManagerBookingDetailPage() {
     retry: false
   })
   useDocumentTitle(t('centerManager.bookingDetail.documentTitle', { code: booking.data?.bookingCode ?? '' }))
+  const free = useFreeCaregivers(booking.data, dialog === 'accept' || dialog === 'reassign')
 
   function done(updated: BookingDetailRecord) {
     queryClient.setQueryData(bookingKeys.detail(id), updated)
@@ -97,7 +99,7 @@ export function ManagerBookingDetailPage() {
             {data.recipientSnapshot?.fullName ?? `#${data.bookingCode}`}
           </h1>
           <p className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
-            <span className='rounded-md bg-surface-container px-2 py-1 font-semibold text-on-surface'>
+            <span className='rounded-md bg-surface-container px-2 py-1 font-semibold text-on-surface tabular-nums'>
               #{data.bookingCode}
             </span>
             <BookingStatusBadge status={data.status} />
@@ -110,7 +112,8 @@ export function ManagerBookingDetailPage() {
             </span>
           </p>
           {data.status === 'PENDING' && data.acceptanceDueAt ? (
-            <p className='mt-2 text-sm font-semibold text-amber-800'>
+            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-warning-container px-3 py-1.5 text-xs font-semibold text-on-warning-container tabular-nums'>
+              <Icon className='text-base' name='schedule' />
               {t('centerManager.bookingDetail.acceptBy', { time: formatDateTime(data.acceptanceDueAt, i18n.language) })}
             </p>
           ) : null}
@@ -190,6 +193,8 @@ export function ManagerBookingDetailPage() {
           onClose={() => setDialog(null)}
           onConfirm={(caregiverId) => accept.mutate(caregiverId)}
           optional={Boolean(data.caregiverId)}
+          checking={free.checking}
+          freeIds={free.freeIds}
           options={caregivers.options}
           pending={accept.isPending}
           title={t('centerManager.bookingDetail.acceptTitle', { code: data.bookingCode })}
@@ -204,6 +209,8 @@ export function ManagerBookingDetailPage() {
           loading={caregivers.caregivers.isPending}
           onClose={() => setDialog(null)}
           onConfirm={(caregiverId) => caregiverId && reassign.mutate(caregiverId)}
+          checking={free.checking}
+          freeIds={free.freeIds}
           options={caregivers.options}
           pending={reassign.isPending}
           title={t('centerManager.bookingDetail.reassignAll')}

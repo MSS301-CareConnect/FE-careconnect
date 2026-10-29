@@ -45,6 +45,11 @@ export const managerBookingDetailVi = {
     loading: 'Đang tải người chăm sóc của trung tâm…',
     empty: 'Trung tâm chưa có người chăm sóc đang hoạt động và đã xác minh.',
     availabilityHint: 'Hệ thống kiểm tra ca làm việc và lịch trùng khi lưu.',
+    checking: 'Đang kiểm tra ai rảnh cho các buổi sắp tới…',
+    freeHint:
+      '{{count, number}} người rảnh cho mọi buổi sắp tới (ca làm việc, ngày nghỉ, lịch khác). Hệ thống kiểm lại khi lưu.',
+    free: 'rảnh',
+    busy: 'bận hoặc không làm đủ dịch vụ',
     confirm: 'Đổi người chăm sóc',
     allDescription: 'Áp dụng cho mọi buổi chưa diễn ra của lịch đặt này.',
     oneTitle: 'Đổi người chăm sóc buổi {{number}}',
@@ -115,6 +120,11 @@ export const managerBookingDetailEn = {
     loading: 'Loading the center’s caregivers…',
     empty: 'The center has no active, verified caregiver yet.',
     availabilityHint: 'Work shifts and overlapping visits are checked when you save.',
+    checking: 'Checking who is free for the upcoming visits…',
+    freeHint:
+      '{{count, number}} free for every upcoming visit (shifts, time off, other bookings). Checked again when you save.',
+    free: 'free',
+    busy: 'busy or missing a service',
     confirm: 'Change caregiver',
     allDescription: 'Applies to every visit of this booking that has not started.',
     oneTitle: 'Change the caregiver of visit {{number}}',
