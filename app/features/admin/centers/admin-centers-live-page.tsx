@@ -14,7 +14,9 @@ import {
 } from '~/entities/provider/provider-api'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { centerErrorKey } from './center-errors'
 import { CenterManagerSelect } from './components/center-manager-select'
@@ -48,10 +50,12 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
         email: email.trim(),
         address: address.trim(),
         phoneNumber: phone.trim() || undefined,
-        operatingHours: hours.trim() || undefined,
-        managerUserId: managerId.trim() || undefined
+        operatingHours: hours.trim() || undefined
       }
-      return center ? saveCenter(center.id, { ...fields, version: center.version }) : createCenter(fields)
+      // H-12: a manager account belongs to one center in Identity, so it is assigned after the center exists.
+      return center
+        ? saveCenter(center.id, { ...fields, managerUserId: managerId.trim() || undefined, version: center.version })
+        : createCenter(fields)
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
@@ -87,7 +91,9 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
             />
           </label>
         ))}
-        <CenterManagerSelect className={inputClass} onChange={setManagerId} value={managerId} />
+        {center ? (
+          <CenterManagerSelect centerId={center.id} className={inputClass} onChange={setManagerId} value={managerId} />
+        ) : null}
       </div>
       {mutation.isError ? <p role='alert'>{t(centerErrorKey(mutation.error, `${key}.saveError`))}</p> : null}
       <div className='flex gap-3'>
@@ -110,6 +116,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
+  const [confirmArchive, setConfirmArchive] = useState(false)
   const [status, setStatus] = useState<(typeof statuses)[number]>('ACTIVE')
   const [reason, setReason] = useState('')
   const center = useQuery({ queryKey: providerKeys.center(id), queryFn: () => fetchCenter(id), retry: false })
@@ -125,9 +132,11 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
   const archive = useMutation({
     mutationFn: () => removeCenter(id, center.data!.version),
     onSuccess: async () => {
+      setConfirmArchive(false)
       await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
       onClose()
-    }
+    },
+    onError: () => setConfirmArchive(false)
   })
   if (center.isPending) return <p role='status'>{t(`${key}.loading`)}</p>
   if (center.isError)
@@ -229,9 +238,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
       <button
         className='rounded-lg border border-error px-3 py-2 text-error disabled:opacity-50'
         disabled={archive.isPending}
-        onClick={() => {
-          if (window.confirm(t(`${key}.confirmArchive`))) archive.mutate()
-        }}
+        onClick={() => setConfirmArchive(true)}
         type='button'
       >
         {t(`${key}.archive`)}
@@ -240,6 +247,17 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
         <p role='alert'>{t(centerErrorKey(changeStatus.error ?? archive.error, `${key}.actionError`))}</p>
       ) : null}
       <ProviderMediaPanel ownerId={id} ownerType='CARE_CENTER' />
+      <ConfirmDialog
+        cancelLabel={t(`${key}.cancel`)}
+        confirmLabel={t(`${key}.archive`)}
+        description={t(`${key}.confirmArchive`)}
+        loading={archive.isPending}
+        onClose={() => setConfirmArchive(false)}
+        onConfirm={() => archive.mutate()}
+        open={confirmArchive}
+        title={t(`${key}.archive`)}
+        tone='danger'
+      />
     </section>
   )
 }
@@ -325,7 +343,9 @@ export function AdminCentersPage() {
                     <p className='text-sm text-outline'>{center.address || center.email}</p>
                   </div>
                   <div className='flex items-center gap-3'>
-                    <span className='text-sm'>{t(statusKeys[center.centerStatus])}</span>
+                    <ProviderStatusBadge status={center.centerStatus}>
+                      {t(statusKeys[center.centerStatus])}
+                    </ProviderStatusBadge>
                     <button
                       className='text-primary underline'
                       onClick={() => update('center', center.id)}

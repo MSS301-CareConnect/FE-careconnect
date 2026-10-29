@@ -6,7 +6,7 @@ import { listManagedUsers } from '~/shared/api/generated/api/account/account'
 const PAGE_SIZE = 100
 const MAX_PAGES = 5
 
-export type CenterManagerOption = { id: string; fullName: string; email: string }
+export type CenterManagerOption = { id: string; fullName: string; email: string; centerId?: string }
 
 /** Under the account list key, so creating or changing an account refreshes the picker too. */
 export const centerManagersQueryKey = ['identity', 'users', 'active-center-managers'] as const
@@ -21,7 +21,12 @@ async function fetchActiveCenterManagers(): Promise<CenterManagerOption[]> {
     if (!users || !Array.isArray(users.content)) throw new Error('Invalid IdentityService user page')
     for (const user of users.content)
       if (user.id && user.status === 'ACTIVE' && user.roles?.includes('CENTER_MANAGER'))
-        managers.push({ id: user.id, fullName: user.fullName || user.email || '', email: user.email ?? '' })
+        managers.push({
+          id: user.id,
+          fullName: user.fullName || user.email || '',
+          email: user.email ?? '',
+          centerId: user.centerId ?? undefined
+        })
     if (page + 1 >= users.totalPages) break
   }
   return managers.sort((a, b) => a.fullName.localeCompare(b.fullName, 'vi'))

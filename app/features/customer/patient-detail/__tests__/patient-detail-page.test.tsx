@@ -16,6 +16,13 @@ vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) =
   createMedication: vi.fn()
 }))
 
+// The co-managers card has its own tests; here it only needs an answer so it renders no error.
+vi.mock('~/entities/care-recipient/care-recipient-managers-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-managers-api')>()),
+  fetchManagers: vi.fn().mockResolvedValue([]),
+  fetchInvitations: vi.fn().mockResolvedValue([])
+}))
+
 const detail: CareRecipientDetailRecord = {
   myAccessLevel: 'OWNER',
   profile: {

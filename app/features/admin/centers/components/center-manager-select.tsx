@@ -6,14 +6,20 @@ import { useCenterManagers } from '../hooks/use-center-managers'
 
 const key = 'admin.provider.manager' as const
 
-type CenterManagerSelectProps = { value: string; onChange: (id: string) => void; className: string }
+type CenterManagerSelectProps = {
+  centerId: string
+  value: string
+  onChange: (id: string) => void
+  className: string
+}
 
 /** Picks the center's manager among ACTIVE CENTER_MANAGER accounts; the ID is sent, the name is shown. */
-export function CenterManagerSelect({ value, onChange, className }: CenterManagerSelectProps) {
+export function CenterManagerSelect({ centerId, value, onChange, className }: CenterManagerSelectProps) {
   const { t } = useTranslation()
   const hintId = useId()
   const managers = useCenterManagers()
-  const options = managers.data ?? []
+  // ProviderService only accepts a manager whose Identity account belongs to this center (H-12).
+  const options = (managers.data ?? []).filter((manager) => manager.centerId === centerId)
   // A saved manager who is no longer an active CENTER_MANAGER stays visible instead of silently changing.
   const missing = Boolean(value) && managers.isSuccess && !options.some((manager) => manager.id === value)
 

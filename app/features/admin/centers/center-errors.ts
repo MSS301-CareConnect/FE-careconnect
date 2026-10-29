@@ -6,7 +6,8 @@ const MANAGER_ERRORS = {
   4120: 'admin.provider.errors.managerRequired',
   4500: 'admin.provider.errors.identityUnavailable',
   4501: 'admin.provider.errors.managerNotFound',
-  4502: 'admin.provider.errors.managerInvalid'
+  4502: 'admin.provider.errors.managerInvalid',
+  4503: 'admin.provider.errors.managerCenterMismatch'
 } as const
 
 type Fallback = 'admin.provider.saveError' | 'admin.provider.actionError'

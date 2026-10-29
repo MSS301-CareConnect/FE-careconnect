@@ -7,6 +7,7 @@ import { Icon } from '~/shared/ui/icon'
 
 import { CarePlanSection } from './components/care-plan-section'
 import { EmergencyContactsCard } from './components/emergency-contacts-card'
+import { ManagersCard } from './components/managers-card'
 import { MedicalBackgroundSection } from './components/medical-background-section'
 import { PatientDetailHeader } from './components/patient-detail-header'
 import { PatientSnapshotCard } from './components/patient-snapshot-card'
@@ -97,6 +98,7 @@ export function PatientDetailPage() {
               contacts={detail.data.emergencyContacts ?? []}
               isEditMode={isEditMode}
             />
+            <ManagersCard recipientId={profile.id} />
           </div>
 
           {/* Right Column (8 cols) */}
