@@ -8552,18 +8552,10 @@ components:
           type: string
           maxLength: 5000
           minLength: 0
-        caregiverStatus:
-          type: string
-          enum:
-            - ACTIVE
-            - INACTIVE
-            - SUSPENDED
-            - ARCHIVED
         version:
           type: integer
           format: int64
       required:
-        - caregiverStatus
         - experienceYears
         - fullName
         - version

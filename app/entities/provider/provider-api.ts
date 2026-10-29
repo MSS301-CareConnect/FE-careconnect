@@ -163,7 +163,7 @@ export async function createCaregiver(centerId: string, request: CaregiverCreate
 export async function saveCaregiver(id: string, request: CaregiverUpdateRequest) {
   return result(await updateProviderCaregiver(id, request, await writeOptions()))
 }
-/** Status changes go through their own PATCH; the profile PUT ignores `caregiverStatus` (M-12). */
+/** Status changes go through their own PATCH; the profile PUT has no status field (M-12). */
 export async function changeCaregiverStatus(id: string, request: CaregiverStatusRequest) {
   return result(await setProviderCaregiverStatus(id, request, await writeOptions()))
 }

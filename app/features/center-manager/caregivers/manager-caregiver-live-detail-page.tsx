@@ -47,23 +47,25 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
   const [experience, setExperience] = useState(person.experienceYears ?? 0)
   const [bio, setBio] = useState(person.bio ?? '')
   const [status, setStatus] = useState(person.caregiverStatus)
+  const canActivate = person.verificationStatus === 'VERIFIED'
   const [birthDate, setBirthDate] = useState(person.dateOfBirth ?? '')
   const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER' | ''>(person.gender ?? '')
   const update = useMutation({
     mutationFn: async () => {
-      const saved = await saveCaregiver(person.id, {
+      // M-12: ProviderService changes status only through its own PATCH (it also flags the caregiver's visits, H-11).
+      // The PATCH runs first because it flushes and returns the new version; the profile PUT returns it before flushing.
+      const version =
+        status === person.caregiverStatus
+          ? person.version
+          : (await changeCaregiverStatus(person.id, { status, version: person.version })).version
+      await saveCaregiver(person.id, {
         fullName: name.trim(),
         experienceYears: experience,
         bio: bio.trim() || undefined,
-        caregiverStatus: status,
         dateOfBirth: birthDate || undefined,
         gender: gender || undefined,
-        version: person.version
+        version
       })
-      // M-12: ProviderService changes status only through its own PATCH (it also flags the caregiver's visits, H-11).
-      if (status !== person.caregiverStatus) {
-        await changeCaregiverStatus(person.id, { status, version: saved.version })
-      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(person.id) })
@@ -137,7 +139,12 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
                 (typeof statusOptions)[keyof typeof statusOptions]
               ][]
             ).map(([value, label]) => (
-              <option key={value} value={value}>
+              // PRV-06: only a verified caregiver can be made active.
+              <option
+                disabled={value === 'ACTIVE' && !canActivate && person.caregiverStatus !== 'ACTIVE'}
+                key={value}
+                value={value}
+              >
                 {t(`${key}.${label}`)}
               </option>
             ))}

@@ -978,7 +978,6 @@ export const getCaregiverUpdateRequestMock = (
   dateOfBirth: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
   experienceYears: faker.number.int({ min: 0, max: 80 }),
   bio: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 0, max: 5000 } }), undefined]),
-  caregiverStatus: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'SUSPENDED', 'ARCHIVED'] as const),
   version: faker.number.int(),
   ...overrideResponse
 })

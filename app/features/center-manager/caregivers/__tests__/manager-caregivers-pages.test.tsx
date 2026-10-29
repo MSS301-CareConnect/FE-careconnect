@@ -170,21 +170,64 @@ describe('Center Manager Provider caregivers', () => {
         expect.objectContaining({ fullName: 'Lan Tran', version: 4 })
       )
     )
+    // ProviderService rejects unknown fields, so the profile PUT never carries the status.
+    expect(vi.mocked(saveCaregiver).mock.calls[0]?.[1]).not.toHaveProperty('caregiverStatus')
+    expect(changeCaregiverStatus).not.toHaveBeenCalled()
   })
 
-  it('changes the status through its own request after saving the profile (M-12)', async () => {
+  it('changes the status through its own request before saving the profile with the new version (M-12)', async () => {
     vi.mocked(fetchCaregiver).mockResolvedValue(person)
     vi.mocked(fetchCertificates).mockResolvedValue([])
-    vi.mocked(saveCaregiver).mockResolvedValue({ ...person, version: 5 })
-    vi.mocked(changeCaregiverStatus).mockResolvedValue({ ...person, caregiverStatus: 'SUSPENDED', version: 6 })
+    vi.mocked(changeCaregiverStatus).mockResolvedValue({ ...person, caregiverStatus: 'SUSPENDED', version: 5 })
+    vi.mocked(saveCaregiver).mockResolvedValue({ ...person, caregiverStatus: 'SUSPENDED', version: 6 })
     renderManager('/center-manager/caregivers/caregiver-1')
 
     fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }))
     fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'SUSPENDED' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() =>
-      expect(changeCaregiverStatus).toHaveBeenCalledWith('caregiver-1', { status: 'SUSPENDED', version: 5 })
+      expect(saveCaregiver).toHaveBeenCalledWith('caregiver-1', expect.objectContaining({ version: 5 }))
     )
+    expect(changeCaregiverStatus).toHaveBeenCalledWith('caregiver-1', { status: 'SUSPENDED', version: 4 })
+    expect(vi.mocked(changeCaregiverStatus).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(saveCaregiver).mock.invocationCallOrder[0] ?? 0
+    )
+  })
+
+  it('does not save the profile when the status change is rejected (M-12)', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue(person)
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(changeCaregiverStatus).mockRejectedValue(new Error('conflict'))
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }))
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'INACTIVE' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(saveCaregiver).not.toHaveBeenCalled()
+  })
+
+  it('offers the active status only to a verified caregiver (PRV-06)', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue({ ...person, caregiverStatus: 'INACTIVE' })
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }))
+    expect(screen.getByRole('option', { name: 'Active' })).toBeDisabled()
+    expect(screen.getByRole('option', { name: 'Suspended' })).toBeEnabled()
+  })
+
+  it('lets a verified caregiver be activated', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue({
+      ...person,
+      caregiverStatus: 'INACTIVE',
+      verificationStatus: 'VERIFIED'
+    })
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }))
+    expect(screen.getByRole('option', { name: 'Active' })).toBeEnabled()
   })
 
   it('confirms a pending certificate as the first review step (M-12)', async () => {

@@ -5,7 +5,6 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { CaregiverUpdateRequestCaregiverStatus } from './caregiverUpdateRequestCaregiverStatus'
 import type { CaregiverUpdateRequestGender } from './caregiverUpdateRequestGender'
 
 export interface CaregiverUpdateRequest {
@@ -26,6 +25,5 @@ export interface CaregiverUpdateRequest {
    * @maxLength 5000
    */
   bio?: string
-  caregiverStatus: CaregiverUpdateRequestCaregiverStatus
   version: number
 }
