@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
 import { fetchCenters, providerKeys } from '~/entities/provider/provider-api'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { fetchProviderStatistics, statisticsKeys } from '~/entities/statistics/statistics-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { CenterDetails, CenterForm } from './admin-centers-live-page'
@@ -73,7 +75,11 @@ export function AdminCentersPage() {
   }
 
   const rows = centers.data?.items ?? []
-  const pageCount = (statusValue: string) => rows.filter((center) => center.centerStatus === statusValue).length
+  // M-15: platform-wide counts per status from ProviderService; the page's rows only fill in while they load.
+  const statistics = useQuery({ queryKey: statisticsKeys.providers, queryFn: fetchProviderStatistics, retry: false })
+  const pageCount = (statusValue: string) =>
+    statistics.data?.centersByStatus?.[statusValue] ??
+    rows.filter((center) => center.centerStatus === statusValue).length
   const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN'
   const number = new Intl.NumberFormat(locale)
 
@@ -120,8 +126,14 @@ export function AdminCentersPage() {
               </span>
               <Icon className='text-xl text-primary' name={icon} />
             </div>
-            <strong className='mt-5 block text-3xl'>{centers.isSuccess ? number.format(value) : '—'}</strong>
-            <p className='mt-2 text-xs text-on-surface-variant'>{t(`admin.provider.metricsScope.${name}`)}</p>
+            <strong className='mt-5 block text-3xl tabular-nums'>
+              {centers.isSuccess ? number.format(value) : '—'}
+            </strong>
+            <p className='mt-2 text-xs text-on-surface-variant'>
+              {name !== 'total' && statistics.isSuccess
+                ? t('admin.provider.metricsScope.platform')
+                : t(`admin.provider.metricsScope.${name}`)}
+            </p>
           </div>
         ))}
       </section>
@@ -196,9 +208,9 @@ export function AdminCentersPage() {
           </div>
         ) : null}
         {centers.isSuccess ? (
-          <div className='overflow-x-auto'>
+          <div className='max-h-[70vh] overflow-x-auto'>
             <table className='w-full min-w-[850px] text-left text-sm'>
-              <thead className='bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
+              <thead className='sticky top-0 z-10 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
                 <tr>
                   {(['center', 'legal', 'status', 'actions'] as const).map((column) => (
                     <th className='px-4 py-3' key={column} scope='col'>
@@ -225,9 +237,9 @@ export function AdminCentersPage() {
                       <small className='mt-1 block text-outline'>{center.address || '—'}</small>
                     </td>
                     <td className='px-4 py-4'>
-                      <span className='rounded-full bg-secondary-container/40 px-2.5 py-1 text-xs font-semibold text-primary'>
+                      <ProviderStatusBadge status={center.centerStatus}>
                         {t(`${providerKey}.${statusKeys[center.centerStatus]}`)}
-                      </span>
+                      </ProviderStatusBadge>
                     </td>
                     <td className='px-4 py-4'>
                       <button

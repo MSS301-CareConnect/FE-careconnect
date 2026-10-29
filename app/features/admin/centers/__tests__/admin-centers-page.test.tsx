@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { changeCenterStatus, fetchCenter, fetchCenters, saveCenter } from '~/entities/provider/provider-api'
+import { fetchProviderStatistics } from '~/entities/statistics/statistics-api'
 import { listManagedUsers } from '~/shared/api/generated/api/account/account'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -16,13 +17,33 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   changeCenterStatus: vi.fn(),
   saveCenter: vi.fn()
 }))
+vi.mock('~/entities/statistics/statistics-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/statistics/statistics-api')>()),
+  fetchProviderStatistics: vi.fn().mockRejectedValue(new Error('offline'))
+}))
 vi.mock('~/shared/api/generated/api/account/account', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/shared/api/generated/api/account/account')>()),
   listManagedUsers: vi.fn()
 }))
 
 const accounts = [
-  { id: 'mgr-1', fullName: 'Lan Tran', email: 'lan@example.com', status: 'ACTIVE', roles: ['CENTER_MANAGER'] },
+  {
+    id: 'mgr-1',
+    fullName: 'Lan Tran',
+    email: 'lan@example.com',
+    status: 'ACTIVE',
+    roles: ['CENTER_MANAGER'],
+    centerId: 'center-1'
+  },
+  // H-12: a manager provisioned for another center is not offered for this one.
+  {
+    id: 'mgr-3',
+    fullName: 'Other Center Manager',
+    email: 'other@example.com',
+    status: 'ACTIVE',
+    roles: ['CENTER_MANAGER'],
+    centerId: 'center-9'
+  },
   { id: 'mgr-2', fullName: 'Locked Manager', email: 'locked@example.com', status: 'LOCKED', roles: ['CENTER_MANAGER'] },
   { id: 'cus-1', fullName: 'A Customer', email: 'customer@example.com', status: 'ACTIVE', roles: ['CUSTOMER'] }
 ] as const
@@ -67,6 +88,18 @@ beforeEach(async () => {
 })
 
 describe('Admin provider centers', () => {
+  it('shows platform-wide status counts instead of counting the current page (M-15)', async () => {
+    vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
+    vi.mocked(fetchProviderStatistics).mockResolvedValueOnce({
+      centersByStatus: { PENDING: 7, ACTIVE: 12, SUSPENDED: 3 }
+    })
+    renderPage()
+
+    expect(await screen.findByText('12')).toBeInTheDocument()
+    expect(screen.getByText('7')).toBeInTheDocument()
+    expect(screen.getAllByText('Across the platform')).toHaveLength(3)
+  })
+
   it('loads centers, opens the real detail, and sends its version when updating status', async () => {
     vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
     vi.mocked(fetchCenter).mockResolvedValue(center)

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
 import { Icon } from '~/shared/ui/icon'
+import { NotificationBell } from '~/entities/notification/notification-bell'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { ADMIN_SIDEBAR_ID } from './admin-sidebar'
@@ -20,7 +21,7 @@ export function AdminTopbar({ menuOpen, onToggleMenu }: AdminTopbarProps) {
           aria-controls={ADMIN_SIDEBAR_ID}
           aria-expanded={menuOpen}
           aria-label={t(menuOpen ? 'admin.closeMenu' : 'admin.openMenu')}
-          className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low lg:hidden'
+          className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:hidden'
           onClick={onToggleMenu}
           type='button'
         >
@@ -30,16 +31,7 @@ export function AdminTopbar({ menuOpen, onToggleMenu }: AdminTopbarProps) {
           <div className='[&_button]:px-2'>
             <LanguageSwitch />
           </div>
-          <button
-            aria-label={t('admin.notifications')}
-            className='relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant disabled:cursor-not-allowed'
-            disabled
-            title={t('admin.unavailable')}
-            type='button'
-          >
-            <Icon name='notifications' />
-            <span className='absolute right-1 top-1 h-2 w-2 rounded-full bg-error' />
-          </button>
+          <NotificationBell />
           <PortalAccountMenu fallbackName={t('admin.manager')} roleLabel={t('admin.role')} />
         </div>
       </div>

@@ -1,6 +1,6 @@
 /**
- * Admin sidebar items grouped by area; an item without `to` awaits its backend contract. Revenue, quality and
- * policy previews stay routable but are left out of the menu until their backend exists (D26).
+ * Admin sidebar items grouped by area; every item opens a live screen (Đợt 5). Revenue, quality and policy previews
+ * stay routable but are left out of the menu until their backend exists (D26).
  */
 export const adminNavigation = [
   {
@@ -12,8 +12,8 @@ export const adminNavigation = [
     items: [
       { key: 'services', to: '/admin/services', icon: 'medical_information' },
       { key: 'centers', to: '/admin/centers', icon: 'apartment' },
-      { key: 'bookings', icon: 'calendar_month' },
-      { key: 'caregivers', icon: 'medical_services' }
+      { key: 'bookings', to: '/admin/bookings', icon: 'calendar_month' },
+      { key: 'caregivers', to: '/admin/caregivers', icon: 'medical_services' }
     ]
   },
   {
@@ -27,7 +27,8 @@ export const adminNavigation = [
     key: 'system',
     items: [
       { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
-      { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' }
+      { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },
+      { key: 'incidents', to: '/admin/incidents', icon: 'sync_problem' }
     ]
   }
 ] as const
@@ -36,5 +37,5 @@ export type AdminNavigationGroup = (typeof adminNavigation)[number]
 export type AdminNavigationItem = AdminNavigationGroup['items'][number]
 
 export function isActiveItem(item: AdminNavigationItem, pathname: string) {
-  return 'to' in item && (pathname === item.to || pathname.startsWith(`${item.to}/`))
+  return pathname === item.to || pathname.startsWith(`${item.to}/`)
 }

@@ -92,13 +92,18 @@ describe('Admin dashboard', () => {
         .map((list) => list.getAttribute('aria-labelledby'))
     ).toEqual(['admin-nav-overview', 'admin-nav-operations', 'admin-nav-customerCare', 'admin-nav-system'])
     const operations = screen.getByRole('list', { name: 'Vận hành' })
-    expect(within(operations).getByRole('button', { name: /Quản lý Lịch đặt/ })).toBeDisabled()
+    expect(within(operations).getByRole('link', { name: /Quản lý Lịch đặt/ })).toHaveAttribute(
+      'href',
+      '/admin/bookings'
+    )
+    expect(within(operations).queryByRole('button')).not.toBeInTheDocument()
     expect(within(operations).getByRole('link', { name: /Dịch vụ & Bảng giá/ })).toHaveAttribute(
       'href',
       '/admin/services'
     )
     const system = screen.getByRole('list', { name: 'Hệ thống' })
     expect(within(system).getByRole('link', { name: /Tài khoản/ })).toHaveAttribute('href', '/admin/accounts')
+    expect(within(system).getByRole('link', { name: /Sự cố đồng bộ/ })).toHaveAttribute('href', '/admin/incidents')
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })
 

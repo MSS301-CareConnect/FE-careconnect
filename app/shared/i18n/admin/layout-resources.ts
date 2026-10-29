@@ -1,6 +1,7 @@
 export const adminLayoutVi = {
   accounts: 'Tài khoản',
   roles: 'Vai trò và quyền',
+  incidents: 'Sự cố đồng bộ',
   security: 'Bảo mật',
   role: 'Quản trị viên',
   menu: 'Menu quản trị hệ thống',
@@ -34,6 +35,7 @@ export const adminLayoutVi = {
 export const adminLayoutEn = {
   accounts: 'Accounts',
   roles: 'Roles and permissions',
+  incidents: 'Sync incidents',
   security: 'Security',
   role: 'Administrator',
   menu: 'System administration menu',
