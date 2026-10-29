@@ -290,8 +290,32 @@ registrations, and cancels pending registrations; `/caregiver/profile` reads the
 its media. The former sample dashboard, history, shift-detail, active-session and care-report screens were removed;
 care reports and notifications return when their live flows are built.
 
-`shared/ui/section-card` provides the generic section presentation used by these
-features; it has no portal or domain imports.
+### Design system tokens and shared UI primitives
+
+`app/app.css` defines the unified "Warm Botanical Clinical" design system tokens in
+Tailwind v4 `@theme` (`--color-primary`, `--color-surface*`, `--color-on-surface*`,
+`--color-outline*`, `--color-success*`, `--color-warning*`, `--color-error*`,
+`--color-info*`, `--shadow-card`, `--shadow-elevated`, `--shadow-modal`, and font
+families `Be Vietnam Pro` / `Manrope` / `JetBrains Mono`). Features and entities
+consume these semantic tokens instead of hardcoded hex colors or ad-hoc palette
+classes.
+
+`app/shared/ui/` owns framework-and-domain-neutral UI primitives with `≥ 44px` touch
+targets and keyboard focus rings:
+
+- `button.tsx` (`Button`, `IconButton`): `primary`, `secondary`, `ghost`, and `danger` variants with loading and icon states.
+- `status-badge.tsx` (`StatusBadge`): semantic `success`, `warning`, `error`, `info`, and `neutral` pills with optional status dot.
+- `form-field.tsx` (`FormField`, `TextInput`, `SelectInput`, `TextareaInput`): accessible label, helper text, error message, and `aria-invalid`/`aria-describedby` wiring.
+- `modal.tsx` (`Modal`, `ConfirmDialog`): native `<dialog>` modal and accessible confirmation dialog replacing browser `window.confirm`.
+- `toast.tsx` (`ToastProvider`, `useToast`): non-blocking status notifications (`aria-live="polite"`).
+- `pagination.tsx` (`Pagination`): accessible pagination bar with `tabular-nums`.
+- `data-table.tsx` (`DataTableShell`): responsive table wrapper with sticky header support.
+- `state-panels.tsx` (`SkeletonBlock`, `TableSkeleton`, `CardGridSkeleton`, `EmptyState`, `ErrorState`, `ForbiddenState`, `OfflineBanner`): unified loading, empty, error, 403, and offline states.
+- `section-card.tsx`, `language-switch.tsx`, `site-footer.tsx`, `icon.tsx`: generic layout cards, VI/EN language switcher, footer, and Material Symbols icon wrapper.
+
+Domain-specific status mapping lives in `app/entities/` (`booking/booking-status-badge.tsx`
+and `provider/provider-status-badge.tsx`), mapping backend booking, occurrence, center,
+caregiver, verification, and shift statuses onto `StatusBadge` tones.
 
 The Center Manager caregiver list and detail routes read ProviderService through the
 gateway. Identity `/users/me` supplies the assigned `centerId`; the manager UI does
@@ -327,24 +351,14 @@ mutations use Identity CSRF headers and invalidate the related TanStack Query
 cache. The backend enforces center ownership and pricing permissions. Admin's
 center pricing view remains read-only.
 
-The Center Manager booking list lives at `/center-manager/bookings` and uses
-role-local fixtures under `features/center-manager/booking-management/`. It is a
-dated sample snapshot while the backend booking contract is unavailable. Search,
-service/status/area/period filters, sorting, pagination, and the selected booking
-preview are represented in URL search parameters. CSV export uses the filtered
-sample rows. Assignment, cancellation, emergency creation, receipts, reports,
-and the live map remain disabled until authorized backend operations exist.
-The Manager detail route `/center-manager/bookings/:id` resolves the same booking
-fixture by ID. The supplied clinical timeline and financial breakdown belong only
-to `BK-8821`; other sample bookings show their available summary without borrowing
-that patient's details. The finance example calculates a consistent discounted
-total, deposit, and balance from the design numbers. GPS and payments are labeled
-as sample or unavailable. The cancellation dialog cannot submit; dispatch notes
-remain local drafts. The booking list links to this route and retains its quick
-preview dialog.
+The Center Manager booking list `/center-manager/bookings` and detail `/center-manager/bookings/:id` read
+BookingService for the manager's center (list filters in URL search parameters). The detail accepts, rejects,
+cancels and reassigns through `entities/booking`; the caregiver picker marks who is free for every upcoming visit
+using ProviderService `/caregivers/search` with the booking's services and visit slots (M-16, Đợt 5), and the
+backend checks again on save. No-show reports are decided per visit.
 
 The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts` groups the
-menu into Overview, Operations, Customers and System; items without a route stay disabled. Revenue,
+menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue,
 quality and policy previews keep their routes but are left out of the menu until a backend exists (D26).
 At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
 navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
@@ -353,10 +367,13 @@ Admin pages do not render breadcrumbs.
 The Admin portal has its own `/admin` layout, VI/EN menu resources, and child
 routes `/admin/dashboard`, `/admin/revenue`, `/admin/customers`,
 `/admin/customers/:id`, `/admin/services`, `/admin/centers`,
-`/admin/centers/:id/caregivers`,
-`/admin/policies`, `/admin/quality`, and `/admin/reviews-complaints`.
-The last route is the separate Admin review and complaint workspace;
-`/admin` redirects to its dashboard.
+`/admin/centers/:id/caregivers`, `/admin/bookings`, `/admin/bookings/:id`, `/admin/caregivers`,
+`/admin/incidents`, `/admin/policies`, `/admin/quality`, and `/admin/reviews-complaints`;
+`/admin` redirects to its dashboard. `/admin/bookings` lists every booking (backend paginated, status and keyword in
+URL search parameters); its detail cancels on behalf of the platform (M-11: full refund like a center cancel).
+`/admin/caregivers` is the platform-wide caregiver verification queue. `/admin/incidents` lists BookingService and
+ProviderService outbox events that ran out of retries and requeues them or marks them handled by hand (H-08).
+`/admin/reviews-complaints` is the live escalated-complaint queue (`entities/aftercare`, H-05).
 It does not import feature internals from the other roles. Both pages use distinct,
 dated September 2026 design snapshots because the supplied KPI totals describe
 different examples. They are not combined into a platform ledger or presented as
@@ -367,14 +384,8 @@ preview; CSV export includes the filtered sample rows. Bank reconciliation,
 payout approval, invoices, live gateway status, refresh, and unimplemented Admin
 menu destinations await backend contracts. The Admin parent layout checks the
 Identity ADMIN role; each backend operation enforces its own authorization.
-The customer list and detail use a separate role-local October 2026 design snapshot,
-not the dashboard or revenue totals. List search, status/booking volume/region
-filters, sorting, and pagination live in URL search parameters. Its CSV export
-contains only filtered sample rows. Detail resolves the same customer fixture by
-ID; patient histories, payment methods, bookings, and audit entries from the
-supplied detailed example appear only for `CUST-1024`. Customer creation,
-account suspension/reactivation, password resets, notifications, clinical record
-access, and note persistence await a backend contract and Admin authorization.
+`/admin/customers` and `/admin/customers/:id` redirect to the Identity account list filtered to CUSTOMER and to
+the account detail; the former illustrative customer snapshot was removed (M-13).
 `/admin/services` reads and manages the CareCatalogService standard catalog through
 `entities/care-catalog`, which owns the gateway wrappers and query keys. The catalog
 endpoint returns every non-deleted item, so keyword, category, status and page live in
@@ -395,7 +406,10 @@ labeled design samples. `/admin/centers` now
 uses ProviderService for backend-paginated centers, detail, create, edit, status
 change, and archive. URL search parameters hold the keyword, status, page, and
 selected center. The Admin caregiver review route uses the selected center ID and
-ProviderService for caregiver and certificate verification. Identity account
+ProviderService for caregiver and certificate verification. Certificates are reviewed in two steps: the center
+manager confirms a PENDING certificate on the caregiver detail (`CENTER_VERIFIED`), then the admin approves or
+rejects it (`ADMIN_VERIFIED` / `REJECTED`); both send `{ approved, reason, version }`. The admin center KPIs read
+platform-wide status counts from `/care-centers/statistics` (M-15). Identity account
 provisioning remains a separate workflow at `/admin/accounts`.
 The policy and caregiver quality pages use independent, dated Admin design snapshots.
 Policy deposit and payout cycle controls update a local simulation only; no values
@@ -404,12 +418,6 @@ use URL search parameters, and a selected caregiver opens a read-only sample
 profile. Sample OCR, license, legal, clinical, payment and risk data are not
 live verification results. Policy publication, caregiver approval/rejection,
 license checking and clinical calls await backend contracts and authorization.
-The review and complaint workspace uses an independent illustrative design snapshot.
-Tabs, search, severity/status filters and the selected complaint live in URL search
-parameters. The CSAT export contains only the sample feedback shown on this page.
-Complaint decisions, refunds, caregiver replacement/discipline, medical records,
-SOS escalation, escrow and live review moderation require backend contracts and
-Admin authorization. No sample case is treated as a real medical or payment result.
 
 ### Feature-internal organization
 
@@ -616,6 +624,7 @@ Contract update workflow:
 
 ### Configuration
 
+- Node.js 22.22 or newer (`engines` in `package.json`, `.nvmrc`); React Router 8 tooling warns on older versions.
 - `VITE_API_BASE_URL` is public and defaults to `/api`.
 - `API_PROXY_TARGET` is read only by the Vite development server and defaults to
   `http://localhost:8080` for the local API gateway. The Vite `/api` proxy preserves
@@ -624,21 +633,25 @@ Contract update workflow:
   production API prefix therefore requires a rebuild unless the deployment keeps the
   stable `/api` ingress contract.
 - No token, private key, or service credential belongs in a `VITE_*` variable.
-- `PAYMENT_DEMO_SERVICE_CLIENT_ID/SECRET` are read only by the `pnpm dev` server
-  (`scripts/payment-demo.mjs`). Until PaymentService exists, that server answers the
-  `Payment` tag (`POST /payments/deposits`, `GET /payments/{id}`, contract PAY-05/06)
-  and the dev-only `PaymentDemo` tag; every other `/api/v1/payments/*` request still
-  goes through the proxy to the gateway and `BE/scripts/e2e/payment_stub.py`. A
-  successful demo payment takes a SERVICE token and calls BookingService
-  `deposit-paid`, so the booking becomes CONFIRMED as after a real IPN. Builds never
-  include the demo, and its gateway page is reached only through the returned
-  `paymentUrl`.
-- BookingService leaves `depositAmount` empty: PaymentService decides the deposit as
-  the booking total times the `depositPercent` of the center's policy in effect
-  (`PaymentPolicy` tag, C2.1 `GET /payment-policies/effective`, answered by the payment
-  stub). The demo charges that amount, and `useDepositAmount` in `entities/payment`
-  shows the same figure as an estimate until PaymentService records the real one; the
-  gateway page always shows the amount of the opened session.
+- Payments use the real PaymentService through the gateway (Đợt 1c, 2026-10-30); the former
+  `pnpm dev` payment demo and its `PaymentDemo` tag were removed. `entities/payment` wraps
+  the generated `Payment`, `PaymentPolicy`, `Refund` and `RemainingInvoice` clients.
+  `/customer/bookings/:id/deposit` opens a VNPay checkout
+  (`POST /payments/bookings/{bookingId}/checkout`, provider VNPAY, D16) and leaves the app
+  for the returned `checkoutUrl`; the customer picks QR, ATM or card on the VNPay page.
+  PaymentService `VNPAY_RETURN_URL` must point to `/customer/payments/vnpay-return`: that
+  screen sends the signed query to `GET /payments/vnpay/return`, then opens
+  `/customer/payments/:paymentId/success|failure`, which polls `GET /payments/{id}` while it is
+  PENDING because the IPN, not the browser return, records the money.
+- BookingService leaves `depositAmount` empty: PaymentService computes the deposit per visit
+  from the center's policy snapshot. `useDepositAmount` shows the booking total times the
+  `depositPercent` of `GET /payment-policies/effective` as an estimate; the VNPay page shows
+  the exact amount of the opened session.
+- `/customer/payments` (account menu "Payments & refunds") lists remaining-balance invoices
+  with a VNPay pay action (`POST /remaining-invoices/{id}/payments`), warns when an OVERDUE
+  invoice blocks new bookings (`GET /payments/me/outstanding`), and shows the customer's
+  payment history (`GET /payments`, real `refundedAmount`) and refunds (`GET /refunds`).
+  PaymentService error codes map to `payment.errors.e<code>` translations.
 
 ### Testing and debugging
 

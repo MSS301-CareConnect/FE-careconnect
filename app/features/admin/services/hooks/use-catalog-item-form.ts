@@ -20,7 +20,7 @@ import {
   type CatalogItemErrors
 } from '../catalog-item-form'
 
-export type CatalogFormError = 'forbidden' | 'notFound' | 'invalid' | 'failed'
+export type CatalogFormError = 'forbidden' | 'notFound' | 'invalid' | 'stale' | 'failed'
 
 /** Maps a failed save without a field-specific code to the single form-level message. */
 export function catalogFormError(error: unknown): CatalogFormError {
@@ -28,6 +28,8 @@ export function catalogFormError(error: unknown): CatalogFormError {
   if (status === 401 || status === 403) return 'forbidden'
   if (status === 404 || careCatalogErrorCode(error) === 3100) return 'notFound'
   if (status === 400) return 'invalid'
+  // M-04: another admin saved this item after the dialog opened.
+  if (careCatalogErrorCode(error) === 3006) return 'stale'
   return 'failed'
 }
 
@@ -41,7 +43,7 @@ export function useCatalogItemForm(item: CatalogItemRecord | undefined, onSaved:
 
   const save = useMutation({
     mutationFn: (request: ReturnType<typeof toCatalogItemRequest>) =>
-      item ? saveCatalog(item.id, request) : createCatalog(request),
+      item ? saveCatalog(item.id, { ...request, version: item.version }) : createCatalog(request),
     onSuccess: async (saved) => {
       await queryClient.invalidateQueries({ queryKey: careCatalogKeys.all })
       onSaved(saved)

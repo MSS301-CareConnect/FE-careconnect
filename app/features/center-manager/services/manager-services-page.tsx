@@ -11,6 +11,7 @@ import {
   fetchPricePlans
 } from '~/entities/care-catalog/care-catalog-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import type { PricePlanRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -153,11 +154,9 @@ export function ManagerServicesPage() {
                       <span className='mt-1 block text-xs text-on-surface-variant'>
                         {offering.catalogItem.category}
                       </span>
-                      <span
-                        className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${offering.status === 'ACTIVE' ? 'bg-primary/10 text-primary' : 'bg-surface-container text-on-surface-variant'}`}
-                      >
-                        {t(`${key}.statuses.${offering.status}`)}
-                      </span>
+                      <div className='mt-2'>
+                        <ProviderStatusBadge label={t(`${key}.statuses.${offering.status}`)} status={offering.status} />
+                      </div>
                     </button>
                   </li>
                 ))}
@@ -241,7 +240,7 @@ export function ManagerServicesPage() {
                           </p>
                         </div>
                         <div className='flex items-center gap-3'>
-                          <strong className='whitespace-nowrap text-sm text-primary'>
+                          <strong className='whitespace-nowrap text-sm text-primary tabular-nums'>
                             {money.format(plan.basePrice)}
                           </strong>
                           <button

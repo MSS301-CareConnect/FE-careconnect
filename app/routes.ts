@@ -21,7 +21,11 @@ export default [
       route('customers/:id', 'routes/admin/customer-detail.tsx'),
       route('accounts', 'routes/admin/accounts.tsx'),
       route('accounts/:id', 'routes/admin/account-detail.tsx'),
-      route('roles', 'routes/admin/roles.tsx')
+      route('roles', 'routes/admin/roles.tsx'),
+      route('incidents', 'routes/admin/incidents.tsx'),
+      route('bookings', 'routes/admin/bookings.tsx'),
+      route('bookings/:id', 'routes/admin/booking-detail.tsx'),
+      route('caregivers', 'routes/admin/caregivers.tsx')
     ])
   ]),
   ...prefix('center-manager', [
@@ -35,7 +39,8 @@ export default [
       route('services', 'routes/center-manager/services.tsx'),
       route('work-shifts/:id', 'routes/center-manager/work-shift-detail.tsx'),
       route('bookings', 'routes/center-manager/bookings.tsx'),
-      route('bookings/:id', 'routes/center-manager/booking-detail.tsx')
+      route('bookings/:id', 'routes/center-manager/booking-detail.tsx'),
+      route('complaints', 'routes/center-manager/complaints.tsx')
     ])
   ]),
   ...prefix('caregiver', [
@@ -60,9 +65,10 @@ export default [
       route('booking', 'routes/customer/booking.tsx'),
       route('bookings', 'routes/customer/bookings.tsx'),
       route('bookings/:id', 'routes/customer/booking-detail.tsx'),
-      route('bookings/:code/report', 'routes/customer/care-report.tsx'),
       route('bookings/:id/deposit', 'routes/customer/booking-payment.tsx'),
-      route('payments/:paymentId/gateway', 'routes/customer/payment-gateway.tsx'),
+      route('payments', 'routes/customer/payments.tsx'),
+      route('invitations', 'routes/customer/invitations.tsx'),
+      route('payments/vnpay-return', 'routes/customer/payment-return.tsx'),
       route('payments/:paymentId/success', 'routes/customer/payment-success.tsx'),
       route('payments/:paymentId/failure', 'routes/customer/payment-failure.tsx'),
       route('my-profile', 'routes/customer/my-profile.tsx'),

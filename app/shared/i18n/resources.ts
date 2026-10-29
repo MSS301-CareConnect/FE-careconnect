@@ -1,6 +1,8 @@
 import { commonEn, commonVi } from './common-resources'
 import { bookingSharedEn, bookingSharedVi } from './booking-resources'
 import { paymentSharedEn, paymentSharedVi } from './payment-resources'
+import { notificationEn, notificationVi } from './notification-resources'
+import { aftercareEn, aftercareVi } from './aftercare-resources'
 import { statisticsEn, statisticsVi } from './statistics-resources'
 import { publicHomeEn, publicHomeVi } from './public/home-resources'
 import { authEn, authVi } from './auth/login-resources'
@@ -23,7 +25,18 @@ import { customerProviderEn, customerProviderVi } from './customer/provider-reso
 import { bookingEn, bookingVi } from './customer/booking-resources'
 import { careReportEn, careReportVi } from './customer/care-report-resources'
 import { bookingReviewEn, bookingReviewVi } from './customer/booking-review-resources'
-import { customerPaymentEn, customerPaymentVi } from './customer/payment-resources'
+import {
+  customerPaymentEn,
+  customerPaymentVi,
+  customerPaymentsEn,
+  customerPaymentsVi
+} from './customer/payment-resources'
+import {
+  customerInvitationsEn,
+  customerInvitationsVi,
+  customerManagersEn,
+  customerManagersVi
+} from './customer/managers-resources'
 import { centerPickerEn, centerPickerVi } from './customer/center-picker-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
 import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
@@ -41,7 +54,6 @@ import { managerServicesEn, managerServicesVi } from './center-manager/services-
 import { managerStatisticsEn, managerStatisticsVi } from './center-manager/statistics-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
-import { adminCustomersEn, adminCustomersVi } from './admin/customers-resources'
 import { adminCentersEn, adminCentersVi } from './admin/centers-resources'
 import { adminRevenueEn, adminRevenueVi } from './admin/revenue-resources'
 import { adminServicesEn, adminServicesVi } from './admin/services-resources'
@@ -49,6 +61,9 @@ import { adminPoliciesEn, adminPoliciesVi } from './admin/policies-resources'
 import { adminQualityEn, adminQualityVi } from './admin/quality-resources'
 import { adminReviewsComplaintsEn, adminReviewsComplaintsVi } from './admin/reviews-complaints-resources'
 import { identityEn, identityVi } from './admin/identity-resources'
+import { adminIncidentsEn, adminIncidentsVi } from './admin/incidents-resources'
+import { adminBookingsEn, adminBookingsVi } from './admin/bookings-resources'
+import { adminCaregiverQueueEn, adminCaregiverQueueVi } from './admin/caregiver-queue-resources'
 import { adminProviderEn, adminProviderVi } from './admin/provider-resources'
 
 export const resources = {
@@ -57,6 +72,8 @@ export const resources = {
       ...commonEn,
       booking: bookingSharedEn,
       payment: paymentSharedEn,
+      notifications: notificationEn,
+      aftercare: aftercareEn,
       statistics: statisticsEn,
       home: publicHomeEn,
       auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn },
@@ -78,6 +95,9 @@ export const resources = {
         careReport: careReportEn,
         bookingReview: bookingReviewEn,
         payment: customerPaymentEn,
+        payments: customerPaymentsEn,
+        managers: customerManagersEn,
+        invitations: customerInvitationsEn,
         centerPicker: centerPickerEn
       },
       caregiver: {
@@ -102,12 +122,14 @@ export const resources = {
         ...adminLayoutEn,
         dashboardPage: adminDashboardEn,
         revenuePage: adminRevenueEn,
-        customersPage: adminCustomersEn,
         servicesPage: adminServicesEn,
         centersPage: adminCentersEn,
         policiesPage: adminPoliciesEn,
         qualityPage: adminQualityEn,
         reviewsComplaintsPage: adminReviewsComplaintsEn,
+        incidentsPage: adminIncidentsEn,
+        bookingsPage: adminBookingsEn,
+        caregiverQueuePage: adminCaregiverQueueEn,
         identity: identityEn,
         provider: adminProviderEn
       }
@@ -118,6 +140,8 @@ export const resources = {
       ...commonVi,
       booking: bookingSharedVi,
       payment: paymentSharedVi,
+      notifications: notificationVi,
+      aftercare: aftercareVi,
       statistics: statisticsVi,
       home: publicHomeVi,
       auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi },
@@ -139,6 +163,9 @@ export const resources = {
         careReport: careReportVi,
         bookingReview: bookingReviewVi,
         payment: customerPaymentVi,
+        payments: customerPaymentsVi,
+        managers: customerManagersVi,
+        invitations: customerInvitationsVi,
         centerPicker: centerPickerVi
       },
       caregiver: {
@@ -163,12 +190,14 @@ export const resources = {
         ...adminLayoutVi,
         dashboardPage: adminDashboardVi,
         revenuePage: adminRevenueVi,
-        customersPage: adminCustomersVi,
         servicesPage: adminServicesVi,
         centersPage: adminCentersVi,
         policiesPage: adminPoliciesVi,
         qualityPage: adminQualityVi,
         reviewsComplaintsPage: adminReviewsComplaintsVi,
+        incidentsPage: adminIncidentsVi,
+        bookingsPage: adminBookingsVi,
+        caregiverQueuePage: adminCaregiverQueueVi,
         identity: identityVi,
         provider: adminProviderVi
       }

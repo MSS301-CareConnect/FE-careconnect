@@ -2,6 +2,9 @@
   "name": "software-license-management-web",
   "private": true,
   "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": ">=22.22.0"
+  },
   "type": "module",
   "scripts": {
     "api:generate": "pnpm api:validate && orval --config ./orval.config.ts",

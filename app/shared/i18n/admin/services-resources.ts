@@ -86,6 +86,7 @@ export const adminServicesVi = {
     formErrors: {
       forbidden: 'Bạn chưa có quyền thực hiện thao tác này. Yêu cầu quyền Quản trị viên.',
       notFound: 'Dịch vụ này không còn tồn tại. Vui lòng đóng hộp thoại và tải lại danh sách.',
+      stale: 'Dịch vụ vừa được người khác cập nhật. Vui lòng đóng hộp thoại và mở lại.',
       invalid: 'Thông tin chưa hợp lệ. Vui lòng kiểm tra lại các trường.',
       failed: 'Chưa thể lưu dịch vụ lúc này. Vui lòng thử lại sau.'
     }
@@ -99,6 +100,7 @@ export const adminServicesVi = {
     errors: {
       forbidden: 'Bạn chưa có quyền xóa dịch vụ. Yêu cầu quyền Quản trị viên.',
       notFound: 'Dịch vụ này đã bị xóa trước đó.',
+      stale: 'Dịch vụ vừa được người khác cập nhật. Vui lòng đóng hộp thoại và mở lại.',
       invalid: 'Không thể xóa dịch vụ này.',
       failed: 'Chưa thể xóa dịch vụ lúc này. Vui lòng thử lại sau.'
     }
@@ -238,6 +240,7 @@ export const adminServicesEn = {
     formErrors: {
       forbidden: 'You do not have permission to do this. Administrator access is required.',
       notFound: 'This service no longer exists. Close the dialog and reload the list.',
+      stale: 'Someone else just updated this service. Close the dialog and open it again.',
       invalid: 'Some information is not valid. Check the fields and try again.',
       failed: 'The service could not be saved right now. Try again later.'
     }
@@ -251,6 +254,7 @@ export const adminServicesEn = {
     errors: {
       forbidden: 'You do not have permission to delete services. Administrator access is required.',
       notFound: 'This service was already deleted.',
+      stale: 'Someone else just updated this service. Close the dialog and open it again.',
       invalid: 'This service cannot be deleted.',
       failed: 'The service could not be deleted right now. Try again later.'
     }

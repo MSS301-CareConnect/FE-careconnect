@@ -28,9 +28,13 @@ const labelClass = 'block text-sm font-semibold text-on-surface'
 const statusOptions = ['ACTIVE', 'INACTIVE'] as const
 const pricingUnits = Object.values(PricePlanRequestPricingUnit)
 
-function errorKind(error: unknown): 'invalid' | 'duplicate' | 'unauthenticated' | 'forbidden' | 'notFound' | 'failed' {
+function errorKind(
+  error: unknown
+): 'invalid' | 'duplicate' | 'stale' | 'unauthenticated' | 'forbidden' | 'notFound' | 'failed' {
   const status = careCatalogErrorStatus(error)
   if (status === 400 || status === 422) return 'invalid'
+  // M-04: someone else saved this record after the form opened.
+  if (careCatalogErrorCode(error) === 3006) return 'stale'
   if (status === 409) return 'duplicate'
   if (status === 401) return 'unauthenticated'
   if (status === 403) return 'forbidden'
@@ -104,7 +108,7 @@ export function OfferingEditor({
   const [invalid, setInvalid] = useState(false)
   const save = useMutation({
     mutationFn: (request: CenterOfferingRequest) =>
-      offering ? saveOffering(offering.id, request) : createOffering(request),
+      offering ? saveOffering(offering.id, { ...request, version: offering.version }) : createOffering(request),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: careCatalogKeys.all })
       onClose()
@@ -227,7 +231,7 @@ export function PricePlanEditor({
   const [invalid, setInvalid] = useState(false)
   const save = useMutation({
     mutationFn: (request: PricePlanRequest) =>
-      plan ? saveOfferingPricePlan(plan.id, request) : createOfferingPricePlan(request),
+      plan ? saveOfferingPricePlan(plan.id, { ...request, version: plan.version }) : createOfferingPricePlan(request),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: careCatalogKeys.pricePlans(offeringId) })
       onClose()
