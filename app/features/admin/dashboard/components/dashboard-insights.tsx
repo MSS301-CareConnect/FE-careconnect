@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { Icon } from '~/shared/ui/icon'
 import { adminDashboardPreview as data } from '../dashboard-preview'
 
@@ -96,14 +97,12 @@ export function DashboardInsights() {
             <Icon className='text-primary' name='pending_actions' />
             {t(`${key}.pendingProfiles`, { count: data.pendingLicenses })}
           </span>
-          <button
-            className='rounded-lg bg-white px-2 py-1 text-xs font-semibold text-primary disabled:opacity-50'
-            disabled
-            title={t('admin.unavailable')}
-            type='button'
+          <Link
+            className='inline-flex min-h-11 items-center rounded-lg bg-white px-3 text-xs font-semibold text-primary hover:bg-secondary-container focus-visible:outline-2 focus-visible:outline-primary'
+            to='/admin/caregivers'
           >
             {t(`${key}.approve`)}
-          </button>
+          </Link>
         </div>
       </section>
       <section className='rounded-xl bg-white p-5 shadow-sm sm:p-6'>
@@ -151,15 +150,6 @@ export function DashboardInsights() {
               <span className='text-outline'>{t(`${key}.hotlineHint`)}</span>
             </span>
           </span>
-          <button
-            aria-label={t(`${key}.call`)}
-            className='rounded-lg bg-white p-2 text-primary disabled:opacity-50'
-            disabled
-            title={t('admin.unavailable')}
-            type='button'
-          >
-            <Icon className='text-base' name='call' />
-          </button>
         </div>
       </section>
     </div>

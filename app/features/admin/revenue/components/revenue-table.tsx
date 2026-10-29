@@ -167,16 +167,6 @@ function RevenueRow({
           >
             <Icon name='visibility' />
           </button>
-          {transaction.status === 'pending' && (
-            <button
-              className='rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-white disabled:opacity-55'
-              disabled
-              title={t('admin.unavailable')}
-              type='button'
-            >
-              {t(`${key}.approval`)}
-            </button>
-          )}
         </div>
       </td>
     </tr>

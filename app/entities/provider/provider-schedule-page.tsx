@@ -6,23 +6,36 @@ import { Link } from 'react-router'
 import { formatProviderDate, formatProviderTime } from './provider-format'
 import { fetchCenterSchedules, fetchMySchedules, providerKeys, updateCaregiverSchedule } from './provider-api'
 import { ProviderStatusBadge } from './provider-status-badge'
-import type { ProviderScheduleRecord, ScheduleStatusRequest } from '~/shared/api/generated/contracts'
+import type { ProviderScheduleRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
 
-const statusKeys = {
-  SCHEDULED: 'scheduled',
-  IN_PROGRESS: 'inProgress',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled'
-} as const
+// D11: an availability slot is only open (SCHEDULED) or cancelled; care itself runs on assigned visits.
+const FILTERS = ['ALL', 'UPCOMING', 'PAST', 'CANCELLED'] as const
+type Filter = (typeof FILTERS)[number]
+const filterKeys = { ALL: 'allStatuses', UPCOMING: 'upcoming', PAST: 'past', CANCELLED: 'cancelled' } as const
+
+/** A slot is over once its end time has passed in the browser's local time. */
+function isPast(item: ProviderScheduleRecord, now: number) {
+  return new Date(`${item.workDate}T${item.endTime}`).getTime() <= now
+}
+
+function matches(filter: Filter, item: ProviderScheduleRecord, now: number) {
+  if (filter === 'ALL') return true
+  if (filter === 'CANCELLED') return item.scheduleStatus === 'CANCELLED'
+  if (item.scheduleStatus === 'CANCELLED') return false
+  return filter === 'PAST' ? isPast(item, now) : !isPast(item, now)
+}
 
 export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(0)
+  const [filter, setFilter] = useState<Filter>('ALL')
+  const [cancelling, setCancelling] = useState<ProviderScheduleRecord | null>(null)
   const [reason, setReason] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ALL' | ProviderScheduleRecord['scheduleStatus']>('ALL')
+  const [reasonMissing, setReasonMissing] = useState(false)
   const manager = centerId !== undefined
   const key = manager ? 'centerManager.schedules' : 'caregiver.provider'
   const queryKey = manager
@@ -35,20 +48,41 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
     enabled: !manager || Boolean(centerId),
     retry: false
   })
-  const update = useMutation({
-    mutationFn: ({ item, status }: { item: ProviderScheduleRecord; status: ScheduleStatusRequest['status'] }) => {
-      const request = { status, version: item.version, reason: status === 'CANCELLED' ? reason.trim() : undefined }
-      return updateCaregiverSchedule(item.id, request)
-    },
+  const cancel = useMutation({
+    mutationFn: (item: ProviderScheduleRecord) =>
+      updateCaregiverSchedule(item.id, { status: 'CANCELLED', version: item.version, reason: reason.trim() }),
     onSuccess: async () => {
-      setReason('')
+      closeCancel()
       await queryClient.invalidateQueries({ queryKey: providerKeys.mySchedules })
     }
   })
   const title = t(manager ? 'centerManager.schedules.title' : 'caregiver.provider.schedulesTitle')
+  // Fixed when the page opens so the list does not shift between renders.
+  const [now] = useState(() => Date.now())
   const rows = schedules.data?.items ?? []
-  const visible = statusFilter === 'ALL' ? rows : rows.filter((item) => item.scheduleStatus === statusFilter)
+  const visible = rows.filter((item) => matches(filter, item, now))
   useDocumentTitle(title)
+
+  function openCancel(item: ProviderScheduleRecord) {
+    cancel.reset()
+    setReason('')
+    setReasonMissing(false)
+    setCancelling(item)
+  }
+  function closeCancel() {
+    setCancelling(null)
+    setReason('')
+    setReasonMissing(false)
+  }
+  function confirmCancel() {
+    if (!cancelling) return
+    if (!reason.trim()) {
+      setReasonMissing(true)
+      return
+    }
+    cancel.mutate(cancelling)
+  }
+
   if (manager && !centerId)
     return (
       <main className='mx-auto max-w-6xl p-6' role='alert'>
@@ -56,7 +90,7 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
       </main>
     )
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
+    <main className='mx-auto max-w-5xl space-y-6 px-4 py-7 sm:px-6'>
       <header className='space-y-3'>
         <nav aria-label={title} className='flex items-center gap-1 text-xs text-on-surface-variant'>
           <Link className='hover:text-primary' to={manager ? '/center-manager' : '/caregiver/visits'}>
@@ -65,179 +99,176 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
           <Icon className='text-sm' name='chevron_right' />
           <span className='font-semibold text-on-surface'>{title}</span>
         </nav>
-        <div className='flex flex-wrap items-center justify-between gap-4'>
-          <div>
+        <div className='flex flex-wrap items-start justify-between gap-4'>
+          <div className='max-w-2xl'>
             <h1 className='text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl'>{title}</h1>
-            <p className='mt-1.5 text-sm text-on-surface-variant'>{t(`${key}.pageScope`)}</p>
+            <p className='mt-2 text-sm leading-6 text-on-surface-variant'>{t(`${key}.availabilityIntro`)}</p>
           </div>
           <span className='rounded-xl border border-outline-variant/60 bg-secondary-container px-4 py-2 text-sm font-semibold tabular-nums text-primary'>
-            {t(`${key}.summary`, { count: schedules.data?.totalElements ?? 0 })}
+            {t(`${key}.availabilitySummary`, { count: schedules.data?.totalElements ?? 0 })}
           </span>
         </div>
       </header>
-      <div className='grid gap-4 sm:grid-cols-3'>
-        {(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED'] as const).map((status) => (
-          <section
-            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'
-            key={status}
+
+      <div
+        aria-label={t(`${key}.filterLabel`)}
+        className='flex flex-wrap gap-1.5 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-xs'
+        role='group'
+      >
+        {FILTERS.map((option) => (
+          <button
+            aria-pressed={filter === option}
+            className={`min-h-11 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${filter === option ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-container-low'}`}
+            key={option}
+            onClick={() => setFilter(option)}
+            type='button'
           >
-            <div className='flex items-center justify-between'>
-              <h2 className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
-                {t(`${key}.${statusKeys[status]}`)}
-              </h2>
-              <Icon
-                className='text-2xl text-primary'
-                name={status === 'SCHEDULED' ? 'event' : status === 'IN_PROGRESS' ? 'timelapse' : 'task_alt'}
-              />
-            </div>
-            <p className='mt-3 text-3xl font-extrabold tabular-nums text-on-surface'>
-              {schedules.isSuccess
-                ? new Intl.NumberFormat(i18n.language).format(
-                    rows.filter((item) => item.scheduleStatus === status).length
-                  )
-                : '—'}
-            </p>
-            <p className='mt-1.5 text-xs text-outline'>{t(`${key}.pageScope`)}</p>
-          </section>
+            {t(`${key}.${filterKeys[option]}`)}
+          </button>
         ))}
       </div>
-      <div className='grid items-start gap-6 lg:grid-cols-12'>
-        <div className={`space-y-4 ${manager ? 'lg:col-span-12' : 'lg:col-span-8'}`}>
-          <div className='flex flex-wrap gap-1.5 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-xs'>
-            {(['ALL', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const).map((status) => (
-              <button
-                aria-pressed={statusFilter === status}
-                className={`min-h-10 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors ${statusFilter === status ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container-low'}`}
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                type='button'
+
+      {schedules.isPending ? (
+        <div
+          className='h-44 animate-pulse rounded-2xl border border-outline-variant/60 bg-surface-container-lowest'
+          role='status'
+        >
+          <span className='sr-only'>{t(`${key}.loading`)}</span>
+        </div>
+      ) : null}
+      {schedules.isError ? (
+        <div className='rounded-2xl border border-error/25 bg-surface-container-lowest p-6 shadow-xs' role='alert'>
+          <p className='text-sm text-error'>
+            {t(manager ? 'centerManager.schedules.error' : 'caregiver.provider.schedulesError')}
+          </p>
+          <button
+            className='mt-3 min-h-11 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low'
+            onClick={() => void schedules.refetch()}
+            type='button'
+          >
+            {t(`${key}.retry`)}
+          </button>
+        </div>
+      ) : null}
+      {schedules.isSuccess && visible.length === 0 ? (
+        <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-6 py-14 text-center shadow-xs'>
+          <Icon className='text-4xl text-outline' name='event_busy' />
+          <p className='mt-4 font-bold text-on-surface'>
+            {t(manager ? 'centerManager.schedules.empty' : 'caregiver.provider.schedulesEmpty')}
+          </p>
+        </section>
+      ) : null}
+      {schedules.isSuccess && visible.length > 0 ? (
+        <ul className='space-y-3'>
+          {visible.map((item) => {
+            const past = item.scheduleStatus === 'SCHEDULED' && isPast(item, now)
+            return (
+              <li
+                className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs ${past ? 'opacity-70' : ''}`}
+                key={item.id}
               >
-                {status === 'ALL' ? t(`${key}.allStatuses`) : t(`${key}.${statusKeys[status]}`)}
-              </button>
-            ))}
-          </div>
-          {schedules.isPending ? (
-            <div
-              className='h-44 animate-pulse rounded-2xl border border-outline-variant/60 bg-surface-container-lowest'
-              role='status'
-            >
-              <span className='sr-only'>{t(`${key}.loading`)}</span>
-            </div>
-          ) : null}
-          {schedules.isError ? (
-            <div className='rounded-2xl border border-error/25 bg-surface-container-lowest p-6 shadow-xs' role='alert'>
-              <p className='text-sm text-error'>
-                {t(manager ? 'centerManager.schedules.error' : 'caregiver.provider.schedulesError')}
-              </p>
-              <button
-                className='mt-3 min-h-9 rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-semibold text-primary hover:bg-surface-container-low'
-                onClick={() => void schedules.refetch()}
-                type='button'
-              >
-                {t(`${key}.retry`)}
-              </button>
-            </div>
-          ) : null}
-          {schedules.isSuccess && visible.length === 0 ? (
-            <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-6 py-14 text-center shadow-xs'>
-              <Icon className='text-4xl text-outline' name='event_busy' />
-              <p className='mt-4 font-bold text-on-surface'>
-                {t(manager ? 'centerManager.schedules.empty' : 'caregiver.provider.schedulesEmpty')}
-              </p>
-            </section>
-          ) : null}
-          {schedules.isSuccess ? (
-            <ul className='space-y-3.5'>
-              {visible.map((item) => (
-                <li
-                  className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'
-                  key={item.id}
-                >
-                  <div className='flex flex-wrap items-start justify-between gap-4'>
-                    <div className='space-y-1.5'>
-                      <p className='text-xs font-bold uppercase tracking-wide text-primary'>
-                        {formatProviderDate(item.workDate, i18n.language)}
-                      </p>
-                      <h2 className='text-lg font-bold text-on-surface'>{item.caregiverName || item.caregiverId}</h2>
-                      <p className='flex items-center gap-2 text-sm tabular-nums text-on-surface-variant'>
-                        <Icon className='text-lg text-primary' name='schedule' />
-                        {formatProviderTime(item.startTime, i18n.language)}–
-                        {formatProviderTime(item.endTime, i18n.language)}
-                      </p>
-                    </div>
+                <div className='min-w-0 space-y-1'>
+                  <p className='text-base font-bold text-on-surface'>
+                    {formatProviderDate(item.workDate, i18n.language)}
+                  </p>
+                  <p className='flex items-center gap-2 text-sm tabular-nums text-on-surface-variant'>
+                    <Icon className='text-lg text-primary' name='schedule' />
+                    {formatProviderTime(item.startTime, i18n.language)}–
+                    {formatProviderTime(item.endTime, i18n.language)}
+                  </p>
+                  {manager ? <p className='text-sm text-on-surface'>{item.caregiverName || item.caregiverId}</p> : null}
+                </div>
+                <div className='flex flex-wrap items-center gap-3'>
+                  {past ? (
+                    <span className='rounded-full bg-neutral-container px-3 py-1 text-xs font-semibold text-on-neutral-container'>
+                      {t(`${key}.past`)}
+                    </span>
+                  ) : (
                     <ProviderStatusBadge
-                      label={t(`${key}.${statusKeys[item.scheduleStatus]}`)}
+                      label={t(`${key}.${item.scheduleStatus === 'CANCELLED' ? 'cancelled' : 'scheduled'}`)}
                       status={item.scheduleStatus}
                     />
-                  </div>
-                  {!manager ? (
-                    <div className='mt-4 flex flex-wrap gap-2 border-t border-outline-variant/40 pt-4'>
-                      {/* Lịch là lịch rảnh (D11): caregiver chỉ được hủy; bắt đầu / kết thúc ca làm ở Buổi được giao. */}
-                      {item.scheduleStatus === 'SCHEDULED' ? (
-                        <button
-                          className='min-h-11 rounded-xl border border-error/25 bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container transition-colors hover:bg-error-container/80 disabled:opacity-50'
-                          disabled={update.isPending || !reason.trim()}
-                          onClick={() => update.mutate({ item, status: 'CANCELLED' })}
-                          type='button'
-                        >
-                          {t('caregiver.provider.cancelSchedule')}
-                        </button>
-                      ) : null}
-                    </div>
+                  )}
+                  {!manager && item.scheduleStatus === 'SCHEDULED' && !past ? (
+                    <button
+                      className='min-h-11 rounded-xl border border-error/30 px-4 py-2 text-sm font-semibold text-error transition-colors hover:bg-error-container'
+                      onClick={() => openCancel(item)}
+                      type='button'
+                    >
+                      {t('caregiver.provider.cancelSchedule')}
+                    </button>
                   ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {schedules.isSuccess ? (
-            <div className='flex items-center justify-between rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 text-sm shadow-xs'>
-              <button
-                className='min-h-10 rounded-lg px-3 font-semibold text-primary hover:bg-surface-container-low disabled:opacity-40'
-                disabled={page === 0}
-                onClick={() => setPage(page - 1)}
-                type='button'
-              >
-                {t(`${key}.previous`)}
-              </button>
-              <span className='tabular-nums text-on-surface-variant'>
-                {t(`${key}.page`, { page: page + 1, pages: Math.max(1, schedules.data.totalPages) })}
-              </span>
-              <button
-                className='min-h-10 rounded-lg px-3 font-semibold text-primary hover:bg-surface-container-low disabled:opacity-40'
-                disabled={page + 1 >= schedules.data.totalPages}
-                onClick={() => setPage(page + 1)}
-                type='button'
-              >
-                {t(`${key}.next`)}
-              </button>
-            </div>
-          ) : null}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      ) : null}
+      {schedules.isSuccess && schedules.data.totalPages > 1 ? (
+        <div className='flex items-center justify-between rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3 text-sm shadow-xs'>
+          <button
+            className='min-h-11 rounded-lg px-3 font-semibold text-primary hover:bg-surface-container-low disabled:opacity-40'
+            disabled={page === 0}
+            onClick={() => setPage(page - 1)}
+            type='button'
+          >
+            {t(`${key}.previous`)}
+          </button>
+          <span className='tabular-nums text-on-surface-variant'>
+            {t(`${key}.page`, { page: page + 1, pages: schedules.data.totalPages })}
+          </span>
+          <button
+            className='min-h-11 rounded-lg px-3 font-semibold text-primary hover:bg-surface-container-low disabled:opacity-40'
+            disabled={page + 1 >= schedules.data.totalPages}
+            onClick={() => setPage(page + 1)}
+            type='button'
+          >
+            {t(`${key}.next`)}
+          </button>
         </div>
-        {!manager ? (
-          <aside className='space-y-4 lg:col-span-4'>
-            <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
-              <h2 className='flex items-center gap-2 text-lg font-bold text-on-surface'>
-                <Icon className='text-primary' name='event_note' />
-                {t(`${key}.reason`)}
-              </h2>
-              <p className='mt-2 text-xs leading-5 text-on-surface-variant'>{t(`${key}.reasonHint`)}</p>
-              <label className='mt-4 block text-sm font-semibold text-on-surface'>
-                {t(`${key}.reason`)}
-                <input
-                  className='mt-2 min-h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 font-normal text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/25'
-                  onChange={(event) => setReason(event.target.value)}
-                  value={reason}
-                />
-              </label>
-            </div>
-            {update.isError ? (
-              <p className='rounded-xl bg-error-container p-4 text-sm text-on-error-container' role='alert'>
-                {t(`${key}.actionError`)}
-              </p>
-            ) : null}
-          </aside>
-        ) : null}
-      </div>
+      ) : null}
+
+      {!manager ? (
+        <ConfirmDialog
+          confirmLabel={t('caregiver.provider.cancelSchedule')}
+          danger
+          description={
+            cancelling
+              ? t('caregiver.provider.cancelScheduleDescription', {
+                  date: formatProviderDate(cancelling.workDate, i18n.language),
+                  start: formatProviderTime(cancelling.startTime, i18n.language),
+                  end: formatProviderTime(cancelling.endTime, i18n.language)
+                })
+              : undefined
+          }
+          error={cancel.isError ? t('caregiver.provider.actionError') : undefined}
+          loading={cancel.isPending}
+          onClose={closeCancel}
+          onConfirm={confirmCancel}
+          open={cancelling !== null}
+          title={t('caregiver.provider.cancelScheduleTitle')}
+        >
+          <label className='block text-sm font-semibold text-on-surface' htmlFor='schedule-cancel-reason'>
+            {t('caregiver.provider.reason')}
+          </label>
+          <textarea
+            aria-describedby={reasonMissing ? 'schedule-cancel-reason-error' : undefined}
+            aria-invalid={reasonMissing}
+            className='mt-2 min-h-24 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/25'
+            id='schedule-cancel-reason'
+            onChange={(event) => {
+              setReason(event.target.value)
+              if (event.target.value.trim()) setReasonMissing(false)
+            }}
+            value={reason}
+          />
+          {reasonMissing ? (
+            <p className='mt-1 text-sm text-error' id='schedule-cancel-reason-error'>
+              {t('caregiver.provider.reasonRequired')}
+            </p>
+          ) : null}
+        </ConfirmDialog>
+      ) : null}
     </main>
   )
 }

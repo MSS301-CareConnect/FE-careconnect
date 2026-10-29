@@ -60,20 +60,8 @@ export function AdminServicesPage() {
           <p className='mt-2 text-xs font-semibold text-primary'>{t(`${key}.scope`)}</p>
         </div>
         <div className='flex flex-wrap gap-2'>
-          {(['history', 'importExport'] as const).map((action) => (
-            <button
-              className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold disabled:opacity-50'
-              disabled
-              key={action}
-              title={t(`${key}.unavailable`)}
-              type='button'
-            >
-              <Icon className='text-lg' name={action === 'history' ? 'history' : 'file_download'} />
-              {t(`${key}.${action}`)}
-            </button>
-          ))}
           <button
-            className='inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white'
+            className='inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:bg-primary-container'
             onClick={() => setEditing({ mode: 'create' })}
             type='button'
           >

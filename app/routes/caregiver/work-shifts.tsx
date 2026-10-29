@@ -1,5 +1,5 @@
-import { CaregiverProviderWorkShiftsPage } from '~/features/caregiver/provider/caregiver-provider-pages'
+import { CaregiverWorkShiftsPage } from '~/features/caregiver/provider/caregiver-work-shifts-page'
 
 export default function CaregiverWorkShiftsRoute() {
-  return <CaregiverProviderWorkShiftsPage />
+  return <CaregiverWorkShiftsPage />
 }

@@ -5,10 +5,7 @@ export const adminServicesVi = {
   scope: 'Thay đổi danh mục chuẩn được áp dụng ngay cho các trung tâm và khách hàng.',
   badge: 'Dịch vụ Y tế Tiêu chuẩn',
   liveSource: 'Cập nhật theo thời gian thực',
-  history: 'Lịch sử thay đổi biểu phí',
-  importExport: 'Nhập / Xuất Excel',
   add: 'Thêm dịch vụ mới',
-  unavailable: 'Tính năng sắp ra mắt',
   metrics: {
     total: 'Tổng dịch vụ chuẩn',
     active: 'Đang hoạt động',
@@ -159,10 +156,7 @@ export const adminServicesEn = {
   scope: 'Changes to the standard catalog apply immediately to centers and customers.',
   badge: 'Standard healthcare services',
   liveSource: 'Updated in real time',
-  history: 'Pricing change history',
-  importExport: 'Import / export Excel',
   add: 'Add service',
-  unavailable: 'Coming soon',
   metrics: {
     total: 'Standard services',
     active: 'Active',

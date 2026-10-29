@@ -45,11 +45,13 @@ describe('Admin revenue preview', () => {
     expect(screen.getAllByText(/1[.,]482[.,]500[.,]000\s*₫/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/324[.,]000\s*₫/).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('row')).toHaveLength(7)
-    expect(screen.getByRole('button', { name: 'Xử lý lệnh chi trả' })).toBeDisabled()
+    // Preview pages offer no action that cannot run.
+    expect(screen.queryByRole('button', { name: 'Xử lý lệnh chi trả' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Chờ chi trả (1)' }))
     expect(screen.getByTestId('location')).toHaveTextContent('status=pending')
     expect(screen.getAllByRole('row')).toHaveLength(2)
-    expect(screen.getByRole('button', { name: 'Duyệt chi trả' })).toBeDisabled()
+    // Preview pages offer no action that cannot run.
+    expect(screen.queryByRole('button', { name: 'Duyệt chi trả' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Xem giao dịch TXN-904098' }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Giao dịch #TXN-904098')
     expect(screen.getByRole('dialog')).toHaveTextContent('dữ liệu mẫu')
@@ -92,6 +94,7 @@ describe('Admin revenue preview', () => {
     renderRevenue()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Transactions & Revenue Management')
-    expect(screen.getByRole('button', { name: 'Automated bank reconciliation' })).toBeDisabled()
+    // Preview pages offer no action that cannot run.
+    expect(screen.queryByRole('button', { name: 'Automated bank reconciliation' })).not.toBeInTheDocument()
   })
 })

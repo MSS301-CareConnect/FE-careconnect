@@ -20,20 +20,9 @@ export function RevenueAnalytics() {
             <h2 className='text-lg font-bold'>{t(`${key}.chart`)}</h2>
             <p className='mt-1 text-sm text-outline'>{t(`${key}.chartHint`)}</p>
           </div>
-          <div className='flex flex-wrap gap-1 rounded-lg bg-surface-container-low p-1'>
-            {(['week', 'month', 'quarter', 'year'] as const).map((period) => (
-              <button
-                aria-pressed={period === 'month'}
-                className={`rounded-md px-2 py-1.5 text-xs font-semibold ${period === 'month' ? 'bg-white text-primary shadow-sm' : 'text-outline opacity-55'}`}
-                disabled={period !== 'month'}
-                key={period}
-                title={period !== 'month' ? t('admin.unavailable') : undefined}
-                type='button'
-              >
-                {t(`${key}.chartPeriods.${period}`)}
-              </button>
-            ))}
-          </div>
+          <span className='rounded-lg bg-surface-container-low px-3 py-2 text-xs font-semibold text-primary'>
+            {t(`${key}.chartPeriods.month`)}
+          </span>
         </div>
         <div className='mt-5 flex justify-end gap-3 text-xs'>
           <span className='flex items-center gap-1.5'>

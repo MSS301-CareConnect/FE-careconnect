@@ -85,14 +85,6 @@ export function AdminQualityPage() {
         </div>
         <div className='flex flex-wrap gap-2'>
           <button
-            className='rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold opacity-50'
-            disabled
-            title={t(`${key}.unavailable`)}
-            type='button'
-          >
-            {t(`${key}.standards`)}
-          </button>
-          <button
             className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold disabled:opacity-50'
             disabled={!filtered.length}
             onClick={exportCsv}
@@ -100,14 +92,6 @@ export function AdminQualityPage() {
           >
             <Icon name='description' />
             {t(`${key}.export`)}
-          </button>
-          <button
-            className='rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold opacity-50'
-            disabled
-            title={t(`${key}.unavailable`)}
-            type='button'
-          >
-            {t(`${key}.history`)}
           </button>
         </div>
       </header>
@@ -296,14 +280,6 @@ export function AdminQualityPage() {
                       >
                         {t(`${key}.actions.details`)}
                       </button>
-                      <button
-                        className='rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-white opacity-50'
-                        disabled
-                        title={t(`${key}.unavailable`)}
-                        type='button'
-                      >
-                        {t(`${key}.actions.${record.status === 'discrepancy' ? 'review' : 'approve'}`)}
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -339,14 +315,6 @@ export function AdminQualityPage() {
           <h2 className='font-bold'>{t(`${key}.clinical`)}</h2>
           <Icon className='my-5 text-4xl text-primary' name='video_call' />
           <p className='text-sm leading-6 text-on-surface-variant'>{t(`${key}.clinicalHint`)}</p>
-          <button
-            className='mt-4 rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold opacity-50'
-            disabled
-            title={t(`${key}.unavailable`)}
-            type='button'
-          >
-            {t(`${key}.call`)}
-          </button>
         </div>
         <div className={card}>
           <h2 className='font-bold'>{t(`${key}.guarantor`)}</h2>

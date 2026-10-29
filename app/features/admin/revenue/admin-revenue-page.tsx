@@ -88,22 +88,6 @@ export function AdminRevenuePage() {
             <Icon className='mr-1 text-base' name='download' />
             {t(`${key}.export`)}
           </button>
-          <button
-            className='rounded-lg bg-surface-container px-3 py-2.5 text-sm font-semibold disabled:opacity-50'
-            disabled
-            title={t('admin.unavailable')}
-            type='button'
-          >
-            {t(`${key}.reconcile`)}
-          </button>
-          <button
-            className='rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50'
-            disabled
-            title={t('admin.unavailable')}
-            type='button'
-          >
-            {t(`${key}.payout`)}
-          </button>
         </div>
       </header>
       <p className='rounded-lg bg-secondary-container/40 px-4 py-3 text-xs leading-5 text-primary'>

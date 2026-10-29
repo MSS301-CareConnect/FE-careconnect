@@ -40,28 +40,11 @@ export function AdminPoliciesPage() {
         </div>
         <div className='flex flex-wrap gap-2'>
           <button
-            className='rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold opacity-50'
-            disabled
-            title={t(`${key}.unavailable`)}
-            type='button'
-          >
-            {t(`${key}.history`)}
-          </button>
-          <button
             className='rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold text-primary'
             onClick={() => focusSection('deposit')}
             type='button'
           >
             {t(`${key}.simulate`)}
-          </button>
-          <button
-            className='inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white opacity-50'
-            disabled
-            title={t(`${key}.unavailable`)}
-            type='button'
-          >
-            <Icon name='save' />
-            {t(`${key}.save`)}
           </button>
         </div>
       </header>
@@ -149,19 +132,6 @@ export function AdminPoliciesPage() {
               <h2 className='font-bold'>{t(`${key}.refundTitle`)}</h2>
               <p className='text-xs text-outline'>{t(`${key}.refundHint`)}</p>
             </div>
-          </div>
-          <div className='mt-5 flex items-center justify-between rounded-lg bg-surface-container-low p-3 text-sm'>
-            <span>{t(`${key}.autoRefund`)}</span>
-            <button
-              aria-checked='true'
-              className='h-6 w-11 cursor-not-allowed rounded-full bg-primary/50 p-0.5'
-              disabled
-              role='switch'
-              title={t(`${key}.unavailable`)}
-              type='button'
-            >
-              <span className='ml-auto block h-5 w-5 rounded-full bg-white' />
-            </button>
           </div>
           <ol className='mt-5 space-y-3'>
             {refundPreview.map((rule, index) => (

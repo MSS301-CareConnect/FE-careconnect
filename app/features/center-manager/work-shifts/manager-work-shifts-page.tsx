@@ -76,6 +76,8 @@ function ShiftEditor({
   const [capacity, setCapacity] = useState(shift?.capacity ?? 1)
   const [deadline, setDeadline] = useState(localDateTimeInput(shift?.registrationDeadline))
   const [invalidDeadline, setInvalidDeadline] = useState(false)
+  const [startInPast, setStartInPast] = useState(false)
+  const [today] = useState(() => localDateTimeInput(new Date().toISOString()).slice(0, 10))
   const [note, setNote] = useState(shift?.note ?? '')
   const save = useMutation({
     mutationFn: () => {
@@ -101,6 +103,13 @@ function ShiftEditor({
   const saveErrorCode = apiErrorCode(save.error)
   function submit(event: FormEvent) {
     event.preventDefault()
+    // A new or moved shift must start in the future; editing other fields of a past shift stays allowed.
+    const moved = !shift || workDate !== shift.workDate || startTime !== shift.startTime.slice(0, 5)
+    if (moved && workDate && startTime && new Date(`${workDate}T${startTime}`).getTime() <= Date.now()) {
+      setStartInPast(true)
+      return
+    }
+    setStartInPast(false)
     if (deadline && workDate && startTime && deadline >= `${workDate}T${startTime}`) {
       setInvalidDeadline(true)
       return
@@ -112,16 +121,29 @@ function ShiftEditor({
     <form className='space-y-5 rounded-xl bg-white p-5' onSubmit={submit}>
       <h2 className='text-lg font-semibold'>{t(shift ? `${key}.editShift` : `${key}.createShift`)}</h2>
       <div className='grid gap-4 sm:grid-cols-2'>
-        <label className='text-sm'>
-          {t(`${key}.workDate`)}
-          <input
-            className={inputClass}
-            onChange={(event) => setWorkDate(event.target.value)}
-            required
-            type='date'
-            value={workDate}
-          />
-        </label>
+        <div className='text-sm'>
+          <label>
+            {t(`${key}.workDate`)}
+            <input
+              aria-describedby={startInPast ? 'shift-start-error' : undefined}
+              aria-invalid={startInPast}
+              className={inputClass}
+              min={shift ? undefined : today}
+              onChange={(event) => {
+                setWorkDate(event.target.value)
+                setStartInPast(false)
+              }}
+              required
+              type='date'
+              value={workDate}
+            />
+          </label>
+          {startInPast ? (
+            <span className='mt-1 block text-error' id='shift-start-error' role='alert'>
+              {t(`${key}.startInPast`)}
+            </span>
+          ) : null}
+        </div>
         <label className='text-sm'>
           {t(`${key}.startTime`)}
           <input
@@ -225,6 +247,12 @@ function ShiftEditor({
   )
 }
 
+/** An open or draft shift whose end has passed still needs the manager to close or cancel it. */
+function isOver(shift: ProviderWorkShiftRecord, now: number) {
+  if (shift.shiftStatus === 'CANCELLED' || shift.shiftStatus === 'COMPLETED') return false
+  return new Date(`${shift.workDate}T${shift.endTime}`).getTime() <= now
+}
+
 export function ManagerWorkShiftsPage() {
   const { t, i18n } = useTranslation()
   const centerId = useAuthUser()?.centerId ?? ''
@@ -233,6 +261,8 @@ export function ManagerWorkShiftsPage() {
   const page = Math.max(0, Number(params.get('page')) || 0)
   const keyword = params.get('q') ?? ''
   const statusFilter = params.get('status') ?? 'all'
+  // Fixed when the page opens so rows do not change between renders.
+  const [now] = useState(() => Date.now())
   const shifts = useQuery({
     queryKey: [...providerKeys.shifts(centerId), page],
     queryFn: () => fetchWorkShifts({ centerId, page, size: 20 }),
@@ -244,7 +274,7 @@ export function ManagerWorkShiftsPage() {
   const visible = rows.filter(
     (shift) =>
       (!keyword ||
-        [shift.shiftType, shift.workDate, shift.id].some((value) =>
+        [shift.shiftType, shift.workDate].some((value) =>
           value.toLocaleLowerCase().includes(keyword.trim().toLocaleLowerCase())
         )) &&
       (statusFilter === 'all' || shift.shiftStatus === statusFilter)
@@ -412,10 +442,17 @@ export function ManagerWorkShiftsPage() {
                         </td>
                         <td className='px-5 py-4'>{shift.shiftType}</td>
                         <td className='px-5 py-4'>
-                          <ProviderStatusBadge
-                            label={t(shiftStatusKeys[shift.shiftStatus])}
-                            status={shift.shiftStatus}
-                          />
+                          <span className='flex flex-wrap items-center gap-1.5'>
+                            <ProviderStatusBadge
+                              label={t(shiftStatusKeys[shift.shiftStatus])}
+                              status={shift.shiftStatus}
+                            />
+                            {isOver(shift, now) ? (
+                              <span className='rounded-full bg-neutral-container px-2.5 py-0.5 text-xs font-semibold text-on-neutral-container'>
+                                {t(`${key}.pastShift`)}
+                              </span>
+                            ) : null}
+                          </span>
                         </td>
                         <td className='px-5 py-4 tabular-nums'>
                           <strong>

@@ -52,8 +52,7 @@ export const adminDashboardVi = {
     communication: 'Giao tiếp & y đức'
   },
   hotline: 'Đường dây nóng kiểm soát chất lượng y khoa',
-  hotlineHint: 'Số đường dây nóng đang được cập nhật',
-  call: 'Gọi trực tiếp'
+  hotlineHint: 'Số đường dây nóng đang được cập nhật'
 } as const
 
 export const adminDashboardEn = {
@@ -106,6 +105,5 @@ export const adminDashboardEn = {
     communication: 'Communication & ethics'
   },
   hotline: 'Medical quality hotline',
-  hotlineHint: 'Hotline number is being updated',
-  call: 'Call directly'
+  hotlineHint: 'Hotline number is being updated'
 } as const

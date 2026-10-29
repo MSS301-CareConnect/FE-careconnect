@@ -4,32 +4,21 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import {
-  cancelMyShiftRegistration,
   createCertificate,
   fetchMyCaregiverProfile,
-  fetchMyShiftRegistrations,
   fetchCertificates,
   fetchProviderMedia,
-  fetchWorkShifts,
   providerKeys,
-  registerForShift,
   uploadMedia
 } from '~/entities/provider/provider-api'
-import { formatProviderDate, formatProviderTime } from '~/entities/provider/provider-format'
+import { formatProviderDate } from '~/entities/provider/provider-format'
 import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { ConfirmDialog } from '~/shared/ui/modal'
 
 const key = 'caregiver.provider' as const
 const verificationStatusKeys = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
-const registrationStatusKeys = {
-  PENDING: 'pending',
-  APPROVED: 'approved',
-  REJECTED: 'rejected',
-  CANCELLED: 'cancelled'
-} as const
 
 export function CaregiverProviderProfilePage() {
   const { t, i18n } = useTranslation()
@@ -362,206 +351,6 @@ export function CaregiverProviderProfilePage() {
           </div>
         </>
       ) : null}
-    </main>
-  )
-}
-
-export function CaregiverProviderWorkShiftsPage() {
-  const { t, i18n } = useTranslation()
-  const queryClient = useQueryClient()
-  const [page, setPage] = useState(0)
-  const [registrationPage, setRegistrationPage] = useState(0)
-  const [note, setNote] = useState('')
-  const [pendingCancel, setPendingCancel] = useState<{ id: string; version: number } | null>(null)
-  const profile = useQuery({ queryKey: providerKeys.myProfile, queryFn: fetchMyCaregiverProfile, retry: false })
-  const shifts = useQuery({
-    queryKey: [...providerKeys.shifts(profile.data?.centerId ?? ''), 'OPEN', page],
-    queryFn: () => fetchWorkShifts({ centerId: profile.data!.centerId, status: 'OPEN', page, size: 20 }),
-    enabled: Boolean(profile.data?.centerId),
-    retry: false
-  })
-  const registrations = useQuery({
-    queryKey: [...providerKeys.myRegistrations, registrationPage],
-    queryFn: () => fetchMyShiftRegistrations({ page: registrationPage, size: 20 }),
-    retry: false
-  })
-  const register = useMutation({
-    mutationFn: (id: string) => registerForShift(id, { caregiverNote: note.trim() || undefined }),
-    onSuccess: async () => {
-      setNote('')
-      await queryClient.invalidateQueries({ queryKey: providerKeys.myRegistrations })
-      await queryClient.invalidateQueries({ queryKey: providerKeys.shifts(profile.data?.centerId ?? '') })
-    }
-  })
-  const cancel = useMutation({
-    mutationFn: ({ id, version }: { id: string; version: number }) => cancelMyShiftRegistration(id, version),
-    onSuccess: async () => {
-      setPendingCancel(null)
-      await queryClient.invalidateQueries({ queryKey: providerKeys.myRegistrations })
-    }
-  })
-  useDocumentTitle(t(`${key}.workShiftsTitle`))
-  return (
-    <main className='mx-auto max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8'>
-      <header className='flex flex-wrap items-center justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.workShiftsTitle`)}</h1>
-          <p className='mt-2 text-sm text-on-surface-variant'>{profile.data?.centerName}</p>
-        </div>
-        <span className='rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-primary tabular-nums'>
-          {t(`${key}.summary`, { count: shifts.data?.totalElements ?? 0 })}
-        </span>
-      </header>
-      {profile.isError ? <p role='alert'>{t(`${key}.profileError`)}</p> : null}
-      <label className='block rounded-2xl border border-outline-variant/20 bg-white p-5 text-sm font-semibold shadow-sm'>
-        {t(`${key}.note`)}
-        <textarea
-          className='mt-3 w-full rounded-xl bg-surface-container-low p-3 font-normal outline-none focus:ring-2 focus:ring-primary'
-          onChange={(event) => setNote(event.target.value)}
-          value={note}
-        />
-      </label>
-      {shifts.isPending && !profile.isError ? (
-        <p className='rounded-xl bg-white p-6 shadow-sm' role='status'>
-          {t(`${key}.loading`)}
-        </p>
-      ) : null}
-      {shifts.isError ? (
-        <p className='rounded-xl bg-white p-6 shadow-sm' role='alert'>
-          {t(`${key}.shiftsError`)}
-        </p>
-      ) : null}
-      {shifts.isSuccess ? (
-        <section className='overflow-hidden rounded-2xl border border-outline-variant/20 bg-white shadow-sm'>
-          <h2 className='flex items-center gap-2 border-b border-outline-variant/20 p-5 text-lg font-bold'>
-            <Icon className='text-primary' name='event_available' />
-            {t(`${key}.openShiftsTitle`)}
-          </h2>
-          {shifts.data.items.length === 0 ? <p className='p-5'>{t(`${key}.shiftsEmpty`)}</p> : null}
-          <ul className='divide-y divide-outline-variant/20'>
-            {shifts.data.items.map((shift) => (
-              <li
-                className='flex flex-wrap items-center justify-between gap-3 p-5 hover:bg-surface-container-low/40'
-                key={shift.id}
-              >
-                <div>
-                  <strong className='tabular-nums'>
-                    {formatProviderDate(shift.workDate, i18n.language)} ·{' '}
-                    {formatProviderTime(shift.startTime, i18n.language)}–
-                    {formatProviderTime(shift.endTime, i18n.language)}
-                  </strong>
-                  <p className='mt-1 text-sm text-on-surface-variant'>{shift.shiftType}</p>
-                </div>
-                <button
-                  className='min-h-11 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50'
-                  disabled={register.isPending}
-                  onClick={() => register.mutate(shift.id)}
-                  type='button'
-                >
-                  {t(`${key}.register`)}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className='flex items-center justify-between border-t border-outline-variant/20 p-4 text-sm text-primary'>
-            <button
-              className='min-h-11 px-3 font-semibold disabled:opacity-40'
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
-              type='button'
-            >
-              {t(`${key}.previous`)}
-            </button>
-            <span className='tabular-nums'>
-              {t(`${key}.page`, { page: page + 1, pages: Math.max(1, shifts.data.totalPages) })}
-            </span>
-            <button
-              className='min-h-11 px-3 font-semibold disabled:opacity-40'
-              disabled={page + 1 >= shifts.data.totalPages}
-              onClick={() => setPage(page + 1)}
-              type='button'
-            >
-              {t(`${key}.next`)}
-            </button>
-          </div>
-        </section>
-      ) : null}
-      <h2 className='flex items-center gap-2 text-xl font-bold'>
-        <Icon className='text-primary' name='fact_check' />
-        {t(`${key}.registrationsTitle`)}
-      </h2>
-      {registrations.isPending ? (
-        <p className='rounded-xl bg-white p-6 shadow-sm' role='status'>
-          {t(`${key}.loading`)}
-        </p>
-      ) : null}
-      {registrations.isError ? (
-        <p className='rounded-xl bg-white p-6 shadow-sm' role='alert'>
-          {t(`${key}.registrationsError`)}
-        </p>
-      ) : null}
-      {registrations.isSuccess ? (
-        <section className='overflow-hidden rounded-2xl border border-outline-variant/20 bg-white shadow-sm'>
-          {registrations.data.items.length === 0 ? <p className='p-5'>{t(`${key}.registrationsEmpty`)}</p> : null}
-          <ul className='divide-y divide-outline-variant/20'>
-            {registrations.data.items.map((item) => (
-              <li className='flex flex-wrap items-center justify-between gap-3 p-5' key={item.id}>
-                <div className='flex flex-col items-start gap-1.5'>
-                  <strong className='tabular-nums'>{item.workShiftId}</strong>
-                  <ProviderStatusBadge
-                    label={t(`${key}.${registrationStatusKeys[item.registrationStatus]}`)}
-                    status={item.registrationStatus}
-                  />
-                </div>
-                {item.registrationStatus === 'PENDING' ? (
-                  <button
-                    className='min-h-11 rounded-xl bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container hover:opacity-90 disabled:opacity-50'
-                    disabled={cancel.isPending}
-                    onClick={() => setPendingCancel({ id: item.id, version: item.version })}
-                    type='button'
-                  >
-                    {t(`${key}.cancelRegistration`)}
-                  </button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-          <div className='flex items-center justify-between border-t border-outline-variant/20 p-4 text-sm text-primary'>
-            <button
-              className='min-h-11 px-3 font-semibold disabled:opacity-40'
-              disabled={registrationPage === 0}
-              onClick={() => setRegistrationPage(registrationPage - 1)}
-              type='button'
-            >
-              {t(`${key}.previous`)}
-            </button>
-            <span className='tabular-nums'>
-              {t(`${key}.page`, { page: registrationPage + 1, pages: Math.max(1, registrations.data.totalPages) })}
-            </span>
-            <button
-              className='min-h-11 px-3 font-semibold disabled:opacity-40'
-              disabled={registrationPage + 1 >= registrations.data.totalPages}
-              onClick={() => setRegistrationPage(registrationPage + 1)}
-              type='button'
-            >
-              {t(`${key}.next`)}
-            </button>
-          </div>
-        </section>
-      ) : null}
-      {register.isError || cancel.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
-      <ConfirmDialog
-        confirmLabel={t(`${key}.cancelRegistration`)}
-        description={t(`${key}.confirmCancel`)}
-        loading={cancel.isPending}
-        onClose={() => setPendingCancel(null)}
-        onConfirm={() => {
-          if (pendingCancel) cancel.mutate(pendingCancel)
-        }}
-        open={Boolean(pendingCancel)}
-        title={t(`${key}.cancelRegistration`)}
-        tone='danger'
-      />
     </main>
   )
 }

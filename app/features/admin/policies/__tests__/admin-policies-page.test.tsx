@@ -24,7 +24,8 @@ describe('Admin policy preview', () => {
     expect(screen.getByText(/Cọc dự kiến: 300\.000/)).toBeInTheDocument()
     fireEvent.change(screen.getByRole('slider', { name: 'Tỷ lệ đặt cọc tiêu chuẩn' }), { target: { value: '40' } })
     expect(screen.getByText(/Cọc dự kiến: 400\.000/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Lưu thay đổi chính sách/ })).toBeDisabled()
+    // Preview pages offer no action that cannot run.
+    expect(screen.queryByRole('button', { name: /Lưu thay đổi chính sách/ })).not.toBeInTheDocument()
     expect(screen.getAllByText('Thay đổi chỉ hiển thị trên thiết bị này và không được lưu.').length).toBeGreaterThan(0)
   })
 

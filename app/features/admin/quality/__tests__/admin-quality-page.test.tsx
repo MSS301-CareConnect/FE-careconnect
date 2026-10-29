@@ -34,13 +34,15 @@ describe('Admin caregiver quality preview', () => {
     expect(within(table).queryByText('Nguyễn Thị Thu Hương')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Xem hồ sơ mẫu' }))
     expect(screen.getByRole('dialog', { name: 'Hồ sơ điều dưỡng mẫu' })).toHaveTextContent('009214/HCM-CCHN')
-    expect(screen.getByRole('button', { name: 'Yêu cầu phúc tra' })).toBeDisabled()
+    // Preview pages offer no action that cannot run.
+    expect(screen.queryByRole('button', { name: 'Yêu cầu phúc tra' })).not.toBeInTheDocument()
   })
 
   it('keeps live verification unavailable and supports English', async () => {
     renderPage()
     expect(screen.getByText(/Các trạng thái trong bảng chỉ mang tính minh họa/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Bắt đầu cuộc gọi kiểm tra' })).toBeDisabled()
+    // Preview pages offer no action that cannot run.
+    expect(screen.queryByRole('button', { name: 'Bắt đầu cuộc gọi kiểm tra' })).not.toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Caregiver verification & quality control')
     expect(screen.getByText(/Table statuses are samples only/)).toBeInTheDocument()

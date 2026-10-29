@@ -14,6 +14,14 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   createWorkShift: vi.fn()
 }))
 
+const day = 24 * 60 * 60 * 1000
+const isoDate = (offsetDays: number) => {
+  const date = new Date(Date.now() + offsetDays * day)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+const future = isoDate(5)
+const past = isoDate(-2)
+
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(
@@ -79,7 +87,7 @@ describe('Center Manager work shifts', () => {
     vi.mocked(createWorkShift).mockResolvedValue({
       id: 'shift-1',
       centerId: 'center-1',
-      workDate: '2026-11-01',
+      workDate: future,
       startTime: '08:00:00',
       endTime: '12:00:00',
       shiftType: 'Morning',
@@ -92,7 +100,7 @@ describe('Center Manager work shifts', () => {
     expect(await screen.findByText('No work shifts yet.')).toBeInTheDocument()
     expect(fetchWorkShifts).toHaveBeenCalledWith({ centerId: 'center-1', page: 0, size: 20 })
     fireEvent.click(screen.getByRole('button', { name: 'Create work shift' }))
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: '2026-11-01' } })
+    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
     fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
@@ -103,7 +111,7 @@ describe('Center Manager work shifts', () => {
       expect(createWorkShift).toHaveBeenCalledWith(
         'center-1',
         expect.objectContaining({
-          workDate: '2026-11-01',
+          workDate: future,
           startTime: '08:00',
           endTime: '12:00',
           shiftType: 'Morning',
@@ -119,7 +127,7 @@ describe('Center Manager work shifts', () => {
     vi.mocked(createWorkShift).mockRejectedValue({ status: 403, info: { code: 3403 } })
     renderPage()
     fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: '2026-11-01' } })
+    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
     fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
@@ -134,7 +142,7 @@ describe('Center Manager work shifts', () => {
     vi.mocked(createWorkShift).mockResolvedValue({
       id: 'shift-1',
       centerId: 'center-1',
-      workDate: '2026-10-27',
+      workDate: future,
       startTime: '07:00:00',
       endTime: '18:00:00',
       shiftType: 'Morning',
@@ -144,11 +152,11 @@ describe('Center Manager work shifts', () => {
     })
     renderPage()
     fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: '2026-10-27' } })
+    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '07:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '18:00' } })
     fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
-    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: '2026-11-07T00:00' } })
+    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: `${isoDate(7)}T00:00` } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(
@@ -157,8 +165,49 @@ describe('Center Manager work shifts', () => {
     expect(screen.getByLabelText('Registration deadline')).toHaveAttribute('aria-invalid', 'true')
     expect(createWorkShift).not.toHaveBeenCalled()
 
-    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: '2026-10-27T06:00' } })
+    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: `${future}T06:00` } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(createWorkShift).toHaveBeenCalledOnce())
+  })
+
+  it('does not create a shift that would already have started', async () => {
+    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
+    expect(screen.getByLabelText('Work date')).toHaveAttribute('min', isoDate(0))
+    // Today passes the date picker's minimum, but midnight has already gone by.
+    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: isoDate(0) } })
+    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '00:00' } })
+    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('The work shift must start after the current time.')
+    expect(screen.getByLabelText('Work date')).toHaveAttribute('aria-invalid', 'true')
+    expect(createWorkShift).not.toHaveBeenCalled()
+  })
+
+  it('flags an open shift whose time has passed', async () => {
+    vi.mocked(fetchWorkShifts).mockResolvedValue({
+      items: [
+        {
+          id: 'shift-old',
+          centerId: 'center-1',
+          workDate: past,
+          startTime: '08:00:00',
+          endTime: '12:00:00',
+          shiftType: 'Morning',
+          shiftStatus: 'OPEN',
+          capacity: 2,
+          version: 1
+        }
+      ],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1
+    })
+    renderPage()
+    expect(await screen.findByText('Past')).toBeInTheDocument()
   })
 })
