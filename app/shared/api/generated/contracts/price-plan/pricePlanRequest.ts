@@ -8,6 +8,8 @@
 import type { PricePlanRequestPricingUnit } from './pricePlanRequestPricingUnit'
 
 export interface PricePlanRequest {
+  /** M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006). */
+  version?: number
   centerOfferingId: string
   /** @minLength 1 */
   planName: string

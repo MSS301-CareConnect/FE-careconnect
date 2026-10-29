@@ -18,20 +18,24 @@ import type {
   EmergencyContactListResponse,
   EmergencyContactResponse,
   EmptyActionResponse,
+  ManagerInvitationListResponse,
+  ManagerInvitationResponse,
   MedicationListResponse,
   MedicationResponse,
+  MyInvitationListResponse,
   RecipientManagerListResponse,
   RecipientManagerResponse
 } from '../../contracts'
 
 import {
+  getAcceptCareRecipientInvitationResponseMock,
   getAssignPrimaryCareRecipientEmergencyContactResponseMock,
   getAssignPrimaryCareRecipientManagerResponseMock,
   getCheckCareRecipientAccessResponseMock,
   getCreateCareRecipientEmergencyContactResponseMock,
-  getCreateCareRecipientManagerResponseMock,
   getCreateCareRecipientMedicationResponseMock,
   getCreateCareRecipientResponseMock,
+  getDeclineCareRecipientInvitationResponseMock,
   getDeleteCareRecipientEmergencyContactResponseMock,
   getDeleteCareRecipientManagerResponseMock,
   getDeleteCareRecipientMedicationResponseMock,
@@ -40,11 +44,15 @@ import {
   getGetCareRecipientMedicationResponseMock,
   getGetCareRecipientResponseMock,
   getGetCareRecipientSnapshotResponseMock,
+  getInviteCareRecipientManagerResponseMock,
   getListCareRecipientEmergencyContactsResponseMock,
+  getListCareRecipientInvitationsResponseMock,
   getListCareRecipientManagersResponseMock,
   getListCareRecipientMedicationsResponseMock,
   getListCareRecipientsBatchResponseMock,
   getListCareRecipientsResponseMock,
+  getListMyCareRecipientInvitationsResponseMock,
+  getRevokeCareRecipientInvitationResponseMock,
   getSetCareRecipientMedicationActiveResponseMock,
   getSetCareRecipientStatusResponseMock,
   getUpdateCareRecipientEmergencyContactResponseMock,
@@ -76,7 +84,12 @@ export {
   getDeleteCareRecipientEmergencyContactResponseMock,
   getAssignPrimaryCareRecipientEmergencyContactResponseMock,
   getListCareRecipientManagersResponseMock,
-  getCreateCareRecipientManagerResponseMock,
+  getListCareRecipientInvitationsResponseMock,
+  getInviteCareRecipientManagerResponseMock,
+  getRevokeCareRecipientInvitationResponseMock,
+  getListMyCareRecipientInvitationsResponseMock,
+  getAcceptCareRecipientInvitationResponseMock,
+  getDeclineCareRecipientInvitationResponseMock,
   getUpdateCareRecipientManagerResponseMock,
   getDeleteCareRecipientManagerResponseMock,
   getAssignPrimaryCareRecipientManagerResponseMock
@@ -638,16 +651,42 @@ export const getListCareRecipientManagersMockHandler = (
   )
 }
 
-export const getCreateCareRecipientManagerMockHandler = (
+export const getListCareRecipientInvitationsMockHandler = (
   overrideResponse?:
-    | RecipientManagerResponse
+    | ManagerInvitationListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ManagerInvitationListResponse> | ManagerInvitationListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-recipients/:recipientId/invitations',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListCareRecipientInvitationsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getInviteCareRecipientManagerMockHandler = (
+  overrideResponse?:
+    | ManagerInvitationResponse
     | ((
         info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) => Promise<RecipientManagerResponse> | RecipientManagerResponse),
+      ) => Promise<ManagerInvitationResponse> | ManagerInvitationResponse),
   options?: RequestHandlerOptions
 ) => {
   return http.post(
-    '*/v1/care-recipients/:recipientId/managers',
+    '*/v1/care-recipients/:recipientId/invitations',
     async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
       await delay(150)
 
@@ -656,7 +695,107 @@ export const getCreateCareRecipientManagerMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getCreateCareRecipientManagerResponseMock(),
+          : getInviteCareRecipientManagerResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getRevokeCareRecipientInvitationMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    '*/v1/care-recipients/:recipientId/invitations/:invitationId',
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getRevokeCareRecipientInvitationResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListMyCareRecipientInvitationsMockHandler = (
+  overrideResponse?:
+    | MyInvitationListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<MyInvitationListResponse> | MyInvitationListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-recipients/invitations/me',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListMyCareRecipientInvitationsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getAcceptCareRecipientInvitationMockHandler = (
+  overrideResponse?:
+    | RecipientManagerResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<RecipientManagerResponse> | RecipientManagerResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/care-recipients/invitations/:invitationId/accept',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAcceptCareRecipientInvitationResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeclineCareRecipientInvitationMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/care-recipients/invitations/:invitationId/decline',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeclineCareRecipientInvitationResponseMock(),
         { status: 200 }
       )
     },
@@ -762,7 +901,12 @@ export const getCareRecipientMock = () => [
   getDeleteCareRecipientEmergencyContactMockHandler(),
   getAssignPrimaryCareRecipientEmergencyContactMockHandler(),
   getListCareRecipientManagersMockHandler(),
-  getCreateCareRecipientManagerMockHandler(),
+  getListCareRecipientInvitationsMockHandler(),
+  getInviteCareRecipientManagerMockHandler(),
+  getRevokeCareRecipientInvitationMockHandler(),
+  getListMyCareRecipientInvitationsMockHandler(),
+  getAcceptCareRecipientInvitationMockHandler(),
+  getDeclineCareRecipientInvitationMockHandler(),
   getUpdateCareRecipientManagerMockHandler(),
   getDeleteCareRecipientManagerMockHandler(),
   getAssignPrimaryCareRecipientManagerMockHandler()

@@ -6,9 +6,10 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type DepositPaymentRequestLocale = (typeof DepositPaymentRequestLocale)[keyof typeof DepositPaymentRequestLocale]
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
 
-export const DepositPaymentRequestLocale = {
-  vn: 'vn',
-  en: 'en'
+export const RefundStatus = {
+  REFUND_PENDING: 'REFUND_PENDING',
+  REFUNDED: 'REFUNDED',
+  FAILED: 'FAILED'
 } as const

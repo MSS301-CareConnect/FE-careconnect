@@ -6,11 +6,9 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type DepositPaymentRequestBankCode =
-  (typeof DepositPaymentRequestBankCode)[keyof typeof DepositPaymentRequestBankCode]
+export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
 
-export const DepositPaymentRequestBankCode = {
-  VNPAYQR: 'VNPAYQR',
-  VNBANK: 'VNBANK',
-  INTCARD: 'INTCARD'
+export const PaymentType = {
+  DEPOSIT: 'DEPOSIT',
+  REMAINING: 'REMAINING'
 } as const

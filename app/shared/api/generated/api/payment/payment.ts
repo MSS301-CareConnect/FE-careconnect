@@ -21,7 +21,17 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 
-import type { DepositPaymentRequest, PaymentResponse, PaymentSessionResponse } from '../../contracts'
+import type {
+  CheckoutRequest,
+  CheckoutResponse,
+  GetPaymentByBookingParams,
+  ListPaymentsParams,
+  OutstandingDebtResponse,
+  PaymentPageResponse,
+  PaymentResponse,
+  PaymentReturnResponse,
+  VerifyVnPayReturnParams
+} from '../../contracts'
 
 import { env } from '~/shared/config/env'
 
@@ -40,151 +50,199 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result
 }
 
-export type createDepositPaymentResponse200 = {
-  data: PaymentSessionResponse
+export type listPaymentsResponse200 = {
+  data: PaymentPageResponse
   status: 200
 }
 
-export type createDepositPaymentResponse400 = {
+export type listPaymentsResponse400 = {
   data: void
   status: 400
 }
 
-export type createDepositPaymentResponse401 = {
+export type listPaymentsResponse401 = {
   data: void
   status: 401
 }
 
-export type createDepositPaymentResponse403 = {
+export type listPaymentsResponse403 = {
   data: void
   status: 403
 }
 
-export type createDepositPaymentResponse404 = {
+export type listPaymentsResponse404 = {
   data: void
   status: 404
 }
 
-export type createDepositPaymentResponse409 = {
+export type listPaymentsResponse409 = {
   data: void
   status: 409
 }
 
-export type createDepositPaymentResponse503 = {
+export type listPaymentsResponse503 = {
   data: void
   status: 503
 }
 
-export type createDepositPaymentResponseSuccess = createDepositPaymentResponse200 & {
+export type listPaymentsResponseSuccess = listPaymentsResponse200 & {
   headers: Headers
 }
-export type createDepositPaymentResponseError = (
-  | createDepositPaymentResponse400
-  | createDepositPaymentResponse401
-  | createDepositPaymentResponse403
-  | createDepositPaymentResponse404
-  | createDepositPaymentResponse409
-  | createDepositPaymentResponse503
+export type listPaymentsResponseError = (
+  | listPaymentsResponse400
+  | listPaymentsResponse401
+  | listPaymentsResponse403
+  | listPaymentsResponse404
+  | listPaymentsResponse409
+  | listPaymentsResponse503
 ) & {
   headers: Headers
 }
 
-export const getCreateDepositPaymentUrl = () => {
-  return `${env.API_BASE_URL}/v1/payments/deposits`
+export const getListPaymentsUrl = (params?: ListPaymentsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/payments?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/payments`
 }
 
 /**
- * @summary CUSTOMER opens a deposit payment session for a booking awaiting its deposit
+ * @summary Payments in the caller's scope (CUSTOMER own, CENTER_MANAGER own center, ADMIN all)
  */
-export const createDepositPayment = async (
-  depositPaymentRequest: DepositPaymentRequest,
+export const listPayments = async (
+  params?: ListPaymentsParams,
   options?: RequestInit
-): Promise<createDepositPaymentResponseSuccess> => {
-  const res = await fetch(getCreateDepositPaymentUrl(), {
+): Promise<listPaymentsResponseSuccess> => {
+  const res = await fetch(getListPaymentsUrl(params), {
     ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(depositPaymentRequest)
+    method: 'GET'
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
   if (!res.ok) {
-    const err: globalThis.Error & { info?: createDepositPaymentResponseError['data']; status?: number } =
-      new globalThis.Error()
-    const data: createDepositPaymentResponseError['data'] = body ? JSON.parse(body) : {}
+    const err: globalThis.Error & { info?: listPaymentsResponseError['data']; status?: number } = new globalThis.Error()
+    const data: listPaymentsResponseError['data'] = body ? JSON.parse(body) : {}
     err.info = data
     err.status = res.status
     throw err
   }
-  const data: createDepositPaymentResponseSuccess['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createDepositPaymentResponseSuccess
+  const data: listPaymentsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listPaymentsResponseSuccess
 }
 
-export const getCreateDepositPaymentMutationOptions = <
-  TError = globalThis.Error & { info?: void; status?: number },
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createDepositPayment>>,
-    TError,
-    { data: DepositPaymentRequest },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createDepositPayment>>,
-  TError,
-  { data: DepositPaymentRequest },
-  TContext
-> => {
-  const mutationKey = ['createDepositPayment']
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createDepositPayment>>,
-    { data: DepositPaymentRequest }
-  > = (props) => {
-    const { data } = props ?? {}
-
-    return createDepositPayment(data, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
+export const getListPaymentsQueryKey = (params?: ListPaymentsParams) => {
+  return [`${env.API_BASE_URL}/v1/payments`, ...(params ? [params] : [])] as const
 }
 
-export type CreateDepositPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof createDepositPayment>>>
-export type CreateDepositPaymentMutationBody = DepositPaymentRequest
-export type CreateDepositPaymentMutationError = globalThis.Error & { info?: void; status?: number }
-
-/**
- * @summary CUSTOMER opens a deposit payment session for a booking awaiting its deposit
- */
-export const useCreateDepositPayment = <
-  TError = globalThis.Error & { info?: void; status?: number },
-  TContext = unknown
+export const getListPaymentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPayments>>,
+  TError = globalThis.Error & { info?: void; status?: number }
 >(
+  params?: ListPaymentsParams,
   options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createDepositPayment>>,
-      TError,
-      { data: DepositPaymentRequest },
-      TContext
-    >
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPayments>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListPaymentsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPayments>>> = ({ signal }) =>
+    listPayments(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPayments>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListPaymentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPayments>>>
+export type ListPaymentsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListPayments<
+  TData = Awaited<ReturnType<typeof listPayments>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListPaymentsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPayments>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPayments>>,
+          TError,
+          Awaited<ReturnType<typeof listPayments>>
+        >,
+        'initialData'
+      >
     fetch?: RequestInit
   },
   queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof createDepositPayment>>,
-  TError,
-  { data: DepositPaymentRequest },
-  TContext
-> => {
-  return useMutation(getCreateDepositPaymentMutationOptions(options), queryClient)
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPayments<
+  TData = Awaited<ReturnType<typeof listPayments>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPaymentsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPayments>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPayments>>,
+          TError,
+          Awaited<ReturnType<typeof listPayments>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPayments<
+  TData = Awaited<ReturnType<typeof listPayments>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPaymentsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPayments>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Payments in the caller's scope (CUSTOMER own, CENTER_MANAGER own center, ADMIN all)
+ */
+
+export function useListPayments<
+  TData = Awaited<ReturnType<typeof listPayments>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListPaymentsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPayments>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListPaymentsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
 }
+
 export type getPaymentResponse200 = {
   data: PaymentResponse
   status: 200
@@ -234,15 +292,15 @@ export type getPaymentResponseError = (
   headers: Headers
 }
 
-export const getGetPaymentUrl = (id: string) => {
-  return `${env.API_BASE_URL}/v1/payments/${id}`
+export const getGetPaymentUrl = (paymentId: string) => {
+  return `${env.API_BASE_URL}/v1/payments/${paymentId}`
 }
 
 /**
- * @summary CUSTOMER owner reads a payment after returning from the gateway
+ * @summary Payment owner, its center manager or an admin reads one payment
  */
-export const getPayment = async (id: string, options?: RequestInit): Promise<getPaymentResponseSuccess> => {
-  const res = await fetch(getGetPaymentUrl(id), {
+export const getPayment = async (paymentId: string, options?: RequestInit): Promise<getPaymentResponseSuccess> => {
+  const res = await fetch(getGetPaymentUrl(paymentId), {
     ...options,
     method: 'GET'
   })
@@ -259,15 +317,15 @@ export const getPayment = async (id: string, options?: RequestInit): Promise<get
   return { data, status: res.status, headers: res.headers } as getPaymentResponseSuccess
 }
 
-export const getGetPaymentQueryKey = (id: string) => {
-  return [`${env.API_BASE_URL}/v1/payments/${id}`] as const
+export const getGetPaymentQueryKey = (paymentId: string) => {
+  return [`${env.API_BASE_URL}/v1/payments/${paymentId}`] as const
 }
 
 export const getGetPaymentQueryOptions = <
   TData = Awaited<ReturnType<typeof getPayment>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
-  id: string,
+  paymentId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPayment>>, TError, TData>>
     fetch?: RequestInit
@@ -275,16 +333,19 @@ export const getGetPaymentQueryOptions = <
 ) => {
   const { query: queryOptions, fetch: fetchOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetPaymentQueryKey(id)
+  const queryKey = queryOptions?.queryKey ?? getGetPaymentQueryKey(paymentId)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getPayment>>> = ({ signal }) =>
-    getPayment(id, { signal, ...fetchOptions })
+    getPayment(paymentId, { signal, ...fetchOptions })
 
-  return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getPayment>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> }
+  return {
+    queryKey,
+    queryFn,
+    enabled: paymentId !== null && paymentId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof getPayment>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
 }
 
 export type GetPaymentQueryResult = NonNullable<Awaited<ReturnType<typeof getPayment>>>
@@ -294,7 +355,7 @@ export function useGetPayment<
   TData = Awaited<ReturnType<typeof getPayment>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
-  id: string,
+  paymentId: string,
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPayment>>, TError, TData>> &
       Pick<
@@ -313,7 +374,7 @@ export function useGetPayment<
   TData = Awaited<ReturnType<typeof getPayment>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
-  id: string,
+  paymentId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPayment>>, TError, TData>> &
       Pick<
@@ -332,7 +393,7 @@ export function useGetPayment<
   TData = Awaited<ReturnType<typeof getPayment>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
-  id: string,
+  paymentId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPayment>>, TError, TData>>
     fetch?: RequestInit
@@ -340,25 +401,741 @@ export function useGetPayment<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary CUSTOMER owner reads a payment after returning from the gateway
+ * @summary Payment owner, its center manager or an admin reads one payment
  */
 
 export function useGetPayment<
   TData = Awaited<ReturnType<typeof getPayment>>,
   TError = globalThis.Error & { info?: void; status?: number }
 >(
-  id: string,
+  paymentId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPayment>>, TError, TData>>
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetPaymentQueryOptions(id, options)
+  const queryOptions = getGetPaymentQueryOptions(paymentId, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>
   }
 
   return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getPaymentByBookingResponse200 = {
+  data: PaymentResponse
+  status: 200
+}
+
+export type getPaymentByBookingResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getPaymentByBookingResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getPaymentByBookingResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getPaymentByBookingResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getPaymentByBookingResponse409 = {
+  data: void
+  status: 409
+}
+
+export type getPaymentByBookingResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getPaymentByBookingResponseSuccess = getPaymentByBookingResponse200 & {
+  headers: Headers
+}
+export type getPaymentByBookingResponseError = (
+  | getPaymentByBookingResponse400
+  | getPaymentByBookingResponse401
+  | getPaymentByBookingResponse403
+  | getPaymentByBookingResponse404
+  | getPaymentByBookingResponse409
+  | getPaymentByBookingResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetPaymentByBookingUrl = (bookingId: string, params?: GetPaymentByBookingParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/payments/by-booking/${bookingId}?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/payments/by-booking/${bookingId}`
+}
+
+/**
+ * @summary The DEPOSIT (default) or REMAINING payment of a booking
+ */
+export const getPaymentByBooking = async (
+  bookingId: string,
+  params?: GetPaymentByBookingParams,
+  options?: RequestInit
+): Promise<getPaymentByBookingResponseSuccess> => {
+  const res = await fetch(getGetPaymentByBookingUrl(bookingId, params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getPaymentByBookingResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getPaymentByBookingResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getPaymentByBookingResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getPaymentByBookingResponseSuccess
+}
+
+export const getGetPaymentByBookingQueryKey = (bookingId: string, params?: GetPaymentByBookingParams) => {
+  return [`${env.API_BASE_URL}/v1/payments/by-booking/${bookingId}`, ...(params ? [params] : [])] as const
+}
+
+export const getGetPaymentByBookingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPaymentByBooking>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  params?: GetPaymentByBookingParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentByBooking>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPaymentByBookingQueryKey(bookingId, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaymentByBooking>>> = ({ signal }) =>
+    getPaymentByBooking(bookingId, params, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: bookingId !== null && bookingId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof getPaymentByBooking>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type GetPaymentByBookingQueryResult = NonNullable<Awaited<ReturnType<typeof getPaymentByBooking>>>
+export type GetPaymentByBookingQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetPaymentByBooking<
+  TData = Awaited<ReturnType<typeof getPaymentByBooking>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  params: undefined | GetPaymentByBookingParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentByBooking>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPaymentByBooking>>,
+          TError,
+          Awaited<ReturnType<typeof getPaymentByBooking>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPaymentByBooking<
+  TData = Awaited<ReturnType<typeof getPaymentByBooking>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  params?: GetPaymentByBookingParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentByBooking>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPaymentByBooking>>,
+          TError,
+          Awaited<ReturnType<typeof getPaymentByBooking>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPaymentByBooking<
+  TData = Awaited<ReturnType<typeof getPaymentByBooking>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  params?: GetPaymentByBookingParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentByBooking>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary The DEPOSIT (default) or REMAINING payment of a booking
+ */
+
+export function useGetPaymentByBooking<
+  TData = Awaited<ReturnType<typeof getPaymentByBooking>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  params?: GetPaymentByBookingParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentByBooking>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPaymentByBookingQueryOptions(bookingId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getMyOutstandingDebtResponse200 = {
+  data: OutstandingDebtResponse
+  status: 200
+}
+
+export type getMyOutstandingDebtResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getMyOutstandingDebtResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getMyOutstandingDebtResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getMyOutstandingDebtResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getMyOutstandingDebtResponse409 = {
+  data: void
+  status: 409
+}
+
+export type getMyOutstandingDebtResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getMyOutstandingDebtResponseSuccess = getMyOutstandingDebtResponse200 & {
+  headers: Headers
+}
+export type getMyOutstandingDebtResponseError = (
+  | getMyOutstandingDebtResponse400
+  | getMyOutstandingDebtResponse401
+  | getMyOutstandingDebtResponse403
+  | getMyOutstandingDebtResponse404
+  | getMyOutstandingDebtResponse409
+  | getMyOutstandingDebtResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetMyOutstandingDebtUrl = () => {
+  return `${env.API_BASE_URL}/v1/payments/me/outstanding`
+}
+
+/**
+ * @summary CUSTOMER reads open remaining invoices; hasDebt means an overdue invoice blocks new bookings
+ */
+export const getMyOutstandingDebt = async (options?: RequestInit): Promise<getMyOutstandingDebtResponseSuccess> => {
+  const res = await fetch(getGetMyOutstandingDebtUrl(), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getMyOutstandingDebtResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getMyOutstandingDebtResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getMyOutstandingDebtResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getMyOutstandingDebtResponseSuccess
+}
+
+export const getGetMyOutstandingDebtQueryKey = () => {
+  return [`${env.API_BASE_URL}/v1/payments/me/outstanding`] as const
+}
+
+export const getGetMyOutstandingDebtQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyOutstandingDebt>>, TError, TData>>
+  fetch?: RequestInit
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyOutstandingDebtQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyOutstandingDebt>>> = ({ signal }) =>
+    getMyOutstandingDebt({ signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMyOutstandingDebtQueryResult = NonNullable<Awaited<ReturnType<typeof getMyOutstandingDebt>>>
+export type GetMyOutstandingDebtQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetMyOutstandingDebt<
+  TData = Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyOutstandingDebt>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+          TError,
+          Awaited<ReturnType<typeof getMyOutstandingDebt>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyOutstandingDebt<
+  TData = Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyOutstandingDebt>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+          TError,
+          Awaited<ReturnType<typeof getMyOutstandingDebt>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyOutstandingDebt<
+  TData = Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyOutstandingDebt>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CUSTOMER reads open remaining invoices; hasDebt means an overdue invoice blocks new bookings
+ */
+
+export function useGetMyOutstandingDebt<
+  TData = Awaited<ReturnType<typeof getMyOutstandingDebt>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyOutstandingDebt>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetMyOutstandingDebtQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type verifyVnPayReturnResponse200 = {
+  data: PaymentReturnResponse
+  status: 200
+}
+
+export type verifyVnPayReturnResponse400 = {
+  data: void
+  status: 400
+}
+
+export type verifyVnPayReturnResponse401 = {
+  data: void
+  status: 401
+}
+
+export type verifyVnPayReturnResponse403 = {
+  data: void
+  status: 403
+}
+
+export type verifyVnPayReturnResponse404 = {
+  data: void
+  status: 404
+}
+
+export type verifyVnPayReturnResponse409 = {
+  data: void
+  status: 409
+}
+
+export type verifyVnPayReturnResponse503 = {
+  data: void
+  status: 503
+}
+
+export type verifyVnPayReturnResponseSuccess = verifyVnPayReturnResponse200 & {
+  headers: Headers
+}
+export type verifyVnPayReturnResponseError = (
+  | verifyVnPayReturnResponse400
+  | verifyVnPayReturnResponse401
+  | verifyVnPayReturnResponse403
+  | verifyVnPayReturnResponse404
+  | verifyVnPayReturnResponse409
+  | verifyVnPayReturnResponse503
+) & {
+  headers: Headers
+}
+
+export const getVerifyVnPayReturnUrl = (params: VerifyVnPayReturnParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/payments/vnpay/return?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/payments/vnpay/return`
+}
+
+/**
+ * @summary Verifies the signed VNPay return query; the IPN remains the source of truth for the payment status
+ */
+export const verifyVnPayReturn = async (
+  params: VerifyVnPayReturnParams,
+  options?: RequestInit
+): Promise<verifyVnPayReturnResponseSuccess> => {
+  const res = await fetch(getVerifyVnPayReturnUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: verifyVnPayReturnResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: verifyVnPayReturnResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: verifyVnPayReturnResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as verifyVnPayReturnResponseSuccess
+}
+
+export const getVerifyVnPayReturnQueryKey = (params?: VerifyVnPayReturnParams) => {
+  return [`${env.API_BASE_URL}/v1/payments/vnpay/return`, ...(params ? [params] : [])] as const
+}
+
+export const getVerifyVnPayReturnQueryOptions = <
+  TData = Awaited<ReturnType<typeof verifyVnPayReturn>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: VerifyVnPayReturnParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyVnPayReturn>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getVerifyVnPayReturnQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof verifyVnPayReturn>>> = ({ signal }) =>
+    verifyVnPayReturn(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof verifyVnPayReturn>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type VerifyVnPayReturnQueryResult = NonNullable<Awaited<ReturnType<typeof verifyVnPayReturn>>>
+export type VerifyVnPayReturnQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useVerifyVnPayReturn<
+  TData = Awaited<ReturnType<typeof verifyVnPayReturn>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: VerifyVnPayReturnParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyVnPayReturn>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof verifyVnPayReturn>>,
+          TError,
+          Awaited<ReturnType<typeof verifyVnPayReturn>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useVerifyVnPayReturn<
+  TData = Awaited<ReturnType<typeof verifyVnPayReturn>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: VerifyVnPayReturnParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyVnPayReturn>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof verifyVnPayReturn>>,
+          TError,
+          Awaited<ReturnType<typeof verifyVnPayReturn>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useVerifyVnPayReturn<
+  TData = Awaited<ReturnType<typeof verifyVnPayReturn>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: VerifyVnPayReturnParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyVnPayReturn>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Verifies the signed VNPay return query; the IPN remains the source of truth for the payment status
+ */
+
+export function useVerifyVnPayReturn<
+  TData = Awaited<ReturnType<typeof verifyVnPayReturn>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: VerifyVnPayReturnParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyVnPayReturn>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getVerifyVnPayReturnQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type createBookingCheckoutResponse200 = {
+  data: CheckoutResponse
+  status: 200
+}
+
+export type createBookingCheckoutResponse400 = {
+  data: void
+  status: 400
+}
+
+export type createBookingCheckoutResponse401 = {
+  data: void
+  status: 401
+}
+
+export type createBookingCheckoutResponse403 = {
+  data: void
+  status: 403
+}
+
+export type createBookingCheckoutResponse404 = {
+  data: void
+  status: 404
+}
+
+export type createBookingCheckoutResponse409 = {
+  data: void
+  status: 409
+}
+
+export type createBookingCheckoutResponse503 = {
+  data: void
+  status: 503
+}
+
+export type createBookingCheckoutResponseSuccess = createBookingCheckoutResponse200 & {
+  headers: Headers
+}
+export type createBookingCheckoutResponseError = (
+  | createBookingCheckoutResponse400
+  | createBookingCheckoutResponse401
+  | createBookingCheckoutResponse403
+  | createBookingCheckoutResponse404
+  | createBookingCheckoutResponse409
+  | createBookingCheckoutResponse503
+) & {
+  headers: Headers
+}
+
+export const getCreateBookingCheckoutUrl = (bookingId: string) => {
+  return `${env.API_BASE_URL}/v1/payments/bookings/${bookingId}/checkout`
+}
+
+/**
+ * @summary CUSTOMER owner opens a deposit checkout for a booking awaiting its deposit
+ */
+export const createBookingCheckout = async (
+  bookingId: string,
+  checkoutRequest: CheckoutRequest,
+  options?: RequestInit
+): Promise<createBookingCheckoutResponseSuccess> => {
+  const res = await fetch(getCreateBookingCheckoutUrl(bookingId), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(checkoutRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: createBookingCheckoutResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: createBookingCheckoutResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: createBookingCheckoutResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createBookingCheckoutResponseSuccess
+}
+
+export const getCreateBookingCheckoutMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBookingCheckout>>,
+    TError,
+    { bookingId: string; data: CheckoutRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createBookingCheckout>>,
+  TError,
+  { bookingId: string; data: CheckoutRequest },
+  TContext
+> => {
+  const mutationKey = ['createBookingCheckout']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createBookingCheckout>>,
+    { bookingId: string; data: CheckoutRequest }
+  > = (props) => {
+    const { bookingId, data } = props ?? {}
+
+    return createBookingCheckout(bookingId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CreateBookingCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof createBookingCheckout>>>
+export type CreateBookingCheckoutMutationBody = CheckoutRequest
+export type CreateBookingCheckoutMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CUSTOMER owner opens a deposit checkout for a booking awaiting its deposit
+ */
+export const useCreateBookingCheckout = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createBookingCheckout>>,
+      TError,
+      { bookingId: string; data: CheckoutRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof createBookingCheckout>>,
+  TError,
+  { bookingId: string; data: CheckoutRequest },
+  TContext
+> => {
+  return useMutation(getCreateBookingCheckoutMutationOptions(options), queryClient)
 }

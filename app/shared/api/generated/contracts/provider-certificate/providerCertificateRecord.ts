@@ -15,6 +15,7 @@ export interface ProviderCertificateRecord {
   credentialNumber?: string
   issuedDate?: string
   expiryDate?: string
+  /** Two-step review — the center confirms (CENTER_VERIFIED), then an admin approves (ADMIN_VERIFIED). */
   verificationStatus: ProviderCertificateRecordVerificationStatus
   verificationReason?: string
   version: number

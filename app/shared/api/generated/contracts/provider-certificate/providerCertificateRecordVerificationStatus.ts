@@ -6,11 +6,15 @@
  * OpenAPI spec version: 0.0.1
  */
 
+/**
+ * Two-step review — the center confirms (CENTER_VERIFIED), then an admin approves (ADMIN_VERIFIED).
+ */
 export type ProviderCertificateRecordVerificationStatus =
   (typeof ProviderCertificateRecordVerificationStatus)[keyof typeof ProviderCertificateRecordVerificationStatus]
 
 export const ProviderCertificateRecordVerificationStatus = {
   PENDING: 'PENDING',
-  VERIFIED: 'VERIFIED',
+  CENTER_VERIFIED: 'CENTER_VERIFIED',
+  ADMIN_VERIFIED: 'ADMIN_VERIFIED',
   REJECTED: 'REJECTED'
 } as const

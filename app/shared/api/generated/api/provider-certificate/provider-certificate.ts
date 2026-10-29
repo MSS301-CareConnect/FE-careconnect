@@ -29,8 +29,7 @@ import type {
   ListPendingAuditProviderCertificatesParams,
   ProviderCertificateListResponse,
   ProviderCertificatePageResponse,
-  ProviderCertificateResponse,
-  VerificationRequest
+  ProviderCertificateResponse
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -716,14 +715,14 @@ export const getVerifyProviderCertificateUrl = (id: string) => {
 
 export const verifyProviderCertificate = async (
   id: string,
-  verificationRequest: VerificationRequest,
+  certificateVerificationRequest: CertificateVerificationRequest,
   options?: RequestInit
 ): Promise<verifyProviderCertificateResponseSuccess> => {
   const res = await fetch(getVerifyProviderCertificateUrl(id), {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(verificationRequest)
+    body: JSON.stringify(certificateVerificationRequest)
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
@@ -746,14 +745,14 @@ export const getVerifyProviderCertificateMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof verifyProviderCertificate>>,
     TError,
-    { id: string; data: VerificationRequest },
+    { id: string; data: CertificateVerificationRequest },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
   Awaited<ReturnType<typeof verifyProviderCertificate>>,
   TError,
-  { id: string; data: VerificationRequest },
+  { id: string; data: CertificateVerificationRequest },
   TContext
 > => {
   const mutationKey = ['verifyProviderCertificate']
@@ -765,7 +764,7 @@ export const getVerifyProviderCertificateMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof verifyProviderCertificate>>,
-    { id: string; data: VerificationRequest }
+    { id: string; data: CertificateVerificationRequest }
   > = (props) => {
     const { id, data } = props ?? {}
 
@@ -776,7 +775,7 @@ export const getVerifyProviderCertificateMutationOptions = <
 }
 
 export type VerifyProviderCertificateMutationResult = NonNullable<Awaited<ReturnType<typeof verifyProviderCertificate>>>
-export type VerifyProviderCertificateMutationBody = VerificationRequest
+export type VerifyProviderCertificateMutationBody = CertificateVerificationRequest
 export type VerifyProviderCertificateMutationError = globalThis.Error & { info?: void; status?: number }
 
 export const useVerifyProviderCertificate = <
@@ -787,7 +786,7 @@ export const useVerifyProviderCertificate = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof verifyProviderCertificate>>,
       TError,
-      { id: string; data: VerificationRequest },
+      { id: string; data: CertificateVerificationRequest },
       TContext
     >
     fetch?: RequestInit
@@ -796,7 +795,7 @@ export const useVerifyProviderCertificate = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof verifyProviderCertificate>>,
   TError,
-  { id: string; data: VerificationRequest },
+  { id: string; data: CertificateVerificationRequest },
   TContext
 > => {
   return useMutation(getVerifyProviderCertificateMutationOptions(options), queryClient)

@@ -8,6 +8,8 @@
 import type { CenterOfferingRequestStatus } from './centerOfferingRequestStatus'
 
 export interface CenterOfferingRequest {
+  /** M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006). */
+  version?: number
   catalogItemId: string
   centerId?: string
   description?: string

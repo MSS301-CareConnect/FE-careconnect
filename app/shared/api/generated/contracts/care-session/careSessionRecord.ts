@@ -18,5 +18,7 @@ export interface CareSessionRecord {
   checkOutAt?: string
   endedBy?: string
   endReason?: string
+  /** D21 — hệ thống tự đóng ca quên check-out (quá giờ kết thúc + 4h). */
+  autoClosed?: boolean
   tasks?: CareTaskRecord[]
 }

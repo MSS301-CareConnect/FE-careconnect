@@ -25,15 +25,19 @@ tags:
   - name: CareSession
   - name: CareReport
   - name: Complaint
+  - name: BookingOutbox
+  - name: ProviderOutbox
   - name: Feedback
   - name: Notification
   - name: Statistics
   - name: Payment
-    description: PaymentService customer APIs (PAY-05/06); served by the pnpm dev payment demo until PaymentService exists.
-  - name: PaymentDemo
-    description: Development-only demo gateway answered by the pnpm dev server, never by a backend service.
+    description: PaymentService deposit / remaining checkout through VNPay, payment history, outstanding debt and the VNPay return verification.
   - name: PaymentPolicy
-    description: PaymentService platform policy in effect for a center (C2.1); answered by the payment stub until PaymentService exists.
+    description: PaymentService platform policy in effect for a center (C2.1).
+  - name: Refund
+    description: PaymentService refunds; customers read their own refund history.
+  - name: RemainingInvoice
+    description: PaymentService remaining-balance invoices issued after a booking completes.
 paths:
   /v1/auth/csrf:
     get:
@@ -1317,7 +1321,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VerificationRequest'
+              $ref: '#/components/schemas/CertificateVerificationRequest'
         required: true
       responses:
         '200':
@@ -3605,10 +3609,45 @@ paths:
           description: CareRecipientService error
         '503':
           description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/invitations:
+    get:
+      tags:
+        - CareRecipient
+      summary: Primary OWNER lists the profile's invitations (email, status) — never the invitee's identity
+      operationId: listCareRecipientInvitations
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagerInvitationListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
     post:
       tags:
         - CareRecipient
-      operationId: createCareRecipientManager
+      summary: Primary OWNER invites a relative by email; the same answer whether or not the email has an account
+      operationId: inviteCareRecipientManager
       parameters:
         - name: recipientId
           in: path
@@ -3628,7 +3667,142 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ManagerInvitationResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/invitations/{invitationId}:
+    delete:
+      tags:
+        - CareRecipient
+      summary: Primary OWNER revokes a pending invitation
+      operationId: revokeCareRecipientInvitation
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/invitations/me:
+    get:
+      tags:
+        - CareRecipient
+      summary: CUSTOMER lists pending invitations addressed to them
+      operationId: listMyCareRecipientInvitations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyInvitationListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/invitations/{invitationId}/accept:
+    post:
+      tags:
+        - CareRecipient
+      summary: The invitee accepts and becomes a manager of the profile
+      operationId: acceptCareRecipientInvitation
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/RecipientManagerResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/invitations/{invitationId}/decline:
+    post:
+      tags:
+        - CareRecipient
+      summary: The invitee declines the invitation
+      operationId: declineCareRecipientInvitation
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
         '400':
           description: CareRecipientService error
         '401':
@@ -5249,6 +5423,275 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/complaints/{id}/withdraw:
+    post:
+      tags:
+        - Complaint
+      operationId: withdrawComplaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/booking-outbox:
+    get:
+      tags:
+        - BookingOutbox
+      operationId: listBookingOutboxEvents
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/OutboxStatus'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOutboxEventPageResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/booking-outbox/{id}/requeue:
+    post:
+      tags:
+        - BookingOutbox
+      operationId: requeueBookingOutboxEvents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOutboxEventResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/booking-outbox/{id}/skip:
+    post:
+      tags:
+        - BookingOutbox
+      operationId: skipBookingOutboxEvents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutboxSkipRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOutboxEventResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/provider-outbox:
+    get:
+      tags:
+        - ProviderOutbox
+      operationId: listProviderOutboxEvents
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/OutboxStatus'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderOutboxEventPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/provider-outbox/{id}/requeue:
+    post:
+      tags:
+        - ProviderOutbox
+      operationId: requeueProviderOutboxEvents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderOutboxEventResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/provider-outbox/{id}/skip:
+    post:
+      tags:
+        - ProviderOutbox
+      operationId: skipProviderOutboxEvents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutboxSkipRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderOutboxEventResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
   /v1/complaints/{id}/accept:
     patch:
       tags:
@@ -5869,51 +6312,68 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
-  /v1/payments/deposits:
-    post:
-      tags:
-        - Payment
-      summary: CUSTOMER opens a deposit payment session for a booking awaiting its deposit
-      operationId: createDepositPayment
-      parameters:
-        - name: Idempotency-Key
-          in: header
-          required: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DepositPaymentRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentSessionResponse'
-        '400':
-          description: PaymentService error
-        '401':
-          description: PaymentService error
-        '403':
-          description: PaymentService error
-        '404':
-          description: PaymentService error
-        '409':
-          description: PaymentService error
-        '503':
-          description: PaymentService error
-  /v1/payments/{id}:
+  /v1/payments:
     get:
       tags:
         - Payment
-      summary: CUSTOMER owner reads a payment after returning from the gateway
+      summary: Payments in the caller's scope (CUSTOMER own, CENTER_MANAGER own center, ADMIN all)
+      operationId: listPayments
+      parameters:
+        - name: bookingId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PaymentStatus'
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PaymentType'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentPageResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/{paymentId}:
+    get:
+      tags:
+        - Payment
+      summary: Payment owner, its center manager or an admin reads one payment
       operationId: getPayment
       parameters:
-        - name: id
+        - name: paymentId
           in: path
           required: true
           schema:
@@ -5938,14 +6398,168 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
-  /v1/payments/{id}/demo-results:
+  /v1/payments/by-booking/{bookingId}:
+    get:
+      tags:
+        - Payment
+      summary: The DEPOSIT (default) or REMAINING payment of a booking
+      operationId: getPaymentByBooking
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PaymentType'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/me/outstanding:
+    get:
+      tags:
+        - Payment
+      summary: CUSTOMER reads open remaining invoices; hasDebt means an overdue invoice blocks new bookings
+      operationId: getMyOutstandingDebt
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutstandingDebtResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/payments/vnpay/return:
+    get:
+      tags:
+        - Payment
+      summary: Verifies the signed VNPay return query; the IPN remains the source of truth for the payment status
+      operationId: verifyVnPayReturn
+      parameters:
+        - name: vnp_Amount
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_BankCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_BankTranNo
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_CardType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_OrderInfo
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_PayDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_ResponseCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_TmnCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_TransactionNo
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_TransactionStatus
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_TxnRef
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: vnp_SecureHashType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: vnp_SecureHash
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReturnResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+      security: []
+  /v1/payments/bookings/{bookingId}/checkout:
     post:
       tags:
-        - PaymentDemo
-      summary: Development-only demo gateway result; SUCCESS confirms the booking deposit
-      operationId: submitPaymentDemoResult
+        - Payment
+      summary: CUSTOMER owner opens a deposit checkout for a booking awaiting its deposit
+      operationId: createBookingCheckout
       parameters:
-        - name: id
+        - name: bookingId
           in: path
           required: true
           schema:
@@ -5955,7 +6569,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PaymentDemoResultRequest'
+              $ref: '#/components/schemas/CheckoutRequest'
         required: true
       responses:
         '200':
@@ -5963,7 +6577,137 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentResponse'
+                $ref: '#/components/schemas/CheckoutResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/refunds:
+    get:
+      tags:
+        - Refund
+      summary: Refunds in the caller's scope (CUSTOMER own, ADMIN all)
+      operationId: listRefunds
+      parameters:
+        - name: bookingId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/RefundStatus'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundPageResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/remaining-invoices:
+    get:
+      tags:
+        - RemainingInvoice
+      summary: Remaining-balance invoices (CUSTOMER own, ADMIN all)
+      operationId: listRemainingInvoices
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/InvoiceStatus'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemainingInvoicePageResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/remaining-invoices/{invoiceId}/payments:
+    post:
+      tags:
+        - RemainingInvoice
+      summary: CUSTOMER owner opens a VNPay checkout for a pending or overdue remaining invoice
+      operationId: payRemainingInvoice
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
         '400':
           description: PaymentService error
         '401':
@@ -6799,9 +7543,11 @@ components:
           format: date
         verificationStatus:
           type: string
+          description: Two-step review — the center confirms (CENTER_VERIFIED), then an admin approves (ADMIN_VERIFIED).
           enum:
             - PENDING
-            - VERIFIED
+            - CENTER_VERIFIED
+            - ADMIN_VERIFIED
             - REJECTED
         verificationReason:
           type: string
@@ -8579,6 +9325,10 @@ components:
         - category
         - status
       properties:
+        version:
+          type: integer
+          format: int64
+          description: M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006).
         id:
           type: string
           format: uuid
@@ -8601,6 +9351,10 @@ components:
         - centerId
         - status
       properties:
+        version:
+          type: integer
+          format: int64
+          description: M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006).
         id:
           type: string
           format: uuid
@@ -8626,6 +9380,10 @@ components:
         - durationMinutes
         - basePrice
       properties:
+        version:
+          type: integer
+          format: int64
+          description: M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006).
         id:
           type: string
           format: uuid
@@ -8809,6 +9567,10 @@ components:
     CatalogItemRequest:
       type: object
       properties:
+        version:
+          type: integer
+          format: int64
+          description: M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006).
         name:
           type: string
           minLength: 1
@@ -8829,6 +9591,10 @@ components:
     CenterOfferingRequest:
       type: object
       properties:
+        version:
+          type: integer
+          format: int64
+          description: M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006).
         catalogItemId:
           type: string
           format: uuid
@@ -8848,6 +9614,10 @@ components:
     PricePlanRequest:
       type: object
       properties:
+        version:
+          type: integer
+          format: int64
+          description: M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006).
         centerOfferingId:
           type: string
           format: uuid
@@ -9467,6 +10237,140 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EmergencyContactRecord'
+    ManagerInvitationRecord:
+      type: object
+      required:
+        - id
+        - recipientId
+        - email
+        - accessLevel
+        - status
+        - expiresAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        relationshipType:
+          type: string
+          enum:
+            - SELF
+            - CHILD
+            - SPOUSE
+            - PARENT
+            - SIBLING
+            - GRANDCHILD
+            - RELATIVE
+            - OTHER
+        accessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - DECLINED
+            - REVOKED
+            - EXPIRED
+        expiresAt:
+          type: string
+          format: date-time
+        respondedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    MyInvitationRecord:
+      type: object
+      required:
+        - id
+        - recipientId
+        - accessLevel
+        - expiresAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        recipientFullName:
+          type: string
+        relationshipType:
+          type: string
+          enum:
+            - SELF
+            - CHILD
+            - SPOUSE
+            - PARENT
+            - SIBLING
+            - GRANDCHILD
+            - RELATIVE
+            - OTHER
+        accessLevel:
+          type: string
+          enum:
+            - VIEWER
+            - EDITOR
+            - OWNER
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    ManagerInvitationResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ManagerInvitationRecord'
+    ManagerInvitationListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagerInvitationRecord'
+    MyInvitationListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyInvitationRecord'
     RecipientManagerResponse:
       type: object
       required:
@@ -9935,6 +10839,7 @@ components:
         - RESOLVED
         - ESCALATED
         - RESOLVED_BY_ADMIN
+        - WITHDRAWN
     ComplaintLevel:
       type: string
       enum:
@@ -9981,6 +10886,173 @@ components:
         - SETTLEMENT_UPDATED
         - CENTER_ACTIVATED
         - SHIFT_REMINDER
+        - RECIPIENT_INVITATION
+        - BOOKING_EXPIRED
+        - OUTBOX_FAILED
+        - NO_SHOW_AUTO_ACCEPTED
+        - SESSION_AUTO_CLOSED
+    OutboxStatus:
+      type: string
+      enum:
+        - PENDING
+        - SENT
+        - FAILED
+        - SKIPPED
+    OutboxSkipRequest:
+      type: object
+      required:
+        - note
+      properties:
+        note:
+          type: string
+          minLength: 1
+          maxLength: 400
+    BookingOutboxEventRecord:
+      type: object
+      required:
+        - id
+        - eventType
+        - aggregateId
+        - idempotencyKey
+        - status
+        - attempts
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        aggregateId:
+          type: string
+          format: uuid
+        idempotencyKey:
+          type: string
+        status:
+          $ref: '#/components/schemas/OutboxStatus'
+        attempts:
+          type: integer
+        nextAttemptAt:
+          type: [string, 'null']
+          format: date-time
+        lastError:
+          type: [string, 'null']
+        sentAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProviderOutboxEventRecord:
+      type: object
+      required:
+        - id
+        - centerId
+        - eventType
+        - sequenceNo
+        - status
+        - attempts
+      properties:
+        id:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        sequenceNo:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/OutboxStatus'
+        attempts:
+          type: integer
+        nextAttemptAt:
+          type: [string, 'null']
+          format: date-time
+        lastError:
+          type: [string, 'null']
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BookingOutboxEventPage:
+      type: object
+      required: [items, page, size, totalElements, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingOutboxEventRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    ProviderOutboxEventPage:
+      type: object
+      required: [items, page, size, totalElements, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderOutboxEventRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    BookingOutboxEventResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/BookingOutboxEventRecord'
+    BookingOutboxEventPageResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/BookingOutboxEventPage'
+    ProviderOutboxEventResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderOutboxEventRecord'
+    ProviderOutboxEventPageResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderOutboxEventPage'
     BookingServiceRequest:
       type: object
       required:
@@ -11086,6 +12158,9 @@ components:
           format: uuid
         endReason:
           type: string
+        autoClosed:
+          type: boolean
+          description: D21 — hệ thống tự đóng ca quên check-out (quá giờ kết thúc + 4h).
         tasks:
           type: array
           items:
@@ -11921,46 +12996,112 @@ components:
         - PENDING
         - SUCCESS
         - FAILED
+        - CANCELLED
         - EXPIRED
-        - PARTIALLY_REFUNDED
-        - REFUNDED
-    DepositPaymentRequest:
+    PaymentType:
+      type: string
+      enum:
+        - DEPOSIT
+        - REMAINING
+    PaymentProvider:
+      type: string
+      enum:
+        - VNPAY
+        - STRIPE
+    CheckoutRequest:
       type: object
       required:
-        - bookingId
+        - provider
       properties:
-        bookingId:
-          type: string
-          format: uuid
-        bankCode:
-          type: string
-          enum:
-            - VNPAYQR
-            - VNBANK
-            - INTCARD
-        locale:
-          type: string
-          enum:
-            - vn
-            - en
-    PaymentDemoResultRequest:
-      type: object
-      required:
-        - outcome
-      properties:
-        outcome:
-          type: string
-          enum:
-            - SUCCESS
-            - FAILED
-    PaymentSessionRecord:
+        provider:
+          $ref: '#/components/schemas/PaymentProvider'
+    CheckoutRecord:
       type: object
       required:
         - paymentId
         - bookingId
+        - paymentType
+        - provider
+        - status
         - amount
-        - paymentUrl
+        - currency
+        - checkoutUrl
         - expiresAt
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        invoiceId:
+          type: [string, 'null']
+          format: uuid
+        paymentType:
+          $ref: '#/components/schemas/PaymentType'
+        provider:
+          $ref: '#/components/schemas/PaymentProvider'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        amount:
+          type: number
+        currency:
+          type: string
+        checkoutUrl:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    PaymentRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - paymentType
+        - status
+        - amount
+        - refundedAmount
+        - currency
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        customerId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        invoiceId:
+          type: [string, 'null']
+          format: uuid
+        paymentType:
+          $ref: '#/components/schemas/PaymentType'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        amount:
+          type: number
+        refundedAmount:
+          type: number
+        reservedRefundAmount:
+          type: number
+          description: M-09 — hoàn tiền đang giữ chỗ (REFUND_PENDING + FAILED), chưa chuyển xong.
+        currency:
+          type: string
+        paidAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    PaymentReturnRecord:
+      type: object
+      required:
+        - paymentId
+        - bookingId
         - status
       properties:
         paymentId:
@@ -11969,22 +13110,24 @@ components:
         bookingId:
           type: string
           format: uuid
-        amount:
-          type: number
-        paymentUrl:
-          type: string
-        expiresAt:
-          type: string
-          format: date-time
         status:
           $ref: '#/components/schemas/PaymentStatus'
-    PaymentRecord:
+        message:
+          type: string
+    InvoiceStatus:
+      type: string
+      enum:
+        - PENDING
+        - PAID
+        - OVERDUE
+        - WAIVED
+    RemainingInvoiceRecord:
       type: object
       required:
         - id
         - bookingId
-        - type
         - amount
+        - dueAt
         - status
       properties:
         id:
@@ -11993,23 +13136,90 @@ components:
         bookingId:
           type: string
           format: uuid
-        type:
+        customerId:
           type: string
-          enum:
-            - DEPOSIT
-            - REMAINING
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
         amount:
           type: number
+        dueAt:
+          type: string
+          format: date-time
         status:
-          $ref: '#/components/schemas/PaymentStatus'
+          $ref: '#/components/schemas/InvoiceStatus'
+        paymentId:
+          type: [string, 'null']
+          format: uuid
         paidAt:
+          type: [string, 'null']
+          format: date-time
+        waiveReason:
+          type: [string, 'null']
+        createdAt:
           type: string
           format: date-time
-        expiresAt:
+    OutstandingDebtRecord:
+      type: object
+      required:
+        - hasDebt
+        - overdueInvoices
+        - pendingInvoices
+      properties:
+        hasDebt:
+          type: boolean
+        overdueInvoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/RemainingInvoiceRecord'
+        pendingInvoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/RemainingInvoiceRecord'
+    RefundStatus:
+      type: string
+      enum:
+        - REFUND_PENDING
+        - REFUNDED
+        - FAILED
+    RefundRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - paymentId
+        - amount
+        - feeAmount
+        - reason
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        occurrenceId:
+          type: [string, 'null']
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        feeAmount:
+          type: number
+        reason:
+          type: string
+        status:
+          $ref: '#/components/schemas/RefundStatus'
+        refundedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
           type: string
           format: date-time
-        failureReason:
-          type: string
     PaymentPolicyRecord:
       type: object
       required:
@@ -12034,7 +13244,7 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/PaymentPolicyRecord'
-    PaymentSessionResponse:
+    CheckoutResponse:
       type: object
       required:
         - code
@@ -12046,7 +13256,7 @@ components:
         message:
           type: string
         result:
-          $ref: '#/components/schemas/PaymentSessionRecord'
+          $ref: '#/components/schemas/CheckoutRecord'
     PaymentResponse:
       type: object
       required:
@@ -12060,3 +13270,131 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/PaymentRecord'
+    PaymentPageRecord:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    PaymentPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentPageRecord'
+    PaymentReturnResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PaymentReturnRecord'
+    OutstandingDebtResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/OutstandingDebtRecord'
+    RefundPageRecord:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RefundRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    RefundPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RefundPageRecord'
+    RemainingInvoicePageRecord:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RemainingInvoiceRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    RemainingInvoicePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RemainingInvoicePageRecord'

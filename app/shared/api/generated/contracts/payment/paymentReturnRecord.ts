@@ -5,16 +5,11 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { PaymentRecordType } from './paymentRecordType'
-import type { PaymentStatus } from './paymentStatus'
+import type { PaymentStatus } from '../paymentStatus'
 
-export interface PaymentRecord {
-  id: string
+export interface PaymentReturnRecord {
+  paymentId: string
   bookingId: string
-  type: PaymentRecordType
-  amount: number
   status: PaymentStatus
-  paidAt?: string
-  expiresAt?: string
-  failureReason?: string
+  message?: string
 }

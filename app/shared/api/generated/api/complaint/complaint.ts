@@ -694,6 +694,123 @@ export const useEscalateComplaint = <TError = globalThis.Error & { info?: void; 
 > => {
   return useMutation(getEscalateComplaintMutationOptions(options), queryClient)
 }
+export type withdrawComplaintResponse200 = {
+  data: ComplaintResponse
+  status: 200
+}
+
+export type withdrawComplaintResponse400 = {
+  data: void
+  status: 400
+}
+
+export type withdrawComplaintResponse401 = {
+  data: void
+  status: 401
+}
+
+export type withdrawComplaintResponse403 = {
+  data: void
+  status: 403
+}
+
+export type withdrawComplaintResponse404 = {
+  data: void
+  status: 404
+}
+
+export type withdrawComplaintResponse409 = {
+  data: void
+  status: 409
+}
+
+export type withdrawComplaintResponse500 = {
+  data: void
+  status: 500
+}
+
+export type withdrawComplaintResponse503 = {
+  data: void
+  status: 503
+}
+
+export type withdrawComplaintResponseSuccess = withdrawComplaintResponse200 & {
+  headers: Headers
+}
+export type withdrawComplaintResponseError = (
+  | withdrawComplaintResponse400
+  | withdrawComplaintResponse401
+  | withdrawComplaintResponse403
+  | withdrawComplaintResponse404
+  | withdrawComplaintResponse409
+  | withdrawComplaintResponse500
+  | withdrawComplaintResponse503
+) & {
+  headers: Headers
+}
+
+export const getWithdrawComplaintUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/complaints/${id}/withdraw`
+}
+
+export const withdrawComplaint = async (
+  id: string,
+  options?: RequestInit
+): Promise<withdrawComplaintResponseSuccess> => {
+  const res = await fetch(getWithdrawComplaintUrl(id), {
+    ...options,
+    method: 'POST'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: withdrawComplaintResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: withdrawComplaintResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: withdrawComplaintResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as withdrawComplaintResponseSuccess
+}
+
+export const getWithdrawComplaintMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof withdrawComplaint>>, TError, { id: string }, TContext>
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof withdrawComplaint>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['withdrawComplaint']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof withdrawComplaint>>, { id: string }> = (props) => {
+    const { id } = props ?? {}
+
+    return withdrawComplaint(id, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type WithdrawComplaintMutationResult = NonNullable<Awaited<ReturnType<typeof withdrawComplaint>>>
+
+export type WithdrawComplaintMutationError = globalThis.Error & { info?: void; status?: number }
+
+export const useWithdrawComplaint = <TError = globalThis.Error & { info?: void; status?: number }, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof withdrawComplaint>>, TError, { id: string }, TContext>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof withdrawComplaint>>, TError, { id: string }, TContext> => {
+  return useMutation(getWithdrawComplaintMutationOptions(options), queryClient)
+}
 export type acceptComplaintResponse200 = {
   data: ComplaintResponse
   status: 200

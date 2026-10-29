@@ -5,10 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { OutboxStatus } from '../outboxStatus'
 
-export type PaymentRecordType = (typeof PaymentRecordType)[keyof typeof PaymentRecordType]
-
-export const PaymentRecordType = {
-  DEPOSIT: 'DEPOSIT',
-  REMAINING: 'REMAINING'
-} as const
+export type ListBookingOutboxEventsParams = {
+  status?: OutboxStatus
+  page?: number
+  size?: number
+}

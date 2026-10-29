@@ -5,8 +5,12 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { PaymentDemoResultRequestOutcome } from './paymentDemoResultRequestOutcome'
+import type { RefundRecord } from './refundRecord'
 
-export interface PaymentDemoResultRequest {
-  outcome: PaymentDemoResultRequestOutcome
+export interface RefundPageRecord {
+  items: RefundRecord[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
 }

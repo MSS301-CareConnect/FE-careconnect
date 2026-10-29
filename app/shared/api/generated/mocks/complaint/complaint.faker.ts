@@ -47,6 +47,15 @@ export const getEscalateComplaintResponseMock = (
   ...overrideResponse
 })
 
+export const getWithdrawComplaintResponseMock = (
+  overrideResponse: Partial<Extract<ComplaintResponse, object>> = {}
+): ComplaintResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getComplaintRecordMock() },
+  ...overrideResponse
+})
+
 export const getAcceptComplaintResponseMock = (
   overrideResponse: Partial<Extract<ComplaintResponse, object>> = {}
 ): ComplaintResponse => ({

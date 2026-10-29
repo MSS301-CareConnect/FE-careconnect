@@ -7,16 +7,28 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { PaymentResponse, PaymentSessionResponse } from '../../contracts'
+import type {
+  CheckoutResponse,
+  OutstandingDebtResponse,
+  PaymentPageResponse,
+  PaymentResponse,
+  PaymentReturnResponse
+} from '../../contracts'
 
-import { getPaymentRecordMock, getPaymentSessionRecordMock } from '../../contracts/index.faker'
+import {
+  getCheckoutRecordMock,
+  getOutstandingDebtRecordMock,
+  getPaymentPageRecordMock,
+  getPaymentRecordMock,
+  getPaymentReturnRecordMock
+} from '../../contracts/index.faker'
 
-export const getCreateDepositPaymentResponseMock = (
-  overrideResponse: Partial<Extract<PaymentSessionResponse, object>> = {}
-): PaymentSessionResponse => ({
+export const getListPaymentsResponseMock = (
+  overrideResponse: Partial<Extract<PaymentPageResponse, object>> = {}
+): PaymentPageResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getPaymentSessionRecordMock() },
+  result: { ...getPaymentPageRecordMock() },
   ...overrideResponse
 })
 
@@ -26,5 +38,41 @@ export const getGetPaymentResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getPaymentRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetPaymentByBookingResponseMock = (
+  overrideResponse: Partial<Extract<PaymentResponse, object>> = {}
+): PaymentResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPaymentRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetMyOutstandingDebtResponseMock = (
+  overrideResponse: Partial<Extract<OutstandingDebtResponse, object>> = {}
+): OutstandingDebtResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getOutstandingDebtRecordMock() },
+  ...overrideResponse
+})
+
+export const getVerifyVnPayReturnResponseMock = (
+  overrideResponse: Partial<Extract<PaymentReturnResponse, object>> = {}
+): PaymentReturnResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPaymentReturnRecordMock() },
+  ...overrideResponse
+})
+
+export const getCreateBookingCheckoutResponseMock = (
+  overrideResponse: Partial<Extract<CheckoutResponse, object>> = {}
+): CheckoutResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCheckoutRecordMock() },
   ...overrideResponse
 })

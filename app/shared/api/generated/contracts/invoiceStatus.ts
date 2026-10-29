@@ -5,13 +5,12 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { PaymentStatus } from '../paymentStatus'
 
-export interface PaymentSessionRecord {
-  paymentId: string
-  bookingId: string
-  amount: number
-  paymentUrl: string
-  expiresAt: string
-  status: PaymentStatus
-}
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+export const InvoiceStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  WAIVED: 'WAIVED'
+} as const

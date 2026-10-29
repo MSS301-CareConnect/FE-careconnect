@@ -6,5 +6,11 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export * from './paymentDemoResultRequest'
-export * from './paymentDemoResultRequestOutcome'
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
+
+export const OutboxStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+} as const

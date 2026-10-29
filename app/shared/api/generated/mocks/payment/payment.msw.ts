@@ -8,23 +8,41 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { PaymentResponse, PaymentSessionResponse } from '../../contracts'
+import type {
+  CheckoutResponse,
+  OutstandingDebtResponse,
+  PaymentPageResponse,
+  PaymentResponse,
+  PaymentReturnResponse
+} from '../../contracts'
 
-import { getCreateDepositPaymentResponseMock, getGetPaymentResponseMock } from './payment.faker'
+import {
+  getCreateBookingCheckoutResponseMock,
+  getGetMyOutstandingDebtResponseMock,
+  getGetPaymentByBookingResponseMock,
+  getGetPaymentResponseMock,
+  getListPaymentsResponseMock,
+  getVerifyVnPayReturnResponseMock
+} from './payment.faker'
 
-export { getCreateDepositPaymentResponseMock, getGetPaymentResponseMock } from './payment.faker'
+export {
+  getListPaymentsResponseMock,
+  getGetPaymentResponseMock,
+  getGetPaymentByBookingResponseMock,
+  getGetMyOutstandingDebtResponseMock,
+  getVerifyVnPayReturnResponseMock,
+  getCreateBookingCheckoutResponseMock
+} from './payment.faker'
 
-export const getCreateDepositPaymentMockHandler = (
+export const getListPaymentsMockHandler = (
   overrideResponse?:
-    | PaymentSessionResponse
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) => Promise<PaymentSessionResponse> | PaymentSessionResponse),
+    | PaymentPageResponse
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PaymentPageResponse> | PaymentPageResponse),
   options?: RequestHandlerOptions
 ) => {
-  return http.post(
-    '*/v1/payments/deposits',
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+  return http.get(
+    '*/v1/payments',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
       await delay(150)
 
       return HttpResponse.json(
@@ -32,7 +50,7 @@ export const getCreateDepositPaymentMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getCreateDepositPaymentResponseMock(),
+          : getListPaymentsResponseMock(),
         { status: 200 }
       )
     },
@@ -47,7 +65,7 @@ export const getGetPaymentMockHandler = (
   options?: RequestHandlerOptions
 ) => {
   return http.get(
-    '*/v1/payments/:id',
+    '*/v1/payments/:paymentId',
     async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
       await delay(150)
 
@@ -63,4 +81,109 @@ export const getGetPaymentMockHandler = (
     options
   )
 }
-export const getPaymentMock = () => [getCreateDepositPaymentMockHandler(), getGetPaymentMockHandler()]
+
+export const getGetPaymentByBookingMockHandler = (
+  overrideResponse?:
+    | PaymentResponse
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PaymentResponse> | PaymentResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/payments/by-booking/:bookingId',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetPaymentByBookingResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetMyOutstandingDebtMockHandler = (
+  overrideResponse?:
+    | OutstandingDebtResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<OutstandingDebtResponse> | OutstandingDebtResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/payments/me/outstanding',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetMyOutstandingDebtResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getVerifyVnPayReturnMockHandler = (
+  overrideResponse?:
+    | PaymentReturnResponse
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PaymentReturnResponse> | PaymentReturnResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/payments/vnpay/return',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getVerifyVnPayReturnResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getCreateBookingCheckoutMockHandler = (
+  overrideResponse?:
+    | CheckoutResponse
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CheckoutResponse> | CheckoutResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/payments/bookings/:bookingId/checkout',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getCreateBookingCheckoutResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+export const getPaymentMock = () => [
+  getListPaymentsMockHandler(),
+  getGetPaymentMockHandler(),
+  getGetPaymentByBookingMockHandler(),
+  getGetMyOutstandingDebtMockHandler(),
+  getVerifyVnPayReturnMockHandler(),
+  getCreateBookingCheckoutMockHandler()
+]

@@ -17,8 +17,11 @@ import type {
   EmergencyContactListResponse,
   EmergencyContactResponse,
   EmptyActionResponse,
+  ManagerInvitationListResponse,
+  ManagerInvitationResponse,
   MedicationListResponse,
   MedicationResponse,
+  MyInvitationListResponse,
   RecipientManagerListResponse,
   RecipientManagerResponse
 } from '../../contracts'
@@ -31,7 +34,9 @@ import {
   getCareRecipientSummaryPageMock,
   getCareRecipientSummaryRecordMock,
   getEmergencyContactRecordMock,
+  getManagerInvitationRecordMock,
   getMedicationRecordMock,
+  getMyInvitationRecordMock,
   getRecipientManagerRecordMock
 } from '../../contracts/index.faker'
 
@@ -241,12 +246,61 @@ export const getListCareRecipientManagersResponseMock = (
   ...overrideResponse
 })
 
-export const getCreateCareRecipientManagerResponseMock = (
+export const getListCareRecipientInvitationsResponseMock = (
+  overrideResponse: Partial<Extract<ManagerInvitationListResponse, object>> = {}
+): ManagerInvitationListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getManagerInvitationRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getInviteCareRecipientManagerResponseMock = (
+  overrideResponse: Partial<Extract<ManagerInvitationResponse, object>> = {}
+): ManagerInvitationResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getManagerInvitationRecordMock() },
+  ...overrideResponse
+})
+
+export const getRevokeCareRecipientInvitationResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getListMyCareRecipientInvitationsResponseMock = (
+  overrideResponse: Partial<Extract<MyInvitationListResponse, object>> = {}
+): MyInvitationListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getMyInvitationRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getAcceptCareRecipientInvitationResponseMock = (
   overrideResponse: Partial<Extract<RecipientManagerResponse, object>> = {}
 ): RecipientManagerResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getRecipientManagerRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeclineCareRecipientInvitationResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
   ...overrideResponse
 })
 

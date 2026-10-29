@@ -8,6 +8,8 @@
 import type { CatalogItemRequestStatus } from './catalogItemRequestStatus'
 
 export interface CatalogItemRequest {
+  /** M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006). */
+  version?: number
   /** @minLength 1 */
   name: string
   description?: string

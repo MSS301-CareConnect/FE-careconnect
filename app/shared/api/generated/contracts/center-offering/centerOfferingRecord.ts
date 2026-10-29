@@ -9,6 +9,8 @@ import type { CatalogItemRecord } from '../catalogItemRecord'
 import type { CenterOfferingRecordStatus } from './centerOfferingRecordStatus'
 
 export interface CenterOfferingRecord {
+  /** M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006). */
+  version?: number
   id: string
   catalogItem: CatalogItemRecord
   centerId: string

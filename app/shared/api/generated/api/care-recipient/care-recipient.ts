@@ -38,10 +38,13 @@ import type {
   ListCareRecipientMedicationsParams,
   ListCareRecipientsParams,
   ManagerCreateRequest,
+  ManagerInvitationListResponse,
+  ManagerInvitationResponse,
   ManagerUpdateRequest,
   MedicationListResponse,
   MedicationRequest,
   MedicationResponse,
+  MyInvitationListResponse,
   RecipientBatchRequest,
   RecipientManagerListResponse,
   RecipientManagerResponse,
@@ -3707,71 +3710,267 @@ export function useListCareRecipientManagers<
   return withQueryKey(query, queryOptions.queryKey)
 }
 
-export type createCareRecipientManagerResponse200 = {
-  data: RecipientManagerResponse
+export type listCareRecipientInvitationsResponse200 = {
+  data: ManagerInvitationListResponse
   status: 200
 }
 
-export type createCareRecipientManagerResponse400 = {
+export type listCareRecipientInvitationsResponse400 = {
   data: void
   status: 400
 }
 
-export type createCareRecipientManagerResponse401 = {
+export type listCareRecipientInvitationsResponse401 = {
   data: void
   status: 401
 }
 
-export type createCareRecipientManagerResponse403 = {
+export type listCareRecipientInvitationsResponse403 = {
   data: void
   status: 403
 }
 
-export type createCareRecipientManagerResponse404 = {
+export type listCareRecipientInvitationsResponse404 = {
   data: void
   status: 404
 }
 
-export type createCareRecipientManagerResponse409 = {
+export type listCareRecipientInvitationsResponse409 = {
   data: void
   status: 409
 }
 
-export type createCareRecipientManagerResponse500 = {
+export type listCareRecipientInvitationsResponse500 = {
   data: void
   status: 500
 }
 
-export type createCareRecipientManagerResponse503 = {
+export type listCareRecipientInvitationsResponse503 = {
   data: void
   status: 503
 }
 
-export type createCareRecipientManagerResponseSuccess = createCareRecipientManagerResponse200 & {
+export type listCareRecipientInvitationsResponseSuccess = listCareRecipientInvitationsResponse200 & {
   headers: Headers
 }
-export type createCareRecipientManagerResponseError = (
-  | createCareRecipientManagerResponse400
-  | createCareRecipientManagerResponse401
-  | createCareRecipientManagerResponse403
-  | createCareRecipientManagerResponse404
-  | createCareRecipientManagerResponse409
-  | createCareRecipientManagerResponse500
-  | createCareRecipientManagerResponse503
+export type listCareRecipientInvitationsResponseError = (
+  | listCareRecipientInvitationsResponse400
+  | listCareRecipientInvitationsResponse401
+  | listCareRecipientInvitationsResponse403
+  | listCareRecipientInvitationsResponse404
+  | listCareRecipientInvitationsResponse409
+  | listCareRecipientInvitationsResponse500
+  | listCareRecipientInvitationsResponse503
 ) & {
   headers: Headers
 }
 
-export const getCreateCareRecipientManagerUrl = (recipientId: string) => {
-  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/managers`
+export const getListCareRecipientInvitationsUrl = (recipientId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/invitations`
 }
 
-export const createCareRecipientManager = async (
+/**
+ * @summary Primary OWNER lists the profile's invitations (email, status) — never the invitee's identity
+ */
+export const listCareRecipientInvitations = async (
+  recipientId: string,
+  options?: RequestInit
+): Promise<listCareRecipientInvitationsResponseSuccess> => {
+  const res = await fetch(getListCareRecipientInvitationsUrl(recipientId), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listCareRecipientInvitationsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listCareRecipientInvitationsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listCareRecipientInvitationsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listCareRecipientInvitationsResponseSuccess
+}
+
+export const getListCareRecipientInvitationsQueryKey = (recipientId: string) => {
+  return [`${env.API_BASE_URL}/v1/care-recipients/${recipientId}/invitations`] as const
+}
+
+export const getListCareRecipientInvitationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientInvitations>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListCareRecipientInvitationsQueryKey(recipientId)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listCareRecipientInvitations>>> = ({ signal }) =>
+    listCareRecipientInvitations(recipientId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: recipientId !== null && recipientId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientInvitations>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type ListCareRecipientInvitationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCareRecipientInvitations>>
+>
+export type ListCareRecipientInvitationsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientInvitations>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+          TError,
+          Awaited<ReturnType<typeof listCareRecipientInvitations>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientInvitations>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+          TError,
+          Awaited<ReturnType<typeof listCareRecipientInvitations>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientInvitations>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Primary OWNER lists the profile's invitations (email, status) — never the invitee's identity
+ */
+
+export function useListCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientInvitations>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListCareRecipientInvitationsQueryOptions(recipientId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type inviteCareRecipientManagerResponse200 = {
+  data: ManagerInvitationResponse
+  status: 200
+}
+
+export type inviteCareRecipientManagerResponse400 = {
+  data: void
+  status: 400
+}
+
+export type inviteCareRecipientManagerResponse401 = {
+  data: void
+  status: 401
+}
+
+export type inviteCareRecipientManagerResponse403 = {
+  data: void
+  status: 403
+}
+
+export type inviteCareRecipientManagerResponse404 = {
+  data: void
+  status: 404
+}
+
+export type inviteCareRecipientManagerResponse409 = {
+  data: void
+  status: 409
+}
+
+export type inviteCareRecipientManagerResponse500 = {
+  data: void
+  status: 500
+}
+
+export type inviteCareRecipientManagerResponse503 = {
+  data: void
+  status: 503
+}
+
+export type inviteCareRecipientManagerResponseSuccess = inviteCareRecipientManagerResponse200 & {
+  headers: Headers
+}
+export type inviteCareRecipientManagerResponseError = (
+  | inviteCareRecipientManagerResponse400
+  | inviteCareRecipientManagerResponse401
+  | inviteCareRecipientManagerResponse403
+  | inviteCareRecipientManagerResponse404
+  | inviteCareRecipientManagerResponse409
+  | inviteCareRecipientManagerResponse500
+  | inviteCareRecipientManagerResponse503
+) & {
+  headers: Headers
+}
+
+export const getInviteCareRecipientManagerUrl = (recipientId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/invitations`
+}
+
+/**
+ * @summary Primary OWNER invites a relative by email; the same answer whether or not the email has an account
+ */
+export const inviteCareRecipientManager = async (
   recipientId: string,
   managerCreateRequest: ManagerCreateRequest,
   options?: RequestInit
-): Promise<createCareRecipientManagerResponseSuccess> => {
-  const res = await fetch(getCreateCareRecipientManagerUrl(recipientId), {
+): Promise<inviteCareRecipientManagerResponseSuccess> => {
+  const res = await fetch(getInviteCareRecipientManagerUrl(recipientId), {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -3780,35 +3979,35 @@ export const createCareRecipientManager = async (
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
   if (!res.ok) {
-    const err: globalThis.Error & { info?: createCareRecipientManagerResponseError['data']; status?: number } =
+    const err: globalThis.Error & { info?: inviteCareRecipientManagerResponseError['data']; status?: number } =
       new globalThis.Error()
-    const data: createCareRecipientManagerResponseError['data'] = body ? JSON.parse(body) : {}
+    const data: inviteCareRecipientManagerResponseError['data'] = body ? JSON.parse(body) : {}
     err.info = data
     err.status = res.status
     throw err
   }
-  const data: createCareRecipientManagerResponseSuccess['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createCareRecipientManagerResponseSuccess
+  const data: inviteCareRecipientManagerResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as inviteCareRecipientManagerResponseSuccess
 }
 
-export const getCreateCareRecipientManagerMutationOptions = <
+export const getInviteCareRecipientManagerMutationOptions = <
   TError = globalThis.Error & { info?: void; status?: number },
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createCareRecipientManager>>,
+    Awaited<ReturnType<typeof inviteCareRecipientManager>>,
     TError,
     { recipientId: string; data: ManagerCreateRequest },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createCareRecipientManager>>,
+  Awaited<ReturnType<typeof inviteCareRecipientManager>>,
   TError,
   { recipientId: string; data: ManagerCreateRequest },
   TContext
 > => {
-  const mutationKey = ['createCareRecipientManager']
+  const mutationKey = ['inviteCareRecipientManager']
   const { mutation: mutationOptions, fetch: fetchOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
@@ -3816,30 +4015,33 @@ export const getCreateCareRecipientManagerMutationOptions = <
     : { mutation: { mutationKey }, fetch: undefined }
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createCareRecipientManager>>,
+    Awaited<ReturnType<typeof inviteCareRecipientManager>>,
     { recipientId: string; data: ManagerCreateRequest }
   > = (props) => {
     const { recipientId, data } = props ?? {}
 
-    return createCareRecipientManager(recipientId, data, fetchOptions)
+    return inviteCareRecipientManager(recipientId, data, fetchOptions)
   }
 
   return { mutationFn, ...mutationOptions }
 }
 
-export type CreateCareRecipientManagerMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createCareRecipientManager>>
+export type InviteCareRecipientManagerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof inviteCareRecipientManager>>
 >
-export type CreateCareRecipientManagerMutationBody = ManagerCreateRequest
-export type CreateCareRecipientManagerMutationError = globalThis.Error & { info?: void; status?: number }
+export type InviteCareRecipientManagerMutationBody = ManagerCreateRequest
+export type InviteCareRecipientManagerMutationError = globalThis.Error & { info?: void; status?: number }
 
-export const useCreateCareRecipientManager = <
+/**
+ * @summary Primary OWNER invites a relative by email; the same answer whether or not the email has an account
+ */
+export const useInviteCareRecipientManager = <
   TError = globalThis.Error & { info?: void; status?: number },
   TContext = unknown
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createCareRecipientManager>>,
+      Awaited<ReturnType<typeof inviteCareRecipientManager>>,
       TError,
       { recipientId: string; data: ManagerCreateRequest },
       TContext
@@ -3848,12 +4050,648 @@ export const useCreateCareRecipientManager = <
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof createCareRecipientManager>>,
+  Awaited<ReturnType<typeof inviteCareRecipientManager>>,
   TError,
   { recipientId: string; data: ManagerCreateRequest },
   TContext
 > => {
-  return useMutation(getCreateCareRecipientManagerMutationOptions(options), queryClient)
+  return useMutation(getInviteCareRecipientManagerMutationOptions(options), queryClient)
+}
+export type revokeCareRecipientInvitationResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type revokeCareRecipientInvitationResponse400 = {
+  data: void
+  status: 400
+}
+
+export type revokeCareRecipientInvitationResponse401 = {
+  data: void
+  status: 401
+}
+
+export type revokeCareRecipientInvitationResponse403 = {
+  data: void
+  status: 403
+}
+
+export type revokeCareRecipientInvitationResponse404 = {
+  data: void
+  status: 404
+}
+
+export type revokeCareRecipientInvitationResponse409 = {
+  data: void
+  status: 409
+}
+
+export type revokeCareRecipientInvitationResponse500 = {
+  data: void
+  status: 500
+}
+
+export type revokeCareRecipientInvitationResponse503 = {
+  data: void
+  status: 503
+}
+
+export type revokeCareRecipientInvitationResponseSuccess = revokeCareRecipientInvitationResponse200 & {
+  headers: Headers
+}
+export type revokeCareRecipientInvitationResponseError = (
+  | revokeCareRecipientInvitationResponse400
+  | revokeCareRecipientInvitationResponse401
+  | revokeCareRecipientInvitationResponse403
+  | revokeCareRecipientInvitationResponse404
+  | revokeCareRecipientInvitationResponse409
+  | revokeCareRecipientInvitationResponse500
+  | revokeCareRecipientInvitationResponse503
+) & {
+  headers: Headers
+}
+
+export const getRevokeCareRecipientInvitationUrl = (recipientId: string, invitationId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/invitations/${invitationId}`
+}
+
+/**
+ * @summary Primary OWNER revokes a pending invitation
+ */
+export const revokeCareRecipientInvitation = async (
+  recipientId: string,
+  invitationId: string,
+  options?: RequestInit
+): Promise<revokeCareRecipientInvitationResponseSuccess> => {
+  const res = await fetch(getRevokeCareRecipientInvitationUrl(recipientId, invitationId), {
+    ...options,
+    method: 'DELETE'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: revokeCareRecipientInvitationResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: revokeCareRecipientInvitationResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: revokeCareRecipientInvitationResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as revokeCareRecipientInvitationResponseSuccess
+}
+
+export const getRevokeCareRecipientInvitationMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokeCareRecipientInvitation>>,
+    TError,
+    { recipientId: string; invitationId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof revokeCareRecipientInvitation>>,
+  TError,
+  { recipientId: string; invitationId: string },
+  TContext
+> => {
+  const mutationKey = ['revokeCareRecipientInvitation']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof revokeCareRecipientInvitation>>,
+    { recipientId: string; invitationId: string }
+  > = (props) => {
+    const { recipientId, invitationId } = props ?? {}
+
+    return revokeCareRecipientInvitation(recipientId, invitationId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type RevokeCareRecipientInvitationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof revokeCareRecipientInvitation>>
+>
+
+export type RevokeCareRecipientInvitationMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Primary OWNER revokes a pending invitation
+ */
+export const useRevokeCareRecipientInvitation = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof revokeCareRecipientInvitation>>,
+      TError,
+      { recipientId: string; invitationId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof revokeCareRecipientInvitation>>,
+  TError,
+  { recipientId: string; invitationId: string },
+  TContext
+> => {
+  return useMutation(getRevokeCareRecipientInvitationMutationOptions(options), queryClient)
+}
+export type listMyCareRecipientInvitationsResponse200 = {
+  data: MyInvitationListResponse
+  status: 200
+}
+
+export type listMyCareRecipientInvitationsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listMyCareRecipientInvitationsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listMyCareRecipientInvitationsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listMyCareRecipientInvitationsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listMyCareRecipientInvitationsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listMyCareRecipientInvitationsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listMyCareRecipientInvitationsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listMyCareRecipientInvitationsResponseSuccess = listMyCareRecipientInvitationsResponse200 & {
+  headers: Headers
+}
+export type listMyCareRecipientInvitationsResponseError = (
+  | listMyCareRecipientInvitationsResponse400
+  | listMyCareRecipientInvitationsResponse401
+  | listMyCareRecipientInvitationsResponse403
+  | listMyCareRecipientInvitationsResponse404
+  | listMyCareRecipientInvitationsResponse409
+  | listMyCareRecipientInvitationsResponse500
+  | listMyCareRecipientInvitationsResponse503
+) & {
+  headers: Headers
+}
+
+export const getListMyCareRecipientInvitationsUrl = () => {
+  return `${env.API_BASE_URL}/v1/care-recipients/invitations/me`
+}
+
+/**
+ * @summary CUSTOMER lists pending invitations addressed to them
+ */
+export const listMyCareRecipientInvitations = async (
+  options?: RequestInit
+): Promise<listMyCareRecipientInvitationsResponseSuccess> => {
+  const res = await fetch(getListMyCareRecipientInvitationsUrl(), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listMyCareRecipientInvitationsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listMyCareRecipientInvitationsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listMyCareRecipientInvitationsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listMyCareRecipientInvitationsResponseSuccess
+}
+
+export const getListMyCareRecipientInvitationsQueryKey = () => {
+  return [`${env.API_BASE_URL}/v1/care-recipients/invitations/me`] as const
+}
+
+export const getListMyCareRecipientInvitationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyCareRecipientInvitations>>, TError, TData>>
+  fetch?: RequestInit
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListMyCareRecipientInvitationsQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyCareRecipientInvitations>>> = ({ signal }) =>
+    listMyCareRecipientInvitations({ signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListMyCareRecipientInvitationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMyCareRecipientInvitations>>
+>
+export type ListMyCareRecipientInvitationsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListMyCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyCareRecipientInvitations>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+          TError,
+          Awaited<ReturnType<typeof listMyCareRecipientInvitations>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyCareRecipientInvitations>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+          TError,
+          Awaited<ReturnType<typeof listMyCareRecipientInvitations>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyCareRecipientInvitations>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CUSTOMER lists pending invitations addressed to them
+ */
+
+export function useListMyCareRecipientInvitations<
+  TData = Awaited<ReturnType<typeof listMyCareRecipientInvitations>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyCareRecipientInvitations>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListMyCareRecipientInvitationsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type acceptCareRecipientInvitationResponse200 = {
+  data: RecipientManagerResponse
+  status: 200
+}
+
+export type acceptCareRecipientInvitationResponse400 = {
+  data: void
+  status: 400
+}
+
+export type acceptCareRecipientInvitationResponse401 = {
+  data: void
+  status: 401
+}
+
+export type acceptCareRecipientInvitationResponse403 = {
+  data: void
+  status: 403
+}
+
+export type acceptCareRecipientInvitationResponse404 = {
+  data: void
+  status: 404
+}
+
+export type acceptCareRecipientInvitationResponse409 = {
+  data: void
+  status: 409
+}
+
+export type acceptCareRecipientInvitationResponse500 = {
+  data: void
+  status: 500
+}
+
+export type acceptCareRecipientInvitationResponse503 = {
+  data: void
+  status: 503
+}
+
+export type acceptCareRecipientInvitationResponseSuccess = acceptCareRecipientInvitationResponse200 & {
+  headers: Headers
+}
+export type acceptCareRecipientInvitationResponseError = (
+  | acceptCareRecipientInvitationResponse400
+  | acceptCareRecipientInvitationResponse401
+  | acceptCareRecipientInvitationResponse403
+  | acceptCareRecipientInvitationResponse404
+  | acceptCareRecipientInvitationResponse409
+  | acceptCareRecipientInvitationResponse500
+  | acceptCareRecipientInvitationResponse503
+) & {
+  headers: Headers
+}
+
+export const getAcceptCareRecipientInvitationUrl = (invitationId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/invitations/${invitationId}/accept`
+}
+
+/**
+ * @summary The invitee accepts and becomes a manager of the profile
+ */
+export const acceptCareRecipientInvitation = async (
+  invitationId: string,
+  options?: RequestInit
+): Promise<acceptCareRecipientInvitationResponseSuccess> => {
+  const res = await fetch(getAcceptCareRecipientInvitationUrl(invitationId), {
+    ...options,
+    method: 'POST'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: acceptCareRecipientInvitationResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: acceptCareRecipientInvitationResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: acceptCareRecipientInvitationResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as acceptCareRecipientInvitationResponseSuccess
+}
+
+export const getAcceptCareRecipientInvitationMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof acceptCareRecipientInvitation>>,
+    TError,
+    { invitationId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof acceptCareRecipientInvitation>>,
+  TError,
+  { invitationId: string },
+  TContext
+> => {
+  const mutationKey = ['acceptCareRecipientInvitation']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof acceptCareRecipientInvitation>>,
+    { invitationId: string }
+  > = (props) => {
+    const { invitationId } = props ?? {}
+
+    return acceptCareRecipientInvitation(invitationId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type AcceptCareRecipientInvitationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof acceptCareRecipientInvitation>>
+>
+
+export type AcceptCareRecipientInvitationMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary The invitee accepts and becomes a manager of the profile
+ */
+export const useAcceptCareRecipientInvitation = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof acceptCareRecipientInvitation>>,
+      TError,
+      { invitationId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof acceptCareRecipientInvitation>>,
+  TError,
+  { invitationId: string },
+  TContext
+> => {
+  return useMutation(getAcceptCareRecipientInvitationMutationOptions(options), queryClient)
+}
+export type declineCareRecipientInvitationResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type declineCareRecipientInvitationResponse400 = {
+  data: void
+  status: 400
+}
+
+export type declineCareRecipientInvitationResponse401 = {
+  data: void
+  status: 401
+}
+
+export type declineCareRecipientInvitationResponse403 = {
+  data: void
+  status: 403
+}
+
+export type declineCareRecipientInvitationResponse404 = {
+  data: void
+  status: 404
+}
+
+export type declineCareRecipientInvitationResponse409 = {
+  data: void
+  status: 409
+}
+
+export type declineCareRecipientInvitationResponse500 = {
+  data: void
+  status: 500
+}
+
+export type declineCareRecipientInvitationResponse503 = {
+  data: void
+  status: 503
+}
+
+export type declineCareRecipientInvitationResponseSuccess = declineCareRecipientInvitationResponse200 & {
+  headers: Headers
+}
+export type declineCareRecipientInvitationResponseError = (
+  | declineCareRecipientInvitationResponse400
+  | declineCareRecipientInvitationResponse401
+  | declineCareRecipientInvitationResponse403
+  | declineCareRecipientInvitationResponse404
+  | declineCareRecipientInvitationResponse409
+  | declineCareRecipientInvitationResponse500
+  | declineCareRecipientInvitationResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeclineCareRecipientInvitationUrl = (invitationId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/invitations/${invitationId}/decline`
+}
+
+/**
+ * @summary The invitee declines the invitation
+ */
+export const declineCareRecipientInvitation = async (
+  invitationId: string,
+  options?: RequestInit
+): Promise<declineCareRecipientInvitationResponseSuccess> => {
+  const res = await fetch(getDeclineCareRecipientInvitationUrl(invitationId), {
+    ...options,
+    method: 'POST'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: declineCareRecipientInvitationResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: declineCareRecipientInvitationResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: declineCareRecipientInvitationResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as declineCareRecipientInvitationResponseSuccess
+}
+
+export const getDeclineCareRecipientInvitationMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof declineCareRecipientInvitation>>,
+    TError,
+    { invitationId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof declineCareRecipientInvitation>>,
+  TError,
+  { invitationId: string },
+  TContext
+> => {
+  const mutationKey = ['declineCareRecipientInvitation']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof declineCareRecipientInvitation>>,
+    { invitationId: string }
+  > = (props) => {
+    const { invitationId } = props ?? {}
+
+    return declineCareRecipientInvitation(invitationId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeclineCareRecipientInvitationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof declineCareRecipientInvitation>>
+>
+
+export type DeclineCareRecipientInvitationMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary The invitee declines the invitation
+ */
+export const useDeclineCareRecipientInvitation = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof declineCareRecipientInvitation>>,
+      TError,
+      { invitationId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof declineCareRecipientInvitation>>,
+  TError,
+  { invitationId: string },
+  TContext
+> => {
+  return useMutation(getDeclineCareRecipientInvitationMutationOptions(options), queryClient)
 }
 export type updateCareRecipientManagerResponse200 = {
   data: RecipientManagerResponse

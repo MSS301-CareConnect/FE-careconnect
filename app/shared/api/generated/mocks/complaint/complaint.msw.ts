@@ -17,7 +17,8 @@ import {
   getEscalateComplaintResponseMock,
   getGetComplaintResponseMock,
   getListComplaintsResponseMock,
-  getResolveComplaintResponseMock
+  getResolveComplaintResponseMock,
+  getWithdrawComplaintResponseMock
 } from './complaint.faker'
 
 export {
@@ -25,6 +26,7 @@ export {
   getCreateComplaintResponseMock,
   getGetComplaintResponseMock,
   getEscalateComplaintResponseMock,
+  getWithdrawComplaintResponseMock,
   getAcceptComplaintResponseMock,
   getResolveComplaintResponseMock,
   getAdminResolveComplaintResponseMock
@@ -126,6 +128,30 @@ export const getEscalateComplaintMockHandler = (
   )
 }
 
+export const getWithdrawComplaintMockHandler = (
+  overrideResponse?:
+    | ComplaintResponse
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<ComplaintResponse> | ComplaintResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/complaints/:id/withdraw',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getWithdrawComplaintResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getAcceptComplaintMockHandler = (
   overrideResponse?:
     | ComplaintResponse
@@ -202,6 +228,7 @@ export const getComplaintMock = () => [
   getCreateComplaintMockHandler(),
   getGetComplaintMockHandler(),
   getEscalateComplaintMockHandler(),
+  getWithdrawComplaintMockHandler(),
   getAcceptComplaintMockHandler(),
   getResolveComplaintMockHandler(),
   getAdminResolveComplaintMockHandler()

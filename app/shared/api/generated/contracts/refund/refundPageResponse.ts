@@ -5,11 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { RefundPageRecord } from './refundPageRecord'
 
-export type PaymentDemoResultRequestOutcome =
-  (typeof PaymentDemoResultRequestOutcome)[keyof typeof PaymentDemoResultRequestOutcome]
-
-export const PaymentDemoResultRequestOutcome = {
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED'
-} as const
+export interface RefundPageResponse {
+  code: number
+  message: string
+  result: RefundPageRecord
+}
