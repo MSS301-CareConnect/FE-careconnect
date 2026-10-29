@@ -39,7 +39,7 @@ export const managerNavigation = [
     key: 'coordination',
     items: [
       { key: 'bookings', label: 'centerManager.bookings', to: '/center-manager/bookings', icon: 'calendar_month' },
-      { key: 'feedback', label: 'centerManager.feedback', icon: 'reviews' }
+      { key: 'feedback', label: 'centerManager.feedback', to: '/center-manager/complaints', icon: 'reviews' }
     ]
   }
 ] as const
@@ -48,5 +48,5 @@ export type ManagerNavigationGroup = (typeof managerNavigation)[number]
 export type ManagerNavigationItem = ManagerNavigationGroup['items'][number]
 
 export function isActiveManagerItem(item: ManagerNavigationItem, pathname: string) {
-  return 'to' in item && (pathname === item.to || pathname.startsWith(`${item.to}/`))
+  return pathname === item.to || pathname.startsWith(`${item.to}/`)
 }

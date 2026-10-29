@@ -10,6 +10,8 @@ export const customerLayoutEn = {
     customerRole: 'Customer',
     userName: 'Customer',
     myProfile: 'My Profile',
+    payments: 'Payments & refunds',
+    invitations: 'Profile invitations',
     accountMenu: 'Account menu'
   }
 } as const
@@ -26,6 +28,8 @@ export const customerLayoutVi = {
     customerRole: 'Khách hàng',
     userName: 'Khách hàng',
     myProfile: 'Hồ sơ của tôi',
+    payments: 'Thanh toán & hoàn tiền',
+    invitations: 'Lời mời quản lý hồ sơ',
     accountMenu: 'Menu tài khoản'
   }
 } as const

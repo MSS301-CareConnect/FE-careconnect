@@ -42,7 +42,7 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
   if (!waiting) return null
   if (noShowReported)
     return (
-      <p className='flex items-start gap-2 rounded-xl bg-amber-50 p-4 text-sm text-amber-900'>
+      <p className='flex items-start gap-2 rounded-xl border border-warning/25 bg-warning-container p-4 text-sm font-medium text-on-warning-container'>
         <Icon className='text-lg' name='pending' />
         {t('caregiver.visitDetail.noShowAwaiting')}
       </p>
@@ -50,12 +50,12 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
 
   const error = acknowledge.error ?? checkInVisit.error
   return (
-    <section className='flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-sm sm:p-6'>
-      <h2 className='text-base font-bold'>{t('caregiver.visitDetail.nextStep')}</h2>
-      <div className='flex flex-wrap gap-2'>
+    <section className='flex flex-col gap-3 rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm sm:p-6'>
+      <h2 className='text-base font-bold text-on-surface'>{t('caregiver.visitDetail.nextStep')}</h2>
+      <div className='flex flex-wrap gap-2.5'>
         {visit.status === 'SCHEDULED' ? (
           <button
-            className='inline-flex items-center gap-2 rounded-lg bg-surface-container px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surface-container-high disabled:opacity-50'
+            className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface-container px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50'
             disabled={acknowledge.isPending}
             onClick={() => acknowledge.mutate()}
             type='button'
@@ -65,7 +65,7 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
           </button>
         ) : null}
         <button
-          className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container disabled:opacity-50'
+          className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50'
           disabled={checkInVisit.isPending}
           onClick={() => checkInVisit.mutate()}
           type='button'
@@ -75,7 +75,7 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
         </button>
         {started ? (
           <button
-            className='inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-error ring-1 ring-error/30 hover:bg-error-container/30'
+            className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-error ring-1 ring-error/30 transition-colors hover:bg-error-container/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error'
             onClick={() => setReporting(true)}
             type='button'
           >
@@ -84,7 +84,9 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
           </button>
         ) : null}
       </div>
-      <p className='text-xs text-on-surface-variant'>{t('caregiver.visitDetail.checkInHint', { time: opensAt })}</p>
+      <p className='text-xs text-on-surface-variant tabular-nums'>
+        {t('caregiver.visitDetail.checkInHint', { time: opensAt })}
+      </p>
       {error ? (
         <p className='rounded-lg bg-error-container/40 p-3 text-sm text-error' role='alert'>
           {t(bookingErrorKey(error))}

@@ -11,7 +11,7 @@ export function ManagerSidebar({ open, onClose }: { open: boolean; onClose: () =
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const itemClass =
-    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors'
+    'flex min-h-10 w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 
   return (
     <>
@@ -40,7 +40,7 @@ export function ManagerSidebar({ open, onClose }: { open: boolean; onClose: () =
           </Link>
           <button
             aria-label={t('centerManager.closeMenu')}
-            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low lg:hidden'
+            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden'
             onClick={onClose}
             type='button'
           >
@@ -64,27 +64,15 @@ export function ManagerSidebar({ open, onClose }: { open: boolean; onClose: () =
                   const active = isActiveManagerItem(item, pathname)
                   return (
                     <li key={item.key}>
-                      {'to' in item ? (
-                        <Link
-                          aria-current={active ? 'page' : undefined}
-                          className={`${itemClass} ${active ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
-                          onClick={onClose}
-                          to={item.to}
-                        >
-                          <Icon className='text-xl' name={item.icon} />
-                          <span>{t(item.label)}</span>
-                        </Link>
-                      ) : (
-                        <button
-                          className={`${itemClass} cursor-not-allowed text-on-surface-variant opacity-55`}
-                          disabled
-                          title={t('centerManager.unavailable')}
-                          type='button'
-                        >
-                          <Icon className='text-xl' name={item.icon} />
-                          <span>{t(item.label)}</span>
-                        </button>
-                      )}
+                      <Link
+                        aria-current={active ? 'page' : undefined}
+                        className={`${itemClass} ${active ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
+                        onClick={onClose}
+                        to={item.to}
+                      >
+                        <Icon className='text-xl' name={item.icon} />
+                        <span>{t(item.label)}</span>
+                      </Link>
                     </li>
                   )
                 })}

@@ -1,5 +1,6 @@
-import { AdminReviewsComplaintsPage } from '~/features/admin/reviews-complaints/admin-reviews-complaints-page'
+import { AdminComplaintsPage } from '~/features/admin/complaints/admin-complaints-page'
 
+// H-05: the live escalated-complaint queue replaces the former illustrative review and complaint snapshot.
 export default function AdminReviewsComplaintsRoute() {
-  return <AdminReviewsComplaintsPage />
+  return <AdminComplaintsPage />
 }

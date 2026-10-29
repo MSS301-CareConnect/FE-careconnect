@@ -96,7 +96,7 @@ describe('Caregiver assigned visits', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu ca' }))
     await waitFor(() => expect(checkIn).toHaveBeenCalledWith({ occurrenceId: 'occ-1' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Chưa tới giờ bắt đầu ca')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Chỉ check-in được từ 30 phút trước')
     // The visit has not started, so a no-show cannot be reported yet.
     expect(screen.queryByRole('button', { name: 'Báo khách vắng mặt' })).not.toBeInTheDocument()
   })

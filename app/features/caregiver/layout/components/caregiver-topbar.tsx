@@ -5,6 +5,7 @@ import { useLocation } from 'react-router'
 import { fetchMyCaregiverProfile, fetchProviderMedia, providerKeys } from '~/entities/provider/provider-api'
 import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
 import { Icon } from '~/shared/ui/icon'
+import { NotificationBell } from '~/entities/notification/notification-bell'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { activeCaregiverNavigation } from '../caregiver-navigation.constants'
@@ -32,7 +33,7 @@ export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean;
             aria-controls={CAREGIVER_SIDEBAR_ID}
             aria-expanded={menuOpen}
             aria-label={t(menuOpen ? 'caregiver.nav.close' : 'caregiver.nav.open')}
-            className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low lg:hidden'
+            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden'
             onClick={onToggleMenu}
             type='button'
           >
@@ -46,6 +47,7 @@ export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean;
           <div className='[&_button]:px-2'>
             <LanguageSwitch />
           </div>
+          <NotificationBell />
           <PortalAccountMenu
             avatarIcon='clinical_notes'
             avatarUrl={avatarUrl}

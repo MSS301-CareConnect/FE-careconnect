@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { PortalAccountMenu } from '~/features/shared/auth/portal-account-menu'
 import { Icon } from '~/shared/ui/icon'
+import { NotificationBell } from '~/entities/notification/notification-bell'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { MANAGER_SIDEBAR_ID } from './manager-sidebar'
@@ -15,7 +16,7 @@ export function ManagerTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean; o
           aria-controls={MANAGER_SIDEBAR_ID}
           aria-expanded={menuOpen}
           aria-label={t(menuOpen ? 'centerManager.closeMenu' : 'centerManager.openMenu')}
-          className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low lg:hidden'
+          className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden'
           onClick={onToggleMenu}
           type='button'
         >
@@ -25,16 +26,7 @@ export function ManagerTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean; o
           <div className='[&_button]:px-2'>
             <LanguageSwitch />
           </div>
-          <button
-            aria-label={t('centerManager.notifications')}
-            className='relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant disabled:cursor-not-allowed'
-            disabled
-            title={t('centerManager.unavailable')}
-            type='button'
-          >
-            <Icon name='notifications' />
-            <span className='absolute right-1 top-1 h-2 w-2 rounded-full bg-error' />
-          </button>
+          <NotificationBell />
           <PortalAccountMenu fallbackName={t('centerManager.manager')} roleLabel={t('centerManager.role')} />
         </div>
       </div>

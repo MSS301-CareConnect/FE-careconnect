@@ -33,7 +33,7 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   }
 
   return (
-    <section className='flex items-start gap-4 rounded-2xl bg-white p-5 shadow-sm sm:p-6'>
+    <section className='flex items-start gap-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs sm:p-6'>
       <span className='grid h-12 w-12 shrink-0 place-items-center rounded-full bg-secondary-container text-primary'>
         <Icon className='text-2xl' name={ICONS[booking.status]} />
       </span>
@@ -47,11 +47,13 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
             : t(`customer.bookingDetail.next.${booking.status}.body`, values)}
         </p>
         {booking.refund?.totalRefund !== undefined ? (
-          <p className='mt-2 text-sm font-semibold text-primary'>{t('customer.bookingDetail.refunded', values)}</p>
+          <p className='mt-2 text-sm font-semibold text-primary tabular-nums'>
+            {t('customer.bookingDetail.refunded', values)}
+          </p>
         ) : null}
         {booking.status === 'AWAITING_DEPOSIT' ? (
           <Link
-            className='group mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#075b31] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#064a29] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+            className='group mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
             to={`/customer/bookings/${booking.id}/deposit`}
           >
             {depositKnown

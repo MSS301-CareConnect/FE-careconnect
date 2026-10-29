@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -12,16 +13,18 @@ function Location() {
 
 function renderManager(path = '/center-manager/services') {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route element={<CenterManagerLayout />} path='/center-manager'>
-          <Route element={<div />} path='caregivers' />
-          <Route element={<div />} path='bookings' />
-          <Route element={<div />} path='services' />
-        </Route>
-      </Routes>
-      <Location />
-    </MemoryRouter>
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route element={<CenterManagerLayout />} path='/center-manager'>
+            <Route element={<div />} path='caregivers' />
+            <Route element={<div />} path='bookings' />
+            <Route element={<div />} path='services' />
+          </Route>
+        </Routes>
+        <Location />
+      </MemoryRouter>
+    </QueryClientProvider>
   )
 }
 
@@ -44,7 +47,11 @@ describe('Center Manager sidebar layout', () => {
       'href',
       '/center-manager/caregivers'
     )
-    expect(within(navigation).getByRole('button', { name: 'Reviews and feedback' })).toBeDisabled()
+    // H-05: the complaint queue is live now.
+    expect(within(navigation).getByRole('link', { name: 'Reviews and feedback' })).toHaveAttribute(
+      'href',
+      '/center-manager/complaints'
+    )
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
     expect(document.getElementById('manager-sidebar')).toHaveClass('lg:translate-x-0')
   })

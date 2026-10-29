@@ -20,7 +20,7 @@ export function BookingSummaryCard({ booking }: { booking: BookingSummaryRecord 
   const done = booking.completedCount ?? 0
 
   return (
-    <article className='group rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6'>
+    <article className='group rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs transition-[border-color,box-shadow] hover:border-outline hover:shadow-md sm:p-6'>
       <div className='flex flex-wrap items-start justify-between gap-3'>
         <div className='min-w-0'>
           <div className='flex flex-wrap items-center gap-2'>
@@ -29,7 +29,7 @@ export function BookingSummaryCard({ booking }: { booking: BookingSummaryRecord 
             </h2>
             <BookingStatusBadge status={booking.status} />
           </div>
-          <p className='mt-1 text-sm text-on-surface-variant'>
+          <p className='mt-1 text-sm text-on-surface-variant tabular-nums'>
             {t('customer.myBookings.card.code', { code: booking.bookingCode })}
           </p>
         </div>

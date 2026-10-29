@@ -33,7 +33,7 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
     (center) => !needle || searchable(`${center.name} ${center.address ?? ''}`).includes(needle)
   )
   const isDialog = size === 'dialog'
-  const optionClass = `group flex w-full items-center gap-3 rounded-xl text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#075b31] ${isDialog ? 'min-h-16 px-4 py-3' : 'min-h-12 px-3 py-2'}`
+  const optionClass = `group flex w-full items-center gap-3 rounded-xl text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary ${isDialog ? 'min-h-16 px-4 py-3' : 'min-h-12 px-3 py-2'}`
 
   function option(center: ServiceCenterOption | null) {
     const isCurrent = (center?.id ?? null) === (selected?.id ?? null)
@@ -41,37 +41,37 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
       <li key={center?.id ?? 'general'}>
         <button
           aria-current={isCurrent ? 'true' : undefined}
-          className={`${optionClass} ${isCurrent ? 'bg-[#e8f2e8]' : 'hover:bg-[#f2f6f1]'}`}
+          className={`${optionClass} ${isCurrent ? 'bg-primary-fixed/60' : 'hover:bg-surface-container-low'}`}
           onClick={() => onPick(center)}
           type='button'
         >
           <span
             aria-hidden='true'
-            className={`grid shrink-0 place-items-center rounded-lg ${isDialog ? 'h-10 w-10' : 'h-8 w-8'} ${center ? 'bg-[#075b31] text-white' : 'bg-[#f3efe2] text-[#8a5a12]'}`}
+            className={`grid shrink-0 place-items-center rounded-lg ${isDialog ? 'h-10 w-10' : 'h-8 w-8'} ${center ? 'bg-primary text-on-primary' : 'bg-warning-container text-on-warning-container'}`}
           >
             <Icon className={isDialog ? 'text-xl' : 'text-lg'} name={center ? 'home_health' : 'public'} />
           </span>
           <span className='min-w-0 flex-1'>
-            <span className='block truncate text-sm font-bold text-[#1b2922]'>
+            <span className='block truncate text-sm font-bold text-on-surface'>
               {center?.name ?? t(`${key}.general.name`)}
             </span>
             {center ? (
               center.address ? (
-                <span className='block truncate text-xs leading-5 text-[#617367]'>{center.address}</span>
+                <span className='block truncate text-xs leading-5 text-on-surface-variant'>{center.address}</span>
               ) : null
             ) : (
-              <span className='block text-xs leading-5 text-[#617367]'>{t(`${key}.general.description`)}</span>
+              <span className='block text-xs leading-5 text-on-surface-variant'>{t(`${key}.general.description`)}</span>
             )}
           </span>
           {isCurrent ? (
-            <span className='flex shrink-0 items-center gap-1 text-xs font-bold text-[#075b31]'>
+            <span className='flex shrink-0 items-center gap-1 text-xs font-bold text-primary'>
               <Icon aria-hidden='true' className='text-lg' name='check' />
               {t(`${key}.current`)}
             </span>
           ) : (
             <Icon
               aria-hidden='true'
-              className='shrink-0 text-lg text-[#9aab9e] transition-transform group-hover:translate-x-0.5 group-hover:text-[#075b31]'
+              className='shrink-0 text-lg text-outline transition-transform group-hover:translate-x-0.5 group-hover:text-primary'
               name='chevron_right'
             />
           )}
@@ -82,8 +82,8 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
 
   if (centers.isPending)
     return (
-      <p className='flex items-center gap-2 px-3 py-6 text-sm text-[#526a57]' role='status'>
-        <Icon aria-hidden='true' className='animate-spin text-xl text-[#075b31]' name='progress_activity' />
+      <p className='flex items-center gap-2 px-3 py-6 text-sm text-on-surface-variant' role='status'>
+        <Icon aria-hidden='true' className='animate-spin text-xl text-primary' name='progress_activity' />
         {t(`${key}.states.loading`)}
       </p>
     )
@@ -91,10 +91,10 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
   if (centers.isError && apiErrorStatus(centers.error) === 401)
     return (
       <div className='px-3 py-5'>
-        <p className='text-sm font-bold text-[#1b2922]'>{t(`${key}.states.signInTitle`)}</p>
-        <p className='mt-1 text-sm leading-6 text-[#5e7063]'>{t(`${key}.states.signInText`)}</p>
+        <p className='text-sm font-bold text-on-surface'>{t(`${key}.states.signInTitle`)}</p>
+        <p className='mt-1 text-sm leading-6 text-on-surface-variant'>{t(`${key}.states.signInText`)}</p>
         <Link
-          className='mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#075b31] px-4 text-sm font-bold text-white hover:bg-[#064a29] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+          className='mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
           to='/login'
         >
           {t(`${key}.states.signIn`)}
@@ -106,9 +106,9 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
   if (centers.isError)
     return (
       <div className='flex flex-wrap items-center justify-between gap-3 px-3 py-5 text-sm' role='alert'>
-        <span className='text-[#415548]'>{t(`${key}.states.error`)}</span>
+        <span className='text-on-surface-variant'>{t(`${key}.states.error`)}</span>
         <button
-          className='font-bold text-[#075b31] underline-offset-4 hover:underline'
+          className='font-bold text-primary underline-offset-4 hover:underline'
           onClick={() => void centers.refetch()}
           type='button'
         >
@@ -127,11 +127,11 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
           <span className='relative block'>
             <Icon
               aria-hidden='true'
-              className='pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#6b806e]'
+              className='pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-on-surface-variant'
               name='search'
             />
             <input
-              className='h-11 w-full rounded-xl border border-[#d9e4da] bg-[#fbfcfa] pl-11 pr-4 text-sm text-[#1b2922] outline-none transition-colors placeholder:text-[#78877d] focus:border-[#075b31] focus:ring-2 focus:ring-[#075b31]/10'
+              className='h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest pl-11 pr-4 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15'
               id={searchId}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t(`${key}.searchPlaceholder`)}
@@ -141,7 +141,7 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
           </span>
         </div>
       ) : null}
-      <p className={`text-xs font-semibold text-[#617367] ${isDialog ? 'pb-2' : 'px-3 pb-1'}`}>
+      <p className={`text-xs font-semibold text-on-surface-variant ${isDialog ? 'pb-2' : 'px-3 pb-1'}`}>
         {t(`${key}.count`, { count: centers.data.length })}
       </p>
       <ul
@@ -150,12 +150,12 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
       >
         {visible.map((center) => option(center))}
         {centers.data.length === 0 ? (
-          <li className='px-3 py-4 text-sm text-[#5e7063]'>{t(`${key}.states.empty`)}</li>
+          <li className='px-3 py-4 text-sm text-on-surface-variant'>{t(`${key}.states.empty`)}</li>
         ) : visible.length === 0 ? (
-          <li className='px-3 py-4 text-sm text-[#5e7063]'>{t(`${key}.states.noMatch`)}</li>
+          <li className='px-3 py-4 text-sm text-on-surface-variant'>{t(`${key}.states.noMatch`)}</li>
         ) : null}
       </ul>
-      <ul className={`mt-2 bg-[#fbfaf5] ${isDialog ? 'rounded-xl' : 'rounded-lg'}`}>{option(null)}</ul>
+      <ul className={`mt-2 bg-surface-container-low ${isDialog ? 'rounded-xl' : 'rounded-lg'}`}>{option(null)}</ul>
     </div>
   )
 }

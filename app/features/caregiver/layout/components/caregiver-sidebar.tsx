@@ -39,7 +39,7 @@ export function CaregiverSidebar({ open, onClose }: { open: boolean; onClose: ()
           </Link>
           <button
             aria-label={t('caregiver.nav.close')}
-            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low lg:hidden'
+            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden'
             onClick={onClose}
             type='button'
           >
@@ -47,12 +47,12 @@ export function CaregiverSidebar({ open, onClose }: { open: boolean; onClose: ()
           </button>
         </div>
         <nav aria-label={t('caregiver.nav.label')} className='flex-1 overflow-y-auto overscroll-contain px-3 py-4'>
-          <ul className='space-y-0.5'>
+          <ul className='space-y-1'>
             {caregiverNavigation.map((item) => (
               <li key={item.key}>
                 <Link
                   aria-current={active.key === item.key ? 'page' : undefined}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active.key === item.key ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
+                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active.key === item.key ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
                   onClick={onClose}
                   to={item.to}
                 >

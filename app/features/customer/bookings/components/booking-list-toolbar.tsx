@@ -30,7 +30,7 @@ export function BookingListToolbar({ list }: { list: List }) {
           return (
             <button
               aria-pressed={active}
-              className={`shrink-0 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${active ? 'bg-primary text-white' : 'bg-white text-on-surface-variant hover:bg-surface-container'}`}
+              className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${active ? 'bg-primary text-on-primary shadow-xs' : 'border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container'}`}
               key={item || 'all'}
               onClick={() => list.setStatus(item)}
               type='button'
@@ -52,9 +52,9 @@ export function BookingListToolbar({ list }: { list: List }) {
           <label className='sr-only' htmlFor='booking-search'>
             {t('customer.myBookings.filters.search')}
           </label>
-          <Icon className='pointer-events-none absolute top-3 left-3 text-xl text-primary' name='search' />
+          <Icon className='pointer-events-none absolute top-3 left-3.5 text-xl text-primary' name='search' />
           <input
-            className='w-full rounded-lg border border-slate-100 bg-white py-3 pr-4 pl-10 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:border-primary focus:outline-none'
+            className='w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-3 pr-4 pl-10 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none'
             id='booking-search'
             maxLength={50}
             onBlur={() => draft.trim() !== list.keyword && list.setKeyword(draft)}
@@ -66,9 +66,9 @@ export function BookingListToolbar({ list }: { list: List }) {
         </form>
         <label className='relative'>
           <span className='sr-only'>{t('customer.myBookings.filters.sort')}</span>
-          <Icon className='pointer-events-none absolute top-3 left-3 text-xl text-primary' name='sort' />
+          <Icon className='pointer-events-none absolute top-3 left-3.5 text-xl text-primary' name='sort' />
           <select
-            className='w-full appearance-none rounded-lg border border-slate-100 bg-white py-3 pr-9 pl-10 text-sm text-on-surface focus:border-primary focus:outline-none'
+            className='w-full appearance-none rounded-xl border border-outline-variant bg-surface-container-lowest py-3 pr-9 pl-10 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none'
             onChange={(event) =>
               list.setSort(BOOKING_SORTS.find((item) => item === event.target.value) ?? BOOKING_SORTS[0])
             }

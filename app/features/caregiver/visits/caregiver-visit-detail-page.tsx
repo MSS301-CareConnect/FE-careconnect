@@ -1,3 +1,5 @@
+import { CareReportForm } from '~/entities/aftercare/care-report-form'
+import { SessionNotesCard } from '~/entities/aftercare/session-notes-card'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -54,17 +56,17 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
             {data.recipientName ?? t('caregiver.visits.patientFallback')}
           </h1>
           <p className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
-            <span className='font-semibold text-on-surface'>
+            <span className='font-semibold text-on-surface tabular-nums'>
               {formatDate(data.startAt, language)} · {formatClock(data.startAt, language)}–
               {formatClock(data.endAt, language)}
             </span>
             <OccurrenceStatusBadge status={data.status} />
-            {data.bookingCode ? <span>#{data.bookingCode}</span> : null}
+            {data.bookingCode ? <span className='tabular-nums'>#{data.bookingCode}</span> : null}
           </p>
         </div>
         {data.customerPhone ? (
           <a
-            className='inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm hover:bg-surface-container-low'
+            className='inline-flex min-h-11 items-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm hover:bg-surface-container-low tabular-nums'
             href={`tel:${data.customerPhone}`}
           >
             <Icon className='text-lg' name='call' />
@@ -74,6 +76,12 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
       </header>
 
       {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
+      {data.sessionId ? (
+        <div className='grid items-start gap-6 lg:grid-cols-2'>
+          <SessionNotesCard canWrite sessionId={data.sessionId} />
+          <CareReportForm bookingId={data.bookingId} sessionId={data.sessionId} />
+        </div>
+      ) : null}
 
       <div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]'>
         {data.recipientSnapshot ? (
@@ -85,7 +93,7 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
             <p className='text-sm text-on-surface-variant'>{t('caregiver.visitDetail.snapshotHidden')}</p>
           </SectionCard>
         )}
-        <aside className='flex flex-col gap-5 rounded-2xl bg-white p-5 text-sm shadow-sm'>
+        <aside className='flex flex-col gap-5 rounded-2xl border border-outline-variant/20 bg-white p-5 text-sm shadow-sm'>
           <div>
             <h2 className='text-base font-bold'>{t('caregiver.visitDetail.address')}</h2>
             <p className='mt-1 text-on-surface-variant'>{data.serviceAddress ?? '—'}</p>

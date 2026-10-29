@@ -20,7 +20,7 @@ import { currentPosition } from '../current-position'
 const TASK_TONE: Record<CareTaskRecord['status'], string> = {
   PENDING: 'bg-surface-container-low',
   DONE: 'bg-secondary-container/60',
-  SKIPPED: 'bg-slate-100'
+  SKIPPED: 'bg-neutral-container/70'
 }
 const TASK_ICON: Record<CareTaskRecord['status'], string> = {
   PENDING: 'radio_button_unchecked',
@@ -85,7 +85,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
   return (
     <SectionCard
       action={
-        <span className='text-sm text-on-surface-variant'>
+        <span className='text-sm text-on-surface-variant tabular-nums'>
           {active
             ? t('caregiver.visitDetail.session.checkedIn', { time: formatClock(data.checkInAt, i18n.language) })
             : t('caregiver.visitDetail.session.ended', { time: formatClock(data.checkOutAt, i18n.language) })}
@@ -94,9 +94,9 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
       icon='checklist'
       title={t('caregiver.visitDetail.session.title')}
     >
-      <ul className='flex flex-col gap-2'>
+      <ul className='flex flex-col gap-2.5'>
         {tasks.map((task) => (
-          <li className={`flex flex-wrap items-center gap-3 rounded-xl p-3 ${TASK_TONE[task.status]}`} key={task.id}>
+          <li className={`flex flex-wrap items-center gap-3 rounded-xl p-3.5 ${TASK_TONE[task.status]}`} key={task.id}>
             <Icon
               className={task.status === 'DONE' ? 'text-primary' : 'text-outline'}
               filled={task.status === 'DONE'}
@@ -108,7 +108,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
               >
                 {task.title}
               </p>
-              <p className='text-xs text-on-surface-variant'>
+              <p className='text-xs text-on-surface-variant tabular-nums'>
                 {t(`caregiver.visitDetail.session.taskTypes.${task.taskType}`)}
                 {task.scheduledTime ? ` · ${shortTime(task.scheduledTime)}` : ''}
                 {task.skipReason ? ` · ${task.skipReason}` : ''}
@@ -119,7 +119,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                 {task.status === 'PENDING' ? (
                   <>
                     <button
-                      className='rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-container disabled:opacity-50'
+                      className='min-h-11 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:opacity-50'
                       disabled={update.isPending}
                       onClick={() => update.mutate({ task, request: { status: 'DONE' } })}
                       type='button'
@@ -127,7 +127,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                       {t('caregiver.visitDetail.session.done')}
                     </button>
                     <button
-                      className='rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-on-surface-variant hover:bg-surface-container'
+                      className='min-h-11 rounded-xl border border-outline-variant/30 bg-white px-3.5 py-2 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container'
                       onClick={() => setSkipping(task)}
                       type='button'
                     >
@@ -136,7 +136,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                   </>
                 ) : (
                   <button
-                    className='rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-on-surface-variant hover:bg-surface-container disabled:opacity-50'
+                    className='min-h-11 rounded-xl border border-outline-variant/30 bg-white px-3.5 py-2 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-50'
                     disabled={update.isPending}
                     onClick={() => update.mutate({ task, request: { status: 'PENDING' } })}
                     type='button'
@@ -163,7 +163,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
               {t('caregiver.visitDetail.session.addLabel')}
             </label>
             <input
-              className='min-w-0 flex-1 rounded-lg border border-outline-variant/60 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none'
+              className='min-h-11 min-w-0 flex-1 rounded-xl border border-outline-variant/60 bg-white px-3.5 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
               id='custom-task'
               maxLength={200}
               onChange={(event) => setTitle(event.target.value)}
@@ -171,7 +171,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
               value={title}
             />
             <button
-              className='rounded-lg bg-surface-container px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-high disabled:opacity-50'
+              className='min-h-11 rounded-xl bg-surface-container px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-high disabled:opacity-50'
               disabled={!title.trim() || add.isPending}
               type='submit'
             >
@@ -190,7 +190,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                 : t('caregiver.visitDetail.session.readyToFinish')}
             </p>
             <button
-              className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container disabled:opacity-50'
+              className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:opacity-50'
               disabled={pending > 0 || finish.isPending}
               onClick={() => finish.mutate()}
               type='button'

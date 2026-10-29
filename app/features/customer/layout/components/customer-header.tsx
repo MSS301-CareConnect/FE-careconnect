@@ -5,6 +5,7 @@ import { Link, NavLink } from 'react-router'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { SignOutButton } from '~/features/shared/auth/sign-out-button'
 import { Icon } from '~/shared/ui/icon'
+import { NotificationBell } from '~/entities/notification/notification-bell'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { CenterSelector } from './center-selector'
@@ -45,15 +46,18 @@ export function CustomerHeader() {
   }, [accountMenuOpen])
 
   return (
-    <header className='relative z-50 border-b border-[#dfe6dc] bg-[#f7f8f5] text-[#1b2922]'>
+    <header className='sticky top-0 z-50 border-b border-outline-variant/60 bg-surface/95 text-on-surface backdrop-blur-md'>
       <div className='mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12'>
         <div className='flex min-h-20 items-center justify-between gap-3'>
           <div className='flex min-w-0 items-center gap-3 sm:gap-4 xl:gap-5'>
             <Link
-              className='inline-flex shrink-0 items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em] text-[#075b31]'
+              className='inline-flex shrink-0 items-center gap-2.5 text-xl font-extrabold tracking-[-0.06em] text-primary'
               to={homePath}
             >
-              <span aria-hidden='true' className='grid h-9 w-9 place-items-center rounded-lg bg-[#075b31] text-white'>
+              <span
+                aria-hidden='true'
+                className='grid h-9 w-9 place-items-center rounded-xl bg-primary text-on-primary shadow-xs'
+              >
                 <Icon className='text-[22px]' name='volunteer_activism' />
               </span>
               <span className='max-sm:sr-only'>{t('common.brand')}</span>
@@ -68,7 +72,7 @@ export function CustomerHeader() {
             {navigation.map(({ to, label, end }) => (
               <NavLink
                 className={({ isActive }) =>
-                  `inline-flex min-h-11 items-center border-b-2 pt-0.5 transition-colors ${isActive ? 'border-[#075b31] text-[#075b31]' : 'border-transparent text-[#44594b] hover:text-[#075b31]'}`
+                  `inline-flex min-h-11 items-center border-b-2 pt-0.5 transition-colors ${isActive ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-primary'}`
                 }
                 end={end}
                 key={to}
@@ -85,57 +89,81 @@ export function CustomerHeader() {
             </div>
             {isCustomer ? (
               <>
+                <NotificationBell />
                 <div className='relative' ref={accountMenuRef}>
                   <button
                     aria-controls='customer-account-menu'
                     aria-expanded={accountMenuOpen}
                     aria-haspopup='true'
                     aria-label={t('customer.nav.accountMenu')}
-                    className='flex min-h-11 items-center gap-2 rounded-lg px-1 text-[#1b2922] hover:bg-[#eaf2e9] focus-visible:outline-2 focus-visible:outline-[#075b31]'
+                    className='flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-on-surface transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
                     onClick={() => setAccountMenuOpen((open) => !open)}
                     ref={accountButtonRef}
                     type='button'
                   >
                     <span
                       aria-hidden='true'
-                      className='grid h-9 w-9 place-items-center rounded-full bg-[#075b31] text-sm font-bold text-white'
+                      className='grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-bold text-on-primary shadow-xs'
                     >
                       {displayName.trim().charAt(0).toLocaleUpperCase()}
                     </span>
                     <span className='hidden max-w-28 flex-col text-left xl:flex'>
-                      <span className='truncate text-xs font-bold leading-tight'>{displayName}</span>
-                      <span className='text-[11px] leading-tight text-[#617367]'>{t('customer.nav.customerRole')}</span>
+                      <span className='truncate text-xs font-bold leading-tight text-on-surface'>{displayName}</span>
+                      <span className='text-[11px] leading-tight text-on-surface-variant'>
+                        {t('customer.nav.customerRole')}
+                      </span>
                     </span>
-                    <Icon className='hidden text-base text-[#44594b] sm:block' name='expand_more' />
+                    <Icon className='hidden text-base text-on-surface-variant sm:block' name='expand_more' />
                   </button>
                   {accountMenuOpen && (
                     <nav
                       aria-label={t('customer.nav.accountMenu')}
-                      className='absolute top-full right-0 z-10 mt-2 w-52 rounded-xl border border-[#dfe6dc] bg-white p-2 shadow-lg'
+                      className='absolute top-full right-0 z-10 mt-2 w-56 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
                       id='customer-account-menu'
                     >
                       <Link
-                        className='block rounded-lg px-3 py-2.5 text-sm font-semibold text-[#1b2922] hover:bg-[#eaf2e9]'
+                        className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
                         onClick={() => setAccountMenuOpen(false)}
                         to='/customer/my-profile'
                       >
                         {t('customer.nav.myProfile')}
                       </Link>
                       <Link
-                        className='block rounded-lg px-3 py-2.5 text-sm font-semibold text-[#1b2922] hover:bg-[#eaf2e9]'
+                        className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
                         onClick={() => setAccountMenuOpen(false)}
                         to='/customer/patient-profiles'
                       >
                         {t('customer.nav.familyProfiles')}
                       </Link>
                       <Link
-                        className='block rounded-lg px-3 py-2.5 text-sm font-semibold text-[#1b2922] hover:bg-[#eaf2e9]'
+                        className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
                         onClick={() => setAccountMenuOpen(false)}
                         to='/customer/bookings'
                       >
                         {t('customer.nav.myBookings')}
                       </Link>
-                      <div className='my-1 border-t border-[#dfe6dc]' />
+                      <Link
+                        className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
+                        onClick={() => setAccountMenuOpen(false)}
+                        to='/customer/payments'
+                      >
+                        {t('customer.nav.payments')}
+                      </Link>
+                      <Link
+                        className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
+                        onClick={() => setAccountMenuOpen(false)}
+                        to='/customer/invitations'
+                      >
+                        {t('customer.nav.invitations')}
+                      </Link>
+                      <Link
+                        className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
+                        onClick={() => setAccountMenuOpen(false)}
+                        to='/account/security'
+                      >
+                        {t('auth.security.title')}
+                      </Link>
+                      <div className='my-1 border-t border-outline-variant/40' />
                       <SignOutButton appearance='menu' />
                     </nav>
                   )}
@@ -143,7 +171,7 @@ export function CustomerHeader() {
               </>
             ) : (
               <Link
-                className='inline-flex min-h-11 items-center rounded-lg border border-[#b9c9bb] px-4 text-sm font-bold text-[#075b31] hover:bg-[#eaf2e9]'
+                className='inline-flex min-h-11 items-center rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-container-low'
                 to='/login'
               >
                 {t('home.signIn')}
@@ -153,7 +181,7 @@ export function CustomerHeader() {
               aria-controls='customer-mobile-menu'
               aria-expanded={mobileMenuOpen}
               aria-label={t('customer.nav.menu')}
-              className='grid h-11 w-11 place-items-center rounded-lg text-[#44594b] hover:bg-[#eaf2e9] lg:hidden'
+              className='grid h-11 w-11 place-items-center rounded-xl text-on-surface-variant transition-colors hover:bg-surface-container-low lg:hidden'
               onClick={() => setMobileMenuOpen((open) => !open)}
               type='button'
             >
@@ -168,14 +196,14 @@ export function CustomerHeader() {
       {mobileMenuOpen && (
         <nav
           aria-label={t('customer.nav.menu')}
-          className='border-t border-[#dfe6dc] bg-[#f7f8f5] px-5 py-3 sm:px-8 lg:hidden'
+          className='border-t border-outline-variant/60 bg-surface px-5 py-3 sm:px-8 lg:hidden'
           id='customer-mobile-menu'
         >
-          <div className='mx-auto flex max-w-[1344px] flex-col'>
+          <div className='mx-auto flex max-w-[1344px] flex-col gap-1'>
             {navigation.map(({ to, label, end }) => (
               <NavLink
                 className={({ isActive }) =>
-                  `rounded-lg px-3 py-3 text-sm font-semibold ${isActive ? 'bg-[#eaf2e9] text-[#075b31]' : 'text-[#44594b] hover:bg-[#eaf2e9]'}`
+                  `rounded-xl px-3 py-3 text-sm font-semibold transition-colors ${isActive ? 'bg-primary-fixed/60 text-primary' : 'text-on-surface-variant hover:bg-surface-container-low'}`
                 }
                 end={end}
                 key={to}

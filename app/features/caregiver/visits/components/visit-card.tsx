@@ -5,18 +5,19 @@ import { formatClock, formatDate } from '~/entities/booking/booking-format'
 import { OccurrenceStatusBadge } from '~/entities/booking/booking-status-badge'
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
+import { StatusBadge } from '~/shared/ui/status-badge'
 
 export function VisitCard({ visit }: { visit: CaregiverOccurrenceRecord }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
 
   return (
-    <li className='group grid gap-4 rounded-xl bg-white p-5 shadow-sm sm:grid-cols-[150px_minmax(0,1fr)_auto] sm:items-center'>
+    <li className='group grid gap-4 rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:grid-cols-[150px_minmax(0,1fr)_auto] sm:items-center'>
       <div>
-        <p className='text-lg font-bold text-on-surface'>
+        <p className='text-lg font-bold text-on-surface tabular-nums'>
           {formatClock(visit.startAt, language)}–{formatClock(visit.endAt, language)}
         </p>
-        <p className='text-sm text-on-surface-variant'>{formatDate(visit.startAt, language)}</p>
+        <p className='text-sm text-on-surface-variant tabular-nums'>{formatDate(visit.startAt, language)}</p>
       </div>
       <div className='min-w-0'>
         <div className='flex flex-wrap items-center gap-2'>
@@ -25,9 +26,7 @@ export function VisitCard({ visit }: { visit: CaregiverOccurrenceRecord }) {
           </h2>
           <OccurrenceStatusBadge status={visit.status} />
           {visit.noShowReportedAt && !visit.noShowDecidedAt ? (
-            <span className='rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800'>
-              {t('caregiver.visits.noShowPending')}
-            </span>
+            <StatusBadge tone='warning'>{t('caregiver.visits.noShowPending')}</StatusBadge>
           ) : null}
         </div>
         {visit.serviceAddress ? (
@@ -47,7 +46,7 @@ export function VisitCard({ visit }: { visit: CaregiverOccurrenceRecord }) {
       </div>
       <Link
         aria-label={t('caregiver.visits.openLabel', { name: visit.recipientName ?? '', number: visit.occurrenceNo })}
-        className='inline-flex items-center justify-center gap-1.5 rounded-lg bg-surface-container px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-high'
+        className='inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-surface-container px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
         to={`/caregiver/visits/${visit.id}`}
       >
         {t('caregiver.visits.open')}

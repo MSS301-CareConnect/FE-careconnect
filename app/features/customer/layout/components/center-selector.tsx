@@ -43,32 +43,32 @@ export function CenterSelector() {
         aria-controls='customer-center-menu'
         aria-expanded={open}
         aria-haspopup='true'
-        className={`flex min-h-11 min-w-0 max-w-[11rem] items-center gap-2 rounded-lg border px-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31] sm:max-w-[15rem] xl:max-w-[18rem] ${open ? 'border-[#075b31] bg-white' : 'border-[#d3ded3] bg-white/70 hover:border-[#9fb9a4] hover:bg-white'}`}
+        className={`flex min-h-11 min-w-0 max-w-[11rem] items-center gap-2 rounded-xl border px-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:max-w-[15rem] xl:max-w-[18rem] ${open ? 'border-primary bg-surface-container-lowest' : 'border-outline-variant bg-surface-container-lowest/80 hover:border-outline hover:bg-surface-container-lowest'}`}
         onClick={() => setOpen((value) => !value)}
         ref={buttonRef}
         type='button'
       >
         <Icon
           aria-hidden='true'
-          className={`shrink-0 text-xl ${center ? 'text-[#075b31]' : 'text-[#8a5a12]'}`}
+          className={`shrink-0 text-xl ${center ? 'text-primary' : 'text-warning'}`}
           name={center ? 'home_health' : 'public'}
         />
         <span className='flex min-w-0 flex-col'>
-          <span className='text-[11px] leading-tight text-[#617367]'>{t(`${key}.label`)}</span>
-          <span className='truncate text-sm font-bold leading-tight text-[#1b2922]'>
+          <span className='text-[11px] leading-tight text-on-surface-variant'>{t(`${key}.label`)}</span>
+          <span className='truncate text-sm font-bold leading-tight text-on-surface'>
             {center?.name ?? t(`${key}.none`)}
           </span>
         </span>
         <Icon
           aria-hidden='true'
-          className={`shrink-0 text-lg text-[#44594b] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-lg text-on-surface-variant transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           name='expand_more'
         />
       </button>
       {open ? (
         <div
           aria-label={t(`${key}.menu`)}
-          className='absolute top-full left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-[#dfe6dc] bg-white p-2 shadow-lg'
+          className='absolute top-full left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
           id='customer-center-menu'
           role='region'
         >

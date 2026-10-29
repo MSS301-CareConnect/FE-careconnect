@@ -15,6 +15,7 @@ import { SectionCard } from '~/shared/ui/section-card'
 
 import { BookingCancelDialog } from './components/booking-cancel-dialog'
 import { BookingDetailSummary } from './components/booking-detail-summary'
+import { BookingAftercare } from './components/booking-aftercare'
 import { BookingStatusPanel } from './components/booking-status-panel'
 
 const CANCELLABLE: readonly BookingStatus[] = ['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS']
@@ -114,6 +115,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
             <SectionCard icon='history' title={t('customer.bookingDetail.history')}>
               <BookingHistoryList bookingId={data.id} />
             </SectionCard>
+            <BookingAftercare bookingId={data.id} completed={data.status === 'COMPLETED'} />
           </div>
           <BookingDetailSummary booking={data} />
         </div>

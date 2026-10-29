@@ -18,7 +18,7 @@ export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord
     .join(', ')
 
   return (
-    <aside className='flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-24'>
+    <aside className='flex flex-col gap-5 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs sm:p-6 lg:sticky lg:top-24'>
       <div>
         <h2 className='text-base font-bold text-on-surface'>{t('customer.bookingDetail.summary.schedule')}</h2>
         <p className='mt-2 flex items-start gap-2 text-sm text-on-surface'>
