@@ -14,7 +14,7 @@ export interface PaymentShellProps {
   children: ReactNode
 }
 
-/** Header band and frame shared by the deposit, gateway and result screens, matching the booking form. */
+/** Header band and frame shared by the deposit, return and result screens, matching the booking form. */
 export function PaymentShell({ title, subtitle, crumb, bookingId, bookingCode, children }: PaymentShellProps) {
   const { t } = useTranslation()
   return (
@@ -58,7 +58,6 @@ export const paymentStatusTone: Record<PaymentStatus, string> = {
   PENDING: 'bg-[#fff4d6] text-[#8a5a00]',
   SUCCESS: 'bg-[#e8f0e8] text-[#075b31]',
   FAILED: 'bg-[#fdecea] text-[#93000a]',
-  EXPIRED: 'bg-[#eef0ee] text-[#4f5d53]',
-  PARTIALLY_REFUNDED: 'bg-[#eef0ee] text-[#4f5d53]',
-  REFUNDED: 'bg-[#eef0ee] text-[#4f5d53]'
+  CANCELLED: 'bg-[#eef0ee] text-[#4f5d53]',
+  EXPIRED: 'bg-[#eef0ee] text-[#4f5d53]'
 }

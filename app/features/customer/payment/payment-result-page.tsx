@@ -19,15 +19,15 @@ import {
 } from './components/payment-shell'
 
 export type PaymentOutcome = 'success' | 'failure'
-const FAILURE_REASONS = ['CUSTOMER_DECLINED', 'BOOKING_NOT_CONFIRMABLE', 'EXPIRED', 'UNKNOWN'] as const
 const POLL_MS = 2000
 
 function failureReason(payment: PaymentRecord) {
-  if (payment.status === 'EXPIRED') return 'EXPIRED'
-  return FAILURE_REASONS.find((reason) => reason === payment.failureReason) ?? 'UNKNOWN'
+  if (payment.status === 'EXPIRED' || payment.status === 'CANCELLED') return 'EXPIRED'
+  if (payment.status === 'FAILED') return 'CUSTOMER_DECLINED'
+  return 'UNKNOWN'
 }
 
-/** Where the gateway returns the customer; it reads the payment and the booking it confirmed. */
+/** Where the VNPay return lands; it polls the payment (the IPN records it) and shows the booking it paid for. */
 export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; outcome: PaymentOutcome }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
@@ -56,7 +56,9 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
     return <Navigate replace to={`/customer/payments/${paymentId}/success`} />
 
   const bookingLink = bookingId ? `/customer/bookings/${bookingId}` : '/customer/bookings'
-  const canRetry = booking.data?.status === 'AWAITING_DEPOSIT'
+  const remaining = data?.paymentType === 'REMAINING'
+  const canRetry = remaining || booking.data?.status === 'AWAITING_DEPOSIT'
+  const retryLink = remaining ? '/customer/payments' : `/customer/bookings/${bookingId}/deposit`
   return (
     <PaymentShell
       bookingCode={booking.data?.bookingCode}
@@ -128,7 +130,7 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
           {outcome === 'success' && data.status === 'SUCCESS' ? (
             <p className='text-sm leading-6 text-[#415548]'>
               <strong className='font-bold'>{t('customer.payment.success.next')}: </strong>
-              {t('customer.payment.success.nextSteps')}
+              {remaining ? t('customer.payment.success.invoicePaid') : t('customer.payment.success.nextSteps')}
             </p>
           ) : null}
           {outcome === 'failure' && canRetry ? (
@@ -137,8 +139,8 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
 
           <div className='flex flex-col gap-3 sm:flex-row'>
             {outcome === 'failure' && canRetry ? (
-              <Link className={primaryAction} to={`/customer/bookings/${bookingId}/deposit`}>
-                {t('customer.payment.failure.retry')}
+              <Link className={primaryAction} to={retryLink}>
+                {remaining ? t('customer.payment.failure.payInvoiceAgain') : t('customer.payment.failure.retry')}
                 <Icon className='text-lg transition-transform duration-300 group-hover:translate-x-1' name='refresh' />
               </Link>
             ) : null}

@@ -1,20 +1,26 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { createDepositPayment, getPayment } from '~/shared/api/generated/api/payment/payment'
-import { submitPaymentDemoResult } from '~/shared/api/generated/api/payment-demo/payment-demo'
+import {
+  createBookingCheckout,
+  getMyOutstandingDebt,
+  getPayment,
+  listPayments,
+  verifyVnPayReturn
+} from '~/shared/api/generated/api/payment/payment'
 import { getEffectivePaymentPolicy } from '~/shared/api/generated/api/payment-policy/payment-policy'
-import type {
-  BookingDetailRecord,
-  DepositPaymentRequest,
-  PaymentDemoResultRequestOutcome
-} from '~/shared/api/generated/contracts'
+import { listRefunds } from '~/shared/api/generated/api/refund/refund'
+import {
+  listRemainingInvoices,
+  payRemainingInvoice
+} from '~/shared/api/generated/api/remaining-invoice/remaining-invoice'
+import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 
 const readOptions = { credentials: 'include' as const }
-const writeOptions = async (headers: HeadersInit = {}) => ({
-  credentials: 'include' as const,
-  headers: { ...(await csrfHeaders()), ...headers }
-})
+const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
+// D16: PaymentService only opens VNPay checkouts; the VNPay page lets the customer pick QR, ATM or card.
+const VNPAY = { provider: 'VNPAY' as const }
+export const PAYMENT_PAGE_SIZE = 10
 
 function result<T>(response: { data: { code: number; result: T } }): T {
   if (response.data.code !== 200) throw new Error(`PaymentService returned code ${response.data.code}`)
@@ -24,7 +30,12 @@ function result<T>(response: { data: { code: number; result: T } }): T {
 export const paymentKeys = {
   all: ['payment'] as const,
   detail: (id: string) => ['payment', 'detail', id] as const,
-  policy: (centerId: string) => ['payment', 'policy', centerId] as const
+  policy: (centerId: string) => ['payment', 'policy', centerId] as const,
+  history: (page: number) => ['payment', 'history', page] as const,
+  refunds: (page: number) => ['payment', 'refunds', page] as const,
+  invoices: (page: number) => ['payment', 'invoices', page] as const,
+  outstanding: ['payment', 'outstanding'] as const,
+  vnPayReturn: (query: string) => ['payment', 'vnpay-return', query] as const
 }
 
 /** Policy in effect for a center (C2.1); PaymentService owns the deposit percent. */
@@ -39,8 +50,8 @@ export function estimateDeposit(totalAmount: number | undefined, depositPercent:
 }
 
 /**
- * The booking's deposit. BookingService leaves `depositAmount` empty until PaymentService records it, so
- * until then the amount is estimated from the center's policy and flagged as such.
+ * The booking's deposit. BookingService leaves `depositAmount` empty (PaymentService keeps the per-visit split),
+ * so the amount is estimated from the center's policy and flagged as such; the checkout shows the exact figure.
  */
 export function useDepositAmount(booking: BookingDetailRecord | undefined) {
   const recorded = booking?.depositAmount ?? undefined
@@ -60,19 +71,48 @@ export function useDepositAmount(booking: BookingDetailRecord | undefined) {
   }
 }
 
-/** Opens a deposit session (PAY-05); the same Idempotency-Key returns the same live session. */
-export async function startDepositPayment(request: DepositPaymentRequest, idempotencyKey: string) {
-  return result(await createDepositPayment(request, await writeOptions({ 'Idempotency-Key': idempotencyKey })))
+/** Opens a VNPay deposit checkout (PAY-05); PaymentService expires any earlier open session of the booking. */
+export async function startDepositCheckout(bookingId: string) {
+  return result(await createBookingCheckout(bookingId, VNPAY, await writeOptions()))
 }
+
+/** Opens a VNPay checkout for a pending or overdue remaining-balance invoice (PAY-11). */
+export async function startInvoiceCheckout(invoiceId: string) {
+  return result(await payRemainingInvoice(invoiceId, VNPAY, await writeOptions()))
+}
+
 export async function fetchPayment(id: string) {
   return result(await getPayment(id, readOptions))
 }
-/** Development-only demo gateway answered by `pnpm dev`; SUCCESS confirms the booking deposit. */
-export async function submitDemoPayment(id: string, outcome: PaymentDemoResultRequestOutcome) {
-  return result(await submitPaymentDemoResult(id, { outcome }, await writeOptions()))
+
+export async function fetchPaymentHistory(page: number) {
+  return result(await listPayments({ page, size: PAYMENT_PAGE_SIZE }, readOptions))
 }
 
-const KNOWN_ERROR_CODES = [6200, 6201, 6202, 6203, 6204, 6205, 6207] as const
+export async function fetchRefundHistory(page: number) {
+  return result(await listRefunds({ page, size: PAYMENT_PAGE_SIZE }, readOptions))
+}
+
+export async function fetchRemainingInvoices(page: number) {
+  return result(await listRemainingInvoices({ page, size: PAYMENT_PAGE_SIZE }, readOptions))
+}
+
+export async function fetchOutstandingDebt() {
+  return result(await getMyOutstandingDebt(readOptions))
+}
+
+/** PaymentService checks the VNPay signature of the browser return; the IPN still decides the payment status. */
+export async function verifyReturn(params: Record<string, string>) {
+  const signed = { ...params, vnp_TxnRef: params.vnp_TxnRef ?? '', vnp_SecureHash: params.vnp_SecureHash ?? '' }
+  return result(await verifyVnPayReturn(signed, readOptions))
+}
+
+/** Leaves the app for the VNPay checkout page returned by PaymentService. */
+export function redirectToCheckout(checkoutUrl: string) {
+  window.location.assign(checkoutUrl)
+}
+
+const KNOWN_ERROR_CODES = [6004, 6005, 6006, 6007, 6008, 6012, 6017, 6018, 6019, 6024, 6025] as const
 export type PaymentErrorKey =
   `payment.errors.e${(typeof KNOWN_ERROR_CODES)[number]}` | 'payment.errors.unavailable' | 'payment.errors.generic'
 
@@ -84,5 +124,5 @@ export function paymentErrorKey(error: unknown): PaymentErrorKey {
   const known = KNOWN_ERROR_CODES.find((item) => item === code)
   if (known) return `payment.errors.e${known}`
   const status = typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined
-  return status === 503 || status === 404 ? 'payment.errors.unavailable' : 'payment.errors.generic'
+  return status === 503 || status === 502 ? 'payment.errors.unavailable' : 'payment.errors.generic'
 }

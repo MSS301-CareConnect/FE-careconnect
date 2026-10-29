@@ -17,13 +17,10 @@ export const customerPaymentVi = {
     visits: 'Số buổi',
     total: 'Tổng giá trị lịch đặt',
     remaining: 'Còn lại thanh toán sau khi hoàn tất',
-    method: 'Phương thức thanh toán',
-    methods: {
-      VNPAYQR: 'Quét mã QR',
-      VNBANK: 'Thẻ ATM / tài khoản ngân hàng nội địa',
-      INTCARD: 'Thẻ quốc tế Visa, Mastercard, JCB'
-    },
-    methodHint: 'Bạn sẽ được chuyển sang trang thanh toán và có 15 phút để hoàn tất.',
+    method: 'Thanh toán qua VNPay',
+    methodHint:
+      'Bạn sẽ được chuyển sang trang VNPay để chọn quét mã QR, thẻ ATM nội địa hoặc thẻ quốc tế, và có 15 phút để hoàn tất.',
+    exactAmount: 'Số tiền chính xác được tính theo từng buổi và hiển thị trên trang VNPay.',
     pay: 'Thanh toán {{amount}}',
     payNoAmount: 'Thanh toán',
     paying: 'Đang mở trang thanh toán…',
@@ -31,22 +28,13 @@ export const customerPaymentVi = {
     notAwaiting: 'Lịch đặt này không cần đặt cọc lúc này.',
     notAwaitingHint: 'Trạng thái hiện tại: {{status}}.'
   },
-  gateway: {
-    documentTitle: 'Thanh toán thử nghiệm | CareConnect',
-    title: 'Thanh toán thử nghiệm',
-    subtitle:
-      'Đây là trang thanh toán thử nghiệm, không có khoản tiền thật nào bị trừ. Chọn một kết quả bên dưới để thử.',
-    merchant: 'Đơn vị nhận',
-    merchantName: 'CareConnect',
-    orderInfo: 'Nội dung',
-    orderValue: 'Cọc lịch đặt {{code}}',
-    amount: 'Số tiền',
-    expiresAt: 'Hết hạn thanh toán lúc {{time}}',
-    succeed: 'Thanh toán thành công',
-    fail: 'Thanh toán thất bại',
-    processing: 'Đang xử lý…',
-    ended: 'Giao dịch thanh toán này đã kết thúc.',
-    viewResult: 'Xem kết quả'
+  return: {
+    documentTitle: 'Đang kiểm tra kết quả thanh toán | CareConnect',
+    title: 'Kết quả thanh toán',
+    subtitle: 'Chúng tôi đang kiểm tra kết quả VNPay gửi về.',
+    verifying: 'Đang kiểm tra chữ ký kết quả thanh toán…',
+    missing: 'Không có kết quả thanh toán để kiểm tra.',
+    toPayments: 'Xem thanh toán của tôi'
   },
   success: {
     documentTitle: 'Thanh toán thành công | CareConnect',
@@ -57,6 +45,7 @@ export const customerPaymentVi = {
     bookingStatus: 'Trạng thái lịch đặt',
     next: 'Tiếp theo',
     nextSteps: 'Theo dõi từng buổi trong lịch đặt. Bạn có thể xem trước tiền hoàn trước khi hủy một buổi.',
+    invoicePaid: 'Hóa đơn phần còn lại đã được thanh toán.',
     view: 'Xem lịch đặt'
   },
   failure: {
@@ -70,7 +59,8 @@ export const customerPaymentVi = {
       UNKNOWN: 'Ngân hàng hoặc ví điện tử chưa xác nhận giao dịch.'
     },
     retry: 'Thử thanh toán lại',
-    retryHint: 'Bạn có thể thanh toán lại trước hạn đặt cọc.'
+    retryHint: 'Bạn có thể thanh toán lại trước hạn đặt cọc.',
+    payInvoiceAgain: 'Thanh toán lại hóa đơn'
   },
   reference: 'Mã giao dịch',
   amount: 'Số tiền',
@@ -96,13 +86,10 @@ export const customerPaymentEn = {
     visits: 'Visits',
     total: 'Booking total',
     remaining: 'Remaining, invoiced after care ends',
-    method: 'Payment method',
-    methods: {
-      VNPAYQR: 'Scan a QR code',
-      VNBANK: 'Domestic ATM card / bank account',
-      INTCARD: 'International card: Visa, Mastercard, JCB'
-    },
-    methodHint: 'You will be taken to the payment page and have 15 minutes to finish.',
+    method: 'Pay with VNPay',
+    methodHint:
+      'You will be taken to VNPay to choose a QR code, a domestic ATM card or an international card, with 15 minutes to finish.',
+    exactAmount: 'The exact amount is calculated per visit and shown on the VNPay page.',
     pay: 'Pay {{amount}}',
     payNoAmount: 'Pay',
     paying: 'Opening the payment gateway…',
@@ -110,21 +97,13 @@ export const customerPaymentEn = {
     notAwaiting: 'This booking does not need a deposit right now.',
     notAwaitingHint: 'Current status: {{status}}.'
   },
-  gateway: {
-    documentTitle: 'Test payment | CareConnect',
-    title: 'Test payment',
-    subtitle: 'This is a test payment page and no real money is charged. Choose a result below to try it.',
-    merchant: 'Merchant',
-    merchantName: 'CareConnect',
-    orderInfo: 'Description',
-    orderValue: 'Deposit for booking {{code}}',
-    amount: 'Amount',
-    expiresAt: 'Payment expires at {{time}}',
-    succeed: 'Payment succeeds',
-    fail: 'Payment fails',
-    processing: 'Processing…',
-    ended: 'This payment has already ended.',
-    viewResult: 'See the result'
+  return: {
+    documentTitle: 'Checking the payment result | CareConnect',
+    title: 'Payment result',
+    subtitle: 'We are checking the result VNPay sent back.',
+    verifying: 'Checking the payment result signature…',
+    missing: 'There is no payment result to check.',
+    toPayments: 'See my payments'
   },
   success: {
     documentTitle: 'Payment successful | CareConnect',
@@ -135,6 +114,7 @@ export const customerPaymentEn = {
     bookingStatus: 'Booking status',
     next: 'Next',
     nextSteps: 'Follow every visit in the booking. You can preview the refund before cancelling a visit.',
+    invoicePaid: 'The remaining-balance invoice is paid.',
     view: 'View the booking'
   },
   failure: {
@@ -148,9 +128,88 @@ export const customerPaymentEn = {
       UNKNOWN: 'The payment gateway did not confirm the transaction.'
     },
     retry: 'Try paying again',
-    retryHint: 'You can pay again before the deposit is due.'
+    retryHint: 'You can pay again before the deposit is due.',
+    payInvoiceAgain: 'Pay the invoice again'
   },
   reference: 'Payment reference',
   amount: 'Amount',
   booking: 'Booking'
+}
+
+export const customerPaymentsVi = {
+  documentTitle: 'Thanh toán & hoàn tiền | CareConnect',
+  breadcrumb: 'Đường dẫn',
+  home: 'Trang chủ',
+  title: 'Thanh toán & hoàn tiền',
+  subtitle: 'Hóa đơn phần còn lại cần thanh toán, lịch sử giao dịch và các khoản hoàn tiền của bạn.',
+  loading: 'Đang tải…',
+  previous: 'Trang trước',
+  next: 'Trang sau',
+  page: 'Trang {{page}} / {{total}}',
+  viewBooking: 'Xem lịch đặt',
+  columns: {
+    booking: 'Lịch đặt',
+    amount: 'Số tiền',
+    dueAt: 'Hạn thanh toán',
+    status: 'Trạng thái',
+    action: 'Thao tác',
+    createdAt: 'Thời gian',
+    type: 'Loại',
+    refunded: 'Đã hoàn',
+    reason: 'Lý do',
+    fee: 'Phí giữ lại'
+  },
+  invoices: {
+    title: 'Hóa đơn phần còn lại',
+    empty: 'Bạn không có hóa đơn nào.',
+    pay: 'Thanh toán',
+    debt: 'Bạn có hóa đơn quá hạn. Vui lòng thanh toán để tiếp tục đặt lịch mới.'
+  },
+  history: {
+    title: 'Lịch sử thanh toán',
+    empty: 'Chưa có giao dịch thanh toán nào.'
+  },
+  refunds: {
+    title: 'Hoàn tiền',
+    empty: 'Chưa có khoản hoàn tiền nào.'
+  }
+}
+
+export const customerPaymentsEn = {
+  documentTitle: 'Payments & refunds | CareConnect',
+  breadcrumb: 'Breadcrumb',
+  home: 'Home',
+  title: 'Payments & refunds',
+  subtitle: 'Remaining-balance invoices to pay, your payment history and your refunds.',
+  loading: 'Loading…',
+  previous: 'Previous page',
+  next: 'Next page',
+  page: 'Page {{page}} of {{total}}',
+  viewBooking: 'View booking',
+  columns: {
+    booking: 'Booking',
+    amount: 'Amount',
+    dueAt: 'Due',
+    status: 'Status',
+    action: 'Action',
+    createdAt: 'Time',
+    type: 'Type',
+    refunded: 'Refunded',
+    reason: 'Reason',
+    fee: 'Fee kept'
+  },
+  invoices: {
+    title: 'Remaining-balance invoices',
+    empty: 'You have no invoices.',
+    pay: 'Pay',
+    debt: 'You have an overdue invoice. Please pay it to make new bookings.'
+  },
+  history: {
+    title: 'Payment history',
+    empty: 'No payments yet.'
+  },
+  refunds: {
+    title: 'Refunds',
+    empty: 'No refunds yet.'
+  }
 }

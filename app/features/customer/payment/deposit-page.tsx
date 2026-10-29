@@ -1,47 +1,33 @@
-import { useRef, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 
 import { bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
 import { bookingErrorKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
-import { paymentErrorKey, startDepositPayment, useDepositAmount } from '~/entities/payment/payment-api'
-import type { DepositPaymentRequestBankCode } from '~/shared/api/generated/contracts'
+import {
+  paymentErrorKey,
+  redirectToCheckout,
+  startDepositCheckout,
+  useDepositAmount
+} from '~/entities/payment/payment-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
 import { PaymentShell, paymentPanel, primaryAction, secondaryAction } from './components/payment-shell'
 
-const METHODS = ['VNPAYQR', 'VNBANK', 'INTCARD'] as const satisfies readonly DepositPaymentRequestBankCode[]
-const METHOD_ICONS: Record<(typeof METHODS)[number], string> = {
-  VNPAYQR: 'qr_code_2',
-  VNBANK: 'account_balance',
-  INTCARD: 'credit_card'
-}
-
-/** Opens a deposit session for a booking awaiting its deposit and hands over to the payment gateway. */
+/** Opens a VNPay deposit checkout for a booking awaiting its deposit and hands over to the VNPay page. */
 export function DepositPage({ bookingId }: { bookingId: string }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
-  const navigate = useNavigate()
-  const [method, setMethod] = useState<(typeof METHODS)[number]>('VNPAYQR')
-  // A retry of the same request reuses its key, so a double click returns the session already opened.
-  const idempotency = useRef<{ method: string; key: string } | null>(null)
   const booking = useQuery({
     queryKey: bookingKeys.detail(bookingId),
     queryFn: () => fetchBooking(bookingId),
     retry: false
   })
+  // PaymentService keeps one live session per booking: opening again expires the previous one.
   const pay = useMutation({
-    mutationFn: () => {
-      if (idempotency.current?.method !== method) idempotency.current = { method, key: crypto.randomUUID() }
-      return startDepositPayment({ bookingId, bankCode: method }, idempotency.current.key)
-    },
-    onSuccess: (session) => {
-      // The real PaymentService returns the VNPay page; the dev demo returns a route of this app.
-      if (session.paymentUrl.startsWith('/')) navigate(session.paymentUrl)
-      else window.location.assign(session.paymentUrl)
-    }
+    mutationFn: () => startDepositCheckout(bookingId),
+    onSuccess: (checkout) => redirectToCheckout(checkout.checkoutUrl)
   })
   // PaymentService decides the charged amount when the session opens; this is what the customer sees first.
   const deposit = useDepositAmount(booking.data)
@@ -87,35 +73,9 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
               {t('customer.payment.deposit.method')}
             </h2>
             <p className='mt-1 text-sm leading-6 text-[#637469]'>{t('customer.payment.deposit.methodHint')}</p>
-            <fieldset className='mt-5'>
-              <legend className='sr-only'>{t('customer.payment.deposit.method')}</legend>
-              <div className='flex flex-col gap-3'>
-                {METHODS.map((item) => {
-                  const checked = method === item
-                  return (
-                    <label
-                      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors has-focus-visible:outline-2 has-focus-visible:outline-[#075b31] ${checked ? 'border-[#075b31] bg-[#eef5ee]' : 'border-[#dbe4db] bg-white hover:border-[#a8c2ad]'}`}
-                      key={item}
-                    >
-                      <input
-                        checked={checked}
-                        className='sr-only'
-                        name='method'
-                        onChange={() => setMethod(item)}
-                        type='radio'
-                      />
-                      <Icon className='text-2xl text-[#075b31]' name={METHOD_ICONS[item]} />
-                      <span className='flex-1 font-semibold'>{t(`customer.payment.deposit.methods.${item}`)}</span>
-                      <Icon
-                        className={checked ? 'text-[#075b31]' : 'text-[#a8b8ab]'}
-                        filled={checked}
-                        name={checked ? 'radio_button_checked' : 'radio_button_unchecked'}
-                      />
-                    </label>
-                  )
-                })}
-              </div>
-            </fieldset>
+            {deposit.estimated ? (
+              <p className='mt-3 text-sm leading-6 text-[#637469]'>{t('customer.payment.deposit.exactAmount')}</p>
+            ) : null}
             <p className='mt-5 flex items-start gap-2 rounded-xl bg-[#f5f9f4] p-4 text-sm leading-6 text-[#526a57]'>
               <Icon className='text-lg text-[#075b31]' name='verified_user' />
               {t('customer.payment.deposit.policy')}

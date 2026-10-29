@@ -1,17 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, useParams } from 'react-router'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { fetchBooking } from '~/entities/booking/booking-api'
-import { fetchPayment, startDepositPayment, submitDemoPayment } from '~/entities/payment/payment-api'
+import { fetchPayment, redirectToCheckout, startDepositCheckout, verifyReturn } from '~/entities/payment/payment-api'
 import { getEffectivePaymentPolicy } from '~/shared/api/generated/api/payment-policy/payment-policy'
 import type { BookingDetailRecord, PaymentRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { DepositPage } from '../deposit-page'
-import { PaymentGatewayPage } from '../payment-gateway-page'
 import { PaymentResultPage } from '../payment-result-page'
+import { PaymentReturnPage } from '../payment-return-page'
 
 vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/booking/booking-api')>()),
@@ -19,9 +19,10 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
 }))
 vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
-  startDepositPayment: vi.fn(),
-  fetchPayment: vi.fn(),
-  submitDemoPayment: vi.fn()
+  startDepositCheckout: vi.fn(),
+  redirectToCheckout: vi.fn(),
+  verifyReturn: vi.fn(),
+  fetchPayment: vi.fn()
 }))
 vi.mock('~/shared/api/generated/api/payment-policy/payment-policy', () => ({
   getEffectivePaymentPolicy: vi.fn()
@@ -29,6 +30,7 @@ vi.mock('~/shared/api/generated/api/payment-policy/payment-policy', () => ({
 
 const BOOKING_ID = 'bk-1'
 const PAYMENT_ID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+const CHECKOUT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_TxnRef=VNPAY-1'
 const booking: BookingDetailRecord = {
   id: BOOKING_ID,
   bookingCode: 'BK0001',
@@ -47,15 +49,11 @@ const booking: BookingDetailRecord = {
 const pending: PaymentRecord = {
   id: PAYMENT_ID,
   bookingId: BOOKING_ID,
-  type: 'DEPOSIT',
+  paymentType: 'DEPOSIT',
   amount: 60000,
-  status: 'PENDING',
-  expiresAt: '2026-10-31T01:15:00Z'
-}
-
-function Outcome() {
-  const { outcome } = useParams()
-  return <output data-testid={`outcome-${outcome}`} />
+  refundedAmount: 0,
+  currency: 'VND',
+  status: 'PENDING'
 }
 
 function renderAt(path: string) {
@@ -65,7 +63,7 @@ function renderAt(path: string) {
       <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route element={<DepositPage bookingId={BOOKING_ID} />} path='/customer/bookings/:id/deposit' />
-          <Route element={<PaymentGatewayPage paymentId={PAYMENT_ID} />} path='/customer/payments/:paymentId/gateway' />
+          <Route element={<PaymentReturnPage />} path='/customer/payments/vnpay-return' />
           <Route
             element={<PaymentResultPage outcome='success' paymentId={PAYMENT_ID} />}
             path='/customer/payments/:paymentId/success'
@@ -74,7 +72,6 @@ function renderAt(path: string) {
             element={<PaymentResultPage outcome='failure' paymentId={PAYMENT_ID} />}
             path='/customer/payments/:paymentId/failure'
           />
-          <Route element={<Outcome />} path='/test/:outcome' />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
@@ -93,16 +90,18 @@ beforeEach(async () => {
 })
 
 describe('Deposit payment flow', () => {
-  it('opens a deposit session with the chosen method and goes to the payment gateway', async () => {
-    vi.mocked(startDepositPayment).mockResolvedValue({
+  it('opens a VNPay checkout and leaves the app for the VNPay page', async () => {
+    vi.mocked(startDepositCheckout).mockResolvedValue({
       paymentId: PAYMENT_ID,
       bookingId: BOOKING_ID,
+      paymentType: 'DEPOSIT',
+      provider: 'VNPAY',
+      status: 'PENDING',
       amount: 60000,
-      paymentUrl: `/customer/payments/${PAYMENT_ID}/gateway`,
-      expiresAt: pending.expiresAt!,
-      status: 'PENDING'
+      currency: 'VND',
+      checkoutUrl: CHECKOUT_URL,
+      expiresAt: '2026-10-31T01:15:00Z'
     })
-    vi.mocked(fetchPayment).mockResolvedValue(pending)
     renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Đặt cọc giữ lịch' })).toBeInTheDocument()
@@ -110,17 +109,22 @@ describe('Deposit payment flow', () => {
     // BookingService sends no deposit amount, so the page shows 30% of the total from the center's policy.
     expect(await screen.findByRole('heading', { name: 'Số tiền cọc dự kiến' })).toBeInTheDocument()
     expect(screen.getByText(/140\.000/)).toBeInTheDocument()
-    expect(getEffectivePaymentPolicy).toHaveBeenCalledWith({ centerId: 'center-1' }, expect.anything())
-    fireEvent.click(screen.getByRole('radio', { name: /Thẻ quốc tế/ }))
+    expect(screen.getByRole('heading', { name: 'Thanh toán qua VNPay' })).toBeInTheDocument()
     fireEvent.click(await screen.findByRole('button', { name: /Thanh toán 60\.000/ }))
 
-    await waitFor(() =>
-      expect(startDepositPayment).toHaveBeenCalledWith(
-        { bookingId: BOOKING_ID, bankCode: 'INTCARD' },
-        expect.stringMatching(/^[0-9a-f-]{36}$/)
-      )
+    await waitFor(() => expect(startDepositCheckout).toHaveBeenCalledWith(BOOKING_ID))
+    await waitFor(() => expect(redirectToCheckout).toHaveBeenCalledWith(CHECKOUT_URL))
+  })
+
+  it('shows the PaymentService error when the checkout cannot open', async () => {
+    vi.mocked(startDepositCheckout).mockRejectedValue(
+      Object.assign(new Error('missing price'), { status: 409, info: { code: 6018 } })
     )
-    expect(await screen.findByRole('heading', { level: 1, name: 'Thanh toán thử nghiệm' })).toBeInTheDocument()
+    renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
+
+    fireEvent.click(await screen.findByRole('button', { name: /Thanh toán 60\.000/ }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('còn buổi chưa có giá')
+    expect(redirectToCheckout).not.toHaveBeenCalled()
   })
 
   it('does not offer a payment for a booking that no longer awaits its deposit', async () => {
@@ -131,43 +135,60 @@ describe('Deposit payment flow', () => {
     expect(screen.queryByRole('button', { name: /Thanh toán/ })).not.toBeInTheDocument()
   })
 
-  it('confirms a successful demo payment and shows the confirmed booking', async () => {
+  it('verifies the VNPay return and waits for the IPN before showing success', async () => {
+    vi.mocked(verifyReturn).mockResolvedValue({ paymentId: PAYMENT_ID, bookingId: BOOKING_ID, status: 'PENDING' })
     vi.mocked(fetchPayment)
       .mockResolvedValueOnce(pending)
       .mockResolvedValue({ ...pending, status: 'SUCCESS', paidAt: '2026-10-31T01:05:00Z' })
     vi.mocked(fetchBooking)
       .mockResolvedValueOnce(booking)
       .mockResolvedValue({ ...booking, status: 'CONFIRMED' })
-    vi.mocked(submitDemoPayment).mockResolvedValue({ ...pending, status: 'SUCCESS' })
-    renderAt(`/customer/payments/${PAYMENT_ID}/gateway`)
+    renderAt('/customer/payments/vnpay-return?vnp_TxnRef=VNPAY-1&vnp_ResponseCode=00&vnp_SecureHash=abc')
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Thanh toán thành công' }))
-    await waitFor(() => expect(submitDemoPayment).toHaveBeenCalledWith(PAYMENT_ID, 'SUCCESS'))
-
+    await waitFor(() =>
+      expect(verifyReturn).toHaveBeenCalledWith({
+        vnp_TxnRef: 'VNPAY-1',
+        vnp_ResponseCode: '00',
+        vnp_SecureHash: 'abc'
+      })
+    )
     expect(await screen.findByRole('heading', { level: 1, name: 'Đặt cọc thành công' })).toBeInTheDocument()
-    expect(await screen.findByText('Đã xác nhận')).toBeInTheDocument()
+    expect(await screen.findByText('Đang chờ xác nhận thanh toán…')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Thanh toán thành công' }, { timeout: 4000 })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Xem lịch đặt' })).toHaveAttribute(
       'href',
       `/customer/bookings/${BOOKING_ID}`
     )
   })
 
-  it('lands on the failure page when the customer fails the payment or the booking refuses it', async () => {
-    vi.mocked(fetchPayment)
-      .mockResolvedValueOnce(pending)
-      .mockResolvedValue({ ...pending, status: 'FAILED', failureReason: 'BOOKING_NOT_CONFIRMABLE' })
-    vi.mocked(submitDemoPayment).mockRejectedValue(
-      Object.assign(new Error('refused'), { status: 409, info: { code: 6205 } })
-    )
-    renderAt(`/customer/payments/${PAYMENT_ID}/gateway`)
+  it('shows an invalid VNPay return as an error', async () => {
+    vi.mocked(verifyReturn).mockRejectedValue(Object.assign(new Error('bad'), { status: 400, info: { code: 6008 } }))
+    renderAt('/customer/payments/vnpay-return?vnp_TxnRef=VNPAY-1&vnp_SecureHash=forged')
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Thanh toán thành công' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Chữ ký kết quả thanh toán không hợp lệ.')
+    expect(screen.getByRole('link', { name: 'Xem thanh toán của tôi' })).toHaveAttribute('href', '/customer/payments')
+  })
+
+  it('offers a new deposit attempt after a failed payment while the booking still awaits it', async () => {
+    vi.mocked(fetchPayment).mockResolvedValue({ ...pending, status: 'FAILED' })
+    renderAt(`/customer/payments/${PAYMENT_ID}/failure`)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Thanh toán chưa thành công' })).toBeInTheDocument()
-    expect(await screen.findByText('Trung tâm không thể xác nhận lịch đặt này nữa.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Thử thanh toán lại/ })).toHaveAttribute(
+    expect(await screen.findByText('Bạn đã hủy giao dịch ở trang thanh toán.')).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /Thử thanh toán lại/ })).toHaveAttribute(
       'href',
       `/customer/bookings/${BOOKING_ID}/deposit`
+    )
+  })
+
+  it('sends a failed remaining-balance payment back to the invoices', async () => {
+    vi.mocked(fetchPayment).mockResolvedValue({ ...pending, paymentType: 'REMAINING', status: 'EXPIRED' })
+    vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'COMPLETED' })
+    renderAt(`/customer/payments/${PAYMENT_ID}/failure`)
+
+    expect(await screen.findByRole('link', { name: /Thanh toán lại hóa đơn/ })).toHaveAttribute(
+      'href',
+      '/customer/payments'
     )
   })
 
