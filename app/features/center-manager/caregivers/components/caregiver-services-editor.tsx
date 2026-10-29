@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { careCatalogKeys, fetchCenterOfferings } from '~/entities/care-catalog/care-catalog-api'
 import { fetchCaregiverServices, providerKeys, saveCaregiverServices } from '~/entities/provider/provider-api'
-import { apiErrorCode } from '~/shared/api/error-details'
+import { apiErrorCode, apiRequestErrorKey } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'centerManager.provider.services' as const
@@ -162,7 +162,11 @@ export function CaregiverServicesEditor({ caregiverId, centerId }: { caregiverId
           ) : null}
           {save.isError ? (
             <p className='text-sm text-error' role='alert'>
-              {t(`${key}.errors.${errorCode !== undefined && errorKeys[errorCode] ? errorKeys[errorCode] : 'generic'}`)}
+              {t(
+                errorCode !== undefined && errorKeys[errorCode]
+                  ? `${key}.errors.${errorKeys[errorCode]}`
+                  : apiRequestErrorKey(save.error, `${key}.errors.generic`)
+              )}
             </p>
           ) : null}
           <div className='flex flex-wrap gap-3'>

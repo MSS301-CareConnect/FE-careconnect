@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 
 import { formatDateTime } from '~/entities/booking/booking-format'
 import {
@@ -156,7 +157,12 @@ export function CaregiverWorkShiftsPage() {
                     {formatProviderDate(shift.workDate, language)} · {timeRange(shift)}
                   </p>
                   <p className='text-sm text-on-surface-variant'>
-                    {[shift.shiftType, shift.capacity ? t(`${key}.capacity`, { count: shift.capacity }) : null]
+                    {[
+                      shift.shiftType === 'DAILY' || shift.shiftType === 'WEEKLY'
+                        ? t(`${key}.shiftTypeOptions.${shift.shiftType}`)
+                        : shift.shiftType,
+                      shift.capacity ? t(`${key}.capacity`, { count: shift.capacity }) : null
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
@@ -280,7 +286,7 @@ export function CaregiverWorkShiftsPage() {
               })
             : undefined
         }
-        error={register.isError ? t(`${key}.actionError`) : undefined}
+        error={register.isError ? t(apiRequestErrorKey(register.error, `${key}.actionError`)) : undefined}
         loading={register.isPending}
         onClose={closeRegister}
         onConfirm={() => {
@@ -302,7 +308,7 @@ export function CaregiverWorkShiftsPage() {
       <ConfirmDialog
         confirmLabel={t(`${key}.cancelRegistration`)}
         description={t(`${key}.confirmCancel`)}
-        error={cancel.isError ? t(`${key}.actionError`) : undefined}
+        error={cancel.isError ? t(apiRequestErrorKey(cancel.error, `${key}.actionError`)) : undefined}
         loading={cancel.isPending}
         onClose={() => setPendingCancel(null)}
         onConfirm={() => {

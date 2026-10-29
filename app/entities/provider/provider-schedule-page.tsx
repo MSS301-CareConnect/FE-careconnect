@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link } from 'react-router'
 
 import { formatProviderDate, formatProviderTime } from './provider-format'
@@ -176,7 +177,11 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
                     {formatProviderTime(item.startTime, i18n.language)}–
                     {formatProviderTime(item.endTime, i18n.language)}
                   </p>
-                  {manager ? <p className='text-sm text-on-surface'>{item.caregiverName || item.caregiverId}</p> : null}
+                  {manager ? (
+                    <p className='text-sm text-on-surface'>
+                      {item.caregiverName || t('centerManager.provider.unknown')}
+                    </p>
+                  ) : null}
                 </div>
                 <div className='flex flex-wrap items-center gap-3'>
                   {past ? (
@@ -241,7 +246,7 @@ export function ProviderSchedulePage({ centerId }: { centerId?: string }) {
                 })
               : undefined
           }
-          error={cancel.isError ? t('caregiver.provider.actionError') : undefined}
+          error={cancel.isError ? t(apiRequestErrorKey(cancel.error, 'caregiver.provider.actionError')) : undefined}
           loading={cancel.isPending}
           onClose={closeCancel}
           onConfirm={confirmCancel}

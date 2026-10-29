@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 
 import {
   careRecipientKeys,
@@ -193,7 +194,12 @@ export function PrescriptionsSection({ recipientId, medications, isEditMode }: P
 
       {save.isError || toggle.isError || remove.isError ? (
         <p role='alert' className='text-xs text-error'>
-          {t('customer.patientDetail.prescriptions.actionError')}
+          {t(
+            apiRequestErrorKey(
+              save.error ?? toggle.error ?? remove.error,
+              'customer.patientDetail.prescriptions.actionError'
+            )
+          )}
         </p>
       ) : null}
     </div>

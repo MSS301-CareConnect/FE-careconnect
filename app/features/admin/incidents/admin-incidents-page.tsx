@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { useSearchParams } from 'react-router'
 
 import type { OutboxStatus } from '~/shared/api/generated/contracts'
@@ -87,7 +88,7 @@ export function AdminIncidentsPage() {
       </div>
       {actionError ? (
         <p className='text-sm text-error' role='alert'>
-          {t('admin.incidentsPage.actionError')}
+          {t(apiRequestErrorKey(actionError, 'admin.incidentsPage.actionError'))}
         </p>
       ) : null}
       {incidents.isPending ? (

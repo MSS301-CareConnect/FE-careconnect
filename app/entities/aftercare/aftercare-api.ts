@@ -15,6 +15,7 @@ import {
   withdrawComplaint
 } from '~/shared/api/generated/api/complaint/complaint'
 import { createFeedback, listEligibleFeedbackCaregivers } from '~/shared/api/generated/api/feedback/feedback'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import type {
   CareReportRequest,
   ComplaintAdminResolutionRequest,
@@ -122,5 +123,5 @@ export function aftercareErrorKey(error: unknown) {
   if (status === 403) return 'aftercare.errors.forbidden' as const
   if (status === 409) return 'aftercare.errors.conflict' as const
   if (status === 400) return 'aftercare.errors.invalid' as const
-  return 'aftercare.errors.generic' as const
+  return apiRequestErrorKey(error, 'aftercare.errors.generic')
 }

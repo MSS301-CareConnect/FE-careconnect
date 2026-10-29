@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { useNavigate, useParams } from 'react-router'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
@@ -61,7 +62,7 @@ export function AccountDetailPage() {
       setMessage(t('admin.identity.saved'))
       refresh()
     },
-    onError: () => setMessage(t('admin.identity.actionError'))
+    onError: (error) => setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
   })
   const status = useMutation({
     mutationFn: (value: 'ACTIVE' | 'LOCKED') => changeUserStatus(id, value),
@@ -70,9 +71,9 @@ export function AccountDetailPage() {
       setMessage(t('admin.identity.saved'))
       refresh()
     },
-    onError: () => {
+    onError: (error) => {
       setConfirmAction(null)
-      setMessage(t('admin.identity.actionError'))
+      setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
     }
   })
   const deletion = useMutation({
@@ -82,9 +83,9 @@ export function AccountDetailPage() {
       void client.invalidateQueries({ queryKey: ['identity', 'users'] })
       navigate('/admin/accounts')
     },
-    onError: () => {
+    onError: (error) => {
       setConfirmAction(null)
-      setMessage(t('admin.identity.actionError'))
+      setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
     }
   })
   const assignment = useMutation({
@@ -93,7 +94,7 @@ export function AccountDetailPage() {
       setMessage(t('admin.identity.saved'))
       refresh()
     },
-    onError: () => setMessage(t('admin.identity.actionError'))
+    onError: (error) => setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
   })
   const revocation = useMutation({
     mutationFn: (selected: string) => removeUserRole(id, selected),
@@ -102,9 +103,9 @@ export function AccountDetailPage() {
       setMessage(t('admin.identity.saved'))
       refresh()
     },
-    onError: () => {
+    onError: (error) => {
       setConfirmAction(null)
-      setMessage(t('admin.identity.actionError'))
+      setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
     }
   })
   const canManage = authUser?.permissions?.includes('user:manage')
@@ -175,11 +176,6 @@ export function AccountDetailPage() {
                 {t(user.data.status === 'ACTIVE' ? 'admin.identity.active' : 'admin.identity.locked')}
               </StatusBadge>
             </p>
-            {user.data.centerId && (
-              <p>
-                <strong>{t('admin.identity.centerId')}:</strong> {user.data.centerId}
-              </p>
-            )}
             {canManage && (
               <form className='grid gap-4 border-t border-outline-variant/20 pt-5 sm:grid-cols-2' onSubmit={submit}>
                 <label>

@@ -117,7 +117,7 @@ export function AdminBookingsPage() {
                       #{booking.bookingCode} · {booking.recipientName ?? t('admin.bookingsPage.noRecipient')}
                     </span>
                     <span className='block text-xs text-on-surface-variant'>
-                      {booking.customer?.fullName ?? booking.customerId} ·{' '}
+                      {booking.customer?.fullName ?? t('admin.bookingsPage.unknown')} ·{' '}
                       {t('admin.bookingsPage.startsOn', { date: formatDate(booking.startDate, i18n.language) })}
                     </span>
                   </span>

@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
+
 import { createTimeOff, fetchTimeOffs, providerKeys, removeTimeOff } from './provider-api'
 
 type TimeOffCopy = 'centerManager.provider.timeOff' | 'caregiver.provider.timeOff'
@@ -54,7 +56,7 @@ export function CaregiverTimeOffs({ caregiverId, copy }: { caregiverId: string; 
       {timeOffs.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
       {timeOffs.isError ? (
         <p className='text-sm text-error' role='alert'>
-          {t(`${key}.error`)}
+          {t(apiRequestErrorKey(timeOffs.error, `${key}.error`))}
         </p>
       ) : null}
       {timeOffs.isSuccess && timeOffs.data.length === 0 ? (
@@ -118,7 +120,11 @@ export function CaregiverTimeOffs({ caregiverId, copy }: { caregiverId: string; 
       </form>
       {add.isError || remove.isError ? (
         <p className='text-sm text-error' role='alert'>
-          {t(`${key}.saveError`)}
+          {t(
+            apiErrorStatus(add.error ?? remove.error) === 409
+              ? `${key}.saveError`
+              : apiRequestErrorKey(add.error ?? remove.error, `${key}.actionError`)
+          )}
         </p>
       ) : null}
     </section>

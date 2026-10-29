@@ -19,6 +19,7 @@ import type {
   PricePlanRequest
 } from '~/shared/api/generated/contracts'
 import { PricePlanRequestPricingUnit } from '~/shared/api/generated/contracts'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'centerManager.services' as const
@@ -40,6 +41,13 @@ function errorKind(
   if (status === 403) return 'forbidden'
   if (status === 404) return 'notFound'
   return 'failed'
+}
+
+function editorErrorKey(error: unknown, form: 'offeringForm' | 'planForm') {
+  const kind = errorKind(error)
+  return kind === 'failed'
+    ? apiRequestErrorKey(error, `${key}.${form}.failed` as const)
+    : (`${key}.${form}.${kind}` as const)
 }
 
 function EditorShell({
@@ -188,7 +196,7 @@ export function OfferingEditor({
         </label>
         {invalid || save.isError ? (
           <p className='rounded-xl bg-error/10 px-4 py-3 text-sm text-error' role='alert'>
-            {t(invalid ? `${key}.offeringForm.invalid` : `${key}.offeringForm.${errorKind(save.error)}`)}
+            {t(invalid ? `${key}.offeringForm.invalid` : editorErrorKey(save.error, 'offeringForm'))}
           </p>
         ) : null}
         <div className='flex justify-end gap-3 border-t border-outline-variant/40 pt-5'>
@@ -237,7 +245,6 @@ export function PricePlanEditor({
       onClose()
     }
   })
-  const saveErrorCode = careCatalogErrorCode(save.error)
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -334,10 +341,7 @@ export function PricePlanEditor({
         </label>
         {invalid || save.isError ? (
           <p className='rounded-xl bg-error/10 px-4 py-3 text-sm text-error' role='alert'>
-            {t(invalid ? `${key}.planForm.invalid` : `${key}.planForm.${errorKind(save.error)}`)}
-            {!invalid && saveErrorCode !== undefined
-              ? ` ${t(`${key}.planForm.apiErrorCode`, { code: saveErrorCode })}`
-              : null}
+            {t(invalid ? `${key}.planForm.invalid` : editorErrorKey(save.error, 'planForm'))}
           </p>
         ) : null}
         <div className='flex justify-end gap-3 border-t border-outline-variant/40 pt-5'>

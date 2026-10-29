@@ -15,6 +15,7 @@ import {
 } from '~/shared/api/generated/api/remaining-invoice/remaining-invoice'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
+import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
 
 const readOptions = { credentials: 'include' as const }
 const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
@@ -114,7 +115,10 @@ export function redirectToCheckout(checkoutUrl: string) {
 
 const KNOWN_ERROR_CODES = [6004, 6005, 6006, 6007, 6008, 6012, 6017, 6018, 6019, 6024, 6025] as const
 export type PaymentErrorKey =
-  `payment.errors.e${(typeof KNOWN_ERROR_CODES)[number]}` | 'payment.errors.unavailable' | 'payment.errors.generic'
+  | `payment.errors.e${(typeof KNOWN_ERROR_CODES)[number]}`
+  | 'payment.errors.unavailable'
+  | 'payment.errors.generic'
+  | ApiRequestErrorKey
 
 /** Maps a PaymentService failure to a translated message instead of showing backend text. */
 export function paymentErrorKey(error: unknown): PaymentErrorKey {
@@ -124,5 +128,7 @@ export function paymentErrorKey(error: unknown): PaymentErrorKey {
   const known = KNOWN_ERROR_CODES.find((item) => item === code)
   if (known) return `payment.errors.e${known}`
   const status = typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined
-  return status === 503 || status === 502 ? 'payment.errors.unavailable' : 'payment.errors.generic'
+  return status === 503 || status === 502
+    ? 'payment.errors.unavailable'
+    : apiRequestErrorKey(error, 'payment.errors.generic')
 }

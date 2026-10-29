@@ -1,4 +1,4 @@
-import { apiErrorCode } from '~/shared/api/error-details'
+import { apiErrorCode, apiRequestErrorKey } from '~/shared/api/error-details'
 
 /** ProviderService codes about a center's manager, shown as plain sentences instead of a generic failure. */
 const MANAGER_ERRORS = {
@@ -14,5 +14,7 @@ type Fallback = 'admin.provider.saveError' | 'admin.provider.actionError'
 
 export function centerErrorKey(error: unknown, fallback: Fallback) {
   const code = apiErrorCode(error)
-  return code !== undefined && code in MANAGER_ERRORS ? MANAGER_ERRORS[code as keyof typeof MANAGER_ERRORS] : fallback
+  return code !== undefined && code in MANAGER_ERRORS
+    ? MANAGER_ERRORS[code as keyof typeof MANAGER_ERRORS]
+    : apiRequestErrorKey(error, fallback)
 }

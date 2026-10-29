@@ -20,7 +20,7 @@ describe('booking format helpers', () => {
     expect(bookingErrorKey(failure(400, 5214))).toBe('booking.errors.e5214')
     expect(bookingErrorKey(failure(403, 9999))).toBe('booking.errors.forbidden')
     expect(bookingErrorKey(failure(503))).toBe('booking.errors.unavailable')
-    expect(bookingErrorKey(new Error('network'))).toBe('booking.errors.generic')
+    expect(bookingErrorKey(new Error('network'))).toBe('errors.request.network')
   })
 
   it('treats only scheduled or acknowledged visits that have not started as upcoming', () => {

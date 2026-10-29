@@ -82,7 +82,7 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
           <div>
             <dt className='text-xs text-on-surface-variant'>{t('admin.bookingsPage.customer')}</dt>
             <dd>
-              {data.customer?.fullName ?? data.customerId}
+              {data.customer?.fullName ?? t('admin.bookingsPage.unknown')}
               {data.customer?.phoneNumber ? ` · ${data.customer.phoneNumber}` : ''}
             </dd>
           </div>

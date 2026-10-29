@@ -31,7 +31,8 @@ export const caregiverProviderVi = {
     reason: 'Lý do (không bắt buộc)',
     add: 'Thêm ngày nghỉ',
     remove: 'Xóa',
-    saveError: 'Không lưu được: thời gian này có thể trùng buổi đã được giao hoặc trùng ngày nghỉ khác.'
+    saveError: 'Thời gian nghỉ trùng với buổi chăm sóc đã được giao hoặc ngày nghỉ khác. Vui lòng chọn thời gian khác.',
+    actionError: 'Không cập nhật được ngày nghỉ. Vui lòng thử lại.'
   },
   avatarUpload: 'Đổi ảnh hồ sơ',
   avatarUploading: 'Đang tải ảnh lên…',
@@ -66,6 +67,7 @@ export const caregiverProviderVi = {
   shiftsIntro:
     'Đăng ký các ca trung tâm đang mở. Khi trung tâm duyệt, khung giờ của ca trở thành lịch rảnh để khách đặt bạn.',
   openShiftsCount: '{{count}} ca đang mở',
+  shiftTypeOptions: { DAILY: 'Theo ngày', WEEKLY: 'Theo tuần' },
   capacity: 'Cần {{count}} người',
   deadline: 'Hạn đăng ký: {{time}}',
   deadlinePassed: 'Đã hết hạn đăng ký',
@@ -139,7 +141,8 @@ export const caregiverProviderEn = {
     reason: 'Reason (optional)',
     add: 'Add time off',
     remove: 'Remove',
-    saveError: 'Could not save: this time may overlap an assigned visit or other time off.'
+    saveError: 'This time overlaps an assigned visit or another time off. Choose a different time.',
+    actionError: 'Unable to update time off. Please try again.'
   },
   avatarUpload: 'Change profile photo',
   avatarUploading: 'Uploading photo…',
@@ -174,6 +177,7 @@ export const caregiverProviderEn = {
   shiftsIntro:
     'Register for shifts the center has opened. Once the center approves, the shift hours become availability customers can book.',
   openShiftsCount: '{{count}} open shifts',
+  shiftTypeOptions: { DAILY: 'Daily', WEEKLY: 'Weekly' },
   capacity: 'Needs {{count}} caregivers',
   deadline: 'Register by {{time}}',
   deadlinePassed: 'Registration closed',

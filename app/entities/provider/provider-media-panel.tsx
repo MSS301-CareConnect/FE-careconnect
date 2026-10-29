@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
@@ -177,7 +178,7 @@ export function ProviderMediaPanel({
       ) : null}
       {upload.isError || remove.isError ? (
         <p className='text-sm text-error' role='alert'>
-          {t('common.providerMedia.actionError')}
+          {t(apiRequestErrorKey(upload.error ?? remove.error, 'common.providerMedia.actionError'))}
         </p>
       ) : null}
       <ConfirmDialog

@@ -1,6 +1,7 @@
 import type { BookingStatus, OccurrenceStatus } from '~/shared/api/generated/contracts'
 
 import { bookingErrorCode, bookingErrorStatus } from './booking-api'
+import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
 
 /** BookingService stores occurrences as instants and schedules every booking in Vietnam time. */
 export const BOOKING_TIME_ZONE = 'Asia/Ho_Chi_Minh'
@@ -114,6 +115,7 @@ export type BookingErrorKey =
   | 'booking.errors.forbidden'
   | 'booking.errors.unavailable'
   | 'booking.errors.generic'
+  | ApiRequestErrorKey
 
 /** Maps a BookingService failure to a translated message instead of showing backend text. */
 export function bookingErrorKey(error: unknown): BookingErrorKey {
@@ -123,5 +125,5 @@ export function bookingErrorKey(error: unknown): BookingErrorKey {
   const status = bookingErrorStatus(error)
   if (status === 403) return 'booking.errors.forbidden'
   if (status === 503) return 'booking.errors.unavailable'
-  return 'booking.errors.generic'
+  return apiRequestErrorKey(error, 'booking.errors.generic')
 }

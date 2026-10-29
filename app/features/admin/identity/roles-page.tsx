@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -73,7 +74,7 @@ export function RolesPage() {
       setShowCreate(false)
       void client.invalidateQueries({ queryKey: ['identity', 'roles'] })
     },
-    onError: () => setMessage(t(`${key}.actionError`))
+    onError: (error) => setMessage(t(apiRequestErrorKey(error, `${key}.actionError`)))
   })
   const update = useMutation({
     mutationFn: () => saveRolePermissions(selectedRole, { permissionIds: selectedPermissions }),
@@ -83,9 +84,9 @@ export function RolesPage() {
       setEditedPermissions(null)
       void client.invalidateQueries({ queryKey: ['identity', 'roles'] })
     },
-    onError: () => {
+    onError: (error) => {
       setConfirmSavePermissions(false)
-      setMessage(t(`${key}.actionError`))
+      setMessage(t(apiRequestErrorKey(error, `${key}.actionError`)))
     }
   })
   function submit(event: FormEvent) {

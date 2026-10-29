@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link, Navigate, useLocation } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
@@ -26,14 +27,14 @@ export function SecurityPage() {
   const change = useMutation({
     mutationFn: () => changePassword({ currentPassword, newPassword }),
     onSuccess: () => window.location.replace('/login'),
-    onError: () => setMessage(t('auth.security.actionError'))
+    onError: (error) => setMessage(t(apiRequestErrorKey(error, 'auth.security.actionError')))
   })
   const logout = useMutation({
     mutationFn: signOutEverywhere,
     onSuccess: () => window.location.replace('/login'),
-    onError: () => {
+    onError: (error) => {
       setConfirmSignOutAll(false)
-      setMessage(t('auth.security.actionError'))
+      setMessage(t(apiRequestErrorKey(error, 'auth.security.actionError')))
     }
   })
 

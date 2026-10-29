@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { Icon } from '~/shared/ui/icon'
@@ -74,7 +75,6 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
     <section className='space-y-5 rounded-xl bg-white p-6 shadow-xl'>
       <div>
         <h2 className='text-xl font-bold'>{caregiver.data.fullName}</h2>
-        <p className='text-sm text-outline'>{caregiver.data.id}</p>
       </div>
       <div className='flex flex-wrap items-center gap-3 text-sm'>
         <span className='flex items-center gap-2'>
@@ -116,7 +116,7 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
           {t(`${key}.reject`)}
         </button>
       </div>
-      {review.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      {review.isError ? <p role='alert'>{t(apiRequestErrorKey(review.error, `${key}.actionError`))}</p> : null}
       <div className='space-y-3 border-t pt-4'>
         <h3 className='font-semibold'>{t(`${key}.certificates`)}</h3>
         {certificates.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
@@ -179,7 +179,9 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
             ))}
           </ul>
         ) : null}
-        {reviewCertificate.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+        {reviewCertificate.isError ? (
+          <p role='alert'>{t(apiRequestErrorKey(reviewCertificate.error, `${key}.actionError`))}</p>
+        ) : null}
       </div>
       <ConfirmDialog
         cancelLabel={t(`${key}.cancel`)}

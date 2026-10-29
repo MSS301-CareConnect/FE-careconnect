@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 
 import {
   careRecipientKeys,
@@ -152,7 +153,12 @@ export function EmergencyContactsCard({ recipientId, contacts, isEditMode }: Eme
 
         {failed ? (
           <p role='alert' className='text-xs text-error'>
-            {t('customer.patientDetail.emergencySection.actionError')}
+            {t(
+              apiRequestErrorKey(
+                save.error ?? makePrimary.error ?? remove.error,
+                'customer.patientDetail.emergencySection.actionError'
+              )
+            )}
           </p>
         ) : null}
 

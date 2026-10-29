@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router'
 import { createCaregiver, fetchCaregivers, providerKeys } from '~/entities/provider/provider-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { provisionCaregiverAccount } from './caregiver-onboarding-api'
 
 const key = 'centerManager.provider' as const
@@ -135,7 +136,7 @@ export function CreateCaregiver({ centerId, onDone }: { centerId: string; onDone
       </div>
       {create.isError ? (
         <p role='alert'>
-          {accountId ? t(`${key}.profileAfterAccountError`, { id: accountId }) : t(`${key}.actionError`)}
+          {accountId ? t(`${key}.profileAfterAccountError`) : t(apiRequestErrorKey(create.error, `${key}.actionError`))}
         </p>
       ) : null}
       <div className='flex gap-3'>

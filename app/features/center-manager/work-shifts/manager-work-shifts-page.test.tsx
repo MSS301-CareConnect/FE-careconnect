@@ -90,7 +90,7 @@ describe('Center Manager work shifts', () => {
       workDate: future,
       startTime: '08:00:00',
       endTime: '12:00:00',
-      shiftType: 'Morning',
+      shiftType: 'WEEKLY',
       shiftStatus: 'DRAFT',
       capacity: 2,
       version: 1
@@ -103,8 +103,8 @@ describe('Center Manager work shifts', () => {
     fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
-    fireEvent.change(screen.getByLabelText('Spots needed'), { target: { value: '2' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
+    fireEvent.change(screen.getByLabelText('Caregivers who can register'), { target: { value: '2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() =>
@@ -114,7 +114,7 @@ describe('Center Manager work shifts', () => {
           workDate: future,
           startTime: '08:00',
           endTime: '12:00',
-          shiftType: 'Morning',
+          shiftType: 'WEEKLY',
           capacity: 2,
           shiftStatus: 'DRAFT'
         })
@@ -122,7 +122,7 @@ describe('Center Manager work shifts', () => {
     )
   })
 
-  it('explains a rejected shift creation and shows the backend error code', async () => {
+  it('explains a rejected shift creation without exposing the backend error code', async () => {
     vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
     vi.mocked(createWorkShift).mockRejectedValue({ status: 403, info: { code: 3403 } })
     renderPage()
@@ -130,11 +130,11 @@ describe('Center Manager work shifts', () => {
     fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('You cannot create or edit work shifts for this center.')
-    expect(screen.getByRole('alert')).toHaveTextContent('Error code: 3403')
+    expect(screen.getByRole('alert')).not.toHaveTextContent('3403')
   })
 
   it('blocks a registration deadline after the shift starts', async () => {
@@ -145,7 +145,7 @@ describe('Center Manager work shifts', () => {
       workDate: future,
       startTime: '07:00:00',
       endTime: '18:00:00',
-      shiftType: 'Morning',
+      shiftType: 'WEEKLY',
       shiftStatus: 'DRAFT',
       capacity: 1,
       version: 1
@@ -155,7 +155,7 @@ describe('Center Manager work shifts', () => {
     fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '07:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '18:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
     fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: `${isoDate(7)}T00:00` } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
@@ -179,7 +179,7 @@ describe('Center Manager work shifts', () => {
     fireEvent.change(screen.getByLabelText('Work date'), { target: { value: isoDate(0) } })
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '00:00' } })
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'Morning' } })
+    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     expect(screen.getByRole('alert')).toHaveTextContent('The work shift must start after the current time.')

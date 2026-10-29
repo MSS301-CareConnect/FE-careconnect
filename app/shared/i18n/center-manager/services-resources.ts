@@ -68,8 +68,7 @@ export const managerServicesVi = {
     unauthenticated: 'Bạn đã hết thời gian đăng nhập. Vui lòng đăng nhập lại.',
     forbidden: 'Bạn không có quyền thay đổi bảng giá này.',
     notFound: 'Gói giá không còn tồn tại. Hãy tải lại danh sách.',
-    failed: 'Không thể lưu gói giá lúc này. Vui lòng thử lại.',
-    apiErrorCode: '(Mã lỗi: {{code}})'
+    failed: 'Không thể lưu gói giá lúc này. Vui lòng thử lại.'
   }
 } as const
 
@@ -143,7 +142,6 @@ export const managerServicesEn = {
     unauthenticated: 'You have been signed out. Please sign in again.',
     forbidden: 'You do not have permission to change this price plan.',
     notFound: 'This price plan no longer exists. Refresh the list.',
-    failed: 'Unable to save the price plan right now. Try again.',
-    apiErrorCode: '(Error code: {{code}})'
+    failed: 'Unable to save the price plan right now. Try again.'
   }
 } as const

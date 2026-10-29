@@ -79,17 +79,34 @@ export const commonEn = {
     }
   },
   errors: {
-    genericDetails: 'An unexpected error occurred.',
-    genericTitle: 'Error',
+    genericDetails: 'This page could not be displayed. Refresh it and try again.',
+    genericTitle: 'Unable to open this page',
     loading: 'Starting CareConnect…',
     notFoundDetails: 'The requested page could not be found.',
-    notFoundTitle: '404'
+    notFoundTitle: 'Page not found',
+    unauthorizedTitle: 'Please sign in again',
+    unauthorizedDetails: 'Your session has expired. Sign in to continue.',
+    forbiddenTitle: 'Access denied',
+    forbiddenDetails: 'Your account does not have access to this page.',
+    unavailableTitle: 'Service temporarily unavailable',
+    unavailableDetails: 'Please wait a few minutes, then refresh the page.',
+    request: {
+      invalid: 'Please check the information you entered and try again.',
+      unauthorized: 'Your session has expired. Sign in again to continue.',
+      forbidden: 'Your account does not have permission for this action.',
+      notFound: 'This item no longer exists. Refresh the page and try again.',
+      conflict: 'This information has changed. Refresh the page before trying again.',
+      rateLimited: 'Too many attempts. Wait a moment, then try again.',
+      unavailable: 'The service is temporarily unavailable. Try again in a few minutes.',
+      server: 'The service could not complete your request. Try again in a few minutes.',
+      network: 'Connection lost. Check your internet connection and try again.'
+    }
   },
   notFound: {
     action: 'Back to home',
     description: 'This route does not exist or has moved.',
     documentTitle: 'Page not found | CareConnect',
-    eyebrow: '404',
+    eyebrow: 'CareConnect',
     title: 'Page not found'
   }
 } as const
@@ -174,17 +191,34 @@ export const commonVi = {
     }
   },
   errors: {
-    genericDetails: 'Đã xảy ra lỗi không mong muốn.',
-    genericTitle: 'Lỗi',
+    genericDetails: 'Không thể hiển thị trang này. Hãy tải lại và thử lần nữa.',
+    genericTitle: 'Không thể mở trang',
     loading: 'Đang mở CareConnect…',
     notFoundDetails: 'Không tìm thấy trang bạn yêu cầu.',
-    notFoundTitle: '404'
+    notFoundTitle: 'Không tìm thấy trang',
+    unauthorizedTitle: 'Vui lòng đăng nhập lại',
+    unauthorizedDetails: 'Phiên đăng nhập đã hết hạn. Đăng nhập để tiếp tục.',
+    forbiddenTitle: 'Không có quyền truy cập',
+    forbiddenDetails: 'Tài khoản của bạn không có quyền mở trang này.',
+    unavailableTitle: 'Dịch vụ tạm thời gián đoạn',
+    unavailableDetails: 'Vui lòng đợi vài phút rồi tải lại trang.',
+    request: {
+      invalid: 'Vui lòng kiểm tra thông tin đã nhập và thử lại.',
+      unauthorized: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại để tiếp tục.',
+      forbidden: 'Tài khoản của bạn không có quyền thực hiện thao tác này.',
+      notFound: 'Thông tin này không còn tồn tại. Hãy tải lại trang và thử lại.',
+      conflict: 'Thông tin đã thay đổi. Hãy tải lại trang trước khi thử lại.',
+      rateLimited: 'Bạn đã thử quá nhiều lần. Hãy đợi một lúc rồi thử lại.',
+      unavailable: 'Dịch vụ đang tạm gián đoạn. Hãy thử lại sau vài phút.',
+      server: 'Dịch vụ chưa xử lý được yêu cầu. Hãy thử lại sau vài phút.',
+      network: 'Mất kết nối. Hãy kiểm tra mạng rồi thử lại.'
+    }
   },
   notFound: {
     action: 'Về trang chính',
     description: 'Đường dẫn này không tồn tại hoặc đã được di chuyển.',
     documentTitle: 'Không tìm thấy | CareConnect',
-    eyebrow: '404',
+    eyebrow: 'CareConnect',
     title: 'Không tìm thấy trang'
   }
 } as const

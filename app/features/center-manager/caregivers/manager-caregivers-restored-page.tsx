@@ -55,8 +55,7 @@ export function ManagerCaregiversPage() {
     const people =
       caregivers.data?.items.filter((person) => {
         const years = person.experienceYears
-        const matchesSearch =
-          !keyword || `${person.fullName} ${person.id}`.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
+        const matchesSearch = !keyword || person.fullName.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
         if (!matchesSearch) return false
         if (experience === 'lt2') return years !== undefined && years < 2
         if (experience === '2-5') return years !== undefined && years >= 2 && years < 5
@@ -85,14 +84,8 @@ export function ManagerCaregiversPage() {
   }
   function exportCsv() {
     const rows = [
-      [
-        t(`${key}.downloadCode`),
-        t(`${key}.downloadName`),
-        t(`${key}.downloadStatus`),
-        t(`${key}.downloadVerification`)
-      ],
+      [t(`${key}.downloadName`), t(`${key}.downloadStatus`), t(`${key}.downloadVerification`)],
       ...visible.map((person) => [
-        person.id,
         person.fullName,
         t(`${providerKey}.${statusLabels[person.caregiverStatus]}`),
         t(`${providerKey}.${verificationLabels[person.verificationStatus]}`)
@@ -322,7 +315,6 @@ export function ManagerCaregiversPage() {
                           <Link className='font-bold hover:text-primary' to={`/center-manager/caregivers/${person.id}`}>
                             {person.fullName}
                           </Link>
-                          <small className='mt-1 block text-outline tabular-nums'>{person.id}</small>
                         </div>
                       </div>
                     </td>

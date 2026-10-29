@@ -108,7 +108,7 @@ describe('Center Manager services and pricing', () => {
     )
   })
 
-  it('shows the backend error code when a price plan cannot be created', async () => {
+  it('explains a price plan error without exposing the backend code', async () => {
     vi.mocked(fetchCenterOfferings).mockResolvedValue([offering])
     vi.mocked(createOfferingPricePlan).mockRejectedValue({ status: 400, info: { code: 4101 } })
     renderPage()
@@ -119,7 +119,7 @@ describe('Center Manager services and pricing', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Enter a plan name')
-    expect(screen.getByRole('alert')).toHaveTextContent('Error code: 4101')
+    expect(screen.getByRole('alert')).not.toHaveTextContent('4101')
   })
 
   it('shows the missing-center state without requesting another center’s data', () => {

@@ -48,25 +48,25 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const { t } = useTranslation()
   let message: string = t('errors.genericTitle')
   let details: string = t('errors.genericDetails')
-  let stack: string | undefined
-
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? t('errors.notFoundTitle') : t('errors.genericTitle')
-    details = error.status === 404 ? t('errors.notFoundDetails') : error.statusText || details
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message
-    stack = error.stack
+    const kind =
+      error.status === 404
+        ? 'notFound'
+        : error.status === 401
+          ? 'unauthorized'
+          : error.status === 403
+            ? 'forbidden'
+            : error.status >= 500
+              ? 'unavailable'
+              : 'generic'
+    message = t(`errors.${kind}Title`)
+    details = t(`errors.${kind}Details`)
   }
 
   return (
     <main className='container mx-auto p-6 pt-16'>
       <h1 className='text-2xl font-semibold'>{message}</h1>
       <p className='mt-2 text-slate-600'>{details}</p>
-      {stack && (
-        <pre className='mt-6 w-full overflow-x-auto rounded-lg bg-slate-950 p-4 text-slate-100'>
-          <code>{stack}</code>
-        </pre>
-      )}
     </main>
   )
 }

@@ -6,6 +6,8 @@ import { formatProviderDate, formatProviderTime } from '~/entities/provider/prov
 
 import {
   createWorkShift,
+  fetchCaregiver,
+  fetchProviderMedia,
   fetchShiftRegistrations,
   fetchWorkShift,
   fetchWorkShifts,
@@ -16,8 +18,12 @@ import {
 } from '~/entities/provider/provider-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
-import type { ProviderWorkShiftRecord, WorkShiftRequest } from '~/shared/api/generated/contracts'
-import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
+import type {
+  ProviderShiftRegistrationRecord,
+  ProviderWorkShiftRecord,
+  WorkShiftRequest
+} from '~/shared/api/generated/contracts'
+import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
@@ -26,6 +32,9 @@ const key = 'centerManager.provider' as const
 const inputClass =
   'mt-1 w-full rounded-lg bg-surface-container-low px-3 py-3 outline-none focus:ring-2 focus:ring-primary/30'
 const shiftStatuses = ['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED', 'COMPLETED'] as const
+const shiftTypes = ['DAILY', 'WEEKLY'] as const
+const shiftTypeLabel = (type: string, dailyLabel: string, weeklyLabel: string) =>
+  type === 'DAILY' ? dailyLabel : type === 'WEEKLY' ? weeklyLabel : type
 const shiftStatusKeys = {
   DRAFT: 'centerManager.provider.draft',
   OPEN: 'centerManager.provider.open',
@@ -40,6 +49,102 @@ const registrationStatusKeys = {
   CANCELLED: 'cancelled'
 } as const
 
+function RegistrationCaregiver({
+  registration,
+  centerId
+}: {
+  registration: ProviderShiftRegistrationRecord
+  centerId: string
+}) {
+  const { t, i18n } = useTranslation()
+  const caregiver = useQuery({
+    queryKey: providerKeys.caregiver(registration.caregiverId),
+    queryFn: () => fetchCaregiver(registration.caregiverId),
+    retry: false
+  })
+  const belongsToCenter = caregiver.data?.centerId === centerId
+  const avatar = useQuery({
+    queryKey: providerKeys.media('CAREGIVER_PROFILE', registration.caregiverId),
+    queryFn: () => fetchProviderMedia('CAREGIVER_PROFILE', registration.caregiverId),
+    enabled: belongsToCenter,
+    retry: false
+  })
+  const profile = belongsToCenter ? caregiver.data : undefined
+  const name = profile?.fullName || registration.caregiverName || t(`${key}.unknown`)
+
+  return (
+    <div className='flex min-w-0 flex-1 items-start gap-4'>
+      <span
+        aria-hidden='true'
+        className='flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary-container text-primary'
+      >
+        {avatar.data?.[0]?.downloadUrl ? (
+          <img alt='' className='h-full w-full object-cover' src={avatar.data[0].downloadUrl} />
+        ) : (
+          <Icon name='person' />
+        )}
+      </span>
+      <div className='min-w-0 space-y-2'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <strong className='text-base'>{name}</strong>
+          <ProviderStatusBadge
+            label={t(`${key}.${registrationStatusKeys[registration.registrationStatus]}`)}
+            status={registration.registrationStatus}
+          />
+        </div>
+        {caregiver.isPending ? (
+          <p className='text-sm text-on-surface-variant' role='status'>
+            {t(`${key}.loading`)}
+          </p>
+        ) : null}
+        {caregiver.isError ? (
+          <div className='text-sm text-error' role='alert'>
+            {t(`${key}.caregiverError`)}{' '}
+            <button className='font-semibold underline' onClick={() => void caregiver.refetch()} type='button'>
+              {t(`${key}.retry`)}
+            </button>
+          </div>
+        ) : null}
+        {profile ? (
+          <>
+            <dl className='flex flex-wrap gap-x-5 gap-y-1 text-sm text-on-surface-variant'>
+              {profile.gender ? (
+                <div className='flex gap-1'>
+                  <dt>{t(`${key}.gender`)}:</dt>
+                  <dd>
+                    {t(
+                      `${key}.${profile.gender === 'MALE' ? 'male' : profile.gender === 'FEMALE' ? 'female' : 'other'}`
+                    )}
+                  </dd>
+                </div>
+              ) : null}
+              {profile.dateOfBirth ? (
+                <div className='flex gap-1'>
+                  <dt>{t(`${key}.birthDate`)}:</dt>
+                  <dd>{formatProviderDate(profile.dateOfBirth, i18n.language)}</dd>
+                </div>
+              ) : null}
+              {profile.experienceYears !== undefined ? (
+                <div className='flex gap-1'>
+                  <dt>{t(`${key}.experience`)}:</dt>
+                  <dd>{t(`${key}.yearsValue`, { count: profile.experienceYears })}</dd>
+                </div>
+              ) : null}
+            </dl>
+            {profile.bio ? <p className='max-w-2xl text-sm leading-6 text-on-surface-variant'>{profile.bio}</p> : null}
+            <Link
+              className='inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline'
+              to={`/center-manager/caregivers/${registration.caregiverId}`}
+            >
+              {t(`${key}.viewDetails`, { name })}
+            </Link>
+          </>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function shiftSaveErrorKey(error: unknown) {
   const status = apiErrorStatus(error)
   if (status === 400 || status === 422) return `${key}.shiftSaveInvalid` as const
@@ -47,7 +152,7 @@ function shiftSaveErrorKey(error: unknown) {
   if (status === 403) return `${key}.shiftSaveForbidden` as const
   if (status === 404) return `${key}.shiftSaveNotFound` as const
   if (status === 409) return `${key}.shiftSaveConflict` as const
-  return `${key}.actionError` as const
+  return apiRequestErrorKey(error, `${key}.actionError`)
 }
 
 function localDateTimeInput(value?: string): string {
@@ -71,11 +176,12 @@ function ShiftEditor({
   const [workDate, setWorkDate] = useState(shift?.workDate ?? '')
   const [startTime, setStartTime] = useState(shift?.startTime?.slice(0, 5) ?? '')
   const [endTime, setEndTime] = useState(shift?.endTime?.slice(0, 5) ?? '')
-  const [shiftType, setShiftType] = useState(shift?.shiftType ?? '')
+  const [shiftType, setShiftType] = useState(shift?.shiftType ?? 'DAILY')
   const [shiftStatus, setShiftStatus] = useState<WorkShiftRequest['shiftStatus']>(shift?.shiftStatus ?? 'DRAFT')
   const [capacity, setCapacity] = useState(shift?.capacity ?? 1)
   const [deadline, setDeadline] = useState(localDateTimeInput(shift?.registrationDeadline))
   const [invalidDeadline, setInvalidDeadline] = useState(false)
+  const [invalidTimeRange, setInvalidTimeRange] = useState(false)
   const [startInPast, setStartInPast] = useState(false)
   const [today] = useState(() => localDateTimeInput(new Date().toISOString()).slice(0, 10))
   const [note, setNote] = useState(shift?.note ?? '')
@@ -85,7 +191,7 @@ function ShiftEditor({
         workDate,
         startTime,
         endTime,
-        shiftType: shiftType.trim(),
+        shiftType,
         shiftStatus,
         capacity,
         registrationDeadline: deadline ? new Date(deadline).toISOString() : undefined,
@@ -100,7 +206,6 @@ function ShiftEditor({
       onDone()
     }
   })
-  const saveErrorCode = apiErrorCode(save.error)
   function submit(event: FormEvent) {
     event.preventDefault()
     // A new or moved shift must start in the future; editing other fields of a past shift stays allowed.
@@ -110,6 +215,11 @@ function ShiftEditor({
       return
     }
     setStartInPast(false)
+    if (startTime && endTime && endTime <= startTime) {
+      setInvalidTimeRange(true)
+      return
+    }
+    setInvalidTimeRange(false)
     if (deadline && workDate && startTime && deadline >= `${workDate}T${startTime}`) {
       setInvalidDeadline(true)
       return
@@ -157,21 +267,39 @@ function ShiftEditor({
         <label className='text-sm'>
           {t(`${key}.endTime`)}
           <input
+            aria-invalid={invalidTimeRange}
             className={inputClass}
-            onChange={(event) => setEndTime(event.target.value)}
+            onChange={(event) => {
+              setEndTime(event.target.value)
+              setInvalidTimeRange(false)
+            }}
             required
             type='time'
             value={endTime}
           />
+          {invalidTimeRange ? (
+            <span className='mt-1 block text-error' role='alert'>
+              {t(`${key}.endAfterStart`)}
+            </span>
+          ) : null}
         </label>
         <label className='text-sm'>
           {t(`${key}.shiftType`)}
-          <input
+          <select
             className={inputClass}
             onChange={(event) => setShiftType(event.target.value)}
             required
             value={shiftType}
-          />
+          >
+            {!shiftTypes.includes(shiftType as (typeof shiftTypes)[number]) ? (
+              <option value={shiftType}>{shiftType}</option>
+            ) : null}
+            {shiftTypes.map((type) => (
+              <option key={type} value={type}>
+                {t(`${key}.shiftTypeOptions.${type}`)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className='text-sm'>
           {t(`${key}.status`)}
@@ -225,12 +353,7 @@ function ShiftEditor({
           <textarea className={inputClass} onChange={(event) => setNote(event.target.value)} value={note} />
         </label>
       </div>
-      {save.isError ? (
-        <p role='alert'>
-          {t(shiftSaveErrorKey(save.error))}
-          {saveErrorCode !== undefined ? ` ${t(`${key}.apiErrorCode`, { code: saveErrorCode })}` : null}
-        </p>
-      ) : null}
+      {save.isError ? <p role='alert'>{t(shiftSaveErrorKey(save.error))}</p> : null}
       <div className='flex gap-3'>
         <button
           className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
@@ -440,7 +563,13 @@ export function ManagerWorkShiftsPage() {
                             {formatProviderTime(shift.endTime, i18n.language)}
                           </small>
                         </td>
-                        <td className='px-5 py-4'>{shift.shiftType}</td>
+                        <td className='px-5 py-4'>
+                          {shiftTypeLabel(
+                            shift.shiftType,
+                            t(`${key}.shiftTypeOptions.DAILY`),
+                            t(`${key}.shiftTypeOptions.WEEKLY`)
+                          )}
+                        </td>
                         <td className='px-5 py-4'>
                           <span className='flex flex-wrap items-center gap-1.5'>
                             <ProviderStatusBadge
@@ -618,7 +747,12 @@ export function ManagerWorkShiftDetailPage() {
           </h1>
           <p className='mt-2 text-sm text-on-surface-variant'>
             {formatProviderTime(shift.data.startTime, i18n.language)}–
-            {formatProviderTime(shift.data.endTime, i18n.language)} · {shift.data.shiftType}
+            {formatProviderTime(shift.data.endTime, i18n.language)} ·{' '}
+            {shiftTypeLabel(
+              shift.data.shiftType,
+              t(`${key}.shiftTypeOptions.DAILY`),
+              t(`${key}.shiftTypeOptions.WEEKLY`)
+            )}
           </p>
           <div className='mt-3'>
             <ProviderStatusBadge label={t(shiftStatusKeys[shift.data.shiftStatus])} status={shift.data.shiftStatus} />
@@ -657,7 +791,15 @@ export function ManagerWorkShiftDetailPage() {
       <section aria-label={t(`${key}.shiftDetail`)} className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
         {(
           [
-            [t(`${key}.shiftType`), shift.data.shiftType, 'schedule'],
+            [
+              t(`${key}.shiftType`),
+              shiftTypeLabel(
+                shift.data.shiftType,
+                t(`${key}.shiftTypeOptions.DAILY`),
+                t(`${key}.shiftTypeOptions.WEEKLY`)
+              ),
+              'schedule'
+            ],
             [t(`${key}.capacity`), `${shift.data.approvedCount ?? 0} / ${shift.data.capacity}`, 'groups'],
             [t(`${key}.shiftDetailStatus`), t(shiftStatusKeys[shift.data.shiftStatus]), 'event_available'],
             [
@@ -689,7 +831,7 @@ export function ManagerWorkShiftDetailPage() {
       )}
       {archive.isError ? (
         <p className='rounded-lg bg-error-container p-4 text-on-error-container' role='alert'>
-          {t(`${key}.actionError`)}
+          {t(apiRequestErrorKey(archive.error, `${key}.actionError`))}
         </p>
       ) : null}
       {editing ? (
@@ -719,24 +861,8 @@ export function ManagerWorkShiftDetailPage() {
         {registrations.isSuccess ? (
           <ul className='divide-y divide-outline-variant/20'>
             {registrations.data.items.map((registration) => (
-              <li className='flex flex-wrap items-center justify-between gap-3 py-4' key={registration.id}>
-                <div className='flex items-center gap-3'>
-                  <span
-                    aria-hidden='true'
-                    className='flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-primary'
-                  >
-                    <Icon name='person' />
-                  </span>
-                  <div>
-                    <strong>{registration.caregiverName || registration.caregiverId}</strong>
-                    <div className='mt-1'>
-                      <ProviderStatusBadge
-                        label={t(`${key}.${registrationStatusKeys[registration.registrationStatus]}`)}
-                        status={registration.registrationStatus}
-                      />
-                    </div>
-                  </div>
-                </div>
+              <li className='flex flex-wrap items-start justify-between gap-4 py-5' key={registration.id}>
+                <RegistrationCaregiver centerId={centerId} registration={registration} />
                 {registration.registrationStatus === 'PENDING' ? (
                   <div className='flex gap-3'>
                     <button
@@ -794,7 +920,7 @@ export function ManagerWorkShiftDetailPage() {
             </button>
           </div>
         ) : null}
-        {review.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+        {review.isError ? <p role='alert'>{t(apiRequestErrorKey(review.error, `${key}.actionError`))}</p> : null}
       </section>
     </main>
   )

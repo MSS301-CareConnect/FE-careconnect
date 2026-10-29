@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link } from 'react-router'
 
 import {
@@ -213,7 +214,7 @@ export function CaregiverProviderProfilePage() {
               ) : null}
               {avatarMedia.isError || replaceAvatar.isError ? (
                 <p className='mt-4 text-sm text-error print:hidden' role='alert'>
-                  {t(`${key}.avatarUploadError`)}
+                  {t(apiRequestErrorKey(replaceAvatar.error ?? avatarMedia.error, `${key}.avatarUploadError`))}
                 </p>
               ) : null}
               {replaceAvatar.isSuccess ? (
@@ -391,7 +392,11 @@ export function CaregiverProviderProfilePage() {
             ) : null}
             {create.isError ? (
               <p className='mt-3 text-sm text-error' role='alert'>
-                {t(pendingCertificateId ? `${key}.certificateUploadError` : `${key}.actionError`)}
+                {t(
+                  pendingCertificateId
+                    ? `${key}.certificateUploadError`
+                    : apiRequestErrorKey(create.error, `${key}.actionError`)
+                )}
               </p>
             ) : null}
             {certificateSuccess ? (

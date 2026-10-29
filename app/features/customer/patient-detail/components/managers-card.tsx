@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 
 import {
   fetchInvitations,
@@ -78,7 +79,7 @@ export function ManagersCard({ recipientId }: { recipientId: string }) {
       </h3>
       {managers.isError ? (
         <p className='text-xs text-error' role='alert'>
-          {t('customer.managers.errors.generic')}
+          {t(apiRequestErrorKey(managers.error, 'customer.managers.errors.generic'))}
         </p>
       ) : null}
       <ul className='flex flex-col gap-2'>

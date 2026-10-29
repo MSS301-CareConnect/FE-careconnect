@@ -10,6 +10,7 @@ import {
 } from '~/shared/api/generated/api/care-recipient/care-recipient'
 import type { ManagerCreateRequest } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
+import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
 
 import { careRecipientErrorCode } from './care-recipient-api'
 
@@ -66,10 +67,10 @@ export async function declineInvitation(invitationId: string) {
 
 const KNOWN_CODES = [2402, 2408, 2410, 2411, 2412, 2413, 2414, 2405, 2403] as const
 export type ManagerErrorKey =
-  `customer.managers.errors.e${(typeof KNOWN_CODES)[number]}` | 'customer.managers.errors.generic'
+  `customer.managers.errors.e${(typeof KNOWN_CODES)[number]}` | 'customer.managers.errors.generic' | ApiRequestErrorKey
 
 export function managerErrorKey(error: unknown): ManagerErrorKey {
   const code = careRecipientErrorCode(error)
   const known = KNOWN_CODES.find((item) => item === code)
-  return known ? `customer.managers.errors.e${known}` : 'customer.managers.errors.generic'
+  return known ? `customer.managers.errors.e${known}` : apiRequestErrorKey(error, 'customer.managers.errors.generic')
 }

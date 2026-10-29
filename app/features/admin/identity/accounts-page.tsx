@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
@@ -99,7 +100,7 @@ export function AccountsPage() {
       setCenterId('')
       void client.invalidateQueries({ queryKey: ['identity', 'users'] })
     },
-    onError: () => setMessage(t(`${key}.actionError`))
+    onError: (error) => setMessage(t(apiRequestErrorKey(error, `${key}.actionError`)))
   })
   function submit(event: FormEvent) {
     event.preventDefault()

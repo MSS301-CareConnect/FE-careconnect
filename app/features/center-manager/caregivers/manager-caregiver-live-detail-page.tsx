@@ -5,28 +5,24 @@ import { Link, useNavigate, useParams } from 'react-router'
 
 import {
   changeCaregiverStatus,
-  createCertificate,
   fetchCaregiver,
-  fetchCertificates,
+  fetchProviderMedia,
   providerKeys,
   removeCaregiver,
-  removeCertificate,
-  saveCaregiver,
-  saveCertificate,
-  uploadMedia,
-  verifyCertificateByCenter
+  saveCaregiver
 } from '~/entities/provider/provider-api'
 import { formatProviderDate } from '~/entities/provider/provider-format'
 import { CaregiverTimeOffs } from '~/entities/provider/caregiver-time-offs'
-import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
-import type { ProviderCaregiverRecord, ProviderCertificateRecord } from '~/shared/api/generated/contracts'
+import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
+import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { CaregiverServicesEditor } from './components/caregiver-services-editor'
+import { ManagerCertificates } from './components/manager-certificates'
 
 const key = 'centerManager.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
@@ -34,13 +30,6 @@ const genderOptions = { MALE: 'male', FEMALE: 'female', OTHER: 'other' } as cons
 const statusOptions = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended' } as const
 const statusLabels = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
 const verificationLabels = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
-const certificateLabels = {
-  PENDING: 'pending',
-  CENTER_VERIFIED: 'centerVerified',
-  ADMIN_VERIFIED: 'verified',
-  REJECTED: 'rejected'
-} as const
-
 function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; onDone: () => void }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -156,7 +145,7 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
           <textarea className={inputClass} onChange={(event) => setBio(event.target.value)} value={bio} />
         </label>
       </div>
-      {update.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      {update.isError ? <p role='alert'>{t(apiRequestErrorKey(update.error, `${key}.actionError`))}</p> : null}
       <div className='flex gap-3'>
         <button
           className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
@@ -173,315 +162,6 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
   )
 }
 
-function CertificateEditor({
-  caregiverId,
-  certificate,
-  onDone
-}: {
-  caregiverId: string
-  certificate?: ProviderCertificateRecord
-  onDone: () => void
-}) {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
-  const [name, setName] = useState(certificate?.certificateName ?? '')
-  const [issuedBy, setIssuedBy] = useState(certificate?.issuedBy ?? '')
-  const [number, setNumber] = useState(certificate?.credentialNumber ?? '')
-  const [issuedDate, setIssuedDate] = useState(certificate?.issuedDate ?? '')
-  const [expiryDate, setExpiryDate] = useState(certificate?.expiryDate ?? '')
-  const [file, setFile] = useState<File | null>(null)
-  const [fileError, setFileError] = useState<'type' | 'size' | null>(null)
-  const [pendingCertificateId, setPendingCertificateId] = useState<string | null>(null)
-  const save = useMutation({
-    mutationFn: async () => {
-      const request = {
-        certificateName: name.trim(),
-        issuedBy: issuedBy.trim(),
-        credentialNumber: number.trim() || undefined,
-        issuedDate: issuedDate || undefined,
-        expiryDate: expiryDate || undefined
-      }
-      const certificateId =
-        pendingCertificateId ??
-        (certificate
-          ? (await saveCertificate(certificate.id, { ...request, version: certificate.version })).id
-          : (await createCertificate(caregiverId, request)).id)
-      if (file) {
-        setPendingCertificateId(certificateId)
-        try {
-          await uploadMedia('CERTIFICATE', certificateId, [file])
-        } catch (error) {
-          await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
-          throw error
-        }
-      }
-      return certificateId
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
-      onDone()
-    }
-  })
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    save.mutate()
-  }
-  return (
-    <form className='space-y-4 rounded-lg border p-4' onSubmit={submit}>
-      <h3 className='font-semibold'>{t(certificate ? `${key}.editCertificate` : `${key}.addCertificate`)}</h3>
-      <label className='block text-sm'>
-        {t(`${key}.certificateFile`)}
-        <input
-          accept='.pdf,.jpg,.jpeg,.png'
-          className={inputClass}
-          onChange={(event) => {
-            const selected = event.target.files?.[0] ?? null
-            const error = selected ? validateProviderFiles('CERTIFICATE', [selected]) : null
-            setFileError(error === 'type' || error === 'size' ? error : null)
-            setFile(error ? null : selected)
-            if (error) event.target.value = ''
-          }}
-          required={!certificate}
-          type='file'
-        />
-      </label>
-      <div className='grid gap-3 sm:grid-cols-2'>
-        <label className='text-sm'>
-          {t(`${key}.certificateName`)}
-          <input
-            className={inputClass}
-            disabled={Boolean(pendingCertificateId)}
-            onChange={(event) => setName(event.target.value)}
-            required
-            value={name}
-          />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.issuedBy`)}
-          <input
-            className={inputClass}
-            disabled={Boolean(pendingCertificateId)}
-            onChange={(event) => setIssuedBy(event.target.value)}
-            required
-            value={issuedBy}
-          />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.credentialNumber`)}
-          <input
-            className={inputClass}
-            disabled={Boolean(pendingCertificateId)}
-            onChange={(event) => setNumber(event.target.value)}
-            value={number}
-          />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.issuedDate`)}
-          <input
-            className={inputClass}
-            disabled={Boolean(pendingCertificateId)}
-            onChange={(event) => setIssuedDate(event.target.value)}
-            type='date'
-            value={issuedDate}
-          />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.expiryDate`)}
-          <input
-            className={inputClass}
-            disabled={Boolean(pendingCertificateId)}
-            onChange={(event) => setExpiryDate(event.target.value)}
-            type='date'
-            value={expiryDate}
-          />
-        </label>
-      </div>
-      {fileError ? <p role='alert'>{t(`common.providerMedia.validation.${fileError}`, { maxSize: 10 })}</p> : null}
-      {save.isError ? (
-        <p role='alert'>{t(pendingCertificateId ? `${key}.certificateUploadError` : `${key}.actionError`)}</p>
-      ) : null}
-      <div className='flex gap-3'>
-        <button
-          className='rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-50'
-          disabled={save.isPending || (!certificate && !file)}
-          type='submit'
-        >
-          {t(pendingCertificateId ? `${key}.retryCertificateUpload` : file ? `${key}.saveAndUpload` : `${key}.save`)}
-        </button>
-        <button className='rounded-lg border px-3 py-2' onClick={onDone} type='button'>
-          {t(`${key}.cancel`)}
-        </button>
-      </div>
-    </form>
-  )
-}
-
-function Certificates({ caregiverId }: { caregiverId: string }) {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
-  const [editor, setEditor] = useState<string | null>(null)
-  const [mediaFor, setMediaFor] = useState<string | null>(null)
-  const [pendingArchiveCert, setPendingArchiveCert] = useState<ProviderCertificateRecord | null>(null)
-  const certificates = useQuery({
-    queryKey: providerKeys.certificates(caregiverId),
-    queryFn: () => fetchCertificates(caregiverId),
-    retry: false
-  })
-  const [rejecting, setRejecting] = useState<ProviderCertificateRecord | null>(null)
-  const [rejectReason, setRejectReason] = useState('')
-  const confirm = useMutation({
-    mutationFn: ({ certificate, approved }: { certificate: ProviderCertificateRecord; approved: boolean }) =>
-      verifyCertificateByCenter(certificate.id, {
-        approved,
-        reason: approved ? undefined : rejectReason.trim(),
-        version: certificate.version
-      }),
-    onSuccess: async () => {
-      setRejecting(null)
-      setRejectReason('')
-      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
-    }
-  })
-  const archive = useMutation({
-    mutationFn: (certificate: ProviderCertificateRecord) => removeCertificate(certificate.id, certificate.version),
-    onSuccess: async () => {
-      setPendingArchiveCert(null)
-      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
-    }
-  })
-  return (
-    <section className='space-y-4 rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-lg font-semibold'>{t(`${key}.certificatesTitle`)}</h2>
-        <button className='text-primary underline' onClick={() => setEditor('new')} type='button'>
-          {t(`${key}.addCertificate`)}
-        </button>
-      </div>
-      {certificates.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
-      {certificates.isError ? (
-        <div role='alert'>
-          <p>{t(`${key}.certificatesError`)}</p>
-          <button className='text-primary underline' onClick={() => void certificates.refetch()} type='button'>
-            {t(`${key}.retry`)}
-          </button>
-        </div>
-      ) : null}
-      {certificates.isSuccess && certificates.data.length === 0 ? <p>{t(`${key}.certificatesEmpty`)}</p> : null}
-      <p className='text-xs text-on-surface-variant'>{t(`${key}.certificateSteps`)}</p>
-      {confirm.isError ? (
-        <p className='text-sm text-error' role='alert'>
-          {t(`${key}.certificateConfirmError`)}
-        </p>
-      ) : null}
-      {certificates.isSuccess ? (
-        <ul className='divide-y divide-outline-variant/20'>
-          {certificates.data.map((certificate) => (
-            <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={certificate.id}>
-              <div>
-                <strong>{certificate.certificateName}</strong>
-                <p className='mt-1 flex items-center gap-2 text-sm text-outline'>
-                  <span>{certificate.issuedBy}</span>
-                  <ProviderStatusBadge
-                    label={t(`${key}.${certificateLabels[certificate.verificationStatus]}`)}
-                    status={certificate.verificationStatus}
-                  />
-                </p>
-              </div>
-              <div className='flex gap-3'>
-                {certificate.verificationStatus === 'PENDING' ? (
-                  <>
-                    <button
-                      className='font-semibold text-primary underline disabled:opacity-50'
-                      disabled={confirm.isPending}
-                      onClick={() => confirm.mutate({ certificate, approved: true })}
-                      type='button'
-                    >
-                      {t(`${key}.confirmCertificate`)}
-                    </button>
-                    <button
-                      className='text-error underline disabled:opacity-50'
-                      disabled={confirm.isPending}
-                      onClick={() => setRejecting(certificate)}
-                      type='button'
-                    >
-                      {t(`${key}.rejectCertificate`)}
-                    </button>
-                  </>
-                ) : null}
-                <button className='text-primary underline' onClick={() => setEditor(certificate.id)} type='button'>
-                  {t(`${key}.editCertificate`)}
-                </button>
-                <button
-                  className='text-primary underline'
-                  onClick={() => setMediaFor(mediaFor === certificate.id ? null : certificate.id)}
-                  type='button'
-                >
-                  {t(`${key}.uploadCertificateFile`)}
-                </button>
-                <button
-                  className='text-error underline disabled:opacity-50'
-                  disabled={archive.isPending}
-                  onClick={() => setPendingArchiveCert(certificate)}
-                  type='button'
-                >
-                  {t(`${key}.archiveCertificate`)}
-                </button>
-              </div>
-              {rejecting?.id === certificate.id ? (
-                <div className='flex w-full flex-wrap items-end gap-2'>
-                  <label className='flex min-w-48 flex-1 flex-col text-sm font-medium'>
-                    {t(`${key}.rejectCertificateReason`)}
-                    <input
-                      className='mt-1 rounded-lg border border-outline-variant px-3 py-2'
-                      maxLength={500}
-                      onChange={(event) => setRejectReason(event.target.value)}
-                      value={rejectReason}
-                    />
-                  </label>
-                  <button
-                    className='rounded-lg border border-error px-3 py-2 text-sm font-semibold text-error disabled:opacity-50'
-                    disabled={confirm.isPending || !rejectReason.trim()}
-                    onClick={() => confirm.mutate({ certificate, approved: false })}
-                    type='button'
-                  >
-                    {t(`${key}.rejectCertificate`)}
-                  </button>
-                </div>
-              ) : null}
-              {mediaFor === certificate.id ? (
-                <div className='w-full'>
-                  <ProviderMediaPanel ownerId={certificate.id} ownerType='CERTIFICATE' />
-                </div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {editor ? (
-        <CertificateEditor
-          caregiverId={caregiverId}
-          certificate={certificates.data?.find((item) => item.id === editor)}
-          key={editor}
-          onDone={() => setEditor(null)}
-        />
-      ) : null}
-      {archive.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
-      <ConfirmDialog
-        confirmLabel={t(`${key}.archiveCertificate`)}
-        description={t(`${key}.confirmArchiveCertificate`)}
-        loading={archive.isPending}
-        onClose={() => setPendingArchiveCert(null)}
-        onConfirm={() => {
-          if (pendingArchiveCert) archive.mutate(pendingArchiveCert)
-        }}
-        open={Boolean(pendingArchiveCert)}
-        title={t(`${key}.archiveCertificate`)}
-        tone='danger'
-      />
-    </section>
-  )
-}
-
 export function ManagerCaregiverDetailPage() {
   const { id = '' } = useParams()
   const { t, i18n } = useTranslation()
@@ -495,6 +175,12 @@ export function ManagerCaregiverDetailPage() {
     queryFn: () => fetchCaregiver(id),
     retry: false,
     enabled: Boolean(id)
+  })
+  const avatarMedia = useQuery({
+    queryKey: providerKeys.media('CAREGIVER_PROFILE', id),
+    queryFn: () => fetchProviderMedia('CAREGIVER_PROFILE', id),
+    retry: false,
+    enabled: Boolean(id) && caregiver.data?.centerId === user?.centerId
   })
   const archive = useMutation({
     mutationFn: () => removeCaregiver(id, caregiver.data!.version),
@@ -541,68 +227,75 @@ export function ManagerCaregiverDetailPage() {
         <Icon name='arrow_back' />
         {t(`${key}.back`)}
       </Link>
-      <section className='rounded-xl bg-white p-5 shadow-sm sm:p-7'>
-        <div className='flex flex-wrap items-start justify-between gap-5'>
-          <div className='flex min-w-0 flex-wrap items-center gap-5'>
-            <span className='flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-secondary-container text-primary sm:h-28 sm:w-28'>
-              <Icon className='text-5xl' name='person' />
-            </span>
-            <div className='min-w-0'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <h1 className='text-2xl font-extrabold tracking-tight'>{caregiver.data.fullName}</h1>
-                <ProviderStatusBadge
-                  label={t(`${key}.${statusLabels[caregiver.data.caregiverStatus]}`)}
-                  status={caregiver.data.caregiverStatus}
-                />
-              </div>
-              <p className='mt-2 text-xs text-outline tabular-nums'>
-                #{caregiver.data.id}
-                {caregiver.data.createdAt ? ` · ${formatProviderDate(caregiver.data.createdAt, i18n.language)}` : ''}
-              </p>
-              {caregiver.data.ratingAverage !== undefined ? (
-                <p className='mt-2 flex items-center gap-1 text-sm font-semibold tabular-nums'>
-                  <Icon className='text-warning' filled name='star' />
-                  {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
-                    caregiver.data.ratingAverage
-                  )}
-                  <span className='ml-2 font-normal text-outline'>
-                    {t('centerManager.provider.reviewsValue', { count: caregiver.data.ratingCount ?? 0 })}
-                  </span>
-                </p>
-              ) : null}
-              <div className='mt-3'>
-                <ProviderStatusBadge
-                  label={t(`${key}.${verificationLabels[caregiver.data.verificationStatus]}`)}
-                  status={caregiver.data.verificationStatus}
-                />
+      <section className='overflow-hidden rounded-2xl border border-outline-variant/40 bg-white'>
+        <div className='h-2 bg-primary' />
+        <div className='p-5 sm:p-7'>
+          <div className='flex flex-wrap items-start justify-between gap-5'>
+            <div className='flex min-w-0 flex-wrap items-center gap-5'>
+              <span className='flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-secondary-container text-primary sm:h-28 sm:w-28'>
+                {avatarMedia.data?.[0]?.downloadUrl ? (
+                  <img
+                    alt={caregiver.data.fullName}
+                    className='h-full w-full object-cover'
+                    src={avatarMedia.data[0].downloadUrl}
+                  />
+                ) : (
+                  <Icon className='text-5xl' name='person' />
+                )}
+              </span>
+              <div className='min-w-0'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <h1 className='text-2xl font-extrabold tracking-tight'>{caregiver.data.fullName}</h1>
+                  <ProviderStatusBadge
+                    label={t(`${key}.${statusLabels[caregiver.data.caregiverStatus]}`)}
+                    status={caregiver.data.caregiverStatus}
+                  />
+                </div>
+                {caregiver.data.ratingAverage !== undefined ? (
+                  <p className='mt-2 flex items-center gap-1 text-sm font-semibold tabular-nums'>
+                    <Icon className='text-warning' filled name='star' />
+                    {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
+                      caregiver.data.ratingAverage
+                    )}
+                    <span className='ml-2 font-normal text-outline'>
+                      {t('centerManager.provider.reviewsValue', { count: caregiver.data.ratingCount ?? 0 })}
+                    </span>
+                  </p>
+                ) : null}
+                <div className='mt-3'>
+                  <ProviderStatusBadge
+                    label={t(`${key}.${verificationLabels[caregiver.data.verificationStatus]}`)}
+                    status={caregiver.data.verificationStatus}
+                  />
+                </div>
               </div>
             </div>
+            <div className='flex flex-wrap gap-2'>
+              <button
+                className='flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2.5 text-xs font-semibold text-primary'
+                onClick={() => setEditing(true)}
+                type='button'
+              >
+                <Icon name='edit' />
+                {t(`${key}.editCaregiver`)}
+              </button>
+              <button
+                className='flex items-center gap-2 rounded-lg bg-error-container px-3 py-2.5 text-xs font-semibold text-on-error-container disabled:opacity-50'
+                disabled={archive.isPending}
+                onClick={() => setConfirmArchiveOpen(true)}
+                type='button'
+              >
+                <Icon name='block' />
+                {t(`${key}.archive`)}
+              </button>
+            </div>
           </div>
-          <div className='flex flex-wrap gap-2'>
-            <button
-              className='flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2.5 text-xs font-semibold text-primary'
-              onClick={() => setEditing(true)}
-              type='button'
-            >
-              <Icon name='edit' />
-              {t(`${key}.editCaregiver`)}
-            </button>
-            <button
-              className='flex items-center gap-2 rounded-lg bg-error-container px-3 py-2.5 text-xs font-semibold text-on-error-container disabled:opacity-50'
-              disabled={archive.isPending}
-              onClick={() => setConfirmArchiveOpen(true)}
-              type='button'
-            >
-              <Icon name='block' />
-              {t(`${key}.archive`)}
-            </button>
-          </div>
+          {archive.isError ? (
+            <p className='mt-4 text-error' role='alert'>
+              {t(apiRequestErrorKey(archive.error, `${key}.actionError`))}
+            </p>
+          ) : null}
         </div>
-        {archive.isError ? (
-          <p className='mt-4 text-error' role='alert'>
-            {t(`${key}.actionError`)}
-          </p>
-        ) : null}
       </section>
       <ConfirmDialog
         confirmLabel={t(`${key}.archive`)}
@@ -614,7 +307,7 @@ export function ManagerCaregiverDetailPage() {
         title={t(`${key}.archive`)}
         tone='danger'
       />
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+      <div className='grid overflow-hidden rounded-2xl border border-outline-variant/40 bg-white sm:grid-cols-2 xl:grid-cols-4'>
         {(
           [
             [
@@ -625,26 +318,29 @@ export function ManagerCaregiverDetailPage() {
               'work_history'
             ],
             [
-              t(`${key}.verification`),
-              t(`${key}.${verificationLabels[caregiver.data.verificationStatus]}`),
-              'health_and_safety'
-            ],
-            [t(`${key}.status`), t(`${key}.${statusLabels[caregiver.data.caregiverStatus]}`), 'medical_information'],
-            [
               t(`${key}.birthDate`),
               caregiver.data.dateOfBirth
                 ? formatProviderDate(caregiver.data.dateOfBirth, i18n.language)
                 : t(`${key}.unknown`),
               'calendar_month'
-            ]
+            ],
+            [
+              t(`${key}.gender`),
+              caregiver.data.gender ? t(`${key}.${genderOptions[caregiver.data.gender]}`) : t(`${key}.unknown`),
+              'wc'
+            ],
+            [t(`${key}.centerName`), caregiver.data.centerName || t(`${key}.unknown`), 'home_health']
           ] as const
         ).map(([label, value, icon]) => (
-          <section className='rounded-xl bg-white p-5 shadow-sm' key={label}>
+          <section
+            className='border-b border-outline-variant/30 p-5 last:border-b-0 sm:odd:border-r xl:border-b-0 xl:border-r xl:last:border-r-0'
+            key={label}
+          >
             <div className='flex items-center justify-between gap-2'>
               <h2 className='text-xs font-semibold text-outline'>{label}</h2>
               <Icon className='text-2xl text-primary' name={icon} />
             </div>
-            <p className='mt-4 text-xl font-extrabold text-primary'>{value}</p>
+            <p className='mt-4 text-xl font-bold text-on-surface'>{value}</p>
           </section>
         ))}
       </div>
@@ -653,7 +349,7 @@ export function ManagerCaregiverDetailPage() {
       ) : null}
       <div className='grid items-start gap-6 lg:grid-cols-12'>
         <div className='space-y-6 lg:col-span-5'>
-          <section className='rounded-xl bg-white p-5 shadow-sm'>
+          <section className='rounded-2xl border border-outline-variant/40 bg-white p-5 sm:p-7'>
             <h2 className='flex items-center gap-2 text-lg font-bold'>
               <Icon className='text-primary' name='person' />
               {t(`${key}.profileTitle`)}
@@ -663,10 +359,9 @@ export function ManagerCaregiverDetailPage() {
             </p>
           </section>
           <CaregiverServicesEditor caregiverId={id} centerId={caregiver.data.centerId} />
-          <ProviderMediaPanel ownerId={id} ownerType='CAREGIVER_PROFILE' />
         </div>
         <div className='lg:col-span-7'>
-          <Certificates caregiverId={id} />
+          <ManagerCertificates caregiverId={id} />
           <CaregiverTimeOffs caregiverId={id} copy='centerManager.provider.timeOff' />
         </div>
       </div>

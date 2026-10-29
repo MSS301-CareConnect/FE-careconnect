@@ -73,7 +73,7 @@ beforeEach(async () => {
   vi.mocked(fetchCaregivers).mockReset()
   vi.mocked(fetchCaregiver).mockReset()
   vi.mocked(fetchCertificates).mockReset()
-  vi.mocked(fetchProviderMedia).mockReset()
+  vi.mocked(fetchProviderMedia).mockReset().mockResolvedValue([])
   vi.mocked(saveCaregiver).mockReset()
   vi.mocked(createCertificate).mockReset()
   vi.mocked(createCaregiver).mockReset()
@@ -144,6 +144,7 @@ describe('Center Manager Provider caregivers', () => {
     renderManager()
 
     expect(await screen.findByText('Lan Nguyen')).toBeInTheDocument()
+    expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
     expect(fetchCaregivers).toHaveBeenCalledWith('center-1', {
       page: 0,
       size: 20,
@@ -153,6 +154,7 @@ describe('Center Manager Provider caregivers', () => {
     fireEvent.click(screen.getByRole('link', { name: 'View details for Lan Nguyen' }))
     expect(await screen.findByRole('heading', { name: 'Lan Nguyen' })).toBeInTheDocument()
     expect(await screen.findByText('No certificates yet.')).toBeInTheDocument()
+    expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
   })
 
   it('sends the backend version when updating a caregiver', async () => {
@@ -275,7 +277,7 @@ describe('Center Manager Provider caregivers', () => {
     )
   })
 
-  it('opens certificate file upload beside the selected certificate', async () => {
+  it('shows the caregiver avatar and certificate files without upload controls or user IDs', async () => {
     vi.mocked(fetchCaregiver).mockResolvedValue(person)
     vi.mocked(fetchCertificates).mockResolvedValue([
       {
@@ -287,46 +289,29 @@ describe('Center Manager Provider caregivers', () => {
         version: 1
       }
     ])
-    vi.mocked(fetchProviderMedia).mockResolvedValue([])
-    renderManager('/center-manager/caregivers/caregiver-1')
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Upload certificate file' }))
-    await waitFor(() => expect(fetchProviderMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1'))
-    expect(screen.getAllByLabelText('Upload files')).toHaveLength(2)
-  })
-
-  it('creates and uploads a certificate in one form', async () => {
-    vi.mocked(fetchCaregiver).mockResolvedValue(person)
-    vi.mocked(fetchCertificates).mockResolvedValue([])
-    vi.mocked(createCertificate).mockResolvedValue({
-      id: 'certificate-1',
-      caregiverId: 'caregiver-1',
-      certificateName: 'First aid',
-      issuedBy: 'Red Cross',
-      verificationStatus: 'PENDING',
-      version: 1
-    })
-    vi.mocked(uploadMedia).mockResolvedValue([])
-    vi.mocked(fetchProviderMedia).mockResolvedValue([])
-    renderManager('/center-manager/caregivers/caregiver-1')
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Add certificate' }))
-    const file = new File(['sample'], 'first-aid.png', { type: 'image/png' })
-    fireEvent.change(screen.getByLabelText('Certificate image or PDF'), { target: { files: [file] } })
-    fireEvent.change(screen.getByLabelText('Certificate name'), { target: { value: 'First aid' } })
-    fireEvent.change(screen.getByLabelText('Issued by'), { target: { value: 'Red Cross' } })
-    fireEvent.submit(screen.getByRole('button', { name: 'Save and upload certificate' }).closest('form')!)
-
-    await waitFor(() =>
-      expect(createCertificate).toHaveBeenCalledWith(
-        'caregiver-1',
-        expect.objectContaining({
-          certificateName: 'First aid',
-          issuedBy: 'Red Cross'
-        })
-      )
+    vi.mocked(fetchProviderMedia).mockImplementation(async (ownerType) =>
+      ownerType === 'CAREGIVER_PROFILE'
+        ? [{ mediaFileId: 'avatar-1', mediaFileType: 'IMAGE', downloadUrl: '/avatar.jpg' }]
+        : [
+            {
+              mediaFileId: 'file-1',
+              mediaFileType: 'DOCUMENT',
+              originalFileName: 'first-aid.pdf',
+              downloadUrl: '/first-aid.pdf'
+            }
+          ]
     )
-    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [file]))
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    expect(await screen.findByRole('img', { name: 'Lan Nguyen' })).toHaveAttribute('src', '/avatar.jpg')
+    await waitFor(() => expect(fetchProviderMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1'))
+    expect(await screen.findByRole('link', { name: /first-aid.pdf/ })).toHaveAttribute('href', '/first-aid.pdf')
+    expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add certificate' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Upload certificate file' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Upload files')).not.toBeInTheDocument()
+    expect(createCertificate).not.toHaveBeenCalled()
+    expect(uploadMedia).not.toHaveBeenCalled()
   })
 
   it('blocks a manager without an assigned center before requesting Provider data', () => {

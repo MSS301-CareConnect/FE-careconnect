@@ -32,9 +32,7 @@ export function AdminQualityPage() {
   const filtered = qualityPreview.filter((record) => {
     const matchesSearch =
       !search ||
-      [record.name, record.id, record.center, record.license].some((value) =>
-        value.toLocaleLowerCase(locale).includes(search)
-      )
+      [record.name, record.center, record.license].some((value) => value.toLocaleLowerCase(locale).includes(search))
     return (
       matchesSearch &&
       (tab === 'all' || record.stage === tab) &&
@@ -55,7 +53,7 @@ export function AdminQualityPage() {
         t(`${key}.columns.status`)
       ],
       ...filtered.map((record) => [
-        record.id + ' ' + record.name,
+        record.name,
         record.center,
         record.license,
         record.clinicalScore,
@@ -235,9 +233,7 @@ export function AdminQualityPage() {
                     >
                       {record.name}
                     </button>
-                    <small className='mt-1 block text-outline'>
-                      {record.id} · {t(`${key}.age`, { count: record.age })}
-                    </small>
+                    <small className='mt-1 block text-outline'>{t(`${key}.age`, { count: record.age })}</small>
                     <small className='mt-1 block text-outline'>{t(`${key}.specialties.${record.specialty}`)}</small>
                   </td>
                   <td className='px-4 py-4'>
@@ -339,9 +335,7 @@ export function AdminQualityPage() {
             <div className='flex items-start justify-between gap-4'>
               <div>
                 <h2 className='text-xl font-bold'>{t(`${key}.previewTitle`)}</h2>
-                <p className='mt-1 text-sm text-outline'>
-                  {selected.name} · {selected.id}
-                </p>
+                <p className='mt-1 text-sm text-outline'>{selected.name}</p>
               </div>
               <button
                 aria-label={t(`${key}.close`)}
