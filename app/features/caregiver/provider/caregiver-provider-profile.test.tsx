@@ -10,6 +10,7 @@ import {
   fetchMyCaregiverProfile,
   fetchProviderMedia,
   fetchTimeOffs,
+  removeMedia,
   uploadMedia
 } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -24,6 +25,7 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchCertificates: vi.fn(),
   fetchMyCaregiverProfile: vi.fn(),
   fetchProviderMedia: vi.fn(),
+  removeMedia: vi.fn(),
   uploadMedia: vi.fn()
 }))
 
@@ -32,6 +34,7 @@ beforeEach(async () => {
   vi.mocked(fetchCertificates).mockReset()
   vi.mocked(fetchMyCaregiverProfile).mockReset()
   vi.mocked(fetchProviderMedia).mockReset()
+  vi.mocked(removeMedia).mockReset()
   vi.mocked(uploadMedia).mockReset()
   vi.mocked(fetchCaregiverServices).mockReset().mockResolvedValue([])
   vi.mocked(fetchTimeOffs).mockReset().mockResolvedValue([])
@@ -123,8 +126,10 @@ describe('Caregiver certificate upload entry', () => {
     )
 
     expect(await screen.findByText('Lan Nguyen')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Manage profile photos' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Change profile photo' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Caregiver profile photos' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Certificate image or PDF')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Add certificate' }))
     const file = new File(['sample'], 'first-aid.pdf', { type: 'application/pdf' })
     fireEvent.change(screen.getByLabelText('Certificate image or PDF'), { target: { files: [file] } })
     fireEvent.change(screen.getByLabelText('Certificate name'), { target: { value: 'First aid' } })
@@ -139,6 +144,7 @@ describe('Caregiver certificate upload entry', () => {
     )
     await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [file]))
     expect(await screen.findByRole('status')).toHaveTextContent('Certificate saved and uploaded.')
+    expect(screen.queryByLabelText('Certificate image or PDF')).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Certificate files' })).not.toBeInTheDocument()
   })
 
@@ -171,6 +177,7 @@ describe('Caregiver certificate upload entry', () => {
     )
 
     expect(await screen.findByText('Lan Nguyen')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Add certificate' }))
     const file = new File(['sample'], 'first-aid.pdf', { type: 'application/pdf' })
     fireEvent.change(screen.getByLabelText('Certificate image or PDF'), { target: { files: [file] } })
     fireEvent.change(screen.getByLabelText('Certificate name'), { target: { value: 'First aid' } })
@@ -184,6 +191,48 @@ describe('Caregiver certificate upload entry', () => {
 })
 
 describe('Caregiver profile', () => {
+  it('opens the file picker and replaces the avatar without showing a media form', async () => {
+    vi.mocked(fetchMyCaregiverProfile).mockResolvedValue({
+      id: 'caregiver-1',
+      centerId: 'center-1',
+      fullName: 'Lan Nguyen',
+      caregiverStatus: 'ACTIVE',
+      verificationStatus: 'VERIFIED',
+      version: 1
+    })
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(fetchProviderMedia)
+      .mockResolvedValueOnce([{ mediaFileId: 'old-photo', mediaFileType: 'IMAGE', downloadUrl: '/old.jpg' }])
+      .mockResolvedValueOnce([{ mediaFileId: 'new-photo', mediaFileType: 'IMAGE', downloadUrl: '/new.jpg' }])
+    vi.mocked(uploadMedia).mockResolvedValue([])
+    vi.mocked(removeMedia).mockResolvedValue(undefined)
+
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter>
+          <CaregiverProviderProfilePage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    const button = await screen.findByRole('button', { name: 'Change profile photo' })
+    await waitFor(() => expect(button).toBeEnabled())
+    const input = screen.getByLabelText('Change profile photo') as HTMLInputElement
+    const openPicker = vi.spyOn(input, 'click')
+    fireEvent.click(button)
+    expect(openPicker).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('heading', { name: 'Caregiver profile photos' })).not.toBeInTheDocument()
+
+    const file = new File(['image'], 'avatar.png', { type: 'image/png' })
+    fireEvent.change(input, { target: { files: [file] } })
+    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CAREGIVER_PROFILE', 'caregiver-1', [file]))
+    await waitFor(() => expect(removeMedia).toHaveBeenCalledWith('CAREGIVER_PROFILE', 'caregiver-1', 'old-photo'))
+    expect(vi.mocked(uploadMedia).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(removeMedia).mock.invocationCallOrder[0]
+    )
+    expect(await screen.findByAltText('Profile photo of Lan Nguyen')).toHaveAttribute('src', '/new.jpg')
+  })
+
   it('shows the services the center assigned and the caregiver time off, without internal IDs', async () => {
     vi.mocked(fetchMyCaregiverProfile).mockResolvedValue({
       id: 'caregiver-1',
