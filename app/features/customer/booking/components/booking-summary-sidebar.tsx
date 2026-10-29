@@ -142,7 +142,7 @@ export function BookingSummarySidebar({ form }: { form: Form }) {
 
       <button
         className='group inline-flex min-h-13 items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-[transform,background-color] duration-300 hover:bg-primary-container active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:bg-outline disabled:active:scale-100'
-        disabled={!form.request || !quote.isSuccess || create.isPending}
+        disabled={!form.request || !quote.isSuccess || create.isPending || form.hasDebt}
         onClick={form.submit}
         type='button'
       >

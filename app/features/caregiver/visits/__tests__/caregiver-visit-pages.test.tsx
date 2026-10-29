@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -99,6 +99,21 @@ describe('Caregiver assigned visits', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Chỉ check-in được từ 30 phút trước')
     // The visit has not started, so a no-show cannot be reported yet.
     expect(screen.queryByRole('button', { name: 'Báo khách vắng mặt' })).not.toBeInTheDocument()
+  })
+
+  it('keeps check-in closed outside 30 minutes either side of the start (D22)', async () => {
+    const early = new Date(Date.now() + 2 * 3_600_000).toISOString()
+    vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, startAt: early })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
+    cleanup()
+
+    const late = new Date(Date.now() - 3_600_000).toISOString()
+    vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED', startAt: late })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
+    expect(screen.getByText(/Đã hết giờ bắt đầu ca/)).toBeInTheDocument()
+    expect(checkIn).not.toHaveBeenCalled()
   })
 
   it('works through the checklist and checks out once nothing is pending', async () => {

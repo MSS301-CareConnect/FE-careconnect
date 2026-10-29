@@ -16,6 +16,8 @@ import {
   listCenterCaregivers,
   listPendingVerificationProviderCaregivers,
   listProviderCaregiverTimeOffs,
+  listProviderCaregiverServices,
+  replaceProviderCaregiverServices,
   createProviderCaregiverTimeOff,
   deleteProviderCaregiverTimeOff,
   setProviderCaregiverStatus,
@@ -105,6 +107,7 @@ export const providerKeys = {
   caregiver: (id: string) => ['provider', 'caregiver', id] as const,
   pendingCaregivers: (page: number) => ['provider', 'pending-caregivers', page] as const,
   timeOffs: (caregiverId: string) => ['provider', 'time-offs', caregiverId] as const,
+  caregiverServices: (caregiverId: string) => ['provider', 'caregiver-services', caregiverId] as const,
   publicCaregiver: (id: string) => ['provider', 'public-caregiver', id] as const,
   serviceCaregivers: (params: SearchProviderCaregiversParams) => ['provider', 'service-caregivers', params] as const,
   certificates: (id: string) => ['provider', 'certificates', id] as const,
@@ -166,6 +169,14 @@ export async function saveCaregiver(id: string, request: CaregiverUpdateRequest)
 /** Status changes go through their own PATCH; the profile PUT has no status field (M-12). */
 export async function changeCaregiverStatus(id: string, request: CaregiverStatusRequest) {
   return result(await setProviderCaregiverStatus(id, request, await writeOptions()))
+}
+/** Care services the center assigned to a caregiver (PRV-01); the booking skill check reads the same list. */
+export async function fetchCaregiverServices(caregiverId: string) {
+  return result(await listProviderCaregiverServices(caregiverId, readOptions))
+}
+/** Replaces every service assigned to a caregiver; ProviderService checks each belongs to the same center. */
+export async function saveCaregiverServices(caregiverId: string, centerServiceIds: string[]) {
+  return result(await replaceProviderCaregiverServices(caregiverId, { centerServiceIds }, await writeOptions()))
 }
 export async function fetchTimeOffs(caregiverId: string, params: ListProviderCaregiverTimeOffsParams = {}) {
   return result(await listProviderCaregiverTimeOffs(caregiverId, params, readOptions))

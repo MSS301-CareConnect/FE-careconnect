@@ -8,7 +8,7 @@ import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
-import type { BookingStatus } from '~/shared/api/generated/contracts'
+import type { BookingStatus, OccurrenceStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { SectionCard } from '~/shared/ui/section-card'
@@ -19,6 +19,8 @@ import { BookingAftercare } from './components/booking-aftercare'
 import { BookingStatusPanel } from './components/booking-status-panel'
 
 const CANCELLABLE: readonly BookingStatus[] = ['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS']
+// Visits that have taken place: reports and complaints apply only after one of these.
+const VISITED: ReadonlySet<OccurrenceStatus> = new Set(['IN_PROGRESS', 'COMPLETED', 'MISSED'])
 
 export function CustomerBookingDetailPage({ id }: { id: string }) {
   const { t } = useTranslation()
@@ -47,7 +49,10 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
         <p className='mt-2 text-sm text-on-surface-variant'>
           {missing ? t('customer.bookingDetail.notFound.description') : t(bookingErrorKey(booking.error))}
         </p>
-        <Link className='mt-6 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white' to='/customer/bookings'>
+        <Link
+          className='mt-6 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-on-primary'
+          to='/customer/bookings'
+        >
           {t('customer.bookingDetail.back')}
         </Link>
       </div>
@@ -88,7 +93,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
           <div className='flex flex-wrap gap-2'>
             {CANCELLABLE.includes(data.status) ? (
               <button
-                className='inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-error shadow-sm hover:bg-error-container/30'
+                className='inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm font-semibold text-error shadow-sm hover:bg-error-container/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error'
                 onClick={() => setCancelling(true)}
                 type='button'
               >
@@ -115,7 +120,11 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
             <SectionCard icon='history' title={t('customer.bookingDetail.history')}>
               <BookingHistoryList bookingId={data.id} />
             </SectionCard>
-            <BookingAftercare bookingId={data.id} completed={data.status === 'COMPLETED'} />
+            <BookingAftercare
+              bookingId={data.id}
+              completed={data.status === 'COMPLETED'}
+              visited={(data.occurrences ?? []).some((visit) => VISITED.has(visit.status))}
+            />
           </div>
           <BookingDetailSummary booking={data} />
         </div>

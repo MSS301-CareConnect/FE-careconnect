@@ -87,8 +87,9 @@ export function CustomerServiceDetailPage() {
                   {service.catalogItem.description || t(`${key}.aboutEmpty`)}
                 </p>
                 {service.description ? (
-                  <div className='mt-5 rounded-xl border-l-4 border-primary bg-surface-container-low px-5 py-4'>
-                    <p className='text-xs font-bold uppercase tracking-[0.1em] text-on-surface-variant'>
+                  <div className='mt-5 rounded-xl border border-outline-variant/60 bg-surface-container-low px-5 py-4'>
+                    <p className='flex items-center gap-1.5 text-sm font-semibold text-primary'>
+                      <Icon className='text-lg' name='home_health' />
                       {t(`${key}.centerNote`)}
                     </p>
                     <p className='mt-1 leading-7 text-on-surface'>{service.description}</p>

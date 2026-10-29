@@ -30,6 +30,8 @@ export const aftercareVi = {
     draftHint: 'Lưu nháp bao nhiêu lần cũng được; nộp rồi thì không sửa được nữa. Khách chỉ thấy báo cáo đã nộp.',
     submitted: 'Báo cáo đã nộp.',
     condition: 'Tình trạng chung',
+    conditionPick: 'Chọn tình trạng',
+    due: 'Nộp trong 24 giờ sau khi kết thúc ca. Quá hạn, trung tâm sẽ được báo và báo cáo bị đánh dấu trễ.',
     summary: 'Tóm tắt buổi chăm sóc',
     recommendations: 'Khuyến nghị',
     saveDraft: 'Lưu nháp',
@@ -41,7 +43,8 @@ export const aftercareVi = {
     stars: '{{count}} sao',
     comment: 'Nhận xét',
     submit: 'Gửi đánh giá',
-    thanks: 'Cảm ơn bạn đã đánh giá.'
+    thanks: 'Cảm ơn bạn đã đánh giá.',
+    pick: 'Chọn số sao trước khi gửi.'
   },
   complaint: {
     title: 'Khiếu nại',
@@ -56,7 +59,8 @@ export const aftercareVi = {
     escalate: 'Chuyển admin xử lý',
     escalateHint: 'Trung tâm chưa xử lý sau 48 giờ thì bạn chuyển được cho admin.',
     windowHint: 'Chỉ khiếu nại được buổi đã diễn ra, trong 7 ngày sau khi buổi kết thúc.',
-    withdraw: 'Rút khiếu nại'
+    withdraw: 'Rút khiếu nại',
+    withdrawConfirm: 'Khiếu nại đã rút sẽ không được xử lý tiếp và không mở lại được.'
   },
   queue: {
     managerTitle: 'Khiếu nại của trung tâm',
@@ -115,6 +119,8 @@ export const aftercareEn = {
       'Save drafts as often as you like; a submitted report cannot be edited. Customers see submitted reports only.',
     submitted: 'Report submitted.',
     condition: 'Overall condition',
+    conditionPick: 'Choose a condition',
+    due: 'Submit within 24 hours of checking out. After that the center is notified and the report is marked late.',
     summary: 'Session summary',
     recommendations: 'Recommendations',
     saveDraft: 'Save draft',
@@ -126,7 +132,8 @@ export const aftercareEn = {
     stars: '{{count}} stars',
     comment: 'Comment',
     submit: 'Send review',
-    thanks: 'Thank you for your review.'
+    thanks: 'Thank you for your review.',
+    pick: 'Choose a rating before sending.'
   },
   complaint: {
     title: 'Complaints',
@@ -141,7 +148,8 @@ export const aftercareEn = {
     escalate: 'Escalate to admin',
     escalateHint: 'If the center has not handled it within 48 hours, you can escalate it to an admin.',
     windowHint: 'You can complain about a visit that has taken place, up to 7 days after it ends.',
-    withdraw: 'Withdraw complaint'
+    withdraw: 'Withdraw complaint',
+    withdrawConfirm: 'A withdrawn complaint is no longer handled and cannot be reopened.'
   },
   queue: {
     managerTitle: 'Center complaints',

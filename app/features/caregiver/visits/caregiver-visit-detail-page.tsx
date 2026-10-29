@@ -75,14 +75,6 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
         ) : null}
       </header>
 
-      {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
-      {data.sessionId ? (
-        <div className='grid items-start gap-6 lg:grid-cols-2'>
-          <SessionNotesCard canWrite sessionId={data.sessionId} />
-          <CareReportForm bookingId={data.bookingId} sessionId={data.sessionId} />
-        </div>
-      ) : null}
-
       <div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]'>
         {data.recipientSnapshot ? (
           <SectionCard icon='personal_injury' title={t('caregiver.visitDetail.patient')}>
@@ -132,6 +124,14 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
           ) : null}
         </aside>
       </div>
+
+      {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
+      {data.sessionId ? (
+        <div className='grid items-start gap-6 lg:grid-cols-2'>
+          <SessionNotesCard canWrite sessionId={data.sessionId} />
+          <CareReportForm bookingId={data.bookingId} sessionId={data.sessionId} />
+        </div>
+      ) : null}
     </div>
   )
 }

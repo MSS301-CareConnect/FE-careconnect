@@ -39,7 +39,8 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   changeCaregiverStatus: vi.fn(),
   verifyCertificateByCenter: vi.fn(),
   fetchTimeOffs: vi.fn(),
-  createTimeOff: vi.fn()
+  createTimeOff: vi.fn(),
+  fetchCaregiverServices: vi.fn().mockResolvedValue([])
 }))
 
 const person: ProviderCaregiverRecord = {

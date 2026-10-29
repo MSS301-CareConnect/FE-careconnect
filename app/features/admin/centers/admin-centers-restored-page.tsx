@@ -311,7 +311,7 @@ export function AdminCentersPage() {
         {centers.isSuccess ? (
           <div className='flex items-center justify-between border-t border-outline-variant/25 px-5 py-3 text-sm'>
             <button
-              className='text-primary disabled:opacity-40'
+              className='min-h-11 px-3 text-primary disabled:opacity-40'
               disabled={page === 0}
               onClick={() => update('page', String(page - 1))}
               type='button'
@@ -320,7 +320,7 @@ export function AdminCentersPage() {
             </button>
             <span>{t(`${key}.page`, { page: page + 1, pages: Math.max(1, centers.data.totalPages) })}</span>
             <button
-              className='text-primary disabled:opacity-40'
+              className='min-h-11 px-3 text-primary disabled:opacity-40'
               disabled={page + 1 >= centers.data.totalPages}
               onClick={() => update('page', String(page + 1))}
               type='button'

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { useServiceCenters, type ServiceCenterOption } from '~/entities/care-center/care-center-api'
+import { formatMoney } from '~/entities/booking/booking-format'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import { apiErrorStatus } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
@@ -23,7 +24,7 @@ type CenterOptionsProps = {
 
 /** The selectable centers with the platform-wide option, shared by the header menu and the first-visit dialog. */
 export function CenterOptions({ onPick, size }: CenterOptionsProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const searchId = useId()
   const { center: selected } = useSelectedCenter()
   const centers = useServiceCenters()
@@ -56,9 +57,16 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
               {center?.name ?? t(`${key}.general.name`)}
             </span>
             {center ? (
-              center.address ? (
-                <span className='block truncate text-xs leading-5 text-on-surface-variant'>{center.address}</span>
-              ) : null
+              <>
+                {center.address ? (
+                  <span
+                    className={`block text-xs leading-5 text-on-surface-variant ${isDialog ? 'line-clamp-2' : 'truncate'}`}
+                  >
+                    {center.address}
+                  </span>
+                ) : null}
+                {isDialog ? <CenterFacts center={center} language={i18n.language} /> : null}
+              </>
             ) : (
               <span className='block text-xs leading-5 text-on-surface-variant'>{t(`${key}.general.description`)}</span>
             )}
@@ -157,5 +165,31 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
       </ul>
       <ul className={`mt-2 bg-surface-container-low ${isDialog ? 'rounded-xl' : 'rounded-lg'}`}>{option(null)}</ul>
     </div>
+  )
+}
+
+/** Hours, phone, starting price and service count, so a family can compare centers before choosing one. */
+function CenterFacts({ center, language }: { center: ServiceCenterOption; language: string }) {
+  const { t } = useTranslation()
+  const facts = [
+    center.operatingHours ? (['schedule', center.operatingHours] as const) : null,
+    center.phoneNumber ? (['call', center.phoneNumber] as const) : null,
+    center.minPrice !== undefined
+      ? (['payments', t(`${key}.facts.fromPrice`, { price: formatMoney(center.minPrice, language) })] as const)
+      : null,
+    center.serviceCount
+      ? (['medical_services', t(`${key}.facts.services`, { count: center.serviceCount })] as const)
+      : null
+  ].filter((fact) => fact !== null)
+  if (facts.length === 0) return null
+  return (
+    <span className='mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-on-surface-variant'>
+      {facts.map(([icon, text]) => (
+        <span className='inline-flex items-center gap-1 tabular-nums' key={icon}>
+          <Icon aria-hidden='true' className='text-sm text-primary' name={icon} />
+          {text}
+        </span>
+      ))}
+    </span>
   )
 }

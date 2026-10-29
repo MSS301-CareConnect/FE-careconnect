@@ -2,16 +2,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { createTimeOff, fetchTimeOffs, providerKeys, removeTimeOff } from '~/entities/provider/provider-api'
+import { createTimeOff, fetchTimeOffs, providerKeys, removeTimeOff } from './provider-api'
 
-const key = 'centerManager.provider.timeOff' as const
+type TimeOffCopy = 'centerManager.provider.timeOff' | 'caregiver.provider.timeOff'
 const inputClass = 'mt-1 rounded-lg border border-outline-variant px-3 py-2 text-sm'
 
 /**
- * M-12: the caregiver's time off. ProviderService rejects time off over a visit already booked and the availability
- * search (M-16) skips caregivers who are off.
+ * M-12: the caregiver's time off, kept by the center manager or the caregiver. ProviderService rejects time off over a
+ * visit already booked and the availability search (M-16) skips caregivers who are off.
  */
-export function CaregiverTimeOffs({ caregiverId }: { caregiverId: string }) {
+export function CaregiverTimeOffs({ caregiverId, copy }: { caregiverId: string; copy: TimeOffCopy }) {
+  const key = copy
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [startAt, setStartAt] = useState('')

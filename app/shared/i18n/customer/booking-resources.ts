@@ -86,6 +86,10 @@ export const bookingEn = {
     submit: 'Send booking request',
     submitting: 'Sending…',
     nextSteps: 'Nothing is charged now. After the center accepts, pay the deposit before the due time to confirm.'
+  },
+  debt: {
+    message: 'You have an overdue invoice. New bookings open again once it is paid.',
+    pay: 'Pay the invoice'
   }
 }
 
@@ -176,5 +180,9 @@ export const bookingVi = {
     submit: 'Gửi yêu cầu đặt lịch',
     submitting: 'Đang gửi…',
     nextSteps: 'Chưa thu tiền lúc này. Sau khi trung tâm duyệt, hãy đặt cọc trước hạn để xác nhận lịch.'
+  },
+  debt: {
+    message: 'Bạn có hóa đơn quá hạn. Thanh toán xong mới đặt lịch mới được.',
+    pay: 'Thanh toán hóa đơn'
   }
 }

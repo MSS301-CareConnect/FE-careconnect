@@ -41,6 +41,29 @@ export const managerProviderVi = {
   verified: 'Đã xác minh',
   rejected: 'Bị từ chối',
   centerVerified: 'Đã xác nhận, chờ admin duyệt',
+  services: {
+    title: 'Dịch vụ đảm nhận',
+    hint: 'Khách chỉ đặt được người chăm sóc cho các dịch vụ được gán ở đây. Một lịch đặt cần người chăm sóc có đủ mọi dịch vụ khách chọn.',
+    loading: 'Đang tải dịch vụ…',
+    error: 'Không tải được dịch vụ của người chăm sóc.',
+    empty: 'Chưa gán dịch vụ nào nên khách chưa đặt được người chăm sóc này.',
+    edit: 'Sửa dịch vụ',
+    choose: 'Chọn dịch vụ đang cung cấp của trung tâm',
+    loadingOptions: 'Đang tải danh mục dịch vụ của trung tâm…',
+    optionsError: 'Không tải được danh mục dịch vụ của trung tâm.',
+    noOptions: 'Trung tâm chưa có dịch vụ nào đang cung cấp. Thêm dịch vụ ở mục Dịch vụ & bảng giá trước.',
+    selected: 'Đã chọn {{count, number}} dịch vụ',
+    save: 'Lưu dịch vụ',
+    saving: 'Đang lưu…',
+    cancel: 'Hủy',
+    errors: {
+      notInCenter: 'Có dịch vụ không thuộc trung tâm của người chăm sóc này.',
+      notActive: 'Có dịch vụ vừa ngừng cung cấp. Tải lại trang rồi chọn lại.',
+      tooMany: 'Mỗi người chăm sóc được gán tối đa 50 dịch vụ.',
+      catalogDown: 'Danh mục dịch vụ đang tạm gián đoạn, vui lòng thử lại sau ít phút.',
+      generic: 'Không lưu được dịch vụ, vui lòng thử lại.'
+    }
+  },
   timeOff: {
     title: 'Ngày nghỉ',
     loading: 'Đang tải ngày nghỉ…',
@@ -189,6 +212,29 @@ export const managerProviderEn = {
   verified: 'Verified',
   rejected: 'Rejected',
   centerVerified: 'Confirmed, waiting for admin',
+  services: {
+    title: 'Services provided',
+    hint: 'Customers can only book this caregiver for the services assigned here. A booking needs a caregiver who covers every service the customer chose.',
+    loading: 'Loading services…',
+    error: 'Unable to load this caregiver’s services.',
+    empty: 'No services assigned yet, so customers cannot book this caregiver.',
+    edit: 'Edit services',
+    choose: 'Choose from the services the center offers',
+    loadingOptions: 'Loading the center’s services…',
+    optionsError: 'Unable to load the center’s services.',
+    noOptions: 'The center offers no services yet. Add them under Services & pricing first.',
+    selected: '{{count, number}} services selected',
+    save: 'Save services',
+    saving: 'Saving…',
+    cancel: 'Cancel',
+    errors: {
+      notInCenter: 'A service does not belong to this caregiver’s center.',
+      notActive: 'A service was just withdrawn. Reload the page and choose again.',
+      tooMany: 'A caregiver can have at most 50 services.',
+      catalogDown: 'The service catalog is briefly unavailable. Please try again in a few minutes.',
+      generic: 'Unable to save the services. Please try again.'
+    }
+  },
   timeOff: {
     title: 'Time off',
     loading: 'Loading time off…',

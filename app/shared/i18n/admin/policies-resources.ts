@@ -5,10 +5,7 @@ export const adminPoliciesVi = {
   version: 'Bản minh họa v3.2 · 01/10/2025',
   intro: 'Xem trước tỷ lệ đặt cọc, quy tắc hoàn tiền, phân bổ doanh thu và chu kỳ đối soát.',
   sample: 'Chỉ là cấu hình minh họa; chưa phải chính sách đang áp dụng.',
-  history: 'Lịch sử phiên bản',
   simulate: 'Mô phỏng tính toán',
-  save: 'Lưu thay đổi chính sách',
-  unavailable: 'Chức năng này sắp ra mắt và cần được phê duyệt trước khi áp dụng.',
   tabs: {
     deposit: 'Đặt cọc & hoàn tiền',
     commission: 'Hoa hồng & dòng tiền',
@@ -34,7 +31,6 @@ export const adminPoliciesVi = {
     'Quy trình giữ và giải ngân tiền cọc cần được xác nhận bằng hợp đồng và quy định thanh toán chính thức trước khi áp dụng.',
   refundTitle: 'Ma trận hoàn tiền khi hủy ca',
   refundHint: 'Các mức hoàn tiền dưới đây chỉ mang tính minh họa.',
-  autoRefund: 'Tự động hoàn tiền',
   refundSteps: {
     early: 'Trước hơn 24 giờ',
     standard: 'Từ 12 đến 24 giờ',
@@ -88,10 +84,7 @@ export const adminPoliciesEn = {
   version: 'Sample v3.2 · October 1, 2025',
   intro: 'Preview deposit rates, refund rules, revenue allocation and payout cycles.',
   sample: 'Illustrative settings only; these are not active platform policies.',
-  history: 'Version history',
   simulate: 'Run calculation preview',
-  save: 'Save policy changes',
-  unavailable: 'Coming soon; changes must be approved before they apply.',
   tabs: {
     deposit: 'Deposits & refunds',
     commission: 'Commission & cash flow',
@@ -116,7 +109,6 @@ export const adminPoliciesEn = {
   escrowHint: 'Deposit holding and payouts must be confirmed by contracts and official payment rules before use.',
   refundTitle: 'Cancellation refund matrix',
   refundHint: 'The refund percentages below are examples only.',
-  autoRefund: 'Automatic refunds',
   refundSteps: {
     early: 'More than 24 hours before',
     standard: '12 to 24 hours before',

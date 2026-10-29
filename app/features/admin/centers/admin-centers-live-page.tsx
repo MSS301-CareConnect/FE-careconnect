@@ -163,13 +163,13 @@ export function CenterForm({ center, onDone }: { center?: ProviderCenterRecord; 
       {mutation.isError ? <p role='alert'>{t(centerErrorKey(mutation.error, `${key}.saveError`))}</p> : null}
       <div className='flex gap-3'>
         <button
-          className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
+          className='min-h-11 rounded-lg bg-primary px-4 py-2 text-on-primary disabled:opacity-50'
           disabled={mutation.isPending}
           type='submit'
         >
           {t(`${key}.save`)}
         </button>
-        <button className='rounded-lg border px-4 py-2' onClick={onDone} type='button'>
+        <button className='min-h-11 rounded-lg border px-4 py-2' onClick={onDone} type='button'>
           {t(`${key}.cancel`)}
         </button>
       </div>
@@ -244,7 +244,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
             </p>
           ) : null}
         </div>
-        <button className='text-primary underline' onClick={onClose} type='button'>
+        <button className='min-h-11 px-2 text-primary underline' onClick={onClose} type='button'>
           {t(`${key}.close`)}
         </button>
       </div>
@@ -265,10 +265,13 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
         ))}
       </dl>
       <div className='flex flex-wrap gap-3'>
-        <button className='rounded-lg border px-3 py-2' onClick={() => setEditing(true)} type='button'>
+        <button className='min-h-11 rounded-lg border px-4 py-2' onClick={() => setEditing(true)} type='button'>
           {t(`${key}.editCenter`)}
         </button>
-        <Link className='rounded-lg border px-3 py-2' to={`/admin/centers/${id}/caregivers`}>
+        <Link
+          className='inline-flex min-h-11 items-center rounded-lg border px-4 py-2'
+          to={`/admin/centers/${id}/caregivers`}
+        >
           {t(`${key}.viewCaregivers`)}
         </Link>
       </div>
@@ -348,7 +351,7 @@ export function CenterDetails({ id, onClose }: { id: string; onClose: () => void
         <p className='border-t pt-4 text-sm text-on-surface-variant'>{t(`${key}.noTransitions`)}</p>
       )}
       <button
-        className='rounded-lg border border-error px-3 py-2 text-error disabled:opacity-50'
+        className='min-h-11 rounded-lg border border-error px-4 py-2 text-error disabled:opacity-50'
         disabled={archive.isPending}
         onClick={() => setConfirmArchive(true)}
         type='button'
@@ -472,7 +475,7 @@ export function AdminCentersPage() {
           )}
           <div className='flex items-center justify-between border-t p-4 text-sm'>
             <button
-              className='text-primary disabled:opacity-40'
+              className='min-h-11 px-3 text-primary disabled:opacity-40'
               disabled={page === 0}
               onClick={() => update('page', String(page - 1))}
               type='button'
@@ -481,7 +484,7 @@ export function AdminCentersPage() {
             </button>
             <span>{t(`${key}.page`, { page: page + 1, pages: Math.max(1, centers.data.totalPages) })}</span>
             <button
-              className='text-primary disabled:opacity-40'
+              className='min-h-11 px-3 text-primary disabled:opacity-40'
               disabled={page + 1 >= centers.data.totalPages}
               onClick={() => update('page', String(page + 1))}
               type='button'

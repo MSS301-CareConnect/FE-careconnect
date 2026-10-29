@@ -17,6 +17,7 @@ import {
   verifyCertificateByCenter
 } from '~/entities/provider/provider-api'
 import { formatProviderDate } from '~/entities/provider/provider-format'
+import { CaregiverTimeOffs } from '~/entities/provider/caregiver-time-offs'
 import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
@@ -25,7 +26,7 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
-import { CaregiverTimeOffs } from './components/caregiver-time-offs'
+import { CaregiverServicesEditor } from './components/caregiver-services-editor'
 
 const key = 'centerManager.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
@@ -661,11 +662,12 @@ export function ManagerCaregiverDetailPage() {
               {caregiver.data.bio || t(`${key}.unknown`)}
             </p>
           </section>
+          <CaregiverServicesEditor caregiverId={id} centerId={caregiver.data.centerId} />
           <ProviderMediaPanel ownerId={id} ownerType='CAREGIVER_PROFILE' />
         </div>
         <div className='lg:col-span-7'>
           <Certificates caregiverId={id} />
-          <CaregiverTimeOffs caregiverId={id} />
+          <CaregiverTimeOffs caregiverId={id} copy='centerManager.provider.timeOff' />
         </div>
       </div>
     </main>

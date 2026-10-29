@@ -7,6 +7,7 @@ import { bookingDay } from '~/entities/booking/booking-format'
 import { careCatalogKeys, fetchCenterOfferings } from '~/entities/care-catalog/care-catalog-api'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import { careRecipientKeys, fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
+import { fetchOutstandingDebt, paymentKeys } from '~/entities/payment/payment-api'
 import { fetchPublicCaregiver, providerKeys } from '~/entities/provider/provider-api'
 import type {
   BookingCreateRequest,
@@ -81,6 +82,8 @@ export function useBookingForm() {
   const [customerNote, setCustomerNote] = useState('')
   const idempotency = useRef<{ request: string; key: string } | null>(null)
 
+  // An overdue remaining-balance invoice blocks new bookings, so the form says so before the customer fills it in.
+  const debt = useQuery({ queryKey: paymentKeys.outstanding, queryFn: fetchOutstandingDebt, retry: false })
   const caregiver = useQuery({
     queryKey: providerKeys.publicCaregiver(caregiverParam),
     queryFn: () => fetchPublicCaregiver(caregiverParam),
@@ -219,6 +222,7 @@ export function useBookingForm() {
     request,
     quote,
     create,
+    hasDebt: debt.data?.hasDebt === true,
     submit: () => {
       if (request) create.mutate({ ...request, customerNote: customerNote.trim() || undefined })
     }

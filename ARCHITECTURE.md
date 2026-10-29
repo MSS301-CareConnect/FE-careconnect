@@ -283,11 +283,19 @@ on selection or Escape; the role guard remains at the parent route.
 
 The Caregiver portal uses its own role guarded shell and keeps only screens backed by the API (D25,
 2026-10-28): `/caregiver/visits` (the portal home) and `/caregiver/visits/:id` run assigned visits — acknowledge,
-check-in, tasks, no-show report and check-out; `/caregiver/schedule` lists availability slots, which a caregiver
-can only cancel with the backend version and a reason (starting and completing care happen on visits);
-`/caregiver/work-shifts` lists open shifts for the caregiver's center, registers for shifts, lists the caregiver's
-registrations, and cancels pending registrations; `/caregiver/profile` reads the ProviderService profile and manages
-its media. The former sample dashboard, history, shift-detail, active-session and care-report screens were removed;
+check-in, tasks, no-show report and check-out. The visit detail shows the patient snapshot before the actions, and
+check-in is enabled only from 30 minutes before to 30 minutes after the start (D22, re-evaluated every 30 seconds
+while the page is open); the care report states its 24-hour deadline (D27) and has no default condition; `/caregiver/schedule` ("Availability") lists availability slots,
+created when the center approves a shift registration (D11). It filters all / upcoming / past / cancelled slots, marks
+past slots and offers cancelling only an upcoming open slot, asking the reason in a confirmation dialog and sending the
+backend version (starting and completing care happen on visits). The Center Manager `/center-manager/schedules` page
+reuses `entities/provider/provider-schedule-page.tsx` read-only. `/caregiver/work-shifts`
+(`caregiver-work-shifts-page.tsx`) lists the center's open shifts that have not started, shows capacity and the
+registration deadline, marks shifts already registered or closed for registration, registers with an optional note per
+shift, and lists the caregiver's registrations with each shift's date read through `GET /work-shifts/{id}` (the
+registration carries only the shift ID). `/caregiver/profile` reads the ProviderService profile, its media, the
+services the center assigned (`GET /caregivers/{id}/services`, PRV-01) and the caregiver's own time off. Pages compare
+dates against a "now" fixed when they open because `react-hooks/purity` forbids `Date.now()` during render. The former sample dashboard, history, shift-detail, active-session and care-report screens were removed;
 care reports and notifications return when their live flows are built.
 
 ### Design system tokens and shared UI primitives
@@ -295,9 +303,8 @@ care reports and notifications return when their live flows are built.
 `app/app.css` defines the unified "Warm Botanical Clinical" design system tokens in
 Tailwind v4 `@theme` (`--color-primary`, `--color-surface*`, `--color-on-surface*`,
 `--color-outline*`, `--color-success*`, `--color-warning*`, `--color-error*`,
-`--color-info*`, `--shadow-card`, `--shadow-elevated`, `--shadow-modal`, and font
-families `Be Vietnam Pro` / `Manrope` / `JetBrains Mono`). Features and entities
-consume these semantic tokens instead of hardcoded hex colors or ad-hoc palette
+`--color-info*`, `--color-neutral*`, and `--font-sans` set to `Plus Jakarta Sans`; icons use Material
+Symbols). Features and entities consume these semantic tokens instead of hardcoded hex colors or ad-hoc palette
 classes.
 
 `app/shared/ui/` owns framework-and-domain-neutral UI primitives with `≥ 44px` touch
@@ -325,6 +332,11 @@ concurrency control. The UI checks the returned `centerId` before showing manage
 controls, and ProviderService enforces ownership and authorization. Admins review
 caregivers and certificates from `/admin/centers/:id/caregivers`. Provider operations
 use cookie credentials and fetch a fresh Identity CSRF token before mutations.
+The manager caregiver detail assigns the caregiver's services (`PUT /caregivers/{id}/services`, PRV-01) from the
+center's active offerings (`features/center-manager/caregivers/components/caregiver-services-editor.tsx`); booking
+accepts only a caregiver who covers every chosen service, so a caregiver without services is flagged as unbookable.
+Time off for a caregiver is shared by the manager detail and the caregiver profile through
+`entities/provider/caregiver-time-offs.tsx`, which takes the copy namespace of the portal that renders it.
 
 `/center-manager/work-shifts` lists and creates ProviderService work shifts for the
 assigned center. Its detail route edits or archives a shift and reviews registration
@@ -405,7 +417,12 @@ offerings and price plans. Surcharges, booking distribution and pricing policy r
 labeled design samples. `/admin/centers` now
 uses ProviderService for backend-paginated centers, detail, create, edit, status
 change, and archive. URL search parameters hold the keyword, status, page, and
-selected center. The Admin caregiver review route uses the selected center ID and
+selected center; a whole row opens the center and Escape closes it. The status form offers only the transitions
+ProviderService allows from the current status (PENDING → ACTIVE/REJECTED, ACTIVE → SUSPENDED/INACTIVE,
+SUSPENDED/INACTIVE → ACTIVE), requires a reason for REJECTED, SUSPENDED and INACTIVE, and warns that suspending locks the
+center's accounts and cancels its upcoming visits with a full refund. Archiving is permanent in ProviderService: the
+"Archived" filter sends `includeDeleted=true` and lists archived centers read-only, because their detail returns 404.
+Operating hours are edited as an opening and a closing time and stored in the existing text field as `HH:mm - HH:mm`. The Admin caregiver review route uses the selected center ID and
 ProviderService for caregiver and certificate verification. Certificates are reviewed in two steps: the center
 manager confirms a PENDING certificate on the caregiver detail (`CENTER_VERIFIED`), then the admin approves or
 rejects it (`ADMIN_VERIFIED` / `REJECTED`); both send `{ approved, reason, version }`. The admin center KPIs read
@@ -642,11 +659,22 @@ Contract update workflow:
   PaymentService `VNPAY_RETURN_URL` must point to `/customer/payments/vnpay-return`: that
   screen sends the signed query to `GET /payments/vnpay/return`, then opens
   `/customer/payments/:paymentId/success|failure`, which polls `GET /payments/{id}` while it is
-  PENDING because the IPN, not the browser return, records the money.
+  PENDING because the IPN, not the browser return, records the money. The page reads the payment status, not the
+  return route: PENDING shows "confirming" (never a success mark), polling stops after 60 seconds with a check-again
+  action and a link to the payments list, and a REMAINING payment is named as an invoice, not a deposit.
+- Before paying, the deposit page shows the assigned caregiver (`entities/provider/assigned-caregiver-card.tsx`, public
+  caregiver profile) and the refund tiers and cooling-off of `GET /payment-policies/effective`
+  (`entities/payment/refund-policy.tsx`). The cancel dialog reads PaymentService refund-quote rule codes
+  (`TIER_<min>_<max>`, `COOLING_OFF`, `FULL_REFUND_*`) as words through `refundRuleLabel`; codes are never shown.
 - BookingService leaves `depositAmount` empty: PaymentService computes the deposit per visit
   from the center's policy snapshot. `useDepositAmount` shows the booking total times the
   `depositPercent` of `GET /payment-policies/effective` as an estimate; the VNPay page shows
   the exact amount of the opened session.
+- The booking form reads `GET /payments/me/outstanding` and, while an overdue invoice exists, shows a banner linking to
+  `/customer/payments` and disables submit, so the customer learns about the block before filling the form.
+- Booking aftercare (`booking-aftercare.tsx`) shows care reports and the new-complaint action only once a visit has
+  taken place; the review has no preset rating; each complaint keeps its own escalation reason and error, and
+  withdrawing asks for confirmation.
 - `/customer/payments` (account menu "Payments & refunds") lists remaining-balance invoices
   with a VNPay pay action (`POST /remaining-invoices/{id}/payments`), warns when an OVERDUE
   invoice blocks new bookings (`GET /payments/me/outstanding`), and shows the customer's

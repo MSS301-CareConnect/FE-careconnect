@@ -5,9 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   createCertificate,
+  fetchCaregiverServices,
   fetchCertificates,
   fetchMyCaregiverProfile,
   fetchProviderMedia,
+  fetchTimeOffs,
   uploadMedia
 } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -17,6 +19,8 @@ import { CaregiverProviderProfilePage } from './caregiver-provider-pages'
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
   createCertificate: vi.fn(),
+  fetchCaregiverServices: vi.fn(),
+  fetchTimeOffs: vi.fn(),
   fetchCertificates: vi.fn(),
   fetchMyCaregiverProfile: vi.fn(),
   fetchProviderMedia: vi.fn(),
@@ -29,6 +33,8 @@ beforeEach(async () => {
   vi.mocked(fetchMyCaregiverProfile).mockReset()
   vi.mocked(fetchProviderMedia).mockReset()
   vi.mocked(uploadMedia).mockReset()
+  vi.mocked(fetchCaregiverServices).mockReset().mockResolvedValue([])
+  vi.mocked(fetchTimeOffs).mockReset().mockResolvedValue([])
   await setAppLanguage('en', false)
 })
 
@@ -174,5 +180,58 @@ describe('Caregiver certificate upload entry', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'Retry file upload' }).closest('form')!)
     await waitFor(() => expect(uploadMedia).toHaveBeenCalledTimes(2))
     expect(createCertificate).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('Caregiver profile', () => {
+  it('shows the services the center assigned and the caregiver time off, without internal IDs', async () => {
+    vi.mocked(fetchMyCaregiverProfile).mockResolvedValue({
+      id: 'caregiver-1',
+      centerId: 'center-1',
+      centerName: 'Care One',
+      fullName: 'Lan Nguyen',
+      caregiverStatus: 'ACTIVE',
+      verificationStatus: 'VERIFIED',
+      version: 1
+    })
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
+    vi.mocked(fetchCaregiverServices).mockResolvedValue([
+      { centerServiceId: 'cs-1', careServiceId: 'svc-1', serviceName: 'Hỗ trợ ăn uống' }
+    ])
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter>
+          <CaregiverProviderProfilePage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(await screen.findByText('Hỗ trợ ăn uống')).toBeInTheDocument()
+    expect(fetchCaregiverServices).toHaveBeenCalledWith('caregiver-1')
+    expect(await screen.findByRole('heading', { name: 'Time off' })).toBeInTheDocument()
+    expect(fetchTimeOffs).toHaveBeenCalledWith('caregiver-1', expect.anything())
+    expect(screen.queryByText('#caregiver-1')).not.toBeInTheDocument()
+  })
+
+  it('warns that customers cannot book a caregiver without assigned services', async () => {
+    vi.mocked(fetchMyCaregiverProfile).mockResolvedValue({
+      id: 'caregiver-1',
+      centerId: 'center-1',
+      fullName: 'Lan Nguyen',
+      caregiverStatus: 'ACTIVE',
+      verificationStatus: 'VERIFIED',
+      version: 1
+    })
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter>
+          <CaregiverProviderProfilePage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+    expect(await screen.findByText(/customers cannot book you/)).toBeInTheDocument()
   })
 })

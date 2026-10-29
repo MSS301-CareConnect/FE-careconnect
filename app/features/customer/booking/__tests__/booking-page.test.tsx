@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchBookingQuote, placeBooking } from '~/entities/booking/booking-api'
 import { fetchCenterOfferings, fetchPricePlans } from '~/entities/care-catalog/care-catalog-api'
 import { fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
+import { fetchOutstandingDebt } from '~/entities/payment/payment-api'
 import { selectCenter } from '~/entities/care-center/selected-center'
 import { fetchCaregiverCatalog, fetchPublicCaregiver, fetchPublicCenters } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -25,6 +26,10 @@ vi.mock('~/entities/care-catalog/care-catalog-api', async (importOriginal) => ({
 vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-api')>()),
   fetchCareRecipients: vi.fn()
+}))
+vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
+  fetchOutstandingDebt: vi.fn()
 }))
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
@@ -70,6 +75,7 @@ beforeEach(async () => {
   vi.clearAllMocks()
   await setAppLanguage('vi', false)
   selectCenter(null)
+  vi.mocked(fetchOutstandingDebt).mockResolvedValue({ hasDebt: false, overdueInvoices: [], pendingInvoices: [] })
   vi.mocked(fetchPublicCenters).mockResolvedValue({
     items: [
       { centerId: 'center-1', centerName: 'TT An Tâm' },
@@ -149,6 +155,15 @@ beforeEach(async () => {
 })
 
 describe('CustomerBookingPage', () => {
+  it('warns about an overdue invoice before the form is filled and blocks sending', async () => {
+    vi.mocked(fetchOutstandingDebt).mockResolvedValue({ hasDebt: true, overdueInvoices: [], pendingInvoices: [] })
+    renderPage('/customer/booking')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Bạn có hóa đơn quá hạn')
+    expect(screen.getByRole('link', { name: 'Thanh toán hóa đơn' })).toHaveAttribute('href', '/customer/payments')
+    expect(screen.getByRole('button', { name: 'Gửi yêu cầu đặt lịch' })).toBeDisabled()
+  })
+
   it('starts from the center chosen in the header', async () => {
     selectCenter({ id: 'center-2', name: 'TT Bình An' })
     renderPage('/customer/booking')

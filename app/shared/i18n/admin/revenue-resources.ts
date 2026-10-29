@@ -5,8 +5,6 @@ export const adminRevenueVi = {
   period: 'Chu kỳ mẫu: Tháng 09/2026',
   subtitle: 'Theo dõi tiền tạm giữ, phí nền tảng và các khoản quyết toán (số liệu minh họa).',
   export: 'Xuất CSV mẫu',
-  reconcile: 'Đối soát ngân hàng tự động',
-  payout: 'Xử lý lệnh chi trả',
   kpis: {
     gmv: 'Tổng giá trị giao dịch (mẫu)',
     net: 'Doanh thu nền tảng mẫu (15%)',
@@ -92,7 +90,6 @@ export const adminRevenueVi = {
   detailTitle: 'Giao dịch #{{id}}',
   detailHint: 'Đây là dữ liệu mẫu, không phải hóa đơn hoặc kết quả đối soát thực tế.',
   close: 'Đóng',
-  approval: 'Duyệt chi trả',
   trustTitle: 'An toàn ký quỹ & đối soát',
   trustText:
     'Việc giữ tiền, giải ngân và hoàn tiền phải được hệ thống và cổng thanh toán xác nhận. Trang này chưa thực hiện giao dịch thật.'
@@ -105,8 +102,6 @@ export const adminRevenueEn = {
   period: 'Sample period: September 2026',
   subtitle: 'Review sample held funds, platform fees and settlements.',
   export: 'Export sample CSV',
-  reconcile: 'Automated bank reconciliation',
-  payout: 'Process payouts',
   kpis: {
     gmv: 'Sample total transaction value',
     net: 'Sample platform revenue (15%)',
@@ -192,7 +187,6 @@ export const adminRevenueEn = {
   detailTitle: 'Transaction #{{id}}',
   detailHint: 'This is sample data, not an invoice or actual reconciliation result.',
   close: 'Close',
-  approval: 'Approve payout',
   trustTitle: 'Held funds safety & reconciliation',
   trustText:
     'Holding, disbursing and refunding funds must be confirmed by the platform and payment gateway. This screen does not process real transactions.'

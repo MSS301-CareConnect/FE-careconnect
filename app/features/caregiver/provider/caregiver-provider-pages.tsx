@@ -6,14 +6,17 @@ import { Link } from 'react-router'
 import {
   createCertificate,
   fetchMyCaregiverProfile,
+  fetchCaregiverServices,
   fetchCertificates,
   fetchProviderMedia,
   providerKeys,
   uploadMedia
 } from '~/entities/provider/provider-api'
 import { formatProviderDate } from '~/entities/provider/provider-format'
+import { CaregiverTimeOffs } from '~/entities/provider/caregiver-time-offs'
 import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
@@ -36,6 +39,13 @@ export function CaregiverProviderProfilePage() {
   const avatarMedia = useQuery({
     queryKey: providerKeys.media('CAREGIVER_PROFILE', profile.data?.id ?? ''),
     queryFn: () => fetchProviderMedia('CAREGIVER_PROFILE', profile.data!.id),
+    enabled: Boolean(profile.data?.id),
+    retry: false
+  })
+  const account = useAuthUser()
+  const services = useQuery({
+    queryKey: providerKeys.caregiverServices(profile.data?.id ?? ''),
+    queryFn: () => fetchCaregiverServices(profile.data!.id),
     enabled: Boolean(profile.data?.id),
     retry: false
   })
@@ -144,7 +154,6 @@ export function CaregiverProviderProfilePage() {
                   <p className='mt-2 text-sm font-semibold text-primary'>
                     {profile.data.centerName || t(`${key}.unknown`)}
                   </p>
-                  <p className='mt-3 text-xs text-outline tabular-nums'>#{profile.data.id}</p>
                 </div>
                 <Link
                   className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary shadow-sm hover:bg-primary-container print:hidden'
@@ -170,16 +179,12 @@ export function CaregiverProviderProfilePage() {
                       'work_history'
                     ],
                     [
-                      t(`${key}.status`),
-                      t(`${key}.${verificationStatusKeys[profile.data.verificationStatus]}`),
-                      'verified_user'
-                    ],
-                    [t(`${key}.center`), profile.data.centerName || '—', 'home_health'],
-                    [
                       t(`${key}.birthDate`),
                       profile.data.dateOfBirth ? formatProviderDate(profile.data.dateOfBirth, i18n.language) : '—',
                       'calendar_month'
-                    ]
+                    ],
+                    [t(`${key}.phone`), account?.phoneNumber || '—', 'call'],
+                    [t(`${key}.email`), account?.email || '—', 'mail']
                   ] as const
                 ).map(([label, value, icon]) => (
                   <div key={label}>
@@ -204,6 +209,43 @@ export function CaregiverProviderProfilePage() {
                   {profile.data.bio || t(`${key}.unknown`)}
                 </p>
               </section>
+              <section aria-labelledby='caregiver-services-title' className='rounded-2xl bg-white p-6 shadow-sm'>
+                <h2 className='flex items-center gap-2 text-lg font-bold' id='caregiver-services-title'>
+                  <Icon className='text-primary' name='medical_services' />
+                  {t(`${key}.servicesTitle`)}
+                </h2>
+                <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.servicesHint`)}</p>
+                {services.isPending ? (
+                  <p className='mt-4 text-sm text-on-surface-variant' role='status'>
+                    {t(`${key}.loading`)}
+                  </p>
+                ) : null}
+                {services.isError ? (
+                  <p className='mt-4 text-sm text-error' role='alert'>
+                    {t(`${key}.servicesError`)}
+                  </p>
+                ) : null}
+                {services.isSuccess && services.data.length === 0 ? (
+                  <p className='mt-4 rounded-lg bg-warning-container p-3 text-sm text-on-warning-container'>
+                    {t(`${key}.servicesEmpty`)}
+                  </p>
+                ) : null}
+                {services.isSuccess && services.data.length > 0 ? (
+                  <ul className='mt-4 flex flex-wrap gap-2'>
+                    {services.data.map((service) => (
+                      <li
+                        className='rounded-full bg-secondary-container px-3 py-1.5 text-sm font-semibold text-on-secondary-container'
+                        key={service.centerServiceId}
+                      >
+                        {service.serviceName}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </section>
+              <div className='print:hidden'>
+                <CaregiverTimeOffs caregiverId={profile.data.id} copy='caregiver.provider.timeOff' />
+              </div>
               <section className='rounded-2xl bg-white p-6 shadow-sm'>
                 <h2 className='flex items-center gap-2 text-lg font-bold'>
                   <Icon className='text-primary' name='workspace_premium' />

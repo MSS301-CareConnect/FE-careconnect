@@ -10,11 +10,25 @@ const MAX_PUBLIC_PAGES = 5
 /** The chosen center as the customer pages use it and as it is remembered in the browser. */
 export type ServiceCenter = { id: string; name: string }
 
-/** A selectable center with the customer-facing details the picker shows. */
-export type ServiceCenterOption = ServiceCenter & { address?: string }
+/** A selectable center with the customer-facing details the picker shows to compare centers. */
+export type ServiceCenterOption = ServiceCenter & {
+  address?: string
+  operatingHours?: string
+  phoneNumber?: string
+  minPrice?: number
+  serviceCount?: number
+}
 
 function toOption(center: PublicCenterRecord): ServiceCenterOption {
-  return { id: center.centerId, name: center.centerName, address: center.address || undefined }
+  return {
+    id: center.centerId,
+    name: center.centerName,
+    address: center.address || undefined,
+    operatingHours: center.operatingHours || undefined,
+    phoneNumber: center.phoneNumber || undefined,
+    minPrice: center.minPrice ?? undefined,
+    serviceCount: center.serviceCount ?? undefined
+  }
 }
 
 /** Every ACTIVE center from ProviderService's customer endpoint, sorted by name. */

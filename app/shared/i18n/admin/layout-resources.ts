@@ -27,7 +27,6 @@ export const adminLayoutVi = {
   closeMenu: 'Đóng menu quản trị',
   manager: 'Minh Hoàng',
   managerShort: 'MH',
-  unavailable: 'Tính năng sắp ra mắt.',
   preview: 'Bản xem thử với dữ liệu minh họa tháng 09/2026. Không phải số liệu giao dịch thực tế.',
   footer: '© 2026 CareConnect · Cổng quản trị hệ thống'
 } as const
@@ -61,7 +60,6 @@ export const adminLayoutEn = {
   closeMenu: 'Close administration menu',
   manager: 'Minh Hoàng',
   managerShort: 'MH',
-  unavailable: 'Coming soon.',
   preview: 'Preview with illustrative data from September 2026. These are not live transactions.',
   footer: '© 2026 CareConnect · System administration portal'
 } as const

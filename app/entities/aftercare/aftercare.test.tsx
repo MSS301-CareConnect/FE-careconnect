@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -78,6 +78,8 @@ describe('Aftercare on the web (Đợt 3)', () => {
     renderUi(<CareReportForm bookingId='bk-1' sessionId='ses-1' />)
 
     fireEvent.change(await screen.findByLabelText('Tóm tắt buổi chăm sóc'), { target: { value: ' Ăn ngủ tốt ' } })
+    // The condition has no default, so the report cannot be sent until the caregiver states it.
+    expect(screen.getByRole('button', { name: 'Nộp báo cáo' })).toBeDisabled()
     fireEvent.change(screen.getByLabelText('Tình trạng chung'), { target: { value: 'IMPROVED' } })
     fireEvent.click(screen.getByRole('button', { name: 'Nộp báo cáo' }))
 
@@ -153,9 +155,11 @@ describe('Aftercare on the web (Đợt 3)', () => {
     vi.mocked(fetchComplaints).mockResolvedValue([complaint, { ...complaint, id: 'other', bookingId: 'bk-2' }])
     vi.mocked(openComplaint).mockResolvedValue(complaint)
     vi.mocked(escalate).mockResolvedValue({ ...complaint, status: 'ESCALATED' })
-    renderUi(<BookingAftercare bookingId='bk-1' completed />)
+    renderUi(<BookingAftercare bookingId='bk-1' completed visited />)
 
     expect(await screen.findByText('Buổi sáng ổn định')).toBeInTheDocument()
+    // No rating is preselected, so the review cannot be sent until one is chosen.
+    expect(await screen.findByRole('button', { name: 'Gửi đánh giá' })).toBeDisabled()
     fireEvent.click(await screen.findByLabelText('4 sao'))
     fireEvent.click(screen.getByRole('button', { name: 'Gửi đánh giá' }))
     await waitFor(() =>
@@ -188,6 +192,16 @@ describe('Aftercare on the web (Đợt 3)', () => {
     // D20: an unresolved complaint can be withdrawn by the customer.
     vi.mocked(withdraw).mockResolvedValue({ ...complaint, status: 'WITHDRAWN' })
     fireEvent.click(screen.getByRole('button', { name: 'Rút khiếu nại' }))
+    expect(withdraw).not.toHaveBeenCalled()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Rút khiếu nại' }))
     await waitFor(() => expect(withdraw).toHaveBeenCalledWith('c-1'))
+  })
+
+  it('hides reports and new complaints before any visit has taken place', async () => {
+    vi.mocked(fetchComplaints).mockResolvedValue([])
+    renderUi(<BookingAftercare bookingId='bk-1' completed={false} visited={false} />)
+    await waitFor(() => expect(fetchComplaints).toHaveBeenCalled())
+    expect(screen.queryByRole('button', { name: 'Gửi khiếu nại' })).not.toBeInTheDocument()
+    expect(fetchReports).not.toHaveBeenCalled()
   })
 })

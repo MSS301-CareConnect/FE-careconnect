@@ -8,6 +8,10 @@ export const centerPickerVi = {
   searchPlaceholder: 'Tên hoặc địa chỉ trung tâm…',
   count: '{{count, number}} trung tâm đang nhận đặt lịch',
   current: 'Đang chọn',
+  facts: {
+    fromPrice: 'Giá từ {{price}}',
+    services: '{{count, number}} dịch vụ'
+  },
   general: {
     name: 'Xem tất cả trung tâm',
     description: 'Xem dịch vụ và người chăm sóc của mọi trung tâm, chọn sau cũng được'
@@ -42,6 +46,10 @@ export const centerPickerEn = {
   searchPlaceholder: 'Center name or address…',
   count: '{{count, number}} centers taking bookings',
   current: 'Selected',
+  facts: {
+    fromPrice: 'From {{price}}',
+    services: '{{count, number}} services'
+  },
   general: {
     name: 'See all centers',
     description: 'Browse services and caregivers from every center, and choose one later'

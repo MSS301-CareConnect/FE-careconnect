@@ -54,6 +54,23 @@ export function CustomerBookingPage() {
       <div className='mx-auto w-full max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12 lg:py-12'>
         <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8'>
           <div className='flex min-w-0 flex-col gap-6'>
+            {form.hasDebt ? (
+              <div
+                className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error-container p-4 text-sm text-on-error-container'
+                role='alert'
+              >
+                <p className='flex items-start gap-2 font-semibold'>
+                  <Icon className='text-lg' name='error' />
+                  {t('customer.booking.debt.message')}
+                </p>
+                <Link
+                  className='inline-flex min-h-11 items-center rounded-lg bg-error px-4 font-semibold text-on-error hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error'
+                  to='/customer/payments'
+                >
+                  {t('customer.booking.debt.pay')}
+                </Link>
+              </div>
+            ) : null}
             <BookingPatientSection form={form} />
             <BookingProviderSection form={form} />
             <BookingServicesSection form={form} />

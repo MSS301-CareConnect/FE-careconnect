@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
@@ -11,6 +11,19 @@ import { Icon } from '~/shared/ui/icon'
 import { currentPosition } from '../current-position'
 
 const CHECK_IN_LEAD_MS = 30 * 60 * 1000
+// D22: after start + 30 minutes the visit becomes MISSED, so check-in closes then.
+const CHECK_IN_GRACE_MS = 30 * 60 * 1000
+const CLOCK_TICK_MS = 30_000
+
+/** The current time, refreshed while the page stays open so the check-in button opens and closes on time. */
+function useNow() {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), CLOCK_TICK_MS)
+    return () => window.clearInterval(timer)
+  }, [])
+  return now
+}
 
 /** The next job for a visit that has no care session yet: acknowledge, check in, or report a no-show. */
 export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
@@ -18,9 +31,13 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
   const queryClient = useQueryClient()
   const [reporting, setReporting] = useState(false)
   const waiting = visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED'
+  const now = useNow()
   const start = new Date(visit.startAt).getTime()
   const opensAt = formatClock(new Date(start - CHECK_IN_LEAD_MS).toISOString(), i18n.language)
-  const started = hasStarted(visit.startAt)
+  const closesAt = formatClock(new Date(start + CHECK_IN_GRACE_MS).toISOString(), i18n.language)
+  const tooEarly = now < start - CHECK_IN_LEAD_MS
+  const tooLate = now > start + CHECK_IN_GRACE_MS
+  const started = hasStarted(visit.startAt, now)
   const noShowReported = Boolean(visit.noShowReportedAt)
 
   function refresh() {
@@ -66,7 +83,7 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
         ) : null}
         <button
           className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50'
-          disabled={checkInVisit.isPending}
+          disabled={checkInVisit.isPending || tooEarly || tooLate}
           onClick={() => checkInVisit.mutate()}
           type='button'
         >
@@ -84,9 +101,15 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
           </button>
         ) : null}
       </div>
-      <p className='text-xs text-on-surface-variant tabular-nums'>
-        {t('caregiver.visitDetail.checkInHint', { time: opensAt })}
-      </p>
+      {tooLate ? (
+        <p className='rounded-lg bg-warning-container p-3 text-sm text-on-warning-container tabular-nums'>
+          {t('caregiver.visitDetail.checkInClosed', { time: closesAt })}
+        </p>
+      ) : (
+        <p className='text-sm text-on-surface-variant tabular-nums'>
+          {t('caregiver.visitDetail.checkInHint', { time: opensAt, closes: closesAt })}
+        </p>
+      )}
       {error ? (
         <p className='rounded-lg bg-error-container/40 p-3 text-sm text-error' role='alert'>
           {t(bookingErrorKey(error))}

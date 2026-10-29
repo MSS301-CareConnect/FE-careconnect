@@ -26,7 +26,15 @@ function render(ui: ReactNode) {
 }
 
 const centers = [
-  { centerId: 'center-b', centerName: 'Trung tâm Bình An', address: '12 Lê Lợi, Quận 1' },
+  {
+    centerId: 'center-b',
+    centerName: 'Trung tâm Bình An',
+    address: '12 Lê Lợi, Quận 1',
+    operatingHours: '07:00 - 21:00',
+    phoneNumber: '0281234567',
+    minPrice: 150000,
+    serviceCount: 4
+  },
   { centerId: 'center-a', centerName: 'Phòng khám An Khang' }
 ]
 
@@ -241,6 +249,12 @@ describe('CustomerLayout', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Bạn muốn đặt chăm sóc tại trung tâm nào?' })
     expect(dialog).toHaveAttribute('open')
+    // Each center shows what a family compares: hours, phone, starting price and services.
+    const binhAn = await within(dialog).findByRole('button', { name: /Trung tâm Bình An/ })
+    expect(binhAn).toHaveTextContent('07:00 - 21:00')
+    expect(binhAn).toHaveTextContent('0281234567')
+    expect(binhAn).toHaveTextContent(/Giá từ 150.000/)
+    expect(binhAn).toHaveTextContent('4 dịch vụ')
     fireEvent.click(await within(dialog).findByRole('button', { name: /Phòng khám An Khang/ }))
 
     expect(dialog).not.toHaveAttribute('open')
