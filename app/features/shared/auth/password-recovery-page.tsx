@@ -11,7 +11,7 @@ import { confirmPasswordReset, passwordRecoveryErrorKey, sendPasswordResetCode }
 import { validPassword } from './password-validation'
 
 const inputClass =
-  'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-white px-4 outline-none focus-visible:ring-2 focus-visible:ring-primary'
+  'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
 
 export function PasswordRecoveryPage() {
   const { t } = useTranslation()

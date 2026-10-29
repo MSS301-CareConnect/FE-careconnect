@@ -38,18 +38,18 @@ export function BookingServiceOption({
   return (
     <li className={`p-4 sm:p-5 ${bookingOption(selected)}`}>
       <label className='flex cursor-pointer items-start gap-3'>
-        <input checked={selected} className='mt-1 h-4 w-4 accent-[#075b31]' onChange={onToggle} type='checkbox' />
+        <input checked={selected} className='mt-1 h-4 w-4 accent-primary' onChange={onToggle} type='checkbox' />
         <span className='min-w-0 flex-1'>
           <span className='flex flex-wrap items-center gap-2'>
-            <span className='font-bold text-[#1b2922]'>{offering.catalogItem.name}</span>
+            <span className='font-bold text-on-surface'>{offering.catalogItem.name}</span>
             {highlighted ? (
-              <span className='rounded-md bg-[#e8f0e8] px-2 py-0.5 text-xs font-bold text-[#075b31]'>
+              <span className='rounded-md bg-primary-fixed px-2 py-0.5 text-xs font-bold text-primary'>
                 {t('customer.booking.services.fromServices')}
               </span>
             ) : null}
           </span>
           {offering.description || offering.catalogItem.description ? (
-            <span className='mt-1 block text-sm leading-6 text-[#5e7063]'>
+            <span className='mt-1 block text-sm leading-6 text-on-surface-variant'>
               {offering.description ?? offering.catalogItem.description}
             </span>
           ) : null}
@@ -58,25 +58,25 @@ export function BookingServiceOption({
       {selected ? (
         <div className='mt-3 pl-7'>
           {plans.isPending ? (
-            <p className='text-sm text-[#637469]' role='status'>
+            <p className='text-sm text-on-surface-variant' role='status'>
               {t('customer.booking.services.plansLoading')}
             </p>
           ) : null}
           {plans.isError ? (
-            <p className='text-sm text-[#ba1a1a]' role='alert'>
+            <p className='text-sm text-error' role='alert'>
               {t('customer.booking.services.plansError')}
             </p>
           ) : null}
           {plans.isSuccess && plans.data.length === 0 ? (
-            <p className='text-sm text-[#637469]'>{t('customer.booking.services.plansEmpty')}</p>
+            <p className='text-sm text-on-surface-variant'>{t('customer.booking.services.plansEmpty')}</p>
           ) : null}
           {plans.isSuccess && plans.data.length > 0 ? (
             <>
-              <label className='text-sm font-semibold text-[#1b2922]' htmlFor={planId}>
+              <label className='text-sm font-semibold text-on-surface' htmlFor={planId}>
                 {t('customer.booking.services.plan')}
               </label>
               <select
-                className={`${bookingField} bg-white`}
+                className={`${bookingField} bg-surface-container-lowest`}
                 id={planId}
                 onChange={(event) => onChoosePlan(event.target.value)}
                 value={selection?.pricePlanId ?? ''}

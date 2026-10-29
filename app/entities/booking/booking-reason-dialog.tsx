@@ -53,7 +53,7 @@ export function BookingReasonDialog({
   return (
     <dialog
       aria-labelledby={titleId}
-      className='m-auto w-[calc(100%_-_2rem)] max-w-lg rounded-2xl bg-white p-0 text-on-surface shadow-xl backdrop:bg-on-surface/55'
+      className='m-auto w-[calc(100%_-_2rem)] max-w-lg rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-0 text-on-surface shadow-xl backdrop:bg-on-surface/55'
       onClose={onClose}
       ref={dialog}
     >
@@ -63,13 +63,13 @@ export function BookingReasonDialog({
           if (valid && canConfirm && !pending) onConfirm(trimmed)
         }}
       >
-        <div className='flex items-start justify-between gap-3 p-5 pb-0'>
-          <h2 className='text-lg font-bold' id={titleId}>
+        <div className='flex items-start justify-between gap-3 border-b border-outline-variant/40 px-5 py-4'>
+          <h2 className='text-lg font-bold text-on-surface' id={titleId}>
             {title}
           </h2>
           <button
             aria-label={t('booking.actions.close')}
-            className='rounded-lg p-1 text-outline hover:bg-surface-container-low'
+            className='grid h-9 w-9 place-items-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary'
             onClick={() => dialog.current?.close()}
             type='button'
           >
@@ -80,11 +80,11 @@ export function BookingReasonDialog({
           {description ? <p className='leading-6 text-on-surface-variant'>{description}</p> : null}
           {children}
           <div>
-            <label className='font-semibold' htmlFor={fieldId}>
+            <label className='font-semibold text-on-surface' htmlFor={fieldId}>
               {label}
             </label>
             <textarea
-              className='mt-2 w-full rounded-lg border border-outline-variant/60 bg-white p-3 font-normal focus:border-primary focus:outline-none'
+              className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 font-normal text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25'
               id={fieldId}
               maxLength={maxLength}
               onChange={(event) => setReason(event.target.value)}
@@ -99,21 +99,22 @@ export function BookingReasonDialog({
             ) : null}
           </div>
           {error ? (
-            <p className='rounded-lg bg-error-container/40 p-3 text-sm text-error' role='alert'>
+            <p className='rounded-xl bg-error-container p-3 text-sm font-medium text-on-error-container' role='alert'>
               {error}
             </p>
           ) : null}
         </div>
-        <div className='flex justify-end gap-2 bg-surface-container-low p-4'>
+        <div className='flex justify-end gap-2.5 border-t border-outline-variant/40 bg-surface-container-low p-4'>
           <button
-            className='rounded-lg bg-white px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container'
+            className='min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
             onClick={() => dialog.current?.close()}
             type='button'
           >
             {t('booking.actions.back')}
           </button>
           <button
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 ${danger ? 'bg-error hover:bg-error/90' : 'bg-primary hover:bg-primary-container'}`}
+            aria-busy={pending || undefined}
+            className={`min-h-11 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50 ${danger ? 'bg-error hover:bg-error/90' : 'bg-primary hover:bg-primary-container'}`}
             disabled={!valid || !canConfirm || pending}
             type='submit'
           >

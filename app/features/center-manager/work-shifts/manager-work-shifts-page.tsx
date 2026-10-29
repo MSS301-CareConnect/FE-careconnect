@@ -15,10 +15,12 @@ import {
   saveWorkShift
 } from '~/entities/provider/provider-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import type { ProviderWorkShiftRecord, WorkShiftRequest } from '~/shared/api/generated/contracts'
 import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
 
 const key = 'centerManager.provider' as const
 const inputClass =
@@ -387,7 +389,7 @@ export function ManagerWorkShiftsPage() {
             {visible.length ? (
               <div className='overflow-x-auto'>
                 <table className='w-full min-w-[820px] text-left text-sm'>
-                  <thead className='bg-surface-container-low text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
+                  <thead className='sticky top-0 z-10 border-b border-outline-variant/25 bg-surface-container-low text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
                     <tr>
                       {(['workDate', 'shiftType', 'status', 'capacity', 'registrations'] as const).map((column) => (
                         <th className='px-5 py-4' key={column} scope='col'>
@@ -398,8 +400,8 @@ export function ManagerWorkShiftsPage() {
                   </thead>
                   <tbody className='divide-y divide-outline-variant/20'>
                     {visible.map((shift) => (
-                      <tr className='hover:bg-surface-container-low/50' key={shift.id}>
-                        <td className='px-5 py-4'>
+                      <tr className='transition-colors hover:bg-surface-container-low/50' key={shift.id}>
+                        <td className='px-5 py-4 tabular-nums'>
                           <Link className='font-bold hover:text-primary' to={`/center-manager/work-shifts/${shift.id}`}>
                             {formatProviderDate(shift.workDate, i18n.language)}
                           </Link>
@@ -410,11 +412,12 @@ export function ManagerWorkShiftsPage() {
                         </td>
                         <td className='px-5 py-4'>{shift.shiftType}</td>
                         <td className='px-5 py-4'>
-                          <span className='rounded-full bg-secondary-container/50 px-2.5 py-1 text-xs font-semibold text-primary'>
-                            {t(shiftStatusKeys[shift.shiftStatus])}
-                          </span>
+                          <ProviderStatusBadge
+                            label={t(shiftStatusKeys[shift.shiftStatus])}
+                            status={shift.shiftStatus}
+                          />
                         </td>
-                        <td className='px-5 py-4'>
+                        <td className='px-5 py-4 tabular-nums'>
                           <strong>
                             {number.format(shift.approvedCount ?? 0)} / {number.format(shift.capacity)}
                           </strong>
@@ -503,6 +506,7 @@ export function ManagerWorkShiftDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
+  const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [registrationPage, setRegistrationPage] = useState(0)
   const shift = useQuery({
@@ -520,6 +524,7 @@ export function ManagerWorkShiftDetailPage() {
   const archive = useMutation({
     mutationFn: () => removeWorkShift(id, shift.data!.version),
     onSuccess: async () => {
+      setConfirmArchiveOpen(false)
       await queryClient.invalidateQueries({ queryKey: providerKeys.shifts(centerId) })
       navigate('/center-manager/work-shifts')
     }
@@ -578,9 +583,9 @@ export function ManagerWorkShiftDetailPage() {
             {formatProviderTime(shift.data.startTime, i18n.language)}–
             {formatProviderTime(shift.data.endTime, i18n.language)} · {shift.data.shiftType}
           </p>
-          <span className='mt-3 inline-flex rounded-full bg-secondary-container/50 px-3 py-1 text-xs font-semibold text-primary'>
-            {t(shiftStatusKeys[shift.data.shiftStatus])}
-          </span>
+          <div className='mt-3'>
+            <ProviderStatusBadge label={t(shiftStatusKeys[shift.data.shiftStatus])} status={shift.data.shiftStatus} />
+          </div>
         </div>
         <div className='flex flex-wrap gap-2'>
           <button
@@ -594,9 +599,7 @@ export function ManagerWorkShiftDetailPage() {
           <button
             className='inline-flex items-center gap-2 rounded-lg bg-error-container px-4 py-2.5 text-sm font-semibold text-on-error-container disabled:opacity-50'
             disabled={archive.isPending}
-            onClick={() => {
-              if (window.confirm(t(`${key}.confirmArchiveShift`))) archive.mutate()
-            }}
+            onClick={() => setConfirmArchiveOpen(true)}
             type='button'
           >
             <Icon name='event_busy' />
@@ -604,6 +607,16 @@ export function ManagerWorkShiftDetailPage() {
           </button>
         </div>
       </header>
+      <ConfirmDialog
+        confirmLabel={t(`${key}.archiveShift`)}
+        description={t(`${key}.confirmArchiveShift`)}
+        loading={archive.isPending}
+        onClose={() => setConfirmArchiveOpen(false)}
+        onConfirm={() => archive.mutate()}
+        open={confirmArchiveOpen}
+        title={t(`${key}.archiveShift`)}
+        tone='danger'
+      />
       <section aria-label={t(`${key}.shiftDetail`)} className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
         {(
           [
@@ -679,9 +692,12 @@ export function ManagerWorkShiftDetailPage() {
                   </span>
                   <div>
                     <strong>{registration.caregiverName || registration.caregiverId}</strong>
-                    <p className='text-sm text-outline'>
-                      {t(`${key}.${registrationStatusKeys[registration.registrationStatus]}`)}
-                    </p>
+                    <div className='mt-1'>
+                      <ProviderStatusBadge
+                        label={t(`${key}.${registrationStatusKeys[registration.registrationStatus]}`)}
+                        status={registration.registrationStatus}
+                      />
+                    </div>
                   </div>
                 </div>
                 {registration.registrationStatus === 'PENDING' ? (

@@ -194,9 +194,15 @@ export function AdminPoliciesPage() {
           </div>
         </div>
         <div className='mt-5 grid items-center gap-6 md:grid-cols-[220px_1fr]'>
-          <div className='mx-auto flex h-48 w-48 items-center justify-center rounded-full bg-[conic-gradient(#006b2c_0_70%,#68dba9_70%_85%,#d9e3f6_85%_100%)]'>
+          <div
+            className='mx-auto flex h-48 w-48 items-center justify-center rounded-full'
+            style={{
+              background:
+                'conic-gradient(var(--color-primary) 0 70%, var(--color-tertiary-fixed-dim) 70% 85%, var(--color-surface-container-highest) 85% 100%)'
+            }}
+          >
             <div className='flex h-28 w-28 flex-col items-center justify-center rounded-full bg-white'>
-              <strong className='text-xl text-primary'>{percent.format(0.7)}</strong>
+              <strong className='text-xl tabular-nums text-primary'>{percent.format(0.7)}</strong>
               <span className='text-xs text-outline'>{t(`${key}.split.caregiver`)}</span>
             </div>
           </div>
@@ -210,7 +216,7 @@ export function AdminPoliciesPage() {
                   <span className={`h-3 w-3 rounded-full ${part.color}`} />
                   {t(`${key}.split.${part.key}`)}
                 </span>
-                <strong className='text-primary'>{percent.format(part.percent / 100)}</strong>
+                <strong className='tabular-nums text-primary'>{percent.format(part.percent / 100)}</strong>
               </div>
             ))}
           </div>

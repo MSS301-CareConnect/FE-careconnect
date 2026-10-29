@@ -17,36 +17,36 @@ type GenderFilter = 'ALL' | 'FEMALE' | 'MALE' | 'OTHER'
 function ProviderCaregiverCard({ person }: { person: ProviderCaregiverCardRecord }) {
   const { t, i18n } = useTranslation()
   return (
-    <article className='group flex h-full flex-col rounded-2xl border border-[#dbe4db] bg-white p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[#a8c2ad] sm:p-6'>
+    <article className='group flex h-full flex-col rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-outline sm:p-6'>
       <div className='flex min-w-0 items-start gap-4 sm:gap-5'>
         <div
           aria-hidden='true'
-          className='grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-[#e8f0e8] text-[#075b31] sm:h-20 sm:w-20'
+          className='grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-primary-fixed text-primary sm:h-20 sm:w-20'
         >
           <Icon className='text-4xl' name='person' />
         </div>
         <div className='min-w-0 flex-1'>
           <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
-            <h2 className='text-xl font-bold tracking-[-0.025em] text-[#1b2922]'>{person.fullName}</h2>
+            <h2 className='text-xl font-bold tracking-[-0.025em] text-on-surface'>{person.fullName}</h2>
             {/* The catalog lists only verified, active caregivers. */}
-            <span className='inline-flex items-center gap-1 rounded-md bg-[#e8f0e8] px-2 py-1 text-xs font-bold text-[#075b31]'>
+            <span className='inline-flex items-center gap-1 rounded-md bg-primary-fixed px-2 py-1 text-xs font-bold text-primary'>
               <Icon className='text-sm' name='verified' />
               {t(`${key}.verified`)}
             </span>
           </div>
           {person.centerName && (
-            <p className='mt-2 flex items-center gap-1.5 text-sm text-[#637469]'>
-              <Icon className='text-base text-[#075b31]' name='home_health' />
+            <p className='mt-2 flex items-center gap-1.5 text-sm text-on-surface-variant'>
+              <Icon className='text-base text-primary' name='home_health' />
               {person.centerName}
             </p>
           )}
         </div>
       </div>
 
-      <div className='mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#e6ece5] pt-4 text-sm text-[#415548]'>
+      <div className='mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-outline-variant/40 pt-4 text-sm text-on-surface-variant tabular-nums'>
         {person.experienceYears !== undefined && (
           <span className='inline-flex items-center gap-1.5'>
-            <Icon className='text-lg text-[#075b31]' name='workspace_premium' />
+            <Icon className='text-lg text-primary' name='workspace_premium' />
             {t(`${key}.experienceValue`, {
               years: new Intl.NumberFormat(i18n.language).format(person.experienceYears)
             })}
@@ -54,21 +54,21 @@ function ProviderCaregiverCard({ person }: { person: ProviderCaregiverCardRecord
         )}
         {person.ratingAverage !== undefined && (
           <span className='inline-flex items-center gap-1.5'>
-            <Icon className='text-lg text-[#a06a12]' filled name='star' />
+            <Icon className='text-lg text-warning' filled name='star' />
             {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(person.ratingAverage)}
             {person.ratingCount !== undefined && t(`${key}.reviews`, { count: person.ratingCount })}
           </span>
         )}
       </div>
 
-      {person.bio && <p className='mt-4 line-clamp-2 text-sm leading-6 text-[#617267]'>{person.bio}</p>}
+      {person.bio && <p className='mt-4 line-clamp-2 text-sm leading-6 text-on-surface-variant'>{person.bio}</p>}
 
       <div className='mt-auto flex items-center justify-between gap-4 pt-6'>
-        <span className='min-w-0 truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#76867a]'>
+        <span className='min-w-0 truncate text-xs font-semibold uppercase tracking-[0.08em] text-outline'>
           {t(`${key}.caregiver`)}
         </span>
         <Link
-          className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-[#075b31]'
+          className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-primary hover:text-primary-container focus-visible:outline-2 focus-visible:outline-primary'
           to={`/customer/caregivers/${person.caregiverId}`}
         >
           {t(`${key}.details`)}
@@ -114,18 +114,18 @@ export function CustomerProviderCatalogPage() {
     })
   }
   return (
-    <div className='flex w-full flex-1 flex-col bg-[#fbfcfa] text-[#1b2922]'>
+    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
       <ProviderCatalogSearch key={keyword} keyword={keyword} onSearch={(value) => update('q', value)} />
       <section className='mx-auto w-full max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12 lg:py-14'>
         <div className='grid grid-cols-1 items-start gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12'>
-          <aside className='rounded-2xl border border-[#dbe4db] bg-white p-5 lg:sticky lg:top-6 lg:p-6'>
-            <div className='flex items-center justify-between gap-3 border-b border-[#e3eae2] pb-5'>
-              <h2 className='flex items-center gap-2 text-base font-bold'>
-                <Icon className='text-xl text-[#075b31]' name='tune' />
+          <aside className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs lg:sticky lg:top-24 lg:p-6'>
+            <div className='flex items-center justify-between gap-3 border-b border-outline-variant/40 pb-5'>
+              <h2 className='flex items-center gap-2 text-base font-bold text-on-surface'>
+                <Icon className='text-xl text-primary' name='tune' />
                 {t(`${key}.filters`)}
               </h2>
               <button
-                className='text-xs font-bold text-[#075b31] underline-offset-4 hover:underline'
+                className='text-xs font-bold text-primary underline-offset-4 hover:underline'
                 onClick={() => {
                   setGender('ALL')
                   setMinimumExperience(0)
@@ -135,10 +135,10 @@ export function CustomerProviderCatalogPage() {
                 {t(`${key}.reset`)}
               </button>
             </div>
-            <label className='mt-6 block text-sm font-semibold'>
+            <label className='mt-6 block text-sm font-semibold text-on-surface'>
               {t(`${key}.gender`)}
               <select
-                className='mt-2 w-full rounded-lg border border-[#d5e0d5] bg-[#f8faf7] px-3 py-3 text-sm text-[#1b2922] focus:border-[#075b31] focus:outline-none'
+                className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-3 text-sm text-on-surface focus:border-primary focus:outline-none'
                 onChange={(event) => setGender(event.target.value as GenderFilter)}
                 value={gender}
               >
@@ -149,10 +149,10 @@ export function CustomerProviderCatalogPage() {
                 ))}
               </select>
             </label>
-            <label className='mt-5 block text-sm font-semibold'>
+            <label className='mt-5 block text-sm font-semibold text-on-surface'>
               {t(`${key}.minimumExperience`)}
               <select
-                className='mt-2 w-full rounded-lg border border-[#d5e0d5] bg-[#f8faf7] px-3 py-3 text-sm text-[#1b2922] focus:border-[#075b31] focus:outline-none'
+                className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-3 text-sm text-on-surface focus:border-primary focus:outline-none'
                 onChange={(event) => setMinimumExperience(Number(event.target.value))}
                 value={minimumExperience}
               >
@@ -163,7 +163,7 @@ export function CustomerProviderCatalogPage() {
                 ))}
               </select>
             </label>
-            <p className='mt-6 border-t border-[#e3eae2] pt-5 text-xs leading-5 text-[#697b6e]'>
+            <p className='mt-6 border-t border-outline-variant/40 pt-5 text-xs leading-5 text-on-surface-variant'>
               {t(`${key}.pageFilterHint`)}
             </p>
           </aside>
@@ -171,13 +171,13 @@ export function CustomerProviderCatalogPage() {
             <div className='mb-6'>
               <CenterScope generalText={t(`${key}.scopeGeneral`)} />
             </div>
-            <div className='flex flex-wrap items-end justify-between gap-4 border-b border-[#dce5dc] pb-5'>
+            <div className='flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant/60 pb-5'>
               <div>
-                <h2 className='text-2xl font-bold tracking-[-0.04em]'>{t(`${key}.resultsTitle`)}</h2>
-                <p className='mt-1 text-sm text-[#647568]'>
+                <h2 className='text-2xl font-bold tracking-[-0.04em] text-on-surface'>{t(`${key}.resultsTitle`)}</h2>
+                <p className='mt-1 text-sm text-on-surface-variant tabular-nums'>
                   {catalog.isSuccess ? (
                     <>
-                      <strong className='font-bold text-[#075b31]'>
+                      <strong className='font-bold text-primary'>
                         {new Intl.NumberFormat(i18n.language).format(catalog.data.totalElements)}
                       </strong>{' '}
                       {t(`${key}.results`)}
@@ -187,12 +187,12 @@ export function CustomerProviderCatalogPage() {
                   )}
                 </p>
               </div>
-              <div className='flex items-center gap-1 rounded-lg border border-[#dce5dc] bg-white p-1'>
+              <div className='flex items-center gap-1 rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-1'>
                 {(['list', 'grid'] as const).map((mode) => (
                   <button
                     aria-label={t(`${key}.views.${mode}`)}
                     aria-pressed={view === mode}
-                    className={`grid h-9 w-9 place-items-center rounded-md transition-colors ${view === mode ? 'bg-[#e8f0e8] text-[#075b31]' : 'text-[#728275] hover:bg-[#f2f6f1]'}`}
+                    className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${view === mode ? 'bg-primary-fixed text-primary' : 'text-on-surface-variant hover:bg-surface-container-low'}`}
                     key={mode}
                     onClick={() => setView(mode)}
                     type='button'
@@ -204,10 +204,10 @@ export function CustomerProviderCatalogPage() {
             </div>
             {catalog.isPending && (
               <div
-                className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center text-[#53675a]'
+                className='mt-6 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-6 py-16 text-center text-on-surface-variant'
                 role='status'
               >
-                <Icon className='mb-4 text-4xl text-[#075b31]' name='progress_activity' />
+                <Icon className='mb-4 text-4xl text-primary' name='progress_activity' />
                 <p>{t(`${key}.loading`)}</p>
               </div>
             )}
@@ -217,12 +217,15 @@ export function CustomerProviderCatalogPage() {
               </div>
             )}
             {catalog.isError && !needsCenter && (
-              <div className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center' role='alert'>
-                <Icon className='text-4xl text-[#075b31]' name='wifi_off' />
-                <h3 className='mt-4 text-xl font-bold'>{t(`${key}.error`)}</h3>
-                <p className='mt-2 text-sm text-[#647568]'>{t(`${key}.errorHelp`)}</p>
+              <div
+                className='mt-6 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-6 py-16 text-center'
+                role='alert'
+              >
+                <Icon className='text-4xl text-primary' name='wifi_off' />
+                <h3 className='mt-4 text-xl font-bold text-on-surface'>{t(`${key}.error`)}</h3>
+                <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.errorHelp`)}</p>
                 <button
-                  className='mt-6 rounded-lg bg-[#075b31] px-5 py-3 text-sm font-bold text-white hover:bg-[#064a29]'
+                  className='mt-6 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container'
                   onClick={() => catalog.refetch()}
                   type='button'
                 >
@@ -231,10 +234,10 @@ export function CustomerProviderCatalogPage() {
               </div>
             )}
             {catalog.isSuccess && visible.length === 0 && (
-              <div className='mt-6 rounded-2xl border border-[#dbe4db] bg-white px-6 py-16 text-center'>
-                <Icon className='text-4xl text-[#075b31]' name='person_search' />
-                <h3 className='mt-4 text-xl font-bold'>{t(`${key}.empty`)}</h3>
-                <p className='mt-2 text-sm text-[#647568]'>{t(`${key}.emptyHelp`)}</p>
+              <div className='mt-6 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-6 py-16 text-center'>
+                <Icon className='text-4xl text-primary' name='person_search' />
+                <h3 className='mt-4 text-xl font-bold text-on-surface'>{t(`${key}.empty`)}</h3>
+                <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.emptyHelp`)}</p>
               </div>
             )}
             {catalog.isSuccess && visible.length > 0 && (
@@ -245,20 +248,20 @@ export function CustomerProviderCatalogPage() {
               </div>
             )}
             {catalog.isSuccess && catalog.data.totalPages > 1 && (
-              <div className='mt-8 flex items-center justify-between border-t border-[#dce5dc] pt-5 text-sm'>
+              <div className='mt-8 flex items-center justify-between border-t border-outline-variant/60 pt-5 text-sm tabular-nums'>
                 <button
-                  className='font-semibold text-[#075b31] disabled:opacity-40'
+                  className='font-semibold text-primary disabled:opacity-40'
                   disabled={page === 0}
                   onClick={() => update('page', String(page - 1))}
                   type='button'
                 >
                   {t(`${key}.previous`)}
                 </button>
-                <span className='text-[#647568]'>
+                <span className='text-on-surface-variant'>
                   {t(`${key}.page`, { page: page + 1, pages: catalog.data.totalPages })}
                 </span>
                 <button
-                  className='font-semibold text-[#075b31] disabled:opacity-40'
+                  className='font-semibold text-primary disabled:opacity-40'
                   disabled={page + 1 >= catalog.data.totalPages}
                   onClick={() => update('page', String(page + 1))}
                   type='button'

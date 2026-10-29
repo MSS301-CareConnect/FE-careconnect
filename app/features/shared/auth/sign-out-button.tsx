@@ -25,8 +25,8 @@ export function SignOutButton({ appearance = 'default' }: { appearance?: 'defaul
       <button
         className={
           appearance === 'menu'
-            ? 'w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary'
-            : 'rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container'
+            ? 'w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-error transition-colors hover:bg-error-container/50 focus-visible:outline-2 focus-visible:outline-primary'
+            : 'rounded-xl border border-outline-variant px-3.5 py-2 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container'
         }
         disabled={pending}
         onClick={() => void handleSignOut()}

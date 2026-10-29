@@ -19,7 +19,7 @@ export function DashboardInsights() {
             <p className='mt-1 text-sm text-outline'>{t(`${key}.customerGrowthHint`)}</p>
           </div>
           <div className='text-right'>
-            <strong className='text-xl text-primary'>{percentage(data.returningRate)}</strong>
+            <strong className='text-xl tabular-nums text-primary'>{percentage(data.returningRate)}</strong>
             <p className='text-xs text-outline'>{t(`${key}.returningRate`)}</p>
           </div>
         </div>
@@ -30,16 +30,21 @@ export function DashboardInsights() {
           role='img'
           viewBox='0 0 380 140'
         >
-          <g stroke='#eff4ff'>
+          <g stroke='var(--color-surface-container-low)'>
             <line x1='0' x2='380' y1='35' y2='35' />
             <line x1='0' x2='380' y1='70' y2='70' />
             <line x1='0' x2='380' y1='105' y2='105' />
           </g>
-          <path d='M10,110 C80,95 140,80 200,50 C260,35 320,30 370,18' fill='none' stroke='#006b2c' strokeWidth='3' />
+          <path
+            d='M10,110 C80,95 140,80 200,50 C260,35 320,30 370,18'
+            fill='none'
+            stroke='var(--color-primary)'
+            strokeWidth='3'
+          />
           <path
             d='M10,120 C80,115 140,95 200,80 C260,70 320,55 370,42'
             fill='none'
-            stroke='#68dba9'
+            stroke='var(--color-tertiary-fixed-dim)'
             strokeDasharray='3 3'
             strokeWidth='3'
           />
@@ -51,7 +56,7 @@ export function DashboardInsights() {
           ].map((item) => (
             <div className='rounded-lg bg-surface-container-low p-3' key={item.key}>
               <span className='text-xs text-on-surface-variant'>{t(`${key}.${item.key}`)}</span>
-              <p className='mt-1 text-xl font-bold'>{number(item.count)}</p>
+              <p className='mt-1 text-xl font-bold tabular-nums'>{number(item.count)}</p>
             </div>
           ))}
         </div>
@@ -64,10 +69,13 @@ export function DashboardInsights() {
             aria-label={t(`${key}.caregiverGrowthHint`)}
             className='relative h-32 w-32 shrink-0 rounded-full'
             role='img'
-            style={{ background: 'conic-gradient(#006b2c 0 58%, #68dba9 58% 84%, #00855d 84% 100%)' }}
+            style={{
+              background:
+                'conic-gradient(var(--color-primary) 0 58%, var(--color-tertiary-fixed-dim) 58% 84%, var(--color-tertiary) 84% 100%)'
+            }}
           >
             <div className='absolute inset-5 flex flex-col items-center justify-center rounded-full bg-white'>
-              <strong className='text-2xl'>{number(data.caregivers)}</strong>
+              <strong className='text-2xl tabular-nums'>{number(data.caregivers)}</strong>
               <span className='text-xs text-outline'>{t(`${key}.workforce`)}</span>
             </div>
           </div>
@@ -78,7 +86,7 @@ export function DashboardInsights() {
                   <span className={`h-2.5 w-2.5 rounded-sm ${group.color}`} />
                   {t(`${key}.caregiverTypes.${group.key}`)}
                 </span>
-                <strong>{number(group.count)}</strong>
+                <strong className='tabular-nums'>{number(group.count)}</strong>
               </div>
             ))}
           </div>
@@ -110,8 +118,8 @@ export function DashboardInsights() {
         </div>
         <div className='mt-5 flex items-center gap-4 rounded-lg bg-surface-container-low p-4'>
           <div className='text-center'>
-            <strong className='text-4xl'>{number(data.rating)}</strong>
-            <div className='mt-1 flex justify-center text-amber-500' aria-hidden='true'>
+            <strong className='text-4xl tabular-nums'>{number(data.rating)}</strong>
+            <div className='mt-1 flex justify-center text-warning' aria-hidden='true'>
               {Array.from({ length: 5 }, (_, index) => (
                 <Icon className='text-sm' key={index} name='star' filled />
               ))}
@@ -127,7 +135,7 @@ export function DashboardInsights() {
             <div key={metric.key}>
               <div className='mb-1 flex justify-between gap-2 text-xs'>
                 <span>{t(`${key}.qualityMetrics.${metric.key}`)}</span>
-                <strong className='text-primary'>{percentage(metric.value)}</strong>
+                <strong className='tabular-nums text-primary'>{percentage(metric.value)}</strong>
               </div>
               <div className='h-1.5 overflow-hidden rounded-full bg-surface-container'>
                 <div className='h-full rounded-full bg-primary' style={{ width: `${metric.value * 100}%` }} />

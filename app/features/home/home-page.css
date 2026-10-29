@@ -7,7 +7,7 @@
 }
 
 .home-reasons {
-  background-color: #173627;
+  background-color: var(--color-inverse-surface);
 }
 
 .home-reasons-visual {
@@ -21,7 +21,7 @@
 .home-reasons-visual::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgb(10 39 26 / 91%) 0%, rgb(10 39 26 / 74%) 29%, rgb(10 39 26 / 10%) 67%);
+  background: linear-gradient(90deg, rgb(14 49 35 / 91%) 0%, rgb(14 49 35 / 74%) 29%, rgb(14 49 35 / 10%) 67%);
   content: '';
 }
 
@@ -34,7 +34,7 @@
 }
 
 .home-reasons-details {
-  background: #f7f8f5;
+  background: var(--color-surface);
 }
 
 @media (max-width: 1023px) {
@@ -54,7 +54,7 @@
   }
 
   .home-reasons-copy {
-    background: #173627;
+    background: var(--color-inverse-surface);
   }
 }
 

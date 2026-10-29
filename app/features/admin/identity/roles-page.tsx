@@ -5,6 +5,7 @@ import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
 import { addRole, fetchPermissions, fetchRoles, saveRolePermissions } from './identity-api'
 
 const key = 'admin.identity' as const
@@ -25,6 +26,7 @@ export function RolesPage() {
   const [editedPermissions, setEditedPermissions] = useState<string[] | null>(null)
   const [message, setMessage] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [confirmSavePermissions, setConfirmSavePermissions] = useState(false)
   const [keyword, setKeyword] = useState('')
   const [kind, setKind] = useState('all')
   const current = roles.data?.find((role) => role.id === selectedRole)
@@ -76,11 +78,15 @@ export function RolesPage() {
   const update = useMutation({
     mutationFn: () => saveRolePermissions(selectedRole, { permissionIds: selectedPermissions }),
     onSuccess: () => {
+      setConfirmSavePermissions(false)
       setMessage(t(`${key}.saved`))
       setEditedPermissions(null)
       void client.invalidateQueries({ queryKey: ['identity', 'roles'] })
     },
-    onError: () => setMessage(t(`${key}.actionError`))
+    onError: () => {
+      setConfirmSavePermissions(false)
+      setMessage(t(`${key}.actionError`))
+    }
   })
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -291,9 +297,7 @@ export function RolesPage() {
                     <button
                       className='mt-5 w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50'
                       disabled={update.isPending}
-                      onClick={() => {
-                        if (window.confirm(t(`${key}.confirmPermissions`))) update.mutate()
-                      }}
+                      onClick={() => setConfirmSavePermissions(true)}
                       type='button'
                     >
                       {t(`${key}.save`)}
@@ -309,6 +313,17 @@ export function RolesPage() {
               </div>
             )}
           </section>
+          <ConfirmDialog
+            cancelLabel={t(`${key}.cancel`)}
+            confirmLabel={t(`${key}.save`)}
+            description={t(`${key}.confirmPermissions`)}
+            loading={update.isPending}
+            onClose={() => setConfirmSavePermissions(false)}
+            onConfirm={() => update.mutate()}
+            open={confirmSavePermissions}
+            title={t(`${key}.rolePermissions`)}
+            tone='primary'
+          />
         </div>
       )}
       {showCreate && (

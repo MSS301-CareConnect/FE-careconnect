@@ -5,41 +5,110 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
-  --color-primary: #006b2c;
-  --color-primary-container: #00873a;
+  /* Brand & Primary — Warm Botanical Clinical */
+  --color-primary: #075b31;
+  --color-primary-container: #064a29;
   --color-on-primary: #ffffff;
-  --color-secondary: #006e2f;
-  --color-secondary-container: #e8fbe8;
-  --color-on-secondary-container: #007432;
+  --color-primary-fixed: #d4e8d4;
+  --color-on-primary-fixed: #043b20;
+
+  --color-secondary: #075b31;
+  --color-secondary-container: #eaf2e9;
+  --color-on-secondary-container: #075b31;
   --color-secondary-fixed: #6bff8f;
 
-  --color-surface: #f8f9ff;
-  --color-surface-container: #e6eeff;
-  --color-surface-container-low: #eff4ff;
-  --color-surface-container-high: #dee9fc;
-  --color-surface-container-highest: #d9e3f6;
+  /* Warm Sage Surfaces */
+  --color-background: #f7f8f5;
+  --color-surface: #f7f8f5;
   --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff3ed;
+  --color-surface-container: #e4ebe2;
+  --color-surface-container-high: #d8e2d5;
+  --color-surface-container-highest: #cbd8cc;
 
-  --color-background: #f8f9ff;
-  --color-on-surface: #121c2a;
-  --color-on-surface-variant: #3e4a3d;
+  /* Inverse / Deep Forest Surfaces */
+  --color-inverse-surface: #173627;
+  --color-inverse-on-surface: #eef5ec;
+  --color-inverse-muted: #c6d7c9;
+  --color-inverse-accent: #d8efcc;
 
-  --color-outline: #6e7b6c;
-  --color-outline-variant: #bdcaba;
+  /* Text & Outlines (WCAG AA/AAA Contrast) */
+  --color-on-surface: #1b2922;
+  --color-on-surface-variant: #44594b;
+  --color-outline: #5c6f62;
+  --color-outline-variant: #cbd8cc;
 
+  /* Semantic Status Tokens */
   --color-error: #ba1a1a;
-  --color-error-container: #ffdad6;
+  --color-error-container: #fdecea;
   --color-on-error: #ffffff;
   --color-on-error-container: #93000a;
+
+  --color-success: #075b31;
+  --color-success-container: #eaf2e9;
+  --color-on-success-container: #075b31;
+
+  --color-active: #115e59;
+  --color-active-container: #ccfbf1;
+  --color-on-active-container: #134e4a;
+
+  --color-info: #075985;
+  --color-info-container: #e0f2fe;
+  --color-on-info-container: #0c4a6e;
+
+  --color-warning: #92400e;
+  --color-warning-container: #fef3c7;
+  --color-on-warning-container: #78350f;
+
+  --color-caution: #9a3412;
+  --color-caution-container: #ffedd5;
+  --color-on-caution-container: #7c2d12;
+
+  --color-neutral: #334155;
+  --color-neutral-container: #f1f5f9;
+  --color-on-neutral-container: #334155;
 }
 
 html,
 body {
   @apply min-h-full bg-background text-on-surface font-sans antialiased;
+  accent-color: var(--color-primary);
+}
+
+::selection {
+  background-color: var(--color-primary-fixed);
+  color: var(--color-on-surface);
 }
 
 body {
   @apply min-h-screen;
+}
+
+dialog[open] {
+  animation: dialog-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .material-symbols-outlined {

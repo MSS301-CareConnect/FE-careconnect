@@ -33,9 +33,9 @@ export function RevenueTable({ list, onView }: { list: RevenueList; onView: (id:
       <div className='border-b border-outline-variant/25 px-5 py-4'>
         <h2 className='text-lg font-bold'>{t(`${key}.tableTitle`)}</h2>
       </div>
-      <div className='overflow-x-auto'>
+      <div className='max-h-[70vh] overflow-x-auto'>
         <table className='w-full min-w-[1060px] text-left text-sm'>
-          <thead className='bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
+          <thead className='sticky top-0 z-10 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
             <tr>
               {columns.map((column) => (
                 <th className='p-4 font-semibold' key={column} scope='col'>
@@ -144,7 +144,9 @@ function RevenueRow({
       <td className='p-4'>
         <p className='min-w-24 text-xs font-semibold'>{transaction.method}</p>
       </td>
-      <td className={`p-4 text-right font-bold ${transaction.amount > 0 ? 'text-primary' : 'text-on-surface'}`}>
+      <td
+        className={`p-4 text-right font-bold tabular-nums ${transaction.amount > 0 ? 'text-primary' : 'text-on-surface'}`}
+      >
         {transaction.amount > 0 ? '+' : ''}
         {money(transaction.amount)}
       </td>

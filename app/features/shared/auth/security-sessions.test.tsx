@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -42,6 +42,8 @@ describe('security sessions', () => {
     expect(await screen.findByText('Current browser')).toBeInTheDocument()
     expect(screen.getByText('This device')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Sign out this device' }))
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Sign out this device' }))
 
     await waitFor(() => expect(revokeSession).toHaveBeenCalledWith('other'))
     await waitFor(() => expect(screen.queryByText('Other browser')).not.toBeInTheDocument())

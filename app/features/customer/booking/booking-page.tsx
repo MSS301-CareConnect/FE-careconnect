@@ -18,23 +18,25 @@ export function CustomerBookingPage() {
   useDocumentTitle(t('customer.booking.documentTitle'))
 
   return (
-    <div className='flex w-full flex-1 flex-col bg-[#fbfcfa] text-[#1b2922]'>
-      <section className='border-b border-[#dfe6dc] bg-[#f7f8f5]'>
+    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
+      <section className='border-b border-outline-variant/60 bg-surface-container-low'>
         <div className='mx-auto w-full max-w-[1440px] px-5 pt-6 pb-8 sm:px-8 lg:px-12 lg:pt-8 lg:pb-10'>
           <nav
             aria-label={t('customer.booking.breadcrumb.label')}
-            className='flex items-center gap-1.5 text-sm text-[#637469]'
+            className='flex items-center gap-1.5 text-sm text-on-surface-variant'
           >
-            <Link className='hover:text-[#075b31]' to='/customer'>
+            <Link className='hover:text-primary' to='/customer'>
               {t('customer.booking.breadcrumb.home')}
             </Link>
             <Icon className='text-base' name='chevron_right' />
-            <span className='font-semibold text-[#075b31]'>{t('customer.booking.breadcrumb.current')}</span>
+            <span className='font-semibold text-primary'>{t('customer.booking.breadcrumb.current')}</span>
           </nav>
-          <h1 className='mt-4 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl'>
+          <h1 className='mt-4 text-3xl font-extrabold tracking-[-0.045em] text-on-surface sm:text-4xl'>
             {t('customer.booking.header.title')}
           </h1>
-          <p className='mt-3 max-w-2xl text-base leading-7 text-[#5e7063]'>{t('customer.booking.header.subtitle')}</p>
+          <p className='mt-3 max-w-2xl text-base leading-7 text-on-surface-variant'>
+            {t('customer.booking.header.subtitle')}
+          </p>
           <div className='mt-8'>
             <BookingStepper
               done={{

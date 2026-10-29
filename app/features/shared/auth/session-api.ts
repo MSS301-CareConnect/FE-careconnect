@@ -1,7 +1,8 @@
 import { getCurrentUser } from '~/shared/api/generated/api/account/account'
-import { loginWeb, logoutWebSession, refreshWebSession } from '~/shared/api/generated/api/authentication/authentication'
+import { loginWeb, logoutWebSession } from '~/shared/api/generated/api/authentication/authentication'
 import type { LoginRequest, UserResponse } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
+import { refreshSession } from '~/shared/api/session-refresh'
 
 export { csrfHeaders } from '~/shared/api/csrf'
 
@@ -21,19 +22,6 @@ async function currentUser(): Promise<UserResponse> {
   requireSuccess(response.data.code)
   if (!response.data.result.id || !response.data.result.roles) throw new Error('Incomplete user session')
   return response.data.result
-}
-
-let refreshPromise: Promise<void> | null = null
-
-async function refreshSession() {
-  refreshPromise ??= (async () => {
-    const response = await refreshWebSession({ credentials: 'include', headers: await csrfHeaders() })
-    requireSuccess(response.data.code)
-    if (!response.data.result.authenticated) throw new Error('Session refresh failed')
-  })().finally(() => {
-    refreshPromise = null
-  })
-  return refreshPromise
 }
 
 export async function loadSession(): Promise<UserResponse | null> {

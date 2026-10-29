@@ -6,6 +6,8 @@ import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
+import { StatusBadge } from '~/shared/ui/status-badge'
 import {
   addUserRole,
   changeUserStatus,
@@ -42,6 +44,9 @@ export function AccountDetailPage() {
   const [phone, setPhone] = useState<string | null>(null)
   const [roleId, setRoleId] = useState('')
   const [message, setMessage] = useState('')
+  const [confirmAction, setConfirmAction] = useState<
+    { type: 'lock' } | { type: 'delete' } | { type: 'revoke'; roleId: string } | null
+  >(null)
   function refresh() {
     void client.invalidateQueries({ queryKey: ['identity', 'users'] })
     void client.invalidateQueries({ queryKey: ['identity', 'user', id] })
@@ -61,18 +66,26 @@ export function AccountDetailPage() {
   const status = useMutation({
     mutationFn: (value: 'ACTIVE' | 'LOCKED') => changeUserStatus(id, value),
     onSuccess: () => {
+      setConfirmAction(null)
       setMessage(t('admin.identity.saved'))
       refresh()
     },
-    onError: () => setMessage(t('admin.identity.actionError'))
+    onError: () => {
+      setConfirmAction(null)
+      setMessage(t('admin.identity.actionError'))
+    }
   })
   const deletion = useMutation({
     mutationFn: () => removeUser(id),
     onSuccess: () => {
+      setConfirmAction(null)
       void client.invalidateQueries({ queryKey: ['identity', 'users'] })
       navigate('/admin/accounts')
     },
-    onError: () => setMessage(t('admin.identity.actionError'))
+    onError: () => {
+      setConfirmAction(null)
+      setMessage(t('admin.identity.actionError'))
+    }
   })
   const assignment = useMutation({
     mutationFn: (selected: string) => addUserRole(id, selected),
@@ -85,10 +98,14 @@ export function AccountDetailPage() {
   const revocation = useMutation({
     mutationFn: (selected: string) => removeUserRole(id, selected),
     onSuccess: () => {
+      setConfirmAction(null)
       setMessage(t('admin.identity.saved'))
       refresh()
     },
-    onError: () => setMessage(t('admin.identity.actionError'))
+    onError: () => {
+      setConfirmAction(null)
+      setMessage(t('admin.identity.actionError'))
+    }
   })
   const canManage = authUser?.permissions?.includes('user:manage')
   const canManageRoles = authUser?.permissions?.includes('role:manage')
@@ -152,9 +169,11 @@ export function AccountDetailPage() {
             <p>
               <strong>{t('admin.identity.email')}:</strong> {user.data.email}
             </p>
-            <p>
+            <p className='flex items-center gap-2'>
               <strong>{t('admin.identity.status')}:</strong>{' '}
-              {t(user.data.status === 'ACTIVE' ? 'admin.identity.active' : 'admin.identity.locked')}
+              <StatusBadge tone={user.data.status === 'ACTIVE' ? 'success' : 'error'}>
+                {t(user.data.status === 'ACTIVE' ? 'admin.identity.active' : 'admin.identity.locked')}
+              </StatusBadge>
             </p>
             {user.data.centerId && (
               <p>
@@ -196,10 +215,7 @@ export function AccountDetailPage() {
                 <button
                   className='rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold disabled:opacity-50'
                   disabled={status.isPending}
-                  onClick={() => {
-                    if (window.confirm(t('admin.identity.confirmLock')))
-                      status.mutate(user.data.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE')
-                  }}
+                  onClick={() => setConfirmAction({ type: 'lock' })}
                   type='button'
                 >
                   {t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')}
@@ -207,9 +223,7 @@ export function AccountDetailPage() {
                 <button
                   className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
                   disabled={deletion.isPending}
-                  onClick={() => {
-                    if (window.confirm(t('admin.identity.confirmDelete'))) deletion.mutate()
-                  }}
+                  onClick={() => setConfirmAction({ type: 'delete' })}
                   type='button'
                 >
                   {t('admin.identity.delete')}
@@ -236,7 +250,7 @@ export function AccountDetailPage() {
                         disabled={revocation.isPending}
                         onClick={() => {
                           const selected = roles.data?.find((role) => role.roleCode === code)?.id
-                          if (selected && window.confirm(t('admin.identity.confirmRevoke'))) revocation.mutate(selected)
+                          if (selected) setConfirmAction({ type: 'revoke', roleId: selected })
                         }}
                         type='button'
                       >
@@ -289,6 +303,43 @@ export function AccountDetailPage() {
                 </div>
               ))}
           </section>
+          <ConfirmDialog
+            cancelLabel={t('admin.identity.cancel')}
+            confirmLabel={
+              confirmAction?.type === 'lock'
+                ? t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')
+                : confirmAction?.type === 'delete'
+                  ? t('admin.identity.delete')
+                  : t('admin.identity.revokeRole')
+            }
+            description={
+              confirmAction?.type === 'lock'
+                ? t('admin.identity.confirmLock')
+                : confirmAction?.type === 'delete'
+                  ? t('admin.identity.confirmDelete')
+                  : t('admin.identity.confirmRevoke')
+            }
+            loading={status.isPending || deletion.isPending || revocation.isPending}
+            onClose={() => setConfirmAction(null)}
+            onConfirm={() => {
+              if (confirmAction?.type === 'lock') {
+                status.mutate(user.data.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE')
+              } else if (confirmAction?.type === 'delete') {
+                deletion.mutate()
+              } else if (confirmAction?.type === 'revoke') {
+                revocation.mutate(confirmAction.roleId)
+              }
+            }}
+            open={Boolean(confirmAction)}
+            title={
+              confirmAction?.type === 'lock'
+                ? t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')
+                : confirmAction?.type === 'delete'
+                  ? t('admin.identity.delete')
+                  : t('admin.identity.revokeRole')
+            }
+            tone={confirmAction?.type === 'lock' && user.data.status !== 'ACTIVE' ? 'primary' : 'danger'}
+          />
         </div>
       )}
     </main>

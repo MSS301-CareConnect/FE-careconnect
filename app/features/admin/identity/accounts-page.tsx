@@ -6,6 +6,7 @@ import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { StatusBadge } from '~/shared/ui/status-badge'
 import { useCenterOptions } from './hooks/use-center-options'
 import { addUser, fetchUsers } from './identity-api'
 
@@ -223,9 +224,9 @@ export function AccountsPage() {
           </div>
         ) : (
           <>
-            <div className='overflow-x-auto'>
+            <div className='max-h-[70vh] overflow-x-auto'>
               <table className='w-full min-w-[900px] text-left text-sm'>
-                <thead className='bg-surface-container-low text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
+                <thead className='sticky top-0 z-10 bg-surface-container-low text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
                   <tr>
                     {(['fullName', 'email', 'phone', 'role', 'status', 'detail'] as const).map((column) => (
                       <th className='px-4 py-4' key={column} scope='col'>
@@ -259,7 +260,7 @@ export function AccountsPage() {
                         </div>
                       </td>
                       <td className='px-4 py-4'>{user.email || '—'}</td>
-                      <td className='px-4 py-4'>{user.phoneNumber || '—'}</td>
+                      <td className='px-4 py-4 tabular-nums'>{user.phoneNumber || '—'}</td>
                       <td className='px-4 py-4'>
                         <div className='flex flex-wrap gap-1'>
                           {user.roles?.map((role) => (
@@ -273,11 +274,9 @@ export function AccountsPage() {
                         </div>
                       </td>
                       <td className='px-4 py-4'>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${user.status === 'ACTIVE' ? 'bg-secondary-container/50 text-primary' : 'bg-error-container text-on-error-container'}`}
-                        >
+                        <StatusBadge tone={user.status === 'ACTIVE' ? 'success' : 'error'}>
                           {t(user.status === 'ACTIVE' ? `${key}.active` : `${key}.locked`)}
-                        </span>
+                        </StatusBadge>
                       </td>
                       <td className='px-4 py-4'>
                         {user.id && (

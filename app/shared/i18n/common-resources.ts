@@ -32,6 +32,50 @@ export const commonEn = {
       switchTo: 'Switch to {{language}}',
       vietnamese: 'Vietnamese',
       vietnameseShort: 'VI'
+    },
+    ui: {
+      closeDialog: 'Close dialog',
+      cancel: 'Cancel',
+      confirm: 'Confirm',
+      working: 'Working…',
+      retry: 'Try again',
+      Dismiss: 'Dismiss notification',
+      offlineTitle: 'No internet connection',
+      offlineDescription: 'Check your network connection. Actions will resume automatically when you are back online.',
+      forbiddenTitle: 'Access denied',
+      forbiddenDescription: 'Your account does not have permission to view or perform this action.',
+      pagination: {
+        label: 'Pagination',
+        previous: 'Previous',
+        next: 'Next',
+        pageOf: 'Page {{page}} of {{total}}'
+      }
+    },
+    status: {
+      certificate: {
+        PENDING: 'Pending verification',
+        CENTER_VERIFIED: 'Center verified',
+        ADMIN_VERIFIED: 'Admin verified',
+        REJECTED: 'Rejected'
+      },
+      shift: {
+        OPEN: 'Open',
+        CLOSED: 'Closed',
+        CANCELLED: 'Cancelled',
+        COMPLETED: 'Completed'
+      },
+      registration: {
+        PENDING: 'Pending approval',
+        APPROVED: 'Approved',
+        REJECTED: 'Rejected',
+        CANCELLED: 'Cancelled'
+      },
+      account: {
+        ACTIVE: 'Active',
+        LOCKED: 'Locked',
+        INACTIVE: 'Inactive',
+        PENDING: 'Pending'
+      }
     }
   },
   errors: {
@@ -83,6 +127,50 @@ export const commonVi = {
       switchTo: 'Chuyển sang {{language}}',
       vietnamese: 'Tiếng Việt',
       vietnameseShort: 'VI'
+    },
+    ui: {
+      closeDialog: 'Đóng hộp thoại',
+      cancel: 'Hủy',
+      confirm: 'Xác nhận',
+      working: 'Đang xử lý…',
+      retry: 'Thử lại',
+      Dismiss: 'Đóng thông báo',
+      offlineTitle: 'Mất kết nối mạng',
+      offlineDescription: 'Vui lòng kiểm tra kết nối Internet. Các thao tác sẽ hoạt động trở lại khi có mạng.',
+      forbiddenTitle: 'Không có quyền truy cập',
+      forbiddenDescription: 'Tài khoản của bạn không có quyền xem hoặc thực hiện thao tác này.',
+      pagination: {
+        label: 'Phân trang',
+        previous: 'Trước',
+        next: 'Tiếp',
+        pageOf: 'Trang {{page}} / {{total}}'
+      }
+    },
+    status: {
+      certificate: {
+        PENDING: 'Chờ xác minh',
+        CENTER_VERIFIED: 'Trung tâm đã duyệt',
+        ADMIN_VERIFIED: 'Đã xác thực',
+        REJECTED: 'Bị từ chối'
+      },
+      shift: {
+        OPEN: 'Đang mở',
+        CLOSED: 'Đã đóng',
+        CANCELLED: 'Đã hủy',
+        COMPLETED: 'Hoàn thành'
+      },
+      registration: {
+        PENDING: 'Chờ duyệt',
+        APPROVED: 'Đã duyệt',
+        REJECTED: 'Từ chối',
+        CANCELLED: 'Đã hủy'
+      },
+      account: {
+        ACTIVE: 'Hoạt động',
+        LOCKED: 'Đã khóa',
+        INACTIVE: 'Ngưng hoạt động',
+        PENDING: 'Chờ kích hoạt'
+      }
     }
   },
   errors: {

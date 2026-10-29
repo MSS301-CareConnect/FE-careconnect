@@ -120,7 +120,7 @@ export function AdminRevenuePage() {
                 <Icon name={stat.icon} />
               </span>
             </div>
-            <p className='mt-4 text-2xl font-extrabold'>{stat.value}</p>
+            <p className='mt-4 text-2xl font-extrabold tabular-nums'>{stat.value}</p>
             <p className='mt-2 text-xs text-outline'>{t(`${key}.kpis.${stat.key}Hint`)}</p>
           </section>
         ))}

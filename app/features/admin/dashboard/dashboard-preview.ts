@@ -17,13 +17,13 @@ export const adminDashboardPreview = {
   returningRate: 0.68,
   caregiverGroups: [
     { key: 'general', count: 122, share: 0.58, color: 'bg-primary' },
-    { key: 'rehab', count: 55, share: 0.26, color: 'bg-emerald-300' },
-    { key: 'doctor', count: 33, share: 0.16, color: 'bg-teal-700' }
+    { key: 'rehab', count: 55, share: 0.26, color: 'bg-tertiary-fixed-dim' },
+    { key: 'doctor', count: 33, share: 0.16, color: 'bg-tertiary' }
   ],
   services: [
     { key: 'recovery', share: 0.45, color: 'bg-primary' },
-    { key: 'elderly', share: 0.35, color: 'bg-emerald-400' },
-    { key: 'motherBaby', share: 0.2, color: 'bg-teal-600' }
+    { key: 'elderly', share: 0.35, color: 'bg-tertiary-fixed-dim' },
+    { key: 'motherBaby', share: 0.2, color: 'bg-tertiary' }
   ],
   pendingLicenses: 32,
   rating: 4.92,

@@ -19,11 +19,11 @@ export function CustomerServiceDetailPage() {
   useDocumentTitle(service ? t(`${key}.documentTitle`, { name: service.catalogItem.name }) : t(`${key}.fallbackTitle`))
 
   return (
-    <div className='flex w-full flex-1 flex-col bg-[#f8faf7] text-[#1b2922]'>
-      <section className='border-b border-[#e2e9e1] bg-[#fbfcf9]'>
+    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
+      <section className='border-b border-outline-variant/60 bg-surface-container-lowest'>
         <div className='mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12'>
           <Link
-            className='inline-flex items-center gap-2 text-sm font-bold text-[#075b31] hover:text-[#043b20] focus-visible:outline-2 focus-visible:outline-[#075b31]'
+            className='inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-container focus-visible:outline-2 focus-visible:outline-primary'
             to='/customer/services'
           >
             <Icon className='text-lg' name='arrow_back' />
@@ -31,16 +31,16 @@ export function CustomerServiceDetailPage() {
           </Link>
           {service ? (
             <header className='mt-6 max-w-[920px]'>
-              <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#075b31]'>
+              <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-primary'>
                 <Icon className='text-lg' name='medical_services' />
                 {service.catalogItem.category}
               </p>
-              <h1 className='mt-4 text-[clamp(2.25rem,3.6vw,3.25rem)] font-bold leading-[1.1] tracking-[-0.045em]'>
+              <h1 className='mt-4 text-[clamp(2.25rem,3.6vw,3.25rem)] font-bold leading-[1.1] tracking-[-0.045em] text-on-surface'>
                 {service.catalogItem.name}
               </h1>
               {center.data ? (
-                <p className='mt-4 flex items-center gap-2 text-base text-[#435b4a]'>
-                  <Icon className='text-xl text-[#075b31]' name='home_health' />
+                <p className='mt-4 flex items-center gap-2 text-base text-on-surface-variant'>
+                  <Icon className='text-xl text-primary' name='home_health' />
                   {center.data.centerName}
                 </p>
               ) : null}
@@ -51,17 +51,23 @@ export function CustomerServiceDetailPage() {
 
       <section className='mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10'>
         {offering.isPending ? (
-          <div className='rounded-2xl border border-[#dfe8de] bg-white p-10 text-center text-[#526a57]' role='status'>
+          <div
+            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-10 text-center text-on-surface-variant'
+            role='status'
+          >
             {t(`${key}.loading`)}
           </div>
         ) : null}
         {offering.isError ? (
-          <div className='rounded-2xl border border-[#dfe8de] bg-white px-6 py-14 text-center' role='alert'>
-            <Icon className='text-4xl text-[#075b31]' name='search_off' />
-            <h1 className='mt-4 text-xl font-bold'>{t(`${key}.error`)}</h1>
-            <p className='mt-2 text-sm text-[#647568]'>{t(`${key}.errorHelp`)}</p>
+          <div
+            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-6 py-14 text-center'
+            role='alert'
+          >
+            <Icon className='text-4xl text-primary' name='search_off' />
+            <h1 className='mt-4 text-xl font-bold text-on-surface'>{t(`${key}.error`)}</h1>
+            <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.errorHelp`)}</p>
             <button
-              className='mt-6 rounded-lg bg-[#075b31] px-5 py-3 text-sm font-bold text-white hover:bg-[#064925]'
+              className='mt-6 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container'
               onClick={() => offering.refetch()}
               type='button'
             >
@@ -72,20 +78,20 @@ export function CustomerServiceDetailPage() {
         {service ? (
           <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8'>
             <div className='flex min-w-0 flex-col gap-6'>
-              <section className='rounded-2xl border border-[#dbe4db] bg-white p-6 sm:p-7'>
-                <h2 className='flex items-center gap-2 text-lg font-bold tracking-[-0.02em]'>
-                  <Icon className='text-xl text-[#075b31]' name='description' />
+              <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs sm:p-7'>
+                <h2 className='flex items-center gap-2 text-lg font-bold tracking-[-0.02em] text-on-surface'>
+                  <Icon className='text-xl text-primary' name='description' />
                   {t(`${key}.about`)}
                 </h2>
-                <p className='mt-4 leading-7 text-[#435b4a]'>
+                <p className='mt-4 leading-7 text-on-surface-variant'>
                   {service.catalogItem.description || t(`${key}.aboutEmpty`)}
                 </p>
                 {service.description ? (
-                  <div className='mt-5 rounded-xl border-l-4 border-[#075b31] bg-[#f5f9f4] px-5 py-4'>
-                    <p className='text-xs font-bold uppercase tracking-[0.1em] text-[#647b69]'>
+                  <div className='mt-5 rounded-xl border-l-4 border-primary bg-surface-container-low px-5 py-4'>
+                    <p className='text-xs font-bold uppercase tracking-[0.1em] text-on-surface-variant'>
                       {t(`${key}.centerNote`)}
                     </p>
-                    <p className='mt-1 leading-7 text-[#263b2d]'>{service.description}</p>
+                    <p className='mt-1 leading-7 text-on-surface'>{service.description}</p>
                   </div>
                 ) : null}
               </section>

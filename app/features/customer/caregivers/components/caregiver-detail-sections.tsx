@@ -15,9 +15,9 @@ function formatDate(value: string, language: string) {
 
 export function DetailSection({ icon, title, children }: { icon: string; title: string; children: ReactNode }) {
   return (
-    <section className='rounded-2xl border border-[#dbe4db] bg-white p-6 sm:p-7'>
-      <h2 className='flex items-center gap-2 text-lg font-bold tracking-[-0.02em] text-[#1b2922]'>
-        <Icon className='text-xl text-[#075b31]' name={icon} />
+    <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs sm:p-7'>
+      <h2 className='flex items-center gap-2 text-lg font-bold tracking-[-0.02em] text-on-surface'>
+        <Icon className='text-xl text-primary' name={icon} />
         {title}
       </h2>
       <div className='mt-4'>{children}</div>
@@ -27,12 +27,12 @@ export function DetailSection({ icon, title, children }: { icon: string; title: 
 
 function Stat({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
-    <div className='rounded-xl bg-[#f5f9f4] px-4 py-3'>
-      <dt className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-[#647b69]'>
-        <Icon className='text-base text-[#075b31]' name={icon} />
+    <div className='rounded-xl bg-surface-container-low px-4 py-3'>
+      <dt className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant'>
+        <Icon className='text-base text-primary' name={icon} />
         {label}
       </dt>
-      <dd className='mt-1 font-bold text-[#1b2922]'>{value}</dd>
+      <dd className='mt-1 font-bold text-on-surface tabular-nums'>{value}</dd>
     </div>
   )
 }
@@ -47,7 +47,7 @@ export function CaregiverDetailHero({ profile }: { profile: Profile }) {
       : `${number.format(profile.ratingAverage)}${t(`${key}.reviews`, { count: profile.ratingCount })}`
 
   return (
-    <section className='rounded-2xl border border-[#dbe4db] bg-white p-6 sm:p-8'>
+    <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs sm:p-8'>
       <div className='flex flex-col gap-6 sm:flex-row sm:items-start'>
         {profile.avatarUrl ? (
           <img
@@ -58,29 +58,29 @@ export function CaregiverDetailHero({ profile }: { profile: Profile }) {
         ) : (
           <div
             aria-hidden='true'
-            className='grid h-28 w-28 shrink-0 place-items-center rounded-2xl bg-[#e8f0e8] text-[#075b31] sm:h-32 sm:w-32'
+            className='grid h-28 w-28 shrink-0 place-items-center rounded-2xl bg-primary-fixed text-primary sm:h-32 sm:w-32'
           >
             <Icon className='text-6xl' name='person' />
           </div>
         )}
         <div className='min-w-0 flex-1'>
-          <p className='text-xs font-bold uppercase tracking-[0.16em] text-[#075b31]'>{t(`${key}.detail.badge`)}</p>
+          <p className='text-xs font-bold uppercase tracking-[0.16em] text-primary'>{t(`${key}.detail.badge`)}</p>
           <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-2'>
-            <h1 className='text-3xl font-bold tracking-[-0.04em] text-[#1b2922] sm:text-4xl'>{profile.fullName}</h1>
-            <span className='inline-flex items-center gap-1 rounded-md bg-[#e8f0e8] px-2 py-1 text-xs font-bold text-[#075b31]'>
+            <h1 className='text-3xl font-bold tracking-[-0.04em] text-on-surface sm:text-4xl'>{profile.fullName}</h1>
+            <span className='inline-flex items-center gap-1 rounded-md bg-primary-fixed px-2 py-1 text-xs font-bold text-primary'>
               <Icon className='text-sm' name='verified' />
               {t(`${key}.verified`)}
             </span>
           </div>
           {profile.centerName ? (
-            <p className='mt-3 flex items-center gap-1.5 text-sm text-[#637469]'>
-              <Icon className='text-base text-[#075b31]' name='home_health' />
+            <p className='mt-3 flex items-center gap-1.5 text-sm text-on-surface-variant'>
+              <Icon className='text-base text-primary' name='home_health' />
               {profile.centerName}
             </p>
           ) : null}
         </div>
       </div>
-      <dl className='mt-6 grid gap-3 border-t border-[#e6ece5] pt-6 sm:grid-cols-3'>
+      <dl className='mt-6 grid gap-3 border-t border-outline-variant/40 pt-6 sm:grid-cols-3'>
         <Stat
           icon='workspace_premium'
           label={t(`${key}.detail.experience`)}
@@ -97,15 +97,15 @@ export function CaregiverDetailHero({ profile }: { profile: Profile }) {
 
 export function CaregiverServices({ services }: { services: Profile['services'] }) {
   const { t } = useTranslation()
-  if (!services?.length) return <p className='text-sm text-[#697b6e]'>{t(`${key}.detail.servicesEmpty`)}</p>
+  if (!services?.length) return <p className='text-sm text-on-surface-variant'>{t(`${key}.detail.servicesEmpty`)}</p>
   return (
     <ul className='flex flex-wrap gap-2'>
       {services.map((service) => (
         <li
-          className='inline-flex items-center gap-1.5 rounded-lg border border-[#d5e3d6] bg-[#f5f9f4] px-3 py-2 text-sm font-semibold text-[#263b2d]'
+          className='inline-flex items-center gap-1.5 rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm font-semibold text-on-surface'
           key={service.careServiceId ?? service.serviceName}
         >
-          <Icon className='text-base text-[#075b31]' name='medical_services' />
+          <Icon className='text-base text-primary' name='medical_services' />
           {service.serviceName}
         </li>
       ))}
@@ -115,23 +115,25 @@ export function CaregiverServices({ services }: { services: Profile['services'] 
 
 export function CaregiverCertificates({ certificates }: { certificates: Profile['certificates'] }) {
   const { t, i18n } = useTranslation()
-  if (!certificates?.length) return <p className='text-sm text-[#697b6e]'>{t(`${key}.certificatesEmpty`)}</p>
+  if (!certificates?.length) return <p className='text-sm text-on-surface-variant'>{t(`${key}.certificatesEmpty`)}</p>
   return (
     <ul className='grid gap-3 sm:grid-cols-2'>
       {certificates.map((item, index) => (
         <li
-          className='flex items-start gap-3 rounded-xl border border-[#e2e9e1] p-4'
+          className='flex items-start gap-3 rounded-xl border border-outline-variant/60 p-4'
           key={`${item.certificateName}-${index}`}
         >
-          <span className='grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#e8f0e8] text-[#075b31]'>
+          <span className='grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary-fixed text-primary'>
             <Icon className='text-xl' name='workspace_premium' />
           </span>
           <div className='min-w-0'>
-            <p className='font-bold text-[#1b2922]'>{item.certificateName}</p>
+            <p className='font-bold text-on-surface'>{item.certificateName}</p>
             {item.issuedBy ? (
-              <p className='mt-0.5 text-sm text-[#637469]'>{t(`${key}.detail.issuedBy`, { issuer: item.issuedBy })}</p>
+              <p className='mt-0.5 text-sm text-on-surface-variant'>
+                {t(`${key}.detail.issuedBy`, { issuer: item.issuedBy })}
+              </p>
             ) : null}
-            <p className='mt-1 text-xs text-[#76867a]'>
+            <p className='mt-1 text-xs text-outline tabular-nums'>
               {item.issuedDate ? t(`${key}.detail.issued`, { date: formatDate(item.issuedDate, i18n.language) }) : null}
               {item.issuedDate ? ' · ' : null}
               {item.expiryDate
@@ -151,17 +153,17 @@ export function CaregiverBookingCard({ profile }: { profile: Profile }) {
   const params = new URLSearchParams({ caregiver: profile.caregiverId })
   if (profile.centerId) params.set('center', profile.centerId)
   return (
-    <aside className='rounded-2xl border border-[#dbe4db] bg-[#f5f9f4] p-6 lg:sticky lg:top-6'>
-      <h2 className='text-lg font-bold tracking-[-0.02em] text-[#1b2922]'>{t(`${key}.detail.bookTitle`)}</h2>
+    <aside className='rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 shadow-xs lg:sticky lg:top-24'>
+      <h2 className='text-lg font-bold tracking-[-0.02em] text-on-surface'>{t(`${key}.detail.bookTitle`)}</h2>
       {profile.centerName ? (
-        <p className='mt-3 flex items-center gap-1.5 text-sm text-[#415548]'>
-          <Icon className='text-base text-[#075b31]' name='home_health' />
+        <p className='mt-3 flex items-center gap-1.5 text-sm text-on-surface-variant'>
+          <Icon className='text-base text-primary' name='home_health' />
           {profile.centerName}
         </p>
       ) : null}
-      <p className='mt-3 text-sm leading-6 text-[#617267]'>{t(`${key}.detail.bookHint`)}</p>
+      <p className='mt-3 text-sm leading-6 text-on-surface-variant'>{t(`${key}.detail.bookHint`)}</p>
       <Link
-        className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#075b31] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#064925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+        className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
         to={`/customer/booking?${params.toString()}`}
       >
         <Icon className='text-lg' name='calendar_add_on' />

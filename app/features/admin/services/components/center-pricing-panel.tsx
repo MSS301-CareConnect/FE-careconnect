@@ -132,9 +132,9 @@ export function CenterPricingPanel() {
           <p className='p-8 text-center text-sm text-outline'>{t(`${key}.empty`)}</p>
         ) : null}
         {offerings.isSuccess && rows.length > 0 ? (
-          <div className='overflow-x-auto'>
+          <div className='max-h-[70vh] overflow-x-auto'>
             <table className='w-full min-w-[860px] text-left text-sm'>
-              <thead className='bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
+              <thead className='sticky top-0 z-10 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
                 <tr>
                   {(['service', 'category', 'plans', 'status'] as const).map((column) => (
                     <th className='px-4 py-3' key={column} scope='col'>

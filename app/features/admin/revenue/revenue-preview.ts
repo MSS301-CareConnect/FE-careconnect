@@ -30,9 +30,9 @@ export const revenuePreview = {
   refundRate: 0.008,
   averageReconciliationHours: 1.8,
   split: [
-    { key: 'caregiver', share: 0.7, color: 'bg-emerald-400' },
+    { key: 'caregiver', share: 0.7, color: 'bg-tertiary-fixed-dim' },
     { key: 'platform', share: 0.15, color: 'bg-primary' },
-    { key: 'insurance', share: 0.1, color: 'bg-teal-600' },
+    { key: 'insurance', share: 0.1, color: 'bg-tertiary' },
     { key: 'gateway', share: 0.05, color: 'bg-outline' }
   ],
   transactions: [

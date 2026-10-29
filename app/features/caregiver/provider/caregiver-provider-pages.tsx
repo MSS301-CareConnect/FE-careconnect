@@ -17,8 +17,10 @@ import {
 } from '~/entities/provider/provider-api'
 import { formatProviderDate, formatProviderTime } from '~/entities/provider/provider-format'
 import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
 
 const key = 'caregiver.provider' as const
 const verificationStatusKeys = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
@@ -145,17 +147,18 @@ export function CaregiverProviderProfilePage() {
                   </button>
                 </div>
                 <div className='min-w-0 flex-1'>
-                  <span className='rounded-md bg-secondary-container px-2 py-1 text-[10px] font-bold text-primary'>
-                    {t(`${key}.${verificationStatusKeys[profile.data.verificationStatus]}`)}
-                  </span>
+                  <ProviderStatusBadge
+                    label={t(`${key}.${verificationStatusKeys[profile.data.verificationStatus]}`)}
+                    status={profile.data.verificationStatus}
+                  />
                   <h2 className='mt-3 text-2xl font-extrabold'>{profile.data.fullName}</h2>
                   <p className='mt-2 text-sm font-semibold text-primary'>
                     {profile.data.centerName || t(`${key}.unknown`)}
                   </p>
-                  <p className='mt-3 text-xs text-outline'>#{profile.data.id}</p>
+                  <p className='mt-3 text-xs text-outline tabular-nums'>#{profile.data.id}</p>
                 </div>
                 <Link
-                  className='inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white print:hidden'
+                  className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary shadow-sm hover:bg-primary-container print:hidden'
                   to='/caregiver/schedule'
                 >
                   <Icon name='calendar_month' />
@@ -369,6 +372,7 @@ export function CaregiverProviderWorkShiftsPage() {
   const [page, setPage] = useState(0)
   const [registrationPage, setRegistrationPage] = useState(0)
   const [note, setNote] = useState('')
+  const [pendingCancel, setPendingCancel] = useState<{ id: string; version: number } | null>(null)
   const profile = useQuery({ queryKey: providerKeys.myProfile, queryFn: fetchMyCaregiverProfile, retry: false })
   const shifts = useQuery({
     queryKey: [...providerKeys.shifts(profile.data?.centerId ?? ''), 'OPEN', page],
@@ -391,7 +395,10 @@ export function CaregiverProviderWorkShiftsPage() {
   })
   const cancel = useMutation({
     mutationFn: ({ id, version }: { id: string; version: number }) => cancelMyShiftRegistration(id, version),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: providerKeys.myRegistrations })
+    onSuccess: async () => {
+      setPendingCancel(null)
+      await queryClient.invalidateQueries({ queryKey: providerKeys.myRegistrations })
+    }
   })
   useDocumentTitle(t(`${key}.workShiftsTitle`))
   return (
@@ -401,12 +408,12 @@ export function CaregiverProviderWorkShiftsPage() {
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.workShiftsTitle`)}</h1>
           <p className='mt-2 text-sm text-on-surface-variant'>{profile.data?.centerName}</p>
         </div>
-        <span className='rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-primary'>
+        <span className='rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-primary tabular-nums'>
           {t(`${key}.summary`, { count: shifts.data?.totalElements ?? 0 })}
         </span>
       </header>
       {profile.isError ? <p role='alert'>{t(`${key}.profileError`)}</p> : null}
-      <label className='block rounded-2xl bg-white p-5 text-sm font-semibold shadow-sm'>
+      <label className='block rounded-2xl border border-outline-variant/20 bg-white p-5 text-sm font-semibold shadow-sm'>
         {t(`${key}.note`)}
         <textarea
           className='mt-3 w-full rounded-xl bg-surface-container-low p-3 font-normal outline-none focus:ring-2 focus:ring-primary'
@@ -425,7 +432,7 @@ export function CaregiverProviderWorkShiftsPage() {
         </p>
       ) : null}
       {shifts.isSuccess ? (
-        <section className='overflow-hidden rounded-2xl bg-white shadow-sm'>
+        <section className='overflow-hidden rounded-2xl border border-outline-variant/20 bg-white shadow-sm'>
           <h2 className='flex items-center gap-2 border-b border-outline-variant/20 p-5 text-lg font-bold'>
             <Icon className='text-primary' name='event_available' />
             {t(`${key}.openShiftsTitle`)}
@@ -438,7 +445,7 @@ export function CaregiverProviderWorkShiftsPage() {
                 key={shift.id}
               >
                 <div>
-                  <strong>
+                  <strong className='tabular-nums'>
                     {formatProviderDate(shift.workDate, i18n.language)} ·{' '}
                     {formatProviderTime(shift.startTime, i18n.language)}–
                     {formatProviderTime(shift.endTime, i18n.language)}
@@ -446,7 +453,7 @@ export function CaregiverProviderWorkShiftsPage() {
                   <p className='mt-1 text-sm text-on-surface-variant'>{shift.shiftType}</p>
                 </div>
                 <button
-                  className='rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-container disabled:opacity-50'
+                  className='min-h-11 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50'
                   disabled={register.isPending}
                   onClick={() => register.mutate(shift.id)}
                   type='button'
@@ -456,12 +463,24 @@ export function CaregiverProviderWorkShiftsPage() {
               </li>
             ))}
           </ul>
-          <div className='flex justify-between border-t border-outline-variant/20 p-4 text-sm text-primary'>
-            <button disabled={page === 0} onClick={() => setPage(page - 1)} type='button'>
+          <div className='flex items-center justify-between border-t border-outline-variant/20 p-4 text-sm text-primary'>
+            <button
+              className='min-h-11 px-3 font-semibold disabled:opacity-40'
+              disabled={page === 0}
+              onClick={() => setPage(page - 1)}
+              type='button'
+            >
               {t(`${key}.previous`)}
             </button>
-            <span>{t(`${key}.page`, { page: page + 1, pages: Math.max(1, shifts.data.totalPages) })}</span>
-            <button disabled={page + 1 >= shifts.data.totalPages} onClick={() => setPage(page + 1)} type='button'>
+            <span className='tabular-nums'>
+              {t(`${key}.page`, { page: page + 1, pages: Math.max(1, shifts.data.totalPages) })}
+            </span>
+            <button
+              className='min-h-11 px-3 font-semibold disabled:opacity-40'
+              disabled={page + 1 >= shifts.data.totalPages}
+              onClick={() => setPage(page + 1)}
+              type='button'
+            >
               {t(`${key}.next`)}
             </button>
           </div>
@@ -482,25 +501,23 @@ export function CaregiverProviderWorkShiftsPage() {
         </p>
       ) : null}
       {registrations.isSuccess ? (
-        <section className='overflow-hidden rounded-2xl bg-white shadow-sm'>
+        <section className='overflow-hidden rounded-2xl border border-outline-variant/20 bg-white shadow-sm'>
           {registrations.data.items.length === 0 ? <p className='p-5'>{t(`${key}.registrationsEmpty`)}</p> : null}
           <ul className='divide-y divide-outline-variant/20'>
             {registrations.data.items.map((item) => (
               <li className='flex flex-wrap items-center justify-between gap-3 p-5' key={item.id}>
-                <div>
-                  <strong>{item.workShiftId}</strong>
-                  <p className='mt-1 text-sm text-primary'>
-                    {t(`${key}.${registrationStatusKeys[item.registrationStatus]}`)}
-                  </p>
+                <div className='flex flex-col items-start gap-1.5'>
+                  <strong className='tabular-nums'>{item.workShiftId}</strong>
+                  <ProviderStatusBadge
+                    label={t(`${key}.${registrationStatusKeys[item.registrationStatus]}`)}
+                    status={item.registrationStatus}
+                  />
                 </div>
                 {item.registrationStatus === 'PENDING' ? (
                   <button
-                    className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
+                    className='min-h-11 rounded-xl bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container hover:opacity-90 disabled:opacity-50'
                     disabled={cancel.isPending}
-                    onClick={() => {
-                      if (window.confirm(t(`${key}.confirmCancel`)))
-                        cancel.mutate({ id: item.id, version: item.version })
-                    }}
+                    onClick={() => setPendingCancel({ id: item.id, version: item.version })}
                     type='button'
                   >
                     {t(`${key}.cancelRegistration`)}
@@ -509,18 +526,20 @@ export function CaregiverProviderWorkShiftsPage() {
               </li>
             ))}
           </ul>
-          <div className='flex justify-between border-t border-outline-variant/20 p-4 text-sm text-primary'>
+          <div className='flex items-center justify-between border-t border-outline-variant/20 p-4 text-sm text-primary'>
             <button
+              className='min-h-11 px-3 font-semibold disabled:opacity-40'
               disabled={registrationPage === 0}
               onClick={() => setRegistrationPage(registrationPage - 1)}
               type='button'
             >
               {t(`${key}.previous`)}
             </button>
-            <span>
+            <span className='tabular-nums'>
               {t(`${key}.page`, { page: registrationPage + 1, pages: Math.max(1, registrations.data.totalPages) })}
             </span>
             <button
+              className='min-h-11 px-3 font-semibold disabled:opacity-40'
               disabled={registrationPage + 1 >= registrations.data.totalPages}
               onClick={() => setRegistrationPage(registrationPage + 1)}
               type='button'
@@ -531,6 +550,18 @@ export function CaregiverProviderWorkShiftsPage() {
         </section>
       ) : null}
       {register.isError || cancel.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      <ConfirmDialog
+        confirmLabel={t(`${key}.cancelRegistration`)}
+        description={t(`${key}.confirmCancel`)}
+        loading={cancel.isPending}
+        onClose={() => setPendingCancel(null)}
+        onConfirm={() => {
+          if (pendingCancel) cancel.mutate(pendingCancel)
+        }}
+        open={Boolean(pendingCancel)}
+        title={t(`${key}.cancelRegistration`)}
+        tone='danger'
+      />
     </main>
   )
 }

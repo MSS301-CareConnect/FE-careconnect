@@ -16,11 +16,11 @@ export function CustomerServicesPage() {
   useDocumentTitle(t(`${key}.documentTitle`))
 
   return (
-    <div className='flex w-full flex-1 flex-col bg-[#f8faf7] text-[#1b2922]'>
-      <section className='relative isolate overflow-hidden border-b border-[#e2e9e1] bg-[#fbfcf9]'>
+    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
+      <section className='relative isolate overflow-hidden border-b border-outline-variant/60 bg-surface-container-lowest'>
         <div
           aria-hidden='true'
-          className='absolute inset-0 bg-[#fbfcf9]'
+          className='absolute inset-0 bg-surface-container-lowest'
           style={{
             backgroundImage: "url('/images/services-catalog-hero.jpg')",
             backgroundPosition: 'right center',
@@ -28,25 +28,25 @@ export function CustomerServicesPage() {
             backgroundSize: 'auto 100%'
           }}
         />
-        <div aria-hidden='true' className='absolute inset-0 bg-[#fbfcf9]/88 lg:hidden' />
+        <div aria-hidden='true' className='absolute inset-0 bg-surface-container-lowest/88 lg:hidden' />
         <div
           aria-hidden='true'
           className='absolute inset-0 hidden lg:block'
           style={{
             backgroundImage:
-              'linear-gradient(90deg, #fbfcf9 0%, rgba(251,252,249,.98) 29%, rgba(251,252,249,.84) 48%, rgba(251,252,249,.08) 82%)'
+              'linear-gradient(90deg, var(--color-surface-container-lowest) 0%, rgba(251,252,249,.98) 29%, rgba(251,252,249,.84) 48%, rgba(251,252,249,.08) 82%)'
           }}
         />
         <div className='relative mx-auto w-full max-w-[1440px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20'>
           <header className='max-w-[920px]'>
-            <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#075b31]'>
+            <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-primary'>
               <Icon aria-hidden='true' className='text-lg' name='verified' />
               {t(`${key}.badge`)}
             </p>
-            <h1 className='mt-4 max-w-[18ch] text-[clamp(2.75rem,4.4vw,3.75rem)] font-bold leading-[1.08] tracking-[-0.045em] text-[#1b2922]'>
+            <h1 className='mt-4 max-w-[18ch] text-[clamp(2.75rem,4.4vw,3.75rem)] font-bold leading-[1.08] tracking-[-0.045em] text-on-surface'>
               {t(`${key}.title`)}
             </h1>
-            <p className='mt-5 max-w-[54ch] text-base leading-7 text-[#435b4a] lg:text-lg lg:leading-8'>
+            <p className='mt-5 max-w-[54ch] text-base leading-7 text-on-surface-variant lg:text-lg lg:leading-8'>
               {t(`${key}.subtitle`)}
             </p>
           </header>

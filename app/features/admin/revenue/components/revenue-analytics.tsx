@@ -52,31 +52,34 @@ export function RevenueAnalytics() {
           role='img'
           viewBox='0 0 700 200'
         >
-          <g stroke='#d9e3f6' strokeDasharray='3 3'>
+          <g stroke='var(--color-surface-container-highest)' strokeDasharray='3 3'>
             <line x1='0' x2='700' y1='30' y2='30' />
             <line x1='0' x2='700' y1='80' y2='80' />
             <line x1='0' x2='700' y1='130' y2='130' />
             <line x1='0' x2='700' y1='180' y2='180' />
           </g>
-          <polygon fill='#eff4ef' points='0,180 0,110 100,95 200,120 300,75 400,60 500,45 600,65 700,40 700,180' />
+          <polygon
+            fill='var(--color-surface-container-low)'
+            points='0,180 0,110 100,95 200,120 300,75 400,60 500,45 600,65 700,40 700,180'
+          />
           <polyline
             fill='none'
             points='0,110 100,95 200,120 300,75 400,60 500,45 600,65 700,40'
-            stroke='#6e7b6c'
+            stroke='var(--color-outline)'
             strokeWidth='2'
           />
           <polygon
-            fill='#e8fbe8'
+            fill='var(--color-secondary-container)'
             points='0,180 0,165 100,160 200,168 300,150 400,140 500,135 600,142 700,130 700,180'
           />
           <polyline
             fill='none'
             points='0,165 100,160 200,168 300,150 400,140 500,135 600,142 700,130'
-            stroke='#006b2c'
+            stroke='var(--color-primary)'
             strokeWidth='3'
           />
         </svg>
-        <div className='mt-2 flex justify-between text-xs text-outline'>
+        <div className='mt-2 flex justify-between text-xs tabular-nums text-outline'>
           {[1, 5, 10, 15, 20, 25, 30].map((day) => (
             <span key={day}>
               {new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', timeZone: 'UTC' }).format(
@@ -96,7 +99,7 @@ export function RevenueAnalytics() {
           ].map((metric) => (
             <div key={metric.key}>
               <p className='text-xs text-outline'>{t(`${key}.${metric.key}`)}</p>
-              <strong className='mt-1 block text-sm'>{metric.value}</strong>
+              <strong className='mt-1 block text-sm tabular-nums'>{metric.value}</strong>
             </div>
           ))}
         </div>
@@ -119,7 +122,7 @@ export function RevenueAnalytics() {
                 <span className={`h-2.5 w-2.5 rounded-sm ${split.color}`} />
                 {t(`${key}.split.${split.key}`)} ({percentage(split.share)})
               </span>
-              <strong>{money(data.gmv * split.share)}</strong>
+              <strong className='tabular-nums'>{money(data.gmv * split.share)}</strong>
             </div>
           ))}
         </div>

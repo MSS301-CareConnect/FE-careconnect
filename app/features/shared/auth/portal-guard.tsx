@@ -14,7 +14,10 @@ export function PortalGuard({ children, role }: { children: ReactNode; role: Por
 
   if (session.isPending) {
     return (
-      <main className='grid min-h-screen place-items-center p-6' role='status'>
+      <main
+        className='grid min-h-screen place-items-center bg-surface p-6 text-sm font-medium text-on-surface-variant'
+        role='status'
+      >
         {t('auth.loading')}
       </main>
     )
@@ -23,18 +26,20 @@ export function PortalGuard({ children, role }: { children: ReactNode; role: Por
   if (session.isError) {
     if (isForbiddenError(session.error)) {
       return (
-        <main className='grid min-h-screen place-items-center p-6'>
-          <h1 className='text-2xl font-bold'>{t('auth.forbiddenTitle')}</h1>
+        <main className='grid min-h-screen place-items-center bg-surface p-6'>
+          <div className='max-w-md rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-8 text-center shadow-sm'>
+            <h1 className='text-2xl font-bold text-on-surface'>{t('auth.forbiddenTitle')}</h1>
+          </div>
         </main>
       )
     }
     return (
-      <main className='grid min-h-screen place-items-center p-6'>
-        <div className='max-w-md text-center'>
-          <h1 className='text-2xl font-bold'>{t('auth.unavailableTitle')}</h1>
-          <p className='mt-3 text-on-surface-variant'>{t('auth.unavailableDescription')}</p>
+      <main className='grid min-h-screen place-items-center bg-surface p-6'>
+        <div className='max-w-md rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-8 text-center shadow-sm'>
+          <h1 className='text-2xl font-bold text-on-surface'>{t('auth.unavailableTitle')}</h1>
+          <p className='mt-3 text-sm leading-6 text-on-surface-variant'>{t('auth.unavailableDescription')}</p>
           <button
-            className='mt-5 rounded-xl bg-primary px-5 py-3 font-semibold text-white'
+            className='mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container'
             onClick={() => void session.refetch()}
             type='button'
           >
@@ -52,13 +57,13 @@ export function PortalGuard({ children, role }: { children: ReactNode; role: Por
 
   if (session.data.status !== 'ACTIVE' || !session.data.roles?.includes(role)) {
     return (
-      <main className='grid min-h-screen place-items-center p-6'>
-        <div className='max-w-md text-center'>
-          <h1 className='text-2xl font-bold'>{t('auth.forbiddenTitle')}</h1>
-          <p className='mt-3 text-on-surface-variant'>{t('auth.forbiddenDescription')}</p>
+      <main className='grid min-h-screen place-items-center bg-surface p-6'>
+        <div className='max-w-md rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-8 text-center shadow-sm'>
+          <h1 className='text-2xl font-bold text-on-surface'>{t('auth.forbiddenTitle')}</h1>
+          <p className='mt-3 text-sm leading-6 text-on-surface-variant'>{t('auth.forbiddenDescription')}</p>
           {homeForUser(session.data) && (
             <Link
-              className='mt-5 inline-block rounded-xl bg-primary px-5 py-3 font-semibold text-white'
+              className='mt-5 inline-block rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container'
               to={homeForUser(session.data)!}
             >
               {t('auth.goToMyPortal')}

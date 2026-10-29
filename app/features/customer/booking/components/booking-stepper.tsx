@@ -18,7 +18,7 @@ export function BookingStepper({ done }: { done: Record<BookingStep, boolean> })
         return (
           <li
             aria-current={active ? 'step' : undefined}
-            className={`flex items-center gap-2 border-t-2 pt-3 text-sm font-semibold ${complete ? 'border-[#075b31] text-[#075b31]' : active ? 'border-[#1b2922] text-[#1b2922]' : 'border-[#dbe4db] text-[#76867a]'}`}
+            className={`flex items-center gap-2 border-t-2 pt-3 text-sm font-semibold ${complete ? 'border-primary text-primary' : active ? 'border-on-surface text-on-surface' : 'border-outline-variant text-outline'}`}
             key={step}
           >
             <Icon

@@ -1,5 +1,10 @@
 export const securityVi = {
   title: 'Bảo mật tài khoản',
+  subtitle: 'Quản lý mật khẩu và các thiết bị đang đăng nhập vào tài khoản của bạn.',
+  passwordSectionTitle: 'Thiết lập mật khẩu',
+  passwordHint: 'Mật khẩu mới cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
+  dangerZoneTitle: 'Đăng xuất toàn bộ thiết bị',
+  dangerZoneDescription: 'Thu hồi phiên đăng nhập trên tất cả trình duyệt và thiết bị, bao gồm thiết bị hiện tại.',
   currentPassword: 'Mật khẩu hiện tại',
   newPassword: 'Mật khẩu mới',
   confirmPassword: 'Nhập lại mật khẩu mới',
@@ -29,6 +34,12 @@ export const securityVi = {
 
 export const securityEn = {
   title: 'Account security',
+  subtitle: 'Manage your password and devices signed in to your account.',
+  passwordSectionTitle: 'Password settings',
+  passwordHint:
+    'New password needs at least 8 characters, including uppercase, lowercase, a number, and a special character.',
+  dangerZoneTitle: 'Global sign-out',
+  dangerZoneDescription: 'Revoke active sessions across all browsers and devices, including this one.',
   currentPassword: 'Current password',
   newPassword: 'New password',
   confirmPassword: 'Confirm new password',

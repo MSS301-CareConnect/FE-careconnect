@@ -10,7 +10,7 @@ import { validPassword } from './password-validation'
 import { beginRegistration, registrationErrorKey, resendOtp, verifyRegistration } from './registration-api'
 
 const inputClass =
-  'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-white px-4 text-on-surface outline-none focus-visible:ring-2 focus-visible:ring-primary'
+  'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
 
 type ValidationKey =
   | 'auth.registration.invalidName'

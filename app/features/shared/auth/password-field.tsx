@@ -15,13 +15,13 @@ export function PasswordField({ autoComplete, id, label, onChange, value }: Pass
 
   return (
     <div>
-      <label className='block text-sm font-semibold' htmlFor={id}>
+      <label className='block text-sm font-semibold text-on-surface' htmlFor={id}>
         {label}
       </label>
       <div className='relative mt-2'>
         <input
           autoComplete={autoComplete}
-          className='h-12 w-full rounded-xl border border-outline-variant bg-white pr-12 pl-4 text-on-surface outline-none focus-visible:ring-2 focus-visible:ring-primary'
+          className='h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest pr-12 pl-4 text-sm text-on-surface outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
           id={id}
           onChange={(event) => onChange(event.target.value)}
           required
@@ -31,7 +31,7 @@ export function PasswordField({ autoComplete, id, label, onChange, value }: Pass
         <button
           aria-label={t(visible ? 'auth.hidePassword' : 'auth.showPassword')}
           aria-pressed={visible}
-          className='absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-on-surface-variant hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          className='absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-on-surface-variant transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
           onClick={() => setVisible((current) => !current)}
           type='button'
         >

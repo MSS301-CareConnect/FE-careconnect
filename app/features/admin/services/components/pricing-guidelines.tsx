@@ -35,8 +35,14 @@ export function PricingGuidelines() {
       <section className='grid gap-4 lg:grid-cols-3'>
         <div className={card}>
           <h2 className='font-bold'>{t(`${key}.allocation`)}</h2>
-          <div className='mx-auto my-5 flex h-32 w-32 items-center justify-center rounded-full bg-[conic-gradient(#006b2c_0_45%,#62df7d_45%_75%,#d9e3f6_75%_100%)]'>
-            <span className='flex h-20 w-20 items-center justify-center rounded-full bg-white text-lg font-bold'>
+          <div
+            className='mx-auto my-5 flex h-32 w-32 items-center justify-center rounded-full'
+            style={{
+              background:
+                'conic-gradient(var(--color-primary) 0 45%, var(--color-tertiary-fixed-dim) 45% 75%, var(--color-surface-container-highest) 75% 100%)'
+            }}
+          >
+            <span className='flex h-20 w-20 items-center justify-center rounded-full bg-white text-lg font-bold tabular-nums'>
               {number.format(6300)}
             </span>
           </div>
@@ -48,7 +54,7 @@ export function PricingGuidelines() {
             {surcharges.map(([name, value]) => (
               <li className='flex justify-between gap-2 border-b border-outline-variant/25 pb-2' key={name}>
                 <span>{t(`${key}.surchargeItems.${name}`)}</span>
-                <strong className='text-primary'>{value}</strong>
+                <strong className='tabular-nums text-primary'>{value}</strong>
               </li>
             ))}
           </ul>

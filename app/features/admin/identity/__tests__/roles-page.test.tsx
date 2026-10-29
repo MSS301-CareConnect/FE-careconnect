@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
@@ -55,7 +55,6 @@ describe('RolesPage', () => {
   })
 
   it('keeps built-in roles read-only and replaces custom role permissions with selected IDs', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     vi.mocked(saveRolePermissions).mockResolvedValue({})
     renderPage()
     fireEvent.click(await screen.findByRole('button', { name: /Admin \(ADMIN\)/ }))
@@ -65,7 +64,7 @@ describe('RolesPage', () => {
     expect(screen.getByRole('checkbox', { name: /Read users/ })).toBeChecked()
     fireEvent.click(screen.getByRole('checkbox', { name: /Manage users/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(saveRolePermissions).toHaveBeenCalledWith('custom', { permissionIds: ['p1', 'p2'] }))
-    vi.mocked(window.confirm).mockRestore()
   })
 })

@@ -125,7 +125,7 @@ export function AdminQualityPage() {
               <span>{t(`${key}.metrics.${name}`)}</span>
               <Icon className='text-xl text-primary' name={icon} />
             </div>
-            <strong className='mt-5 block text-3xl'>{number.format(value)}</strong>
+            <strong className='mt-5 block text-3xl tabular-nums'>{number.format(value)}</strong>
             <p className='mt-2 text-xs text-on-surface-variant'>{t(`${key}.metricHints.${name}`)}</p>
           </div>
         ))}
@@ -227,9 +227,9 @@ export function AdminQualityPage() {
           <h2 className='text-lg font-bold'>{t(`${key}.tabs.all`)}</h2>
           <span className='text-xs text-outline'>{t(`${key}.results`, { count: filtered.length })}</span>
         </div>
-        <div className='overflow-x-auto'>
+        <div className='max-h-[70vh] overflow-x-auto'>
           <table className='w-full min-w-[1120px] text-left text-sm'>
-            <thead className='bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
+            <thead className='sticky top-0 z-10 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
               <tr>
                 {(['caregiver', 'center', 'license', 'background', 'assessment', 'status', 'actions'] as const).map(
                   (column) => (

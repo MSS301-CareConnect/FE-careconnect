@@ -18,7 +18,7 @@ export function LanguageSwitch() {
           <button
             aria-label={t('common.language.switchTo', { language: languageName })}
             aria-pressed={isCurrent}
-            className='rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-teal-700 hover:text-teal-700 aria-pressed:border-teal-700 aria-pressed:bg-teal-50 aria-pressed:text-teal-800'
+            className='min-h-9 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-pressed:border-primary aria-pressed:bg-secondary-container aria-pressed:text-primary'
             key={language}
             onClick={() => void setAppLanguage(language)}
             type='button'

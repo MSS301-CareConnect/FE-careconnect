@@ -32,12 +32,12 @@ export function BookingOccurrenceList({ occurrences, caregiverName, renderAction
             : t('booking.occurrences.unassigned')
           return (
             <li
-              className='grid gap-3 rounded-xl bg-surface-container-low p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'
+              className='grid gap-3 rounded-xl border border-outline-variant/50 bg-surface-container-low/70 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'
               key={occurrence.id}
             >
               <div className='min-w-0'>
                 <div className='flex flex-wrap items-center gap-2'>
-                  <p className='font-semibold text-on-surface'>
+                  <p className='font-semibold tabular-nums text-on-surface'>
                     {t('booking.occurrences.title', { number: occurrence.occurrenceNo })}
                     {' · '}
                     {formatDateTime(occurrence.startAt, language)}
@@ -46,19 +46,19 @@ export function BookingOccurrenceList({ occurrences, caregiverName, renderAction
                   </p>
                   <OccurrenceStatusBadge status={occurrence.status} />
                   {occurrence.needsReassignment ? (
-                    <span className='inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-800'>
+                    <span className='inline-flex items-center gap-1 rounded-md border border-error/25 bg-error-container px-2 py-1 text-xs font-semibold text-on-error-container'>
                       <Icon className='text-sm' name='person_alert' />
                       {t('booking.occurrences.needsReassignment')}
                     </span>
                   ) : null}
                 </div>
-                <p className='mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-on-surface-variant'>
+                <p className='mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-on-surface-variant'>
                   <span className='inline-flex items-center gap-1'>
                     <Icon className='text-base text-primary' name='person' />
                     {caregiver}
                   </span>
                   {occurrence.priceAmount !== undefined ? (
-                    <span>{formatMoney(occurrence.priceAmount, language)}</span>
+                    <span className='font-medium tabular-nums'>{formatMoney(occurrence.priceAmount, language)}</span>
                   ) : null}
                 </p>
                 {occurrence.cancelReason ? (

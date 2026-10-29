@@ -8,7 +8,7 @@ import { BookingPanel, bookingField } from './booking-panel'
 
 type Form = ReturnType<typeof useBookingForm>
 const SCHEDULE_TYPES = ['ONE_TIME', 'DAILY', 'WEEKLY'] as const
-const label = 'text-sm font-semibold text-[#1b2922]'
+const label = 'text-sm font-semibold text-on-surface'
 
 export function BookingScheduleSection({ form }: { form: Form }) {
   const { t } = useTranslation()
@@ -28,10 +28,10 @@ export function BookingScheduleSection({ form }: { form: Form }) {
       <div className='flex flex-col gap-5'>
         <fieldset>
           <legend className={label}>{t('customer.booking.schedule.type')}</legend>
-          <div className='mt-2 grid grid-cols-3 gap-1 rounded-xl bg-[#f2f6f1] p-1 sm:inline-grid'>
+          <div className='mt-2 grid grid-cols-3 gap-1 rounded-xl bg-surface-container p-1 sm:inline-grid'>
             {SCHEDULE_TYPES.map((type) => (
               <label
-                className={`cursor-pointer rounded-lg px-4 py-2.5 text-center text-sm font-bold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-[#075b31] ${schedule.scheduleType === type ? 'bg-[#075b31] text-white' : 'text-[#44594b] hover:bg-[#e8f0e8]'}`}
+                className={`cursor-pointer rounded-lg px-4 py-2.5 text-center text-sm font-bold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-primary ${schedule.scheduleType === type ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:bg-primary-fixed/60'}`}
                 key={type}
               >
                 <input
@@ -95,12 +95,12 @@ export function BookingScheduleSection({ form }: { form: Form }) {
           </label>
         </div>
         {invalidRange ? (
-          <p className='-mt-2 text-sm text-[#ba1a1a]' id={`${id}-range`}>
+          <p className='-mt-2 text-sm text-error' id={`${id}-range`}>
             {t('customer.booking.schedule.invalidRange')}
           </p>
         ) : null}
         {invalidTime ? (
-          <p className='-mt-2 text-sm text-[#ba1a1a]' id={`${id}-time`}>
+          <p className='-mt-2 text-sm text-error' id={`${id}-time`}>
             {t('customer.booking.schedule.invalidTime')}
           </p>
         ) : null}
@@ -114,7 +114,7 @@ export function BookingScheduleSection({ form }: { form: Form }) {
                 const checked = schedule.daysOfWeek.includes(value)
                 return (
                   <label
-                    className={`grid h-11 min-w-12 cursor-pointer place-items-center rounded-lg border px-3 text-sm font-bold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-[#075b31] ${checked ? 'border-[#075b31] bg-[#075b31] text-white' : 'border-[#d5e0d5] bg-white text-[#44594b] hover:border-[#a8c2ad]'}`}
+                    className={`grid h-11 min-w-12 cursor-pointer place-items-center rounded-xl border px-3 text-sm font-bold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-primary ${checked ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:border-outline'}`}
                     key={day}
                   >
                     <input

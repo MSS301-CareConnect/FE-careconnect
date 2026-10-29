@@ -21,10 +21,12 @@ export function DashboardCharts() {
             <h2 className='text-lg font-bold'>{t(`${key}.bookingsChart`)}</h2>
             <p className='mt-1 text-sm text-outline'>{t(`${key}.bookingsChartHint`)}</p>
           </div>
-          <div className='flex flex-wrap gap-3 text-xs'>
+          <div className='flex flex-wrap gap-3 text-xs tabular-nums'>
             {(['completed', 'active', 'cancelled'] as const).map((item, index) => (
               <span className='flex items-center gap-1.5' key={item}>
-                <span className={`h-2.5 w-2.5 rounded-sm ${['bg-primary', 'bg-emerald-300', 'bg-error'][index]}`} />
+                <span
+                  className={`h-2.5 w-2.5 rounded-sm ${['bg-primary', 'bg-tertiary-fixed-dim', 'bg-error'][index]}`}
+                />
                 {t(`${key}.chartLegend.${item}`)} (
                 {number([data.completedBookings, data.ongoingBookings, data.cancelledBookings][index])})
               </span>
@@ -39,7 +41,7 @@ export function DashboardCharts() {
             role='img'
             viewBox='0 0 540 200'
           >
-            <g stroke='#eff4ff'>
+            <g stroke='var(--color-surface-container-low)'>
               <line x1='0' x2='540' y1='30' y2='30' />
               <line x1='0' x2='540' y1='80' y2='80' />
               <line x1='0' x2='540' y1='130' y2='130' />
@@ -47,21 +49,35 @@ export function DashboardCharts() {
             </g>
             {[0, 1, 2, 3].map((week) => (
               <g key={week} transform={`translate(${50 + week * 130} 0)`}>
-                <rect fill='#006b2c' height={110 + week * 15} rx='4' width='22' y={70 - week * 15} />
-                <rect fill='#68dba9' height={35 + week * 8} rx='3' width='16' x='27' y={145 - week * 8} />
-                <rect fill='#ba1a1a' height={Math.max(3, 6 - week)} rx='2' width='10' x='47' y={174 + week} />
+                <rect fill='var(--color-primary)' height={110 + week * 15} rx='4' width='22' y={70 - week * 15} />
+                <rect
+                  fill='var(--color-tertiary-fixed-dim)'
+                  height={35 + week * 8}
+                  rx='3'
+                  width='16'
+                  x='27'
+                  y={145 - week * 8}
+                />
+                <rect
+                  fill='var(--color-error)'
+                  height={Math.max(3, 6 - week)}
+                  rx='2'
+                  width='10'
+                  x='47'
+                  y={174 + week}
+                />
               </g>
             ))}
             <path
               d='M61,65 C140,55 191,42 321,32 C380,27 420,18 451,15'
               fill='none'
-              stroke='#00873a'
+              stroke='var(--color-primary-container)'
               strokeDasharray='4 3'
               strokeWidth='3'
             />
           </svg>
         </div>
-        <div className='mt-2 flex justify-between text-xs text-outline'>
+        <div className='mt-2 flex justify-between text-xs tabular-nums text-outline'>
           {[1, 2, 3, 4].map((week) => (
             <span key={week}>{t(`${key}.week`, { count: week })}</span>
           ))}
@@ -72,7 +88,7 @@ export function DashboardCharts() {
             <span className='text-sm font-semibold'>{t(`${key}.completion`)}</span>
           </div>
           <div className='text-right'>
-            <strong className='text-lg text-primary'>{percentage(data.completionRate)}</strong>
+            <strong className='text-lg tabular-nums text-primary'>{percentage(data.completionRate)}</strong>
             <p className='text-xs text-outline'>{t(`${key}.completionHint`)}</p>
           </div>
         </div>
@@ -81,7 +97,7 @@ export function DashboardCharts() {
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div>
             <h2 className='text-lg font-bold'>{t(`${key}.revenueChart`)}</h2>
-            <p className='mt-1 text-sm text-outline'>
+            <p className='mt-1 text-sm tabular-nums text-outline'>
               {t(`${key}.revenueChartHint`, { amount: money(data.monthlyGmv) })}
             </p>
           </div>
@@ -100,16 +116,16 @@ export function DashboardCharts() {
           role='img'
           viewBox='0 0 300 120'
         >
-          <path d='M0,100 Q60,95 100,75 T200,45 T300,10 L300,120 L0,120 Z' fill='#e8fbe8' />
-          <path d='M0,100 Q60,95 100,75 T200,45 T300,10' fill='none' stroke='#006b2c' strokeWidth='3' />
-          <circle cx='300' cy='10' fill='#006b2c' r='4' />
+          <path d='M0,100 Q60,95 100,75 T200,45 T300,10 L300,120 L0,120 Z' fill='var(--color-secondary-container)' />
+          <path d='M0,100 Q60,95 100,75 T200,45 T300,10' fill='none' stroke='var(--color-primary)' strokeWidth='3' />
+          <circle cx='300' cy='10' fill='var(--color-primary)' r='4' />
         </svg>
         <div className='mt-5 space-y-4'>
           {data.services.map((service) => (
             <div key={service.key}>
               <div className='mb-1 flex justify-between gap-3 text-xs'>
                 <span>{t(`${key}.services.${service.key}`)}</span>
-                <strong className='text-primary'>
+                <strong className='tabular-nums text-primary'>
                   {percentage(service.share)} · {money(data.monthlyGmv * service.share)}
                 </strong>
               </div>

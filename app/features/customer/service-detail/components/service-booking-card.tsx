@@ -20,10 +20,10 @@ function CenterLine({ icon, label, value }: { icon: string; label: string; value
   if (!value) return null
   return (
     <div className='flex items-start gap-2.5'>
-      <Icon className='mt-0.5 text-lg text-[#075b31]' name={icon} />
+      <Icon className='mt-0.5 text-lg text-primary' name={icon} />
       <div className='min-w-0'>
-        <dt className='text-xs font-semibold uppercase tracking-[0.08em] text-[#647b69]'>{label}</dt>
-        <dd className='mt-0.5 text-sm text-[#263b2d]'>{value}</dd>
+        <dt className='text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant'>{label}</dt>
+        <dd className='mt-0.5 text-sm text-on-surface'>{value}</dd>
       </div>
     </div>
   )
@@ -36,43 +36,45 @@ export function ServiceBookingCard({ centerId, careServiceId, fromPrice, center,
   const params = new URLSearchParams({ center: centerId, service: careServiceId })
 
   return (
-    <aside className='flex flex-col gap-4 lg:sticky lg:top-6'>
-      <div className='rounded-2xl border border-[#dbe4db] bg-[#f5f9f4] p-6'>
-        <p className='text-sm text-[#526a57]'>
+    <aside className='flex flex-col gap-4 lg:sticky lg:top-24'>
+      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 shadow-xs'>
+        <p className='text-sm text-on-surface-variant tabular-nums'>
           {fromPrice === undefined ? (
             t(`${key}.booking.contactPrice`)
           ) : (
             <>
               {t(`${key}.booking.from`)}{' '}
-              <strong className='block text-3xl font-bold tracking-tight text-[#075b31]'>
+              <strong className='block text-3xl font-bold tracking-tight text-primary'>
                 {money.format(fromPrice)}
               </strong>
             </>
           )}
         </p>
         <Link
-          className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#075b31] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#064925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075b31]'
+          className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
           to={`/customer/booking?${params.toString()}`}
         >
           <Icon className='text-lg' name='calendar_add_on' />
           {t(`${key}.booking.book`)}
         </Link>
-        <p className='mt-3 text-xs leading-5 text-[#617267]'>{t(`${key}.booking.hint`)}</p>
+        <p className='mt-3 text-xs leading-5 text-on-surface-variant'>{t(`${key}.booking.hint`)}</p>
       </div>
-      <div className='rounded-2xl border border-[#dbe4db] bg-white p-6'>
-        <h2 className='text-xs font-bold uppercase tracking-[0.12em] text-[#647b69]'>{t(`${key}.center.title`)}</h2>
+      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs'>
+        <h2 className='text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant'>
+          {t(`${key}.center.title`)}
+        </h2>
         {centerPending ? (
-          <p className='mt-3 text-sm text-[#526a57]' role='status'>
+          <p className='mt-3 text-sm text-on-surface-variant' role='status'>
             {t(`${key}.center.loading`)}
           </p>
         ) : null}
         {center ? (
           <>
-            <p className='mt-3 flex items-center gap-2 font-bold text-[#1b2922]'>
-              <Icon className='text-xl text-[#075b31]' name='home_health' />
+            <p className='mt-3 flex items-center gap-2 font-bold text-on-surface'>
+              <Icon className='text-xl text-primary' name='home_health' />
               {center.centerName}
             </p>
-            <dl className='mt-4 flex flex-col gap-3 border-t border-[#e6ece5] pt-4'>
+            <dl className='mt-4 flex flex-col gap-3 border-t border-outline-variant/40 pt-4'>
               <CenterLine icon='location_on' label={t(`${key}.center.address`)} value={center.address} />
               <CenterLine icon='call' label={t(`${key}.center.phone`)} value={center.phoneNumber} />
               <CenterLine icon='schedule' label={t(`${key}.center.hours`)} value={center.operatingHours} />

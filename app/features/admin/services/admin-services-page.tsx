@@ -89,7 +89,9 @@ export function AdminServicesPage() {
               <span>{t(`${key}.metrics.${name}`)}</span>
               <Icon className='text-xl text-primary' name={icon} />
             </div>
-            <strong className='mt-5 block text-3xl'>{list.query.isSuccess ? number.format(value) : '—'}</strong>
+            <strong className='mt-5 block text-3xl tabular-nums'>
+              {list.query.isSuccess ? number.format(value) : '—'}
+            </strong>
             <p className='mt-2 text-xs text-on-surface-variant'>{t(`${key}.metricHints.${name}`)}</p>
           </div>
         ))}
