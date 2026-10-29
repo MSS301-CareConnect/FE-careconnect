@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 
 import { fetchCaregivers, providerKeys } from '~/entities/provider/provider-api'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -179,14 +180,14 @@ export function ManagerCaregiversPage() {
       </header>
       <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
         {stats.map((stat) => (
-          <section className='rounded-xl bg-white p-5 shadow-sm' key={stat.key}>
+          <section className='rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm' key={stat.key}>
             <div className='flex items-center justify-between gap-3'>
               <h2 className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
                 {t(`${key}.${stat.key}`)}
               </h2>
               <Icon className='text-2xl text-primary' name={stat.icon} />
             </div>
-            <p className='mt-3 text-3xl font-extrabold'>
+            <p className='mt-3 text-3xl font-extrabold tabular-nums'>
               {caregivers.isSuccess && stat.value !== undefined ? number(stat.value) : '—'}
             </p>
             <p className='mt-2 text-xs text-outline'>{stat.hint}</p>
@@ -300,7 +301,7 @@ export function ManagerCaregiversPage() {
         {caregivers.isSuccess ? (
           <div className='overflow-x-auto'>
             <table className='w-full min-w-[900px] text-left text-sm'>
-              <thead className='bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
+              <thead className='sticky top-0 z-10 border-b border-outline-variant/25 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant'>
                 <tr>
                   {(['name', 'experience', 'hospital', 'status', 'verification', 'actions'] as const).map((column) => (
                     <th className='p-4 font-semibold' key={column} scope='col'>
@@ -311,7 +312,7 @@ export function ManagerCaregiversPage() {
               </thead>
               <tbody className='divide-y divide-outline-variant/20'>
                 {visible.map((person) => (
-                  <tr className='hover:bg-surface-container-low/40' key={person.id}>
+                  <tr className='transition-colors hover:bg-surface-container-low/40' key={person.id}>
                     <td className='p-4'>
                       <div className='flex items-center gap-3'>
                         <span className='flex h-11 w-11 items-center justify-center rounded-xl bg-secondary-container text-primary'>
@@ -321,22 +322,28 @@ export function ManagerCaregiversPage() {
                           <Link className='font-bold hover:text-primary' to={`/center-manager/caregivers/${person.id}`}>
                             {person.fullName}
                           </Link>
-                          <small className='mt-1 block text-outline'>{person.id}</small>
+                          <small className='mt-1 block text-outline tabular-nums'>{person.id}</small>
                         </div>
                       </div>
                     </td>
-                    <td className='p-4'>
+                    <td className='p-4 tabular-nums'>
                       {person.experienceYears !== undefined
                         ? t(`${providerKey}.yearsValue`, { count: person.experienceYears })
                         : '—'}
                     </td>
                     <td className='p-4'>{person.centerName || '—'}</td>
                     <td className='p-4'>
-                      <span className='rounded-full bg-secondary-container px-2.5 py-1 text-xs font-semibold text-primary'>
-                        {t(`${providerKey}.${statusLabels[person.caregiverStatus]}`)}
-                      </span>
+                      <ProviderStatusBadge
+                        label={t(`${providerKey}.${statusLabels[person.caregiverStatus]}`)}
+                        status={person.caregiverStatus}
+                      />
                     </td>
-                    <td className='p-4'>{t(`${providerKey}.${verificationLabels[person.verificationStatus]}`)}</td>
+                    <td className='p-4'>
+                      <ProviderStatusBadge
+                        label={t(`${providerKey}.${verificationLabels[person.verificationStatus]}`)}
+                        status={person.verificationStatus}
+                      />
+                    </td>
                     <td className='p-4'>
                       <Link
                         className='font-semibold text-primary hover:underline'

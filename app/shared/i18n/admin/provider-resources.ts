@@ -2,6 +2,7 @@ export const adminProviderVi = {
   export: 'Xuất CSV',
   metricsScope: {
     activeLabel: 'Trung tâm hoạt động',
+    platform: 'Toàn nền tảng',
     total: 'Tổng số theo bộ lọc hiện tại',
     pending: 'Số trên trang hiện tại',
     suspended: 'Số trên trang hiện tại',
@@ -60,6 +61,8 @@ export const adminProviderVi = {
   rejected: 'Từ chối',
   archived: 'Đã lưu trữ',
   verified: 'Đã xác minh',
+  centerVerified: 'Trung tâm đã xác nhận',
+  awaitingCenter: 'Chờ trung tâm xác nhận trước',
   confirmReject: 'Từ chối hồ sơ này?',
   actionError: 'Không thể hoàn tất thao tác. Vui lòng thử lại.',
   manager: {
@@ -84,6 +87,8 @@ export const adminProviderVi = {
     managerTaken: 'Người quản lý này đang phụ trách một trung tâm khác. Hãy chọn người khác.',
     managerNotFound: 'Không tìm thấy tài khoản quản lý đã chọn. Hãy chọn lại.',
     managerInvalid: 'Tài khoản đã chọn đang bị khóa hoặc không có vai trò quản lý trung tâm.',
+    managerCenterMismatch:
+      'Tài khoản quản lý này thuộc trung tâm khác. Hãy tạo tài khoản quản lý cho đúng trung tâm này.',
     identityUnavailable: 'Hệ thống tài khoản đang bận, chưa kiểm tra được người quản lý. Vui lòng thử lại sau.'
   }
 } as const
@@ -92,6 +97,7 @@ export const adminProviderEn = {
   export: 'Export CSV',
   metricsScope: {
     activeLabel: 'Active centers',
+    platform: 'Across the platform',
     total: 'Total for current filters',
     pending: 'Count on current page',
     suspended: 'Count on current page',
@@ -150,6 +156,8 @@ export const adminProviderEn = {
   rejected: 'Rejected',
   archived: 'Archived',
   verified: 'Verified',
+  centerVerified: 'Confirmed by center',
+  awaitingCenter: 'Waiting for the center to confirm first',
   confirmReject: 'Reject this profile?',
   actionError: 'Unable to complete the action. Please try again.',
   manager: {
@@ -174,6 +182,8 @@ export const adminProviderEn = {
     managerTaken: 'This manager already runs another center. Choose someone else.',
     managerNotFound: 'The selected manager account was not found. Choose again.',
     managerInvalid: 'The selected account is locked or is not a center manager.',
+    managerCenterMismatch:
+      'This manager account belongs to another center. Create a manager account for this center first.',
     identityUnavailable: 'The account service is busy and could not check the manager. Please try again later.'
   }
 } as const

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { fetchProviderMedia, providerKeys, removeMedia, uploadMedia, type ProviderMediaOwner } from './provider-api'
 
@@ -33,6 +35,7 @@ export function ProviderMediaPanel({
   const [files, setFiles] = useState<File[]>([])
   const [fileError, setFileError] = useState<'count' | 'type' | 'size' | null>(null)
   const [inputKey, setInputKey] = useState(0)
+  const [removingMediaId, setRemovingMediaId] = useState<string | null>(null)
   const titleKey = {
     CARE_CENTER: 'common.providerMedia.centerTitle',
     CAREGIVER_PROFILE: 'common.providerMedia.caregiverTitle',
@@ -54,6 +57,7 @@ export function ProviderMediaPanel({
   const remove = useMutation({
     mutationFn: (mediaFileId: string) => removeMedia(ownerType, ownerId, mediaFileId),
     onSuccess: async () => {
+      setRemovingMediaId(null)
       await Promise.all([
         queryClient.invalidateQueries({ queryKey }),
         queryClient.invalidateQueries({ queryKey: providerKeys.catalog })
@@ -63,16 +67,18 @@ export function ProviderMediaPanel({
   return (
     <section
       className={
-        embedded ? 'space-y-4 border-t border-primary/15 pt-4' : 'space-y-4 rounded-2xl bg-white p-5 shadow-sm'
+        embedded
+          ? 'space-y-4 border-t border-outline-variant/50 pt-4'
+          : 'space-y-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'
       }
     >
       {embedded ? (
-        <h3 className='flex items-center gap-2 text-base font-bold'>
+        <h3 className='flex items-center gap-2 text-base font-bold text-on-surface'>
           <Icon className='text-primary' name='perm_media' />
           {t(titleKey[ownerType])}
         </h3>
       ) : (
-        <h2 className='flex items-center gap-2 text-lg font-bold'>
+        <h2 className='flex items-center gap-2 text-lg font-bold text-on-surface'>
           <Icon className='text-primary' name='perm_media' />
           {t(titleKey[ownerType])}
         </h2>
@@ -83,22 +89,30 @@ export function ProviderMediaPanel({
       {ownerType === 'CARE_CENTER' ? (
         <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.centerHint')}</p>
       ) : null}
-      {media.isPending ? <p role='status'>{t('common.providerMedia.loading')}</p> : null}
-      {media.isError ? <p role='alert'>{t('common.providerMedia.error')}</p> : null}
+      {media.isPending ? (
+        <p className='text-sm text-on-surface-variant' role='status'>
+          {t('common.providerMedia.loading')}
+        </p>
+      ) : null}
+      {media.isError ? (
+        <p className='text-sm text-error' role='alert'>
+          {t('common.providerMedia.error')}
+        </p>
+      ) : null}
       {media.isSuccess && media.data.length === 0 ? (
         <p className='rounded-xl bg-surface-container-low p-4 text-sm text-outline'>
           {t('common.providerMedia.empty')}
         </p>
       ) : null}
       {media.isSuccess ? (
-        <ul className='divide-y divide-outline-variant/20'>
+        <ul className='divide-y divide-outline-variant/30'>
           {media.data.map((item) => (
             <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={item.mediaFileId}>
-              <span className='flex min-w-0 flex-1 items-center gap-2 text-sm font-medium'>
+              <span className='flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium text-on-surface'>
                 {item.downloadUrl && item.contentType?.startsWith('image/') ? (
                   <img
                     alt={item.originalFileName || t('common.providerMedia.image')}
-                    className='h-12 w-12 shrink-0 rounded-lg object-cover'
+                    className='h-12 w-12 shrink-0 rounded-lg border border-outline-variant/50 object-cover'
                     src={item.downloadUrl}
                   />
                 ) : (
@@ -106,10 +120,10 @@ export function ProviderMediaPanel({
                 )}
                 <span className='min-w-0 truncate'>{item.originalFileName || item.mediaFileType}</span>
               </span>
-              <div className='flex gap-3'>
+              <div className='flex items-center gap-3'>
                 {item.downloadUrl ? (
                   <a
-                    className='text-sm font-semibold text-primary hover:underline'
+                    className='inline-flex min-h-9 items-center rounded-lg px-2.5 text-sm font-semibold text-primary hover:bg-surface-container-low hover:underline'
                     href={item.downloadUrl}
                     rel='noreferrer'
                     target='_blank'
@@ -118,11 +132,9 @@ export function ProviderMediaPanel({
                   </a>
                 ) : null}
                 <button
-                  className='text-sm font-semibold text-error hover:underline disabled:opacity-50'
+                  className='inline-flex min-h-9 items-center rounded-lg px-2.5 text-sm font-semibold text-error hover:bg-error-container/60 disabled:opacity-50'
                   disabled={remove.isPending}
-                  onClick={() => {
-                    if (window.confirm(t('common.providerMedia.confirmRemove'))) remove.mutate(item.mediaFileId)
-                  }}
+                  onClick={() => setRemovingMediaId(item.mediaFileId)}
                   type='button'
                 >
                   {t('common.providerMedia.remove')}
@@ -132,11 +144,11 @@ export function ProviderMediaPanel({
           ))}
         </ul>
       ) : null}
-      <div className='flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-4'>
+      <div className='flex flex-wrap items-center gap-3 rounded-xl border border-outline-variant/50 bg-surface-container-low p-4'>
         <input
           accept={ownerType === 'CERTIFICATE' ? '.pdf,.jpg,.jpeg,.png' : '.jpg,.jpeg,.png,.webp'}
           aria-label={t('common.providerMedia.upload')}
-          className='min-w-0 flex-1 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:font-semibold file:text-primary'
+          className='min-w-0 flex-1 text-xs file:mr-3 file:rounded-lg file:border file:border-outline-variant file:bg-surface-container-lowest file:px-3 file:py-2 file:font-semibold file:text-primary'
           key={inputKey}
           multiple
           onChange={(event) => {
@@ -148,21 +160,38 @@ export function ProviderMediaPanel({
           }}
           type='file'
         />
-        <button
-          className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-container disabled:opacity-50'
+        <Button
           disabled={files.length === 0 || upload.isPending}
+          loading={upload.isPending}
           onClick={() => upload.mutate()}
-          type='button'
+          size='sm'
+          variant='primary'
         >
           {t('common.providerMedia.upload')}
-        </button>
+        </Button>
       </div>
       {fileError ? (
-        <p role='alert'>
+        <p className='text-sm text-error' role='alert'>
           {t(`common.providerMedia.validation.${fileError}`, { maxSize: ownerType === 'CERTIFICATE' ? 10 : 5 })}
         </p>
       ) : null}
-      {upload.isError || remove.isError ? <p role='alert'>{t('common.providerMedia.actionError')}</p> : null}
+      {upload.isError || remove.isError ? (
+        <p className='text-sm text-error' role='alert'>
+          {t('common.providerMedia.actionError')}
+        </p>
+      ) : null}
+      <ConfirmDialog
+        confirmLabel={t('common.providerMedia.remove')}
+        danger
+        description={t('common.providerMedia.confirmRemove')}
+        loading={remove.isPending}
+        onClose={() => setRemovingMediaId(null)}
+        onConfirm={() => {
+          if (removingMediaId) remove.mutate(removingMediaId)
+        }}
+        open={Boolean(removingMediaId)}
+        title={t('common.providerMedia.remove')}
+      />
     </section>
   )
 }

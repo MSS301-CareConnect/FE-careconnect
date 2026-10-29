@@ -14,6 +14,11 @@ import {
   createProviderCaregiver,
   getProviderCaregiver,
   listCenterCaregivers,
+  listPendingVerificationProviderCaregivers,
+  listProviderCaregiverTimeOffs,
+  createProviderCaregiverTimeOff,
+  deleteProviderCaregiverTimeOff,
+  setProviderCaregiverStatus,
   updateProviderCaregiver,
   verifyProviderCaregiver,
   catalogProviderCaregivers,
@@ -30,6 +35,7 @@ import {
   listProviderCertificates,
   updateProviderCertificate,
   verifyProviderCertificate,
+  verifyProviderCertificateByCenter,
   listVerifiedProviderCertificates
 } from '~/shared/api/generated/api/provider-certificate/provider-certificate'
 import {
@@ -55,8 +61,13 @@ import type {
   CenterCreateRequest,
   CenterStatusUpdateRequest,
   CenterUpdateRequest,
+  CaregiverStatusRequest,
   CertificateRequest,
+  CertificateVerificationRequest,
+  ListProviderCaregiverTimeOffsParams,
+  TimeOffRequest,
   ListCenterCaregiversParams,
+  ListPendingVerificationProviderCaregiversParams,
   ListProviderCentersParams,
   ListPublicProviderCentersParams,
   ListProviderWorkShiftsParams,
@@ -92,6 +103,8 @@ export const providerKeys = {
   center: (id: string) => ['provider', 'center', id] as const,
   caregivers: (centerId: string) => ['provider', 'caregivers', centerId] as const,
   caregiver: (id: string) => ['provider', 'caregiver', id] as const,
+  pendingCaregivers: (page: number) => ['provider', 'pending-caregivers', page] as const,
+  timeOffs: (caregiverId: string) => ['provider', 'time-offs', caregiverId] as const,
   publicCaregiver: (id: string) => ['provider', 'public-caregiver', id] as const,
   serviceCaregivers: (params: SearchProviderCaregiversParams) => ['provider', 'service-caregivers', params] as const,
   certificates: (id: string) => ['provider', 'certificates', id] as const,
@@ -137,6 +150,10 @@ export async function removeCenter(id: string, version: number) {
 export async function fetchCaregivers(centerId: string, params: ListCenterCaregiversParams = {}) {
   return result(await listCenterCaregivers(centerId, params, readOptions))
 }
+/** ADMIN: caregivers of every center (or one center) waiting for verification (M-13). */
+export async function fetchPendingCaregivers(params: ListPendingVerificationProviderCaregiversParams = {}) {
+  return result(await listPendingVerificationProviderCaregivers(params, readOptions))
+}
 export async function fetchCaregiver(id: string) {
   return result(await getProviderCaregiver(id, readOptions))
 }
@@ -145,6 +162,19 @@ export async function createCaregiver(centerId: string, request: CaregiverCreate
 }
 export async function saveCaregiver(id: string, request: CaregiverUpdateRequest) {
   return result(await updateProviderCaregiver(id, request, await writeOptions()))
+}
+/** Status changes go through their own PATCH; the profile PUT ignores `caregiverStatus` (M-12). */
+export async function changeCaregiverStatus(id: string, request: CaregiverStatusRequest) {
+  return result(await setProviderCaregiverStatus(id, request, await writeOptions()))
+}
+export async function fetchTimeOffs(caregiverId: string, params: ListProviderCaregiverTimeOffsParams = {}) {
+  return result(await listProviderCaregiverTimeOffs(caregiverId, params, readOptions))
+}
+export async function createTimeOff(caregiverId: string, request: TimeOffRequest) {
+  return result(await createProviderCaregiverTimeOff(caregiverId, request, await writeOptions()))
+}
+export async function removeTimeOff(caregiverId: string, timeOffId: string) {
+  return success(await deleteProviderCaregiverTimeOff(caregiverId, timeOffId, await writeOptions()))
 }
 export async function verifyCaregiver(id: string, request: VerificationRequest) {
   return result(await verifyProviderCaregiver(id, request, await writeOptions()))
@@ -162,8 +192,13 @@ export async function createCertificate(caregiverId: string, request: Certificat
 export async function saveCertificate(id: string, request: CertificateRequest) {
   return result(await updateProviderCertificate(id, request, await writeOptions()))
 }
-export async function verifyCertificate(id: string, request: VerificationRequest) {
+/** Step 2: an admin approves a certificate the center already confirmed (CENTER_VERIFIED → ADMIN_VERIFIED). */
+export async function verifyCertificate(id: string, request: CertificateVerificationRequest) {
   return result(await verifyProviderCertificate(id, request, await writeOptions()))
+}
+/** Step 1: the center manager confirms (or rejects) a PENDING certificate of their caregiver. */
+export async function verifyCertificateByCenter(id: string, request: CertificateVerificationRequest) {
+  return result(await verifyProviderCertificateByCenter(id, request, await writeOptions()))
 }
 export async function removeCertificate(id: string, version: number) {
   success(await archiveProviderCertificate(id, { version }, await writeOptions()))

@@ -9,7 +9,8 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { provisionCaregiverAccount } from './caregiver-onboarding-api'
 
 const key = 'centerManager.provider' as const
-const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
+const inputClass =
+  'mt-1.5 min-h-11 w-full rounded-xl border border-outline-variant/60 bg-white px-3.5 py-2 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
 const genderOptions = { MALE: 'male', FEMALE: 'female', OTHER: 'other' } as const
 const verificationOptions = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
 const statusOptions = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
@@ -49,8 +50,8 @@ export function CreateCaregiver({ centerId, onDone }: { centerId: string; onDone
     create.mutate()
   }
   return (
-    <form className='space-y-4 rounded-xl border border-outline-variant bg-white p-5' onSubmit={submit}>
-      <h2 className='text-lg font-semibold'>{t(`${key}.createCaregiver`)}</h2>
+    <form className='space-y-4 rounded-2xl border border-outline-variant/30 bg-white p-6 shadow-xl' onSubmit={submit}>
+      <h2 className='text-lg font-bold text-on-surface'>{t(`${key}.createCaregiver`)}</h2>
       <p className='text-sm text-on-surface-variant'>{t(`${key}.createCaregiverHint`)}</p>
       <div className='grid gap-4 sm:grid-cols-2'>
         <label className='text-sm'>

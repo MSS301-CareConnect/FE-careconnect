@@ -4,14 +4,18 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  changeCaregiverStatus,
   createCertificate,
   createCaregiver,
+  createTimeOff,
   fetchCaregiver,
   fetchCaregivers,
   fetchCertificates,
   fetchProviderMedia,
+  fetchTimeOffs,
   saveCaregiver,
-  uploadMedia
+  uploadMedia,
+  verifyCertificateByCenter
 } from '~/entities/provider/provider-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
@@ -31,7 +35,11 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   saveCaregiver: vi.fn(),
   createCertificate: vi.fn(),
   createCaregiver: vi.fn(),
-  uploadMedia: vi.fn()
+  uploadMedia: vi.fn(),
+  changeCaregiverStatus: vi.fn(),
+  verifyCertificateByCenter: vi.fn(),
+  fetchTimeOffs: vi.fn(),
+  createTimeOff: vi.fn()
 }))
 
 const person: ProviderCaregiverRecord = {
@@ -70,6 +78,10 @@ beforeEach(async () => {
   vi.mocked(createCaregiver).mockReset()
   vi.mocked(provisionCaregiverAccount).mockReset()
   vi.mocked(uploadMedia).mockReset()
+  vi.mocked(changeCaregiverStatus).mockReset()
+  vi.mocked(verifyCertificateByCenter).mockReset()
+  vi.mocked(createTimeOff).mockReset()
+  vi.mocked(fetchTimeOffs).mockReset().mockResolvedValue([])
   await setAppLanguage('en', false)
 })
 
@@ -157,6 +169,65 @@ describe('Center Manager Provider caregivers', () => {
         'caregiver-1',
         expect.objectContaining({ fullName: 'Lan Tran', version: 4 })
       )
+    )
+  })
+
+  it('changes the status through its own request after saving the profile (M-12)', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue(person)
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(saveCaregiver).mockResolvedValue({ ...person, version: 5 })
+    vi.mocked(changeCaregiverStatus).mockResolvedValue({ ...person, caregiverStatus: 'SUSPENDED', version: 6 })
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }))
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'SUSPENDED' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() =>
+      expect(changeCaregiverStatus).toHaveBeenCalledWith('caregiver-1', { status: 'SUSPENDED', version: 5 })
+    )
+  })
+
+  it('confirms a pending certificate as the first review step (M-12)', async () => {
+    const certificate = {
+      id: 'certificate-1',
+      caregiverId: 'caregiver-1',
+      certificateName: 'First aid',
+      issuedBy: 'Red Cross',
+      verificationStatus: 'PENDING' as const,
+      version: 1
+    }
+    vi.mocked(fetchCaregiver).mockResolvedValue(person)
+    vi.mocked(fetchCertificates).mockResolvedValue([certificate])
+    vi.mocked(verifyCertificateByCenter).mockResolvedValue({ ...certificate, verificationStatus: 'CENTER_VERIFIED' })
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm certificate' }))
+    await waitFor(() =>
+      expect(verifyCertificateByCenter).toHaveBeenCalledWith('certificate-1', {
+        approved: true,
+        reason: undefined,
+        version: 1
+      })
+    )
+  })
+
+  it('adds time off for the caregiver (M-12)', async () => {
+    vi.mocked(fetchCaregiver).mockResolvedValue(person)
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(createTimeOff).mockResolvedValue({} as never)
+    renderManager('/center-manager/caregivers/caregiver-1')
+
+    const add = await screen.findByRole('button', { name: 'Add time off' })
+    expect(add).toBeDisabled()
+    fireEvent.change(screen.getByLabelText('Start'), { target: { value: '2026-12-01T08:00' } })
+    fireEvent.change(screen.getByLabelText('End'), { target: { value: '2026-12-02T08:00' } })
+    fireEvent.click(add)
+    await waitFor(() =>
+      expect(createTimeOff).toHaveBeenCalledWith('caregiver-1', {
+        startAt: new Date('2026-12-01T08:00').toISOString(),
+        endAt: new Date('2026-12-02T08:00').toISOString(),
+        reason: undefined
+      })
     )
   })
 

@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
 
 import {
   fetchCaregiver,
@@ -17,11 +19,21 @@ import {
 const key = 'admin.provider' as const
 const statusKeys = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
 const verificationKeys = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
+// Certificates are reviewed in two steps: the center confirms, then the admin approves.
+const certificateKeys = {
+  PENDING: 'pending',
+  CENTER_VERIFIED: 'centerVerified',
+  ADMIN_VERIFIED: 'verified',
+  REJECTED: 'rejected'
+} as const
 
 function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [reason, setReason] = useState('')
+  const [confirmReject, setConfirmReject] = useState<
+    { type: 'caregiver' } | { type: 'certificate'; certificateId: string; version: number } | null
+  >(null)
   const caregiver = useQuery({ queryKey: providerKeys.caregiver(id), queryFn: () => fetchCaregiver(id), retry: false })
   const certificates = useQuery({
     queryKey: providerKeys.certificates(id),
@@ -32,21 +44,20 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
     mutationFn: (status: 'VERIFIED' | 'REJECTED') =>
       verifyCaregiver(id, { status, reason: reason.trim() || undefined, version: caregiver.data!.version }),
     onSuccess: async () => {
+      setConfirmReject(null)
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(id) })
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(centerId) })
-    }
+    },
+    onError: () => setConfirmReject(null)
   })
   const reviewCertificate = useMutation({
-    mutationFn: ({
-      certificateId,
-      status,
-      version
-    }: {
-      certificateId: string
-      status: 'VERIFIED' | 'REJECTED'
-      version: number
-    }) => verifyCertificate(certificateId, { status, reason: reason.trim() || undefined, version }),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: providerKeys.certificates(id) })
+    mutationFn: ({ certificateId, approved, version }: { certificateId: string; approved: boolean; version: number }) =>
+      verifyCertificate(certificateId, { approved, reason: reason.trim() || undefined, version }),
+    onSuccess: async () => {
+      setConfirmReject(null)
+      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(id) })
+    },
+    onError: () => setConfirmReject(null)
   })
   if (caregiver.isPending) return <p role='status'>{t(`${key}.loading`)}</p>
   if (caregiver.isError)
@@ -65,12 +76,20 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         <h2 className='text-xl font-bold'>{caregiver.data.fullName}</h2>
         <p className='text-sm text-outline'>{caregiver.data.id}</p>
       </div>
-      <p>
-        {t(`${key}.status`)}: {t(`${key}.${statusKeys[caregiver.data.caregiverStatus]}`)}
-      </p>
-      <p>
-        {t(`${key}.verification`)}: {t(`${key}.${verificationKeys[caregiver.data.verificationStatus]}`)}
-      </p>
+      <div className='flex flex-wrap items-center gap-3 text-sm'>
+        <span className='flex items-center gap-2'>
+          <strong>{t(`${key}.status`)}:</strong>
+          <ProviderStatusBadge status={caregiver.data.caregiverStatus}>
+            {t(`${key}.${statusKeys[caregiver.data.caregiverStatus]}`)}
+          </ProviderStatusBadge>
+        </span>
+        <span className='flex items-center gap-2'>
+          <strong>{t(`${key}.verification`)}:</strong>
+          <ProviderStatusBadge status={caregiver.data.verificationStatus}>
+            {t(`${key}.${verificationKeys[caregiver.data.verificationStatus]}`)}
+          </ProviderStatusBadge>
+        </span>
+      </div>
       <label className='block text-sm'>
         {t(`${key}.reason`)}
         <input
@@ -91,9 +110,7 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         <button
           className='rounded-lg border px-3 py-2 disabled:opacity-50'
           disabled={review.isPending}
-          onClick={() => {
-            if (window.confirm(t(`${key}.confirmReject`))) review.mutate('REJECTED')
-          }}
+          onClick={() => setConfirmReject({ type: 'caregiver' })}
           type='button'
         >
           {t(`${key}.reject`)}
@@ -118,18 +135,24 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
               <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={certificate.id}>
                 <div>
                   <strong>{certificate.certificateName}</strong>
-                  <p className='text-sm text-outline'>
-                    {certificate.issuedBy} · {t(`${key}.${verificationKeys[certificate.verificationStatus]}`)}
+                  <p className='mt-1 flex items-center gap-2 text-sm text-outline'>
+                    <span>{certificate.issuedBy}</span>
+                    <ProviderStatusBadge status={certificate.verificationStatus}>
+                      {t(`${key}.${certificateKeys[certificate.verificationStatus]}`)}
+                    </ProviderStatusBadge>
                   </p>
                 </div>
                 <div className='flex gap-2'>
+                  {certificate.verificationStatus === 'PENDING' ? (
+                    <span className='text-xs text-on-surface-variant'>{t(`${key}.awaitingCenter`)}</span>
+                  ) : null}
                   <button
                     className='text-primary underline disabled:opacity-50'
-                    disabled={reviewCertificate.isPending}
+                    disabled={reviewCertificate.isPending || certificate.verificationStatus !== 'CENTER_VERIFIED'}
                     onClick={() =>
                       reviewCertificate.mutate({
                         certificateId: certificate.id,
-                        status: 'VERIFIED',
+                        approved: true,
                         version: certificate.version
                       })
                     }
@@ -140,14 +163,13 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
                   <button
                     className='text-error underline disabled:opacity-50'
                     disabled={reviewCertificate.isPending}
-                    onClick={() => {
-                      if (window.confirm(t(`${key}.confirmReject`)))
-                        reviewCertificate.mutate({
-                          certificateId: certificate.id,
-                          status: 'REJECTED',
-                          version: certificate.version
-                        })
-                    }}
+                    onClick={() =>
+                      setConfirmReject({
+                        type: 'certificate',
+                        certificateId: certificate.id,
+                        version: certificate.version
+                      })
+                    }
                     type='button'
                   >
                     {t(`${key}.reject`)}
@@ -159,6 +181,27 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         ) : null}
         {reviewCertificate.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
       </div>
+      <ConfirmDialog
+        cancelLabel={t(`${key}.cancel`)}
+        confirmLabel={t(`${key}.reject`)}
+        description={t(`${key}.confirmReject`)}
+        loading={review.isPending || reviewCertificate.isPending}
+        onClose={() => setConfirmReject(null)}
+        onConfirm={() => {
+          if (confirmReject?.type === 'caregiver') {
+            review.mutate('REJECTED')
+          } else if (confirmReject?.type === 'certificate') {
+            reviewCertificate.mutate({
+              certificateId: confirmReject.certificateId,
+              approved: false,
+              version: confirmReject.version
+            })
+          }
+        }}
+        open={Boolean(confirmReject)}
+        title={t(`${key}.reject`)}
+        tone='danger'
+      />
     </section>
   )
 }
@@ -234,10 +277,14 @@ export function AdminCenterCaregiversPage() {
                     </span>
                     <div>
                       <strong>{person.fullName}</strong>
-                      <p className='mt-1 text-sm text-outline'>
-                        {t(`${key}.${verificationKeys[person.verificationStatus]}`)} ·{' '}
-                        {t(`${key}.${statusKeys[person.caregiverStatus]}`)}
-                      </p>
+                      <div className='mt-1 flex flex-wrap items-center gap-2 text-sm text-outline'>
+                        <ProviderStatusBadge status={person.verificationStatus}>
+                          {t(`${key}.${verificationKeys[person.verificationStatus]}`)}
+                        </ProviderStatusBadge>
+                        <ProviderStatusBadge status={person.caregiverStatus}>
+                          {t(`${key}.${statusKeys[person.caregiverStatus]}`)}
+                        </ProviderStatusBadge>
+                      </div>
                     </div>
                   </div>
                   <button

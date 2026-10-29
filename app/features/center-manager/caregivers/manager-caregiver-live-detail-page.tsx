@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import {
+  changeCaregiverStatus,
   createCertificate,
   fetchCaregiver,
   fetchCertificates,
@@ -12,14 +13,19 @@ import {
   removeCertificate,
   saveCaregiver,
   saveCertificate,
-  uploadMedia
+  uploadMedia,
+  verifyCertificateByCenter
 } from '~/entities/provider/provider-api'
 import { formatProviderDate } from '~/entities/provider/provider-format'
 import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
+import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import type { ProviderCaregiverRecord, ProviderCertificateRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
+
+import { CaregiverTimeOffs } from './components/caregiver-time-offs'
 
 const key = 'centerManager.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
@@ -27,6 +33,12 @@ const genderOptions = { MALE: 'male', FEMALE: 'female', OTHER: 'other' } as cons
 const statusOptions = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended' } as const
 const statusLabels = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
 const verificationLabels = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
+const certificateLabels = {
+  PENDING: 'pending',
+  CENTER_VERIFIED: 'centerVerified',
+  ADMIN_VERIFIED: 'verified',
+  REJECTED: 'rejected'
+} as const
 
 function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; onDone: () => void }) {
   const { t } = useTranslation()
@@ -38,8 +50,8 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
   const [birthDate, setBirthDate] = useState(person.dateOfBirth ?? '')
   const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER' | ''>(person.gender ?? '')
   const update = useMutation({
-    mutationFn: () =>
-      saveCaregiver(person.id, {
+    mutationFn: async () => {
+      const saved = await saveCaregiver(person.id, {
         fullName: name.trim(),
         experienceYears: experience,
         bio: bio.trim() || undefined,
@@ -47,7 +59,12 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
         dateOfBirth: birthDate || undefined,
         gender: gender || undefined,
         version: person.version
-      }),
+      })
+      // M-12: ProviderService changes status only through its own PATCH (it also flags the caregiver's visits, H-11).
+      if (status !== person.caregiverStatus) {
+        await changeCaregiverStatus(person.id, { status, version: saved.version })
+      }
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(person.id) })
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(person.centerId) })
@@ -296,17 +313,36 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
   const queryClient = useQueryClient()
   const [editor, setEditor] = useState<string | null>(null)
   const [mediaFor, setMediaFor] = useState<string | null>(null)
+  const [pendingArchiveCert, setPendingArchiveCert] = useState<ProviderCertificateRecord | null>(null)
   const certificates = useQuery({
     queryKey: providerKeys.certificates(caregiverId),
     queryFn: () => fetchCertificates(caregiverId),
     retry: false
   })
+  const [rejecting, setRejecting] = useState<ProviderCertificateRecord | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+  const confirm = useMutation({
+    mutationFn: ({ certificate, approved }: { certificate: ProviderCertificateRecord; approved: boolean }) =>
+      verifyCertificateByCenter(certificate.id, {
+        approved,
+        reason: approved ? undefined : rejectReason.trim(),
+        version: certificate.version
+      }),
+    onSuccess: async () => {
+      setRejecting(null)
+      setRejectReason('')
+      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
+    }
+  })
   const archive = useMutation({
     mutationFn: (certificate: ProviderCertificateRecord) => removeCertificate(certificate.id, certificate.version),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
+    onSuccess: async () => {
+      setPendingArchiveCert(null)
+      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
+    }
   })
   return (
-    <section className='space-y-4 rounded-xl border bg-white p-5'>
+    <section className='space-y-4 rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm'>
       <div className='flex items-center justify-between'>
         <h2 className='text-lg font-semibold'>{t(`${key}.certificatesTitle`)}</h2>
         <button className='text-primary underline' onClick={() => setEditor('new')} type='button'>
@@ -323,17 +359,47 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
         </div>
       ) : null}
       {certificates.isSuccess && certificates.data.length === 0 ? <p>{t(`${key}.certificatesEmpty`)}</p> : null}
+      <p className='text-xs text-on-surface-variant'>{t(`${key}.certificateSteps`)}</p>
+      {confirm.isError ? (
+        <p className='text-sm text-error' role='alert'>
+          {t(`${key}.certificateConfirmError`)}
+        </p>
+      ) : null}
       {certificates.isSuccess ? (
-        <ul className='divide-y'>
+        <ul className='divide-y divide-outline-variant/20'>
           {certificates.data.map((certificate) => (
             <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={certificate.id}>
               <div>
                 <strong>{certificate.certificateName}</strong>
-                <p className='text-sm text-outline'>
-                  {certificate.issuedBy} · {t(`${key}.${verificationLabels[certificate.verificationStatus]}`)}
+                <p className='mt-1 flex items-center gap-2 text-sm text-outline'>
+                  <span>{certificate.issuedBy}</span>
+                  <ProviderStatusBadge
+                    label={t(`${key}.${certificateLabels[certificate.verificationStatus]}`)}
+                    status={certificate.verificationStatus}
+                  />
                 </p>
               </div>
               <div className='flex gap-3'>
+                {certificate.verificationStatus === 'PENDING' ? (
+                  <>
+                    <button
+                      className='font-semibold text-primary underline disabled:opacity-50'
+                      disabled={confirm.isPending}
+                      onClick={() => confirm.mutate({ certificate, approved: true })}
+                      type='button'
+                    >
+                      {t(`${key}.confirmCertificate`)}
+                    </button>
+                    <button
+                      className='text-error underline disabled:opacity-50'
+                      disabled={confirm.isPending}
+                      onClick={() => setRejecting(certificate)}
+                      type='button'
+                    >
+                      {t(`${key}.rejectCertificate`)}
+                    </button>
+                  </>
+                ) : null}
                 <button className='text-primary underline' onClick={() => setEditor(certificate.id)} type='button'>
                   {t(`${key}.editCertificate`)}
                 </button>
@@ -347,14 +413,33 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
                 <button
                   className='text-error underline disabled:opacity-50'
                   disabled={archive.isPending}
-                  onClick={() => {
-                    if (window.confirm(t(`${key}.confirmArchiveCertificate`))) archive.mutate(certificate)
-                  }}
+                  onClick={() => setPendingArchiveCert(certificate)}
                   type='button'
                 >
                   {t(`${key}.archiveCertificate`)}
                 </button>
               </div>
+              {rejecting?.id === certificate.id ? (
+                <div className='flex w-full flex-wrap items-end gap-2'>
+                  <label className='flex min-w-48 flex-1 flex-col text-sm font-medium'>
+                    {t(`${key}.rejectCertificateReason`)}
+                    <input
+                      className='mt-1 rounded-lg border border-outline-variant px-3 py-2'
+                      maxLength={500}
+                      onChange={(event) => setRejectReason(event.target.value)}
+                      value={rejectReason}
+                    />
+                  </label>
+                  <button
+                    className='rounded-lg border border-error px-3 py-2 text-sm font-semibold text-error disabled:opacity-50'
+                    disabled={confirm.isPending || !rejectReason.trim()}
+                    onClick={() => confirm.mutate({ certificate, approved: false })}
+                    type='button'
+                  >
+                    {t(`${key}.rejectCertificate`)}
+                  </button>
+                </div>
+              ) : null}
               {mediaFor === certificate.id ? (
                 <div className='w-full'>
                   <ProviderMediaPanel ownerId={certificate.id} ownerType='CERTIFICATE' />
@@ -373,6 +458,18 @@ function Certificates({ caregiverId }: { caregiverId: string }) {
         />
       ) : null}
       {archive.isError ? <p role='alert'>{t(`${key}.actionError`)}</p> : null}
+      <ConfirmDialog
+        confirmLabel={t(`${key}.archiveCertificate`)}
+        description={t(`${key}.confirmArchiveCertificate`)}
+        loading={archive.isPending}
+        onClose={() => setPendingArchiveCert(null)}
+        onConfirm={() => {
+          if (pendingArchiveCert) archive.mutate(pendingArchiveCert)
+        }}
+        open={Boolean(pendingArchiveCert)}
+        title={t(`${key}.archiveCertificate`)}
+        tone='danger'
+      />
     </section>
   )
 }
@@ -384,6 +481,7 @@ export function ManagerCaregiverDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
+  const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
   const caregiver = useQuery({
     queryKey: providerKeys.caregiver(id),
     queryFn: () => fetchCaregiver(id),
@@ -393,6 +491,7 @@ export function ManagerCaregiverDetailPage() {
   const archive = useMutation({
     mutationFn: () => removeCaregiver(id, caregiver.data!.version),
     onSuccess: async () => {
+      setConfirmArchiveOpen(false)
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(user!.centerId!) })
       navigate('/center-manager/caregivers')
     }
@@ -443,17 +542,18 @@ export function ManagerCaregiverDetailPage() {
             <div className='min-w-0'>
               <div className='flex flex-wrap items-center gap-2'>
                 <h1 className='text-2xl font-extrabold tracking-tight'>{caregiver.data.fullName}</h1>
-                <span className='rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-primary'>
-                  {t(`${key}.${statusLabels[caregiver.data.caregiverStatus]}`)}
-                </span>
+                <ProviderStatusBadge
+                  label={t(`${key}.${statusLabels[caregiver.data.caregiverStatus]}`)}
+                  status={caregiver.data.caregiverStatus}
+                />
               </div>
-              <p className='mt-2 text-xs text-outline'>
+              <p className='mt-2 text-xs text-outline tabular-nums'>
                 #{caregiver.data.id}
                 {caregiver.data.createdAt ? ` · ${formatProviderDate(caregiver.data.createdAt, i18n.language)}` : ''}
               </p>
               {caregiver.data.ratingAverage !== undefined ? (
-                <p className='mt-2 flex items-center gap-1 text-sm font-semibold'>
-                  <Icon className='text-amber-500' filled name='star' />
+                <p className='mt-2 flex items-center gap-1 text-sm font-semibold tabular-nums'>
+                  <Icon className='text-warning' filled name='star' />
                   {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
                     caregiver.data.ratingAverage
                   )}
@@ -462,10 +562,12 @@ export function ManagerCaregiverDetailPage() {
                   </span>
                 </p>
               ) : null}
-              <p className='mt-3 inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2 text-xs font-semibold text-primary'>
-                <Icon className='text-lg' name='verified_user' />
-                {t(`${key}.${verificationLabels[caregiver.data.verificationStatus]}`)}
-              </p>
+              <div className='mt-3'>
+                <ProviderStatusBadge
+                  label={t(`${key}.${verificationLabels[caregiver.data.verificationStatus]}`)}
+                  status={caregiver.data.verificationStatus}
+                />
+              </div>
             </div>
           </div>
           <div className='flex flex-wrap gap-2'>
@@ -480,9 +582,7 @@ export function ManagerCaregiverDetailPage() {
             <button
               className='flex items-center gap-2 rounded-lg bg-error-container px-3 py-2.5 text-xs font-semibold text-on-error-container disabled:opacity-50'
               disabled={archive.isPending}
-              onClick={() => {
-                if (window.confirm(t(`${key}.confirmArchive`))) archive.mutate()
-              }}
+              onClick={() => setConfirmArchiveOpen(true)}
               type='button'
             >
               <Icon name='block' />
@@ -496,6 +596,16 @@ export function ManagerCaregiverDetailPage() {
           </p>
         ) : null}
       </section>
+      <ConfirmDialog
+        confirmLabel={t(`${key}.archive`)}
+        description={t(`${key}.confirmArchive`)}
+        loading={archive.isPending}
+        onClose={() => setConfirmArchiveOpen(false)}
+        onConfirm={() => archive.mutate()}
+        open={confirmArchiveOpen}
+        title={t(`${key}.archive`)}
+        tone='danger'
+      />
       <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
         {(
           [
@@ -548,6 +658,7 @@ export function ManagerCaregiverDetailPage() {
         </div>
         <div className='lg:col-span-7'>
           <Certificates caregiverId={id} />
+          <CaregiverTimeOffs caregiverId={id} />
         </div>
       </div>
     </main>
