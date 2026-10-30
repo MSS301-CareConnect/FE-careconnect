@@ -159,7 +159,7 @@ export function CustomerHeader() {
                       <Link
                         className='block rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low'
                         onClick={() => setAccountMenuOpen(false)}
-                        to='/account/security'
+                        to='/customer/my-profile?section=security'
                       >
                         {t('auth.security.title')}
                       </Link>

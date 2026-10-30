@@ -1,71 +1,62 @@
+import type { MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
 
-const STEP_2 = '2'
-const STEP_3 = '3'
+const sections = [
+  { id: 'patient-basic-info', number: '1', title: 'step1Title', subtitle: 'step1Subtitle' },
+  { id: 'patient-medical-history', number: '2', title: 'step2Title', subtitle: 'step2Subtitle' },
+  { id: 'patient-medications', number: '3', title: 'step3Title', subtitle: 'step3Subtitle' }
+] as const
+
+function scrollToSection(event: MouseEvent<HTMLAnchorElement>, id: string) {
+  const target = document.getElementById(id)
+  if (!target) return
+  event.preventDefault()
+  target.scrollIntoView?.({
+    behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'start'
+  })
+  target.focus({ preventScroll: true })
+}
 
 export function CreatePatientSidebar() {
   const { t } = useTranslation()
 
   return (
-    <aside className='sticky top-24 flex flex-col gap-6 lg:col-span-4'>
-      {/* Form Stepper Indicator */}
-      <div className='rounded-xl bg-surface-container-lowest p-6 shadow-sm'>
-        <div className='mb-4 flex items-center justify-between'>
-          <h2 className='text-sm font-bold text-on-surface'>{t('customer.patientCreate.sidebar.stepper.title')}</h2>
-          <span className='rounded-md bg-secondary-container/40 px-2 py-1 text-xs font-semibold text-on-secondary-container'>
-            {t('customer.patientCreate.sidebar.stepper.status', {
-              completed: 1,
-              total: 3
-            })}
-          </span>
-        </div>
-
-        <ol className='relative flex flex-col gap-4'>
-          <li className='flex items-start gap-3'>
-            <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary shadow-sm'>
-              <Icon name='check' className='text-sm' />
-            </div>
-            <div className='flex-1'>
-              <p className='text-xs font-semibold text-primary'>
-                {t('customer.patientCreate.sidebar.stepper.step1Title')}
-              </p>
-              <p className='text-[11px] text-on-surface-variant'>
-                {t('customer.patientCreate.sidebar.stepper.step1Subtitle')}
-              </p>
-            </div>
-          </li>
-
-          <li className='flex items-start gap-3'>
-            <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-on-surface'>
-              <span>{STEP_2}</span>
-            </div>
-            <div className='flex-1'>
-              <p className='text-xs font-medium text-on-surface'>
-                {t('customer.patientCreate.sidebar.stepper.step2Title')}
-              </p>
-              <p className='text-[11px] text-on-surface-variant'>
-                {t('customer.patientCreate.sidebar.stepper.step2Subtitle')}
-              </p>
-            </div>
-          </li>
-
-          <li className='flex items-start gap-3'>
-            <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-on-surface'>
-              <span>{STEP_3}</span>
-            </div>
-            <div className='flex-1'>
-              <p className='text-xs font-medium text-on-surface'>
-                {t('customer.patientCreate.sidebar.stepper.step3Title')}
-              </p>
-              <p className='text-[11px] text-on-surface-variant'>
-                {t('customer.patientCreate.sidebar.stepper.step3Subtitle')}
-              </p>
-            </div>
-          </li>
-        </ol>
-      </div>
+    <aside className='flex flex-col gap-6 lg:sticky lg:top-28 lg:col-span-4'>
+      <nav
+        aria-label={t('customer.patientCreate.sidebar.stepper.title')}
+        className='rounded-xl bg-surface-container-lowest p-6 shadow-sm'
+      >
+        <h2 className='mb-4 text-sm font-bold text-on-surface'>{t('customer.patientCreate.sidebar.stepper.title')}</h2>
+        <ul className='flex flex-col gap-1'>
+          {sections.map((section) => (
+            <li key={section.id}>
+              <a
+                className='group flex items-start gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
+                href={`#${section.id}`}
+                onClick={(event) => scrollToSection(event, section.id)}
+              >
+                <span
+                  aria-hidden='true'
+                  className='grid size-8 shrink-0 place-items-center rounded-full bg-secondary-container text-xs font-bold text-primary group-hover:bg-primary group-hover:text-on-primary'
+                >
+                  {section.number}
+                </span>
+                <span className='min-w-0'>
+                  <span className='block text-sm font-semibold text-on-surface group-hover:text-primary'>
+                    {t(`customer.patientCreate.sidebar.stepper.${section.title}`)}
+                  </span>
+                  <span className='mt-0.5 block text-xs leading-5 text-on-surface-variant'>
+                    {t(`customer.patientCreate.sidebar.stepper.${section.subtitle}`)}
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* 3. Security & HIPAA Compliance Notice Card */}
       <div className='rounded-xl bg-surface-container-low p-6 shadow-sm'>

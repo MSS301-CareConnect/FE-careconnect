@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -45,6 +45,29 @@ describe('PatientCreatePage', () => {
     expect(screen.getByLabelText(/Họ và tên người bệnh/)).toHaveValue('')
     expect(screen.getByText('Chưa có thuốc nào. Bấm "+ Thêm thuốc mới" nếu người bệnh đang dùng thuốc.')).toBeVisible()
     expect(screen.queryByRole('button', { name: /Lưu nháp/ })).not.toBeInTheDocument()
+  })
+
+  it('replaces breadcrumbs and progress with links that scroll to each form section', () => {
+    renderPage()
+
+    expect(screen.getByRole('link', { name: 'Quay lại hồ sơ' })).toHaveAttribute('href', '/customer/patient-profiles')
+    expect(screen.queryByText('Trang chủ')).not.toBeInTheDocument()
+    expect(screen.queryByText('1/3 Hoàn thành')).not.toBeInTheDocument()
+
+    const navigation = screen.getByRole('navigation', { name: 'Đi tới mục' })
+    const links = within(navigation).getAllByRole('link')
+    const ids = ['patient-basic-info', 'patient-medical-history', 'patient-medications']
+    expect(links).toHaveLength(ids.length)
+    ids.forEach((id, index) => {
+      const target = document.getElementById(id)
+      const scrollIntoView = vi.fn()
+      if (!target) throw new Error(`Missing section ${id}`)
+      Object.defineProperty(target, 'scrollIntoView', { value: scrollIntoView })
+      expect(links[index]).toHaveAttribute('href', `#${id}`)
+      fireEvent.click(links[index])
+      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+      expect(target).toHaveFocus()
+    })
   })
 
   it('recalculates BMI when height and weight change', () => {

@@ -65,7 +65,7 @@ export function PatientSidebar({ familyCount }: PatientSidebarProps) {
         </Link>
 
         <Link
-          to='/account/security'
+          to='/customer/my-profile?section=security'
           className='flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface'
         >
           <Icon name='lock_reset' className='text-xl' />
@@ -83,14 +83,6 @@ export function PatientSidebar({ familyCount }: PatientSidebarProps) {
             </span>
           ) : null}
         </div>
-
-        <Link
-          to='/customer/bookings'
-          className='flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface'
-        >
-          <Icon name='calendar_month' className='text-xl' />
-          <span className='flex-1 text-left'>{t('customer.profile.nav.bookingHistory')}</span>
-        </Link>
       </nav>
 
       {/* 24/7 Medical Emergency Hotline */}
