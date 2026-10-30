@@ -16,65 +16,81 @@ type GenderFilter = 'ALL' | 'FEMALE' | 'MALE' | 'OTHER'
 
 function ProviderCaregiverCard({ person }: { person: ProviderCaregiverCardRecord }) {
   const { t, i18n } = useTranslation()
+  const number = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+  const hasRating = person.ratingAverage !== undefined && (person.ratingCount ?? 0) > 0
+
   return (
-    <article className='group flex h-full flex-col rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-outline sm:p-6'>
-      <div className='flex min-w-0 items-start gap-4 sm:gap-5'>
-        <div
-          aria-hidden='true'
-          className='grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-primary-fixed text-primary sm:h-20 sm:w-20'
-        >
-          <Icon className='text-4xl' name='person' />
-        </div>
-        <div className='min-w-0 flex-1'>
-          <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
-            <h2 className='text-xl font-bold tracking-[-0.025em] text-on-surface'>{person.fullName}</h2>
-            {/* The catalog lists only verified, active caregivers. */}
-            <span className='inline-flex items-center gap-1 rounded-md bg-primary-fixed px-2 py-1 text-xs font-bold text-primary'>
-              <Icon className='text-sm' name='verified' />
-              {t(`${key}.verified`)}
-            </span>
-          </div>
-          {person.centerName && (
-            <p className='mt-2 flex items-center gap-1.5 text-sm text-on-surface-variant'>
-              <Icon className='text-base text-primary' name='home_health' />
-              {person.centerName}
-            </p>
+    <article className='h-full'>
+      <Link
+        aria-label={t(`${key}.openProfile`, { name: person.fullName })}
+        className='group flex h-full flex-col overflow-hidden rounded-2xl border border-outline-variant/70 bg-surface-container-lowest shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:flex-row'
+        to={`/customer/caregivers/${person.caregiverId}`}
+      >
+        <div className='relative h-52 w-full shrink-0 overflow-hidden bg-primary-fixed sm:h-auto sm:min-h-60 sm:w-48 xl:w-52'>
+          {person.avatarUrl ? (
+            <img
+              alt={t(`${key}.detail.avatar`, { name: person.fullName })}
+              className='absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+              loading='lazy'
+              src={person.avatarUrl}
+            />
+          ) : (
+            <div aria-hidden='true' className='grid h-full w-full place-items-center text-primary'>
+              <Icon className='text-7xl' name='person' />
+            </div>
           )}
         </div>
-      </div>
-
-      <div className='mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-outline-variant/40 pt-4 text-sm text-on-surface-variant tabular-nums'>
-        {person.experienceYears !== undefined && (
-          <span className='inline-flex items-center gap-1.5'>
-            <Icon className='text-lg text-primary' name='workspace_premium' />
-            {t(`${key}.experienceValue`, {
-              years: new Intl.NumberFormat(i18n.language).format(person.experienceYears)
-            })}
+        <div className='flex min-w-0 flex-1 flex-col p-5 sm:p-6'>
+          <div className='flex min-w-0 items-start justify-between gap-3'>
+            <div className='min-w-0'>
+              <h2 className='text-xl font-bold leading-tight tracking-[-0.03em] text-on-surface sm:text-2xl'>
+                {person.fullName}
+              </h2>
+              {person.centerName && (
+                <p className='mt-2 flex items-start gap-1.5 text-sm text-on-surface-variant'>
+                  <Icon className='mt-0.5 shrink-0 text-base text-primary' name='home_health' />
+                  <span className='line-clamp-2'>{person.centerName}</span>
+                </p>
+              )}
+            </div>
+            <Icon
+              aria-hidden='true'
+              className='shrink-0 text-xl text-primary transition-transform group-hover:translate-x-1'
+              name='arrow_forward'
+            />
+          </div>
+          <span className='mt-4 inline-flex w-fit items-center gap-1 rounded-full bg-primary-fixed px-2.5 py-1 text-xs font-semibold text-primary'>
+            <Icon className='text-sm' name='verified' />
+            {t(`${key}.verified`)}
           </span>
-        )}
-        {person.ratingAverage !== undefined && (
-          <span className='inline-flex items-center gap-1.5'>
-            <Icon className='text-lg text-warning' filled name='star' />
-            {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(person.ratingAverage)}
-            {person.ratingCount !== undefined && t(`${key}.reviews`, { count: person.ratingCount })}
-          </span>
-        )}
-      </div>
-
-      {person.bio && <p className='mt-4 line-clamp-2 text-sm leading-6 text-on-surface-variant'>{person.bio}</p>}
-
-      <div className='mt-auto flex items-center justify-between gap-4 pt-6'>
-        <span className='min-w-0 truncate text-xs font-semibold uppercase tracking-[0.08em] text-outline'>
-          {t(`${key}.caregiver`)}
-        </span>
-        <Link
-          className='inline-flex shrink-0 items-center gap-2 text-sm font-bold text-primary hover:text-primary-container focus-visible:outline-2 focus-visible:outline-primary'
-          to={`/customer/caregivers/${person.caregiverId}`}
-        >
-          {t(`${key}.details`)}
-          <Icon className='text-lg transition-transform group-hover:translate-x-1' name='arrow_forward' />
-        </Link>
-      </div>
+          <div className='mt-6 grid grid-cols-2 border-t border-outline-variant/50 pt-4 sm:mt-auto'>
+            {person.experienceYears !== undefined && (
+              <div className='min-w-0 pr-3'>
+                <p className='flex items-center gap-1.5 text-xs font-medium text-on-surface-variant'>
+                  <Icon className='text-base text-primary' name='workspace_premium' />
+                  {t(`${key}.detail.experience`)}
+                </p>
+                <p className='mt-1 text-sm font-bold text-on-surface tabular-nums'>
+                  {t(`${key}.experienceValue`, { years: number.format(person.experienceYears) })}
+                </p>
+              </div>
+            )}
+            <div
+              className={`min-w-0 ${person.experienceYears !== undefined ? 'border-l border-outline-variant/50 pl-3' : 'col-span-2'}`}
+            >
+              <p className='flex items-center gap-1.5 text-xs font-medium text-on-surface-variant'>
+                <Icon className='text-base text-warning' filled name='star' />
+                {t(`${key}.detail.rating`)}
+              </p>
+              <p className='mt-1 text-sm font-bold text-on-surface tabular-nums'>
+                {hasRating
+                  ? `${number.format(person.ratingAverage ?? 0)}${t(`${key}.reviews`, { count: person.ratingCount ?? 0 })}`
+                  : t(`${key}.detail.noRating`)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Link>
     </article>
   )
 }

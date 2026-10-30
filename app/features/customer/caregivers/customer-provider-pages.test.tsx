@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { closeCenterPicker, selectCenter } from '~/entities/care-center/selected-center'
@@ -19,7 +19,10 @@ function renderCatalog() {
   render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={['/customer/caregivers']}>
-        <CustomerProviderCatalogPage />
+        <Routes>
+          <Route element={<CustomerProviderCatalogPage />} path='/customer/caregivers' />
+          <Route element={<div data-testid='profile-route' />} path='/customer/caregivers/:caregiverId' />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>
   )
@@ -45,6 +48,8 @@ describe('Customer caregiver catalog', () => {
           gender: 'FEMALE',
           ratingAverage: 4.8,
           ratingCount: 12,
+          avatarUrl: 'https://example.com/lan.jpg',
+          bio: 'Experienced in home care',
           verifiedCertificateCount: 2
         }
       ],
@@ -57,9 +62,22 @@ describe('Customer caregiver catalog', () => {
 
     expect(screen.getByRole('heading', { name: 'Find the right caregiver' })).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Lan Nguyen' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'View profile' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Open Lan Nguyen’s profile' })).toHaveAttribute(
       'href',
       '/customer/caregivers/caregiver-1'
+    )
+    expect(screen.queryByText('View profile')).not.toBeInTheDocument()
+    expect(screen.queryByText('Caregiver')).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Profile photo of Lan Nguyen' })).toHaveAttribute(
+      'src',
+      'https://example.com/lan.jpg'
+    )
+    expect(screen.queryByText('Experienced in home care')).not.toBeInTheDocument()
+    expect(screen.queryByText('About')).not.toBeInTheDocument()
+    expect(screen.getByText(/4.8.*12 reviews/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+    expect(screen.getByRole('link', { name: 'Open Lan Nguyen’s profile' })).toContainElement(
+      screen.getByRole('img', { name: 'Profile photo of Lan Nguyen' })
     )
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search caregivers by name…' }), {
       target: { value: 'Lan' }
@@ -68,6 +86,22 @@ describe('Customer caregiver catalog', () => {
     await waitFor(() => expect(fetchCaregiverCatalog).toHaveBeenCalledWith({ page: 0, size: 20, keyword: 'Lan' }))
     fireEvent.change(screen.getByRole('combobox', { name: 'Gender' }), { target: { value: 'MALE' } })
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Lan Nguyen' })).not.toBeInTheDocument())
+  })
+
+  it('opens the detail route from anywhere on the caregiver card', async () => {
+    vi.mocked(fetchCaregiverCatalog).mockResolvedValue({
+      items: [{ caregiverId: 'caregiver-1', fullName: 'Lan Nguyen', verifiedCertificateCount: 0 }],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1
+    })
+    renderCatalog()
+
+    const card = await screen.findByRole('link', { name: 'Open Lan Nguyen’s profile' })
+    expect(card).toHaveTextContent('No reviews yet')
+    fireEvent.click(screen.getByRole('heading', { name: 'Lan Nguyen' }))
+    expect(screen.getByTestId('profile-route')).toBeInTheDocument()
   })
 
   it('keeps the banner and filter layout when the chosen center fails', async () => {

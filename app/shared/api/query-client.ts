@@ -3,6 +3,7 @@ import { MutationCache, QueryCache, QueryClient, type Query } from '@tanstack/re
 import { errorStatus, refreshSession } from './session-refresh'
 
 const SESSION_QUERY_PREFIX = 'auth'
+const CURRENT_USER_QUERY_KEY = ['auth', 'current-user'] as const
 
 /** Sends the browser to sign in again and back to the current page afterwards (`/login?next=`). */
 export function redirectToLogin() {
@@ -22,6 +23,11 @@ export interface QueryClientOptions {
  * The session query itself already refreshes in `loadSession`, so it is left out.
  */
 export function createQueryClient({ onSessionExpired = redirectToLogin }: QueryClientOptions = {}) {
+  // Public browse pages also use this client. A 401 there does not mean a guest's session expired.
+  function hasActiveSession() {
+    return Boolean(client.getQueryData(CURRENT_USER_QUERY_KEY))
+  }
+
   async function recover(retry?: () => void) {
     try {
       await refreshSession()
@@ -33,13 +39,13 @@ export function createQueryClient({ onSessionExpired = redirectToLogin }: QueryC
   const client: QueryClient = new QueryClient({
     queryCache: new QueryCache({
       onError: (error, query: Query<unknown, unknown, unknown, readonly unknown[]>) => {
-        if (errorStatus(error) !== 401 || query.queryKey[0] === SESSION_QUERY_PREFIX) return
+        if (errorStatus(error) !== 401 || query.queryKey[0] === SESSION_QUERY_PREFIX || !hasActiveSession()) return
         void recover(() => void client.refetchQueries({ queryKey: query.queryKey, exact: true }))
       }
     }),
     mutationCache: new MutationCache({
       onError: (error) => {
-        if (errorStatus(error) === 401) void recover()
+        if (errorStatus(error) === 401 && hasActiveSession()) void recover()
       }
     }),
     defaultOptions: {

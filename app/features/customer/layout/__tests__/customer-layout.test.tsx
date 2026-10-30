@@ -294,17 +294,16 @@ describe('CustomerLayout', () => {
     expect(selector).toHaveFocus()
   })
 
-  it('asks guests to sign in when the center list needs a session', async () => {
-    vi.mocked(fetchPublicCenters).mockRejectedValue(Object.assign(new Error('unauthorized'), { status: 401 }))
+  it('shows retry instead of sign in when the public center list fails', async () => {
+    vi.mocked(fetchPublicCenters).mockRejectedValue(Object.assign(new Error('unavailable'), { status: 401 }))
     renderPortal()
 
     act(() => {
       fireEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: /Tất cả trung tâm/ }))
     })
     const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
-    expect(await within(menu).findByText('Đăng nhập để chọn trung tâm')).toBeInTheDocument()
-    expect(within(menu).getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login')
-    expect(within(menu).queryByRole('alert')).not.toBeInTheDocument()
+    expect(await within(menu).findByRole('alert')).toBeInTheDocument()
+    expect(within(menu).queryByRole('link', { name: 'Đăng nhập' })).not.toBeInTheDocument()
   })
 
   it('lists active centers with their address from the customer center endpoint', async () => {
