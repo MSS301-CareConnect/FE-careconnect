@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useCenterName } from '~/entities/provider/use-provider-names'
 import type { OutboxStatus } from '~/shared/api/generated/contracts'
 import { StatusBadge, type StatusTone } from '~/shared/ui/status-badge'
 
-import type { IncidentRow as IncidentRowData } from '../incidents-api'
+import type { IncidentRow as IncidentRowData, IncidentSource } from '../incidents-api'
 
 const TONES: Record<OutboxStatus, StatusTone> = {
   PENDING: 'info',
@@ -13,14 +14,43 @@ const TONES: Record<OutboxStatus, StatusTone> = {
   SKIPPED: 'neutral'
 }
 
+const EVENT_KEYS = [
+  'REFUND',
+  'REMAINING_INVOICE',
+  'COMPLAINT_REFUND',
+  'RATING',
+  'SUSPEND',
+  'RESUME',
+  'ACTIVATE',
+  'CAREGIVER_DEACTIVATED'
+] as const
+type EventKey = (typeof EVENT_KEYS)[number]
+
+function eventKey(eventType: string): EventKey | 'other' {
+  return EVENT_KEYS.find((item) => item === eventType) ?? 'other'
+}
+
 interface IncidentRowProps {
   row: IncidentRowData
+  source: IncidentSource
   busy: boolean
   onRequeue: (id: string) => void
   onSkip: (id: string, note: string) => void
 }
 
-export function IncidentRow({ row, busy, onRequeue, onSkip }: IncidentRowProps) {
+/** ProviderService rows belong to a center, shown by name; BookingService rows are described by their event alone. */
+function IncidentCenter({ centerId }: { centerId: string }) {
+  const { t } = useTranslation()
+  const name = useCenterName(centerId)
+  return (
+    <div>
+      <dt className='inline'>{t('admin.incidentsPage.subject')}: </dt>
+      <dd className='inline font-medium text-on-surface'>{name}</dd>
+    </div>
+  )
+}
+
+export function IncidentRow({ row, source, busy, onRequeue, onSkip }: IncidentRowProps) {
   const { t, i18n } = useTranslation()
   const [note, setNote] = useState('')
   const updatedAt = row.updatedAt
@@ -29,14 +59,11 @@ export function IncidentRow({ row, busy, onRequeue, onSkip }: IncidentRowProps) 
   return (
     <li className='rounded-xl border border-outline-variant/60 bg-white p-4 text-sm'>
       <div className='flex flex-wrap items-center justify-between gap-2'>
-        <p className='font-semibold'>{row.eventType}</p>
+        <p className='font-semibold'>{t(`admin.incidentsPage.events.${eventKey(row.eventType)}`)}</p>
         <StatusBadge tone={TONES[row.status]}>{t(`admin.incidentsPage.status.${row.status}`)}</StatusBadge>
       </div>
       <dl className='mt-2 grid grid-cols-1 gap-1 text-xs text-on-surface-variant sm:grid-cols-3'>
-        <div>
-          <dt className='inline'>{t('admin.incidentsPage.subject')}: </dt>
-          <dd className='inline font-mono'>{row.subjectId}</dd>
-        </div>
+        {source === 'provider' ? <IncidentCenter centerId={row.subjectId} /> : null}
         <div>
           <dt className='inline'>{t('admin.incidentsPage.attempts')}: </dt>
           <dd className='inline tabular-nums'>{row.attempts}</dd>
@@ -46,7 +73,14 @@ export function IncidentRow({ row, busy, onRequeue, onSkip }: IncidentRowProps) 
           <dd className='inline'>{updatedAt}</dd>
         </div>
       </dl>
-      {row.lastError ? <p className='mt-2 break-words text-xs text-error'>{row.lastError}</p> : null}
+      {row.lastError ? (
+        <details className='mt-2 text-xs'>
+          <summary className='cursor-pointer font-medium text-on-surface-variant'>
+            {t('admin.incidentsPage.technicalDetail')}
+          </summary>
+          <p className='mt-1 break-words text-error'>{row.lastError}</p>
+        </details>
+      ) : null}
       {row.status === 'FAILED' ? (
         <div className='mt-3 flex flex-wrap items-end gap-2'>
           <button

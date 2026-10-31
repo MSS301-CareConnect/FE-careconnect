@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
 
+import { SERVICE_CATEGORIES, type ServiceCategoryGroup } from '~/entities/care-catalog/service-category'
 import type { CatalogItemRequestStatus } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
 import { catalogStatuses } from '../hooks/use-catalog-list'
-import type { CategoryOption } from '../service-categories'
 
 const key = 'admin.servicesPage' as const
 
@@ -12,7 +12,8 @@ type CatalogFiltersProps = {
   keyword: string
   category: string
   status: CatalogItemRequestStatus | undefined
-  categories: readonly CategoryOption[]
+  /** Groups present in the catalog; "other" appears only when some service sits outside the six. */
+  categories: readonly ServiceCategoryGroup[]
   onChange: (name: 'q' | 'category' | 'status', value: string) => void
   onReset: () => void
 }
@@ -41,11 +42,12 @@ export function CatalogFilters({ keyword, category, status, categories, onChange
             value={category || 'all'}
           >
             <option value='all'>{t(`${key}.all`)}</option>
-            {categories.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.standardKey ? t(`${key}.categories.${option.standardKey}`) : option.value}
+            {SERVICE_CATEGORIES.map((option) => (
+              <option key={option.key} value={option.key}>
+                {t(`common.serviceCategories.${option.key}`)}
               </option>
             ))}
+            {categories.includes('other') ? <option value='other'>{t('common.serviceCategories.other')}</option> : null}
           </select>
         </label>
         <label className='min-w-44 flex-1 text-xs font-semibold text-on-surface-variant'>

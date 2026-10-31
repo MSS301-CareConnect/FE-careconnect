@@ -1,8 +1,12 @@
+import {
+  serviceCategoryGroup,
+  serviceCategoryValue,
+  type ServiceCategoryGroup
+} from '~/entities/care-catalog/service-category'
 import type { CatalogItemRecord, CatalogItemRequest, CatalogItemRequestStatus } from '~/shared/api/generated/contracts'
 
 /** Column limits of the CareCatalogService `catalog_items` table. */
 export const NAME_MAX_LENGTH = 255
-export const CATEGORY_MAX_LENGTH = 255
 export const DESCRIPTION_MAX_LENGTH = 1000
 
 export type CatalogItemDraft = {
@@ -14,15 +18,21 @@ export type CatalogItemDraft = {
 
 export type CatalogItemField = keyof CatalogItemDraft
 export type CatalogItemFieldError =
-  'nameRequired' | 'nameTooLong' | 'categoryRequired' | 'categoryTooLong' | 'descriptionTooLong' | 'statusRequired'
+  'nameRequired' | 'nameTooLong' | 'categoryRequired' | 'categoryOutside' | 'descriptionTooLong' | 'statusRequired'
 export type CatalogItemErrors = Partial<Record<CatalogItemField, CatalogItemFieldError>>
 
 export const EMPTY_CATALOG_ITEM: CatalogItemDraft = { name: '', category: '', description: '', status: 'ACTIVE' }
 
+/** A legacy long category opens as its short group, so saving the item moves it into the six categories. */
+function draftCategory(stored: string) {
+  const group: ServiceCategoryGroup = serviceCategoryGroup(stored)
+  return group === 'other' ? stored : serviceCategoryValue(group)
+}
+
 export function draftFromRecord(record: CatalogItemRecord): CatalogItemDraft {
   return {
     name: record.name,
-    category: record.category,
+    category: draftCategory(record.category),
     description: record.description ?? '',
     status: record.status
   }
@@ -35,7 +45,7 @@ export function validateCatalogItem(draft: CatalogItemDraft): CatalogItemErrors 
   if (!name) errors.name = 'nameRequired'
   else if (name.length > NAME_MAX_LENGTH) errors.name = 'nameTooLong'
   if (!category) errors.category = 'categoryRequired'
-  else if (category.length > CATEGORY_MAX_LENGTH) errors.category = 'categoryTooLong'
+  else if (serviceCategoryGroup(category) === 'other') errors.category = 'categoryOutside'
   if (draft.description.trim().length > DESCRIPTION_MAX_LENGTH) errors.description = 'descriptionTooLong'
   if (!draft.status) errors.status = 'statusRequired'
   return errors

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
+import type { ServiceCategoryGroup } from '~/entities/care-catalog/service-category'
 
 const key = 'customer.services' as const
 const control =
@@ -9,7 +10,7 @@ const control =
 type ServicesFiltersProps = {
   keyword: string
   category: string
-  categories: readonly string[]
+  categories: readonly ServiceCategoryGroup[]
   onChange: (name: 'q' | 'category', value: string) => void
   onReset: () => void
 }
@@ -55,7 +56,7 @@ export function ServicesFilters({ keyword, category, categories, onChange, onRes
             <option value=''>{t(`${key}.filters.allCategories`)}</option>
             {categories.map((item) => (
               <option key={item} value={item}>
-                {item}
+                {t(`common.serviceCategories.${item}`)}
               </option>
             ))}
           </select>

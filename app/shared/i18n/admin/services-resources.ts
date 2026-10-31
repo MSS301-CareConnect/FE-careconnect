@@ -1,7 +1,7 @@
 export const adminServicesVi = {
   documentTitle: 'Danh mục & bảng giá | Quản trị CareConnect',
-  title: 'Quản lý Danh mục & Bảng giá Dịch vụ Trung tâm',
-  subtitle: 'Quản lý danh mục dịch vụ chuẩn của nền tảng và theo dõi bảng giá mà từng trung tâm đang áp dụng.',
+  title: 'Dịch vụ',
+  subtitle: 'Danh mục dịch vụ chuẩn và giá theo trung tâm.',
   scope: 'Thay đổi danh mục chuẩn được áp dụng ngay cho các trung tâm và khách hàng.',
   badge: 'Dịch vụ Y tế Tiêu chuẩn',
   liveSource: 'Cập nhật theo thời gian thực',
@@ -10,21 +10,21 @@ export const adminServicesVi = {
     total: 'Tổng dịch vụ chuẩn',
     active: 'Đang hoạt động',
     inactive: 'Ngừng hoạt động',
-    categories: 'Nhóm danh mục'
+    categories: 'Danh mục'
   },
   metricHints: {
     total: 'Không tính các dịch vụ đã xóa',
     active: 'Trung tâm có thể đăng ký cung cấp',
     inactive: 'Ẩn khỏi trung tâm và khách hàng',
-    categories: 'Số nhóm phân loại khác nhau'
+    categories: 'Số danh mục đang dùng'
   },
   tabs: {
     master: 'Danh mục chuẩn toàn hệ thống',
     center: 'Bảng giá theo trung tâm',
     surcharge: 'Phụ phí & quy chuẩn ca trực'
   },
-  search: 'Tìm theo tên, nhóm hoặc mô tả dịch vụ',
-  category: 'Nhóm danh mục',
+  search: 'Tìm theo tên hoặc mô tả dịch vụ',
+  category: 'Danh mục',
   status: 'Trạng thái',
   all: 'Tất cả',
   statuses: { ACTIVE: 'Đang hoạt động', INACTIVE: 'Ngừng hoạt động' },
@@ -37,7 +37,7 @@ export const adminServicesVi = {
   retry: 'Thử lại',
   columns: {
     service: 'Dịch vụ',
-    category: 'Nhóm danh mục',
+    category: 'Danh mục',
     description: 'Mô tả',
     status: 'Trạng thái',
     actions: 'Hành động'
@@ -56,15 +56,11 @@ export const adminServicesVi = {
     hint: 'Dịch vụ chuẩn là cơ sở để trung tâm đăng ký cung cấp và tự cấu hình bảng giá.',
     name: 'Tên dịch vụ',
     namePlaceholder: 'Ví dụ: Chăm sóc người cao tuổi tại nhà',
-    category: 'Nhóm danh mục',
-    categoryPlaceholder: 'Ví dụ: Chăm sóc dinh dưỡng',
+    category: 'Danh mục',
     categoryChoose: 'Chọn danh mục',
-    categoryStandardGroup: 'Danh mục y tế chuẩn',
-    categoryStoredGroup: 'Danh mục đang sử dụng',
-    categoryAddNew: '+ Thêm danh mục mới...',
-    categoryCustom: 'Tên danh mục mới',
+    categoryLegacy: 'Khác (đang lưu: {{value}})',
     description: 'Mô tả',
-    descriptionPlaceholder: 'Phạm vi công việc, đối tượng phù hợp, yêu cầu chuyên môn...',
+    descriptionPlaceholder: 'Phạm vi công việc, đối tượng phù hợp',
     descriptionCount: '{{count}} / {{max}} ký tự',
     status: 'Trạng thái',
     required: 'Bắt buộc',
@@ -75,8 +71,8 @@ export const adminServicesVi = {
     errors: {
       nameRequired: 'Vui lòng nhập tên dịch vụ.',
       nameTooLong: 'Tên dịch vụ tối đa 255 ký tự.',
-      categoryRequired: 'Vui lòng nhập nhóm danh mục.',
-      categoryTooLong: 'Nhóm danh mục tối đa 255 ký tự.',
+      categoryRequired: 'Vui lòng chọn danh mục.',
+      categoryOutside: 'Danh mục cũ không còn dùng. Hãy chọn một trong các danh mục trong danh sách.',
       descriptionTooLong: 'Mô tả tối đa 1000 ký tự.',
       statusRequired: 'Vui lòng chọn trạng thái.'
     },
@@ -129,16 +125,6 @@ export const adminServicesVi = {
     planInactive: 'Tạm ngưng',
     pricingUnits: { HOUR: 'Theo giờ', DAY: 'Theo ngày', SHIFT: 'Theo ca' }
   },
-  categories: {
-    elderly: 'Chăm sóc người cao tuổi',
-    postSurgery: 'Chăm sóc hậu phẫu',
-    stroke: 'Chăm sóc sau tai biến & đột quỵ',
-    chronicDementia: 'Chăm sóc bệnh mạn tính & sa sút trí tuệ',
-    nursing: 'Điều dưỡng & kỹ thuật y tế',
-    palliative: 'Chăm sóc giảm nhẹ',
-    rehabilitation: 'Vật lý trị liệu & phục hồi',
-    postpartum: 'Chăm sóc mẹ và bé sau sinh'
-  },
   allocation: 'Phân bổ hình thức đặt ca',
   allocationHint: 'Ca 4 giờ 45% · Ca 8 giờ 30% · Lưu trú 24/24 25%.',
   surcharge: 'Quy chuẩn phụ phí ca đặc biệt',
@@ -151,8 +137,8 @@ export const adminServicesVi = {
 
 export const adminServicesEn = {
   documentTitle: 'Service catalog & pricing | CareConnect Admin',
-  title: 'Center service catalog & pricing',
-  subtitle: 'Manage the platform standard service catalog and review the rates each center applies.',
+  title: 'Services',
+  subtitle: 'Standard service catalog and prices by center.',
   scope: 'Changes to the standard catalog apply immediately to centers and customers.',
   badge: 'Standard healthcare services',
   liveSource: 'Updated in real time',
@@ -174,7 +160,7 @@ export const adminServicesEn = {
     center: 'Prices by center',
     surcharge: 'Surcharges & shift rules'
   },
-  search: 'Search name, category or description',
+  search: 'Search by name or description',
   category: 'Category',
   status: 'Status',
   all: 'All',
@@ -208,12 +194,8 @@ export const adminServicesEn = {
     name: 'Service name',
     namePlaceholder: 'For example: In-home older adult care',
     category: 'Category',
-    categoryPlaceholder: 'For example: Nutrition care',
     categoryChoose: 'Choose a category',
-    categoryStandardGroup: 'Standard medical categories',
-    categoryStoredGroup: 'Categories in use',
-    categoryAddNew: '+ Add a new category...',
-    categoryCustom: 'New category name',
+    categoryLegacy: 'Other (stored: {{value}})',
     description: 'Description',
     descriptionPlaceholder: 'Scope of work, suitable patients, required qualifications...',
     descriptionCount: '{{count}} / {{max}} characters',
@@ -226,8 +208,8 @@ export const adminServicesEn = {
     errors: {
       nameRequired: 'Enter the service name.',
       nameTooLong: 'The service name can have at most 255 characters.',
-      categoryRequired: 'Enter the category.',
-      categoryTooLong: 'The category can have at most 255 characters.',
+      categoryRequired: 'Choose a category.',
+      categoryOutside: 'This old category is no longer used. Choose one of the categories in the list.',
       descriptionTooLong: 'The description can have at most 1000 characters.',
       statusRequired: 'Choose a status.'
     },
@@ -279,16 +261,6 @@ export const adminServicesEn = {
     duration: '{{count, number}} min',
     planInactive: 'Paused',
     pricingUnits: { HOUR: 'Hourly', DAY: 'Daily', SHIFT: 'Per shift' }
-  },
-  categories: {
-    elderly: 'Older adult care',
-    postSurgery: 'Postoperative care',
-    stroke: 'Post-stroke care',
-    chronicDementia: 'Chronic illness & dementia care',
-    nursing: 'Nursing & medical procedures',
-    palliative: 'Palliative care',
-    rehabilitation: 'Physical therapy & rehabilitation',
-    postpartum: 'Postnatal mother & newborn care'
   },
   allocation: 'Booking format distribution',
   allocationHint: '4-hour shifts 45% · 8-hour shifts 30% · live-in care 25%.',

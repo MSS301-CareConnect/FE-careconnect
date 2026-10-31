@@ -12,7 +12,6 @@ import {
 } from '../catalog-item-form'
 import { catalogStatuses } from '../hooks/use-catalog-list'
 import { useCatalogItemForm } from '../hooks/use-catalog-item-form'
-import type { CategoryOption } from '../service-categories'
 import { CategorySelect } from './category-select'
 
 const key = 'admin.servicesPage.form' as const
@@ -67,11 +66,10 @@ function Field({ id, label, required, error, children, hint }: FieldProps) {
 
 type CatalogItemDialogProps = {
   item?: CatalogItemRecord
-  categories: readonly CategoryOption[]
   onClose: () => void
 }
 
-export function CatalogItemDialog({ item, categories, onClose }: CatalogItemDialogProps) {
+export function CatalogItemDialog({ item, onClose }: CatalogItemDialogProps) {
   const { t } = useTranslation()
   const idPrefix = useId()
   const formRef = useRef<HTMLFormElement>(null)
@@ -157,7 +155,6 @@ export function CatalogItemDialog({ item, categories, onClose }: CatalogItemDial
                 className={control}
                 controlProps={props}
                 onChange={(value) => update('category', value)}
-                options={categories}
                 value={draft.category}
               />
             )}

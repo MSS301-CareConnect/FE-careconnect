@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router'
 import { careCatalogKeys, fetchCatalogItems } from '~/entities/care-catalog/care-catalog-api'
 import { CatalogItemRequestStatus } from '~/shared/api/generated/contracts'
 
-import { categoryKey, mergeCategoryOptions } from '../service-categories'
+import { serviceCategoryGroup } from '~/entities/care-catalog/service-category'
 
 export const CATALOG_PAGE_SIZE = 10
 export const catalogStatuses = Object.values(CatalogItemRequestStatus)
@@ -26,13 +26,13 @@ export function useCatalogList() {
   const status = catalogStatuses.find((item) => item === params.get('status'))
 
   const items = query.data ?? []
-  const categories = [...new Set(items.map((item) => item.category))].sort((a, b) => a.localeCompare(b))
-  const categoryOptions = mergeCategoryOptions(categories)
+  // Groups present in the catalog, in the fixed order of the six categories ("other" last).
+  const categories = [...new Set(items.map((item) => serviceCategoryGroup(item.category)))]
   const needle = searchable(keyword.trim())
   const filtered = items.filter(
     (item) =>
       (!needle || searchable(`${item.name} ${item.category} ${item.description ?? ''}`).includes(needle)) &&
-      (!category || categoryKey(item.category) === categoryKey(category)) &&
+      (!category || serviceCategoryGroup(item.category) === category) &&
       (!status || item.status === status)
   )
   const pageCount = Math.max(1, Math.ceil(filtered.length / CATALOG_PAGE_SIZE))
@@ -61,7 +61,6 @@ export function useCatalogList() {
     query,
     items,
     categories,
-    categoryOptions,
     filtered,
     rows,
     page,

@@ -117,14 +117,14 @@ describe('Admin service catalog', () => {
     expect(name).toHaveAttribute('aria-invalid', 'true')
     expect(name).toHaveAccessibleDescription('Vui lòng nhập tên dịch vụ.')
     expect(name).toHaveFocus()
-    expect(within(dialog).getByLabelText(/Nhóm danh mục/)).toHaveAccessibleDescription('Vui lòng nhập nhóm danh mục.')
+    expect(within(dialog).getByLabelText(/Danh mục/)).toHaveAccessibleDescription('Vui lòng chọn danh mục.')
     expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
     expect(createCatalog).not.toHaveBeenCalled()
 
     fireEvent.change(name, { target: { value: 'Vật lý trị liệu' } })
     expect(name).not.toHaveAttribute('aria-invalid', 'true')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo dịch vụ' }))
-    expect(within(dialog).getByLabelText(/Nhóm danh mục/)).toHaveFocus()
+    expect(within(dialog).getByLabelText(/Danh mục/)).toHaveFocus()
   })
 
   it('places a field-specific backend validation error on that field', async () => {
@@ -132,12 +132,12 @@ describe('Admin service catalog', () => {
     renderPage()
     const dialog = await openCreateDialog()
     fireEvent.change(within(dialog).getByLabelText(/Tên dịch vụ/), { target: { value: 'Vật lý trị liệu' } })
-    fireEvent.change(within(dialog).getByLabelText(/Nhóm danh mục/), { target: { value: 'Chăm sóc hậu phẫu' } })
+    fireEvent.change(within(dialog).getByLabelText(/Danh mục/), { target: { value: 'Sau phẫu thuật' } })
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo dịch vụ' }))
 
-    const category = within(dialog).getByLabelText(/Nhóm danh mục/)
-    await waitFor(() => expect(category).toHaveAccessibleDescription('Vui lòng nhập nhóm danh mục.'))
+    const category = within(dialog).getByLabelText(/Danh mục/)
+    await waitFor(() => expect(category).toHaveAccessibleDescription('Vui lòng chọn danh mục.'))
     expect(category).toHaveFocus()
     expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
   })
@@ -147,7 +147,7 @@ describe('Admin service catalog', () => {
     renderPage()
     const dialog = await openCreateDialog()
     fireEvent.change(within(dialog).getByLabelText(/Tên dịch vụ/), { target: { value: 'Vật lý trị liệu' } })
-    fireEvent.change(within(dialog).getByLabelText(/Nhóm danh mục/), { target: { value: 'Chăm sóc hậu phẫu' } })
+    fireEvent.change(within(dialog).getByLabelText(/Danh mục/), { target: { value: 'Sau phẫu thuật' } })
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo dịch vụ' }))
 
@@ -157,18 +157,16 @@ describe('Admin service catalog', () => {
     expect(within(dialog).getByLabelText(/Tên dịch vụ/)).not.toHaveAttribute('aria-invalid', 'true')
   })
 
-  it('creates a service with the POST contract fields and refreshes the list', async () => {
+  it('offers only the six short categories and creates a service with the POST contract fields', async () => {
     vi.mocked(createCatalog).mockResolvedValue({ ...elderCare, id: 'item-2', name: 'Vật lý trị liệu' })
     renderPage()
     const dialog = await openCreateDialog()
     fireEvent.change(within(dialog).getByLabelText(/Tên dịch vụ/), { target: { value: ' Vật lý trị liệu ' } })
-    const category = within(dialog).getByLabelText(/Nhóm danh mục/)
-    expect(within(category).getByRole('option', { name: 'Chăm sóc giảm nhẹ' })).toBeInTheDocument()
-    expect(within(category).getByRole('option', { name: elderCare.category })).toBeInTheDocument()
-    fireEvent.change(category, { target: { value: '__new-category__' } })
-    const custom = within(dialog).getByLabelText('Tên danh mục mới')
-    expect(custom).toHaveFocus()
-    fireEvent.change(custom, { target: { value: ' Chăm sóc dinh dưỡng ' } })
+    const category = within(dialog).getByLabelText(/Danh mục/)
+    // A placeholder plus the six categories; no free-text "add new" option.
+    expect(within(category).getAllByRole('option')).toHaveLength(7)
+    expect(within(category).queryByRole('option', { name: /Thêm danh mục/ })).not.toBeInTheDocument()
+    fireEvent.change(category, { target: { value: 'Phục hồi chức năng' } })
     fireEvent.change(within(dialog).getByLabelText(/Trạng thái/), { target: { value: 'INACTIVE' } })
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo dịch vụ' }))
@@ -176,13 +174,13 @@ describe('Admin service catalog', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(vi.mocked(createCatalog).mock.calls[0][0]).toEqual({
       name: 'Vật lý trị liệu',
-      category: 'Chăm sóc dinh dưỡng',
+      category: 'Phục hồi chức năng',
       status: 'INACTIVE'
     })
     expect(fetchCatalogItems).toHaveBeenCalledTimes(2)
   })
 
-  it('requires the new category name and saves the same stored value in English', async () => {
+  it('stores the same Vietnamese category value when the page is in English', async () => {
     vi.mocked(createCatalog).mockResolvedValue(elderCare)
     await setAppLanguage('en', false)
     renderPage()
@@ -190,48 +188,44 @@ describe('Admin service catalog', () => {
     const dialog = screen.getByRole('dialog', { name: 'Add standard service' })
     fireEvent.change(within(dialog).getByLabelText(/Service name/), { target: { value: 'Wound care' } })
     const category = within(dialog).getByLabelText(/Category/)
-    fireEvent.change(category, { target: { value: '__new-category__' } })
-
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Create service' }))
-
-    const custom = within(dialog).getByLabelText('New category name')
-    expect(custom).toHaveAccessibleDescription('Enter the category.')
-    expect(custom).toHaveFocus()
-    expect(category).not.toHaveAttribute('aria-invalid', 'true')
-
-    fireEvent.change(category, { target: { value: 'Chăm sóc hậu phẫu' } })
-    expect(within(category).getByRole('option', { name: 'Postoperative care', selected: true })).toBeInTheDocument()
-    expect(within(dialog).queryByLabelText('New category name')).not.toBeInTheDocument()
+    fireEvent.change(category, { target: { value: 'Sau phẫu thuật' } })
+    expect(within(category).getByRole('option', { name: 'Post-surgery', selected: true })).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create service' }))
 
     await waitFor(() =>
-      expect(createCatalog).toHaveBeenCalledWith({
-        name: 'Wound care',
-        category: 'Chăm sóc hậu phẫu',
-        status: 'ACTIVE'
-      })
+      expect(createCatalog).toHaveBeenCalledWith({ name: 'Wound care', category: 'Sau phẫu thuật', status: 'ACTIVE' })
     )
   })
 
-  it('keeps a stored free-text category when editing', async () => {
-    const freeText = { ...elderCare, category: 'chăm sóc người cao tuổi' }
-    vi.mocked(fetchCatalogItems).mockResolvedValue([freeText])
-    vi.mocked(saveCatalog).mockResolvedValue(freeText)
+  it('opens a legacy long category as its short group and saves the short value', async () => {
+    const legacy = { ...elderCare, category: 'Chăm sóc sau tai biến & đột quỵ' }
+    vi.mocked(fetchCatalogItems).mockResolvedValue([legacy])
+    vi.mocked(saveCatalog).mockResolvedValue(legacy)
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: `Chỉnh sửa dịch vụ: ${freeText.name}` }))
+    expect(await within(await screen.findByRole('table')).findByText('Phục hồi chức năng')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: `Chỉnh sửa dịch vụ: ${legacy.name}` }))
     const dialog = screen.getByRole('dialog', { name: 'Chỉnh sửa dịch vụ chuẩn' })
-    expect(within(dialog).getByLabelText(/Nhóm danh mục/)).toHaveValue('__new-category__')
-    expect(within(dialog).getByLabelText('Tên danh mục mới')).toHaveValue('chăm sóc người cao tuổi')
-    expect(within(dialog).getByLabelText('Tên danh mục mới')).not.toHaveFocus()
+    expect(within(dialog).getByLabelText(/Danh mục/)).toHaveValue('Phục hồi chức năng')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Lưu thay đổi' }))
 
     await waitFor(() =>
-      expect(saveCatalog).toHaveBeenCalledWith(
-        'item-1',
-        expect.objectContaining({ category: 'chăm sóc người cao tuổi' })
-      )
+      expect(saveCatalog).toHaveBeenCalledWith('item-1', expect.objectContaining({ category: 'Phục hồi chức năng' }))
     )
+  })
+
+  it('asks for one of the six categories when a stored value is outside them', async () => {
+    const custom = { ...elderCare, category: 'Dinh dưỡng' }
+    vi.mocked(fetchCatalogItems).mockResolvedValue([custom])
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: `Chỉnh sửa dịch vụ: ${custom.name}` }))
+    const dialog = screen.getByRole('dialog', { name: 'Chỉnh sửa dịch vụ chuẩn' })
+    const category = within(dialog).getByLabelText(/Danh mục/)
+    expect(category).toHaveValue('Dinh dưỡng')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Lưu thay đổi' }))
+    expect(category).toHaveAccessibleDescription(/Danh mục cũ không còn dùng/)
+    expect(saveCatalog).not.toHaveBeenCalled()
   })
 
   it('edits and deletes an existing service', async () => {
@@ -300,7 +294,7 @@ describe('Admin service catalog', () => {
     renderPage()
     await screen.findByRole('table')
     await act(() => setAppLanguage('en', false))
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Center service catalog & pricing')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Services')
     expect(screen.getByRole('tab', { name: 'Platform master catalog' })).toHaveAttribute('aria-selected', 'true')
   })
 })

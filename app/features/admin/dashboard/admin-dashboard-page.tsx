@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { OperationalStatisticsPanel, ProviderStatusPanel } from '~/entities/statistics/statistics-panels'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { DashboardCharts } from './components/dashboard-charts'
-import { DashboardInsights } from './components/dashboard-insights'
 
 const key = 'admin.dashboardPage' as const
 
+/** Live operational numbers only; the sample financial charts stay out until a reporting contract exists (D26). */
 export function AdminDashboardPage() {
   const { t } = useTranslation()
   useDocumentTitle(t(`${key}.documentTitle`))
@@ -17,18 +16,6 @@ export function AdminDashboardPage() {
       </header>
       <OperationalStatisticsPanel scope='system' />
       <ProviderStatusPanel />
-      {/* Live operational panels end here; the charts below are illustrative until a financial reporting contract exists. */}
-      <section aria-labelledby='dashboard-preview-label' className='space-y-6'>
-        <p
-          className='rounded-lg bg-secondary-container/40 px-4 py-3 text-xs leading-5 text-primary'
-          id='dashboard-preview-label'
-          role='note'
-        >
-          <strong className='font-bold'>{t(`${key}.snapshot`)}</strong> · {t('admin.preview')}
-        </p>
-        <DashboardCharts />
-        <DashboardInsights />
-      </section>
     </div>
   )
 }

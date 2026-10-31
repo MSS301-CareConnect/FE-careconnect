@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
 import { careCatalogKeys, fetchCenterOfferings } from '~/entities/care-catalog/care-catalog-api'
+import { useServiceCategoryLabel } from '~/entities/care-catalog/use-service-category-label'
 import { fetchCenters, providerKeys } from '~/entities/provider/provider-api'
 import { Icon } from '~/shared/ui/icon'
 
@@ -16,6 +17,7 @@ const CENTER_OPTIONS_SIZE = 50
 
 export function CenterPricingPanel() {
   const { t } = useTranslation()
+  const categoryLabel = useServiceCategoryLabel()
   const [params, setParams] = useSearchParams()
   const centerKeyword = params.get('centerQ') ?? ''
   const centerId = params.get('center') ?? ''
@@ -152,7 +154,7 @@ export function CenterPricingPanel() {
                         <small className='mt-1 block max-w-60 text-outline'>{offering.description}</small>
                       ) : null}
                     </td>
-                    <td className='px-4 py-4 text-xs font-semibold'>{offering.catalogItem.category}</td>
+                    <td className='px-4 py-4 text-xs font-semibold'>{categoryLabel(offering.catalogItem.category)}</td>
                     <td className='px-4 py-4'>
                       <OfferingPricePlans centerOfferingId={offering.id} />
                     </td>

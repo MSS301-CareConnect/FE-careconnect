@@ -49,13 +49,7 @@ export function AdminServicesPage() {
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
       <header className='flex flex-wrap items-start justify-between gap-5'>
         <div className='max-w-3xl'>
-          <div className='flex flex-wrap items-center gap-2 text-xs'>
-            <span className='rounded-full bg-secondary-container px-3 py-1 font-bold text-primary'>
-              {t(`${key}.badge`)}
-            </span>
-            <span className='text-outline'>{t(`${key}.liveSource`)}</span>
-          </div>
-          <h1 className='mt-3 text-2xl font-bold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
+          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
           <p className='mt-2 text-sm leading-6 text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
           <p className='mt-2 text-xs font-semibold text-primary'>{t(`${key}.scope`)}</p>
         </div>
@@ -105,7 +99,7 @@ export function AdminServicesPage() {
       {tab === 'master' ? (
         <>
           <CatalogFilters
-            categories={list.categoryOptions}
+            categories={list.categories}
             category={list.category}
             keyword={list.keyword}
             onChange={list.update}
@@ -120,7 +114,6 @@ export function AdminServicesPage() {
       <PricingGuidelines />
       {editing ? (
         <CatalogItemDialog
-          categories={list.categoryOptions}
           item={editing.mode === 'edit' ? editing.item : undefined}
           key={editing.mode === 'edit' ? editing.item.id : 'create'}
           onClose={() => setEditing(null)}

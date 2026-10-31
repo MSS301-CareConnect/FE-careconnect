@@ -1,6 +1,6 @@
 export const adminBookingsVi = {
-  title: 'Quản lý lịch đặt',
-  description: 'Mọi lịch đặt trên nền tảng. Mở một lịch để xem chi tiết hoặc hủy thay nền tảng khi cần can thiệp.',
+  title: 'Lịch đặt',
+  description: 'Tất cả lịch đặt trên nền tảng.',
   search: 'Tìm kiếm',
   searchPlaceholder: 'Mã lịch, tên người bệnh…',
   status: 'Trạng thái',
@@ -33,7 +33,7 @@ export const adminBookingsVi = {
 
 export const adminBookingsEn = {
   title: 'Bookings',
-  description: 'Every booking on the platform. Open one to see its details or cancel it on behalf of the platform.',
+  description: 'Every booking on the platform.',
   search: 'Search',
   searchPlaceholder: 'Booking code, patient name…',
   status: 'Status',

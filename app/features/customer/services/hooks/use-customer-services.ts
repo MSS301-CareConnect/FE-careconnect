@@ -2,6 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 
 import { careCatalogKeys, fetchCatalogItems } from '~/entities/care-catalog/care-catalog-api'
+import {
+  SERVICE_CATEGORIES,
+  serviceCategoryGroup,
+  type ServiceCategoryGroup
+} from '~/entities/care-catalog/service-category'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 
 import {
@@ -44,13 +49,18 @@ export function useCustomerServices() {
   const source = center ? centerServices : catalog
 
   const all: CustomerService[] = center ? (centerServices.data ?? []) : catalogServices(catalog.data ?? [])
-  const categories = [...new Set(all.map((service) => service.category))].sort((a, b) => a.localeCompare(b, 'vi'))
+  // The six platform groups present in this list, in their fixed order; "other" stays last.
+  const present = new Set(all.map((service) => serviceCategoryGroup(service.category)))
+  const categories: ServiceCategoryGroup[] = [
+    ...SERVICE_CATEGORIES.map((item) => item.key).filter((item) => present.has(item)),
+    ...(present.has('other') ? (['other'] as const) : [])
+  ]
   const needle = searchable(keyword.trim())
   const filtered = sortServices(
     all.filter(
       (service) =>
         (!needle || searchable(`${service.name} ${service.category}`).includes(needle)) &&
-        (!category || service.category === category)
+        (!category || serviceCategoryGroup(service.category) === category)
     ),
     sort
   )

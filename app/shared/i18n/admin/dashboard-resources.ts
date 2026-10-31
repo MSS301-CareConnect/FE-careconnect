@@ -1,7 +1,7 @@
 export const adminDashboardVi = {
   documentTitle: 'Tổng quan nền tảng | Quản trị CareConnect',
   title: 'Tổng quan nền tảng',
-  subtitle: 'Theo dõi hoạt động chăm sóc, nhân sự y tế và doanh thu của nền tảng.',
+  subtitle: 'Hoạt động chăm sóc và trạng thái trung tâm trên toàn nền tảng.',
   snapshot: 'Bản xem thử · Kỳ báo cáo: 01–30/09/2026',
   range: 'Bản xem thử · 01–30/09/2026',
   export: 'Xuất dữ liệu',
@@ -58,7 +58,7 @@ export const adminDashboardVi = {
 export const adminDashboardEn = {
   documentTitle: 'Platform overview | CareConnect Admin',
   title: 'Platform overview',
-  subtitle: 'Monitor care activity, medical staff and platform revenue.',
+  subtitle: 'Care activity and center status across the platform.',
   snapshot: 'Preview · Reporting period: Sep 01–30, 2026',
   range: 'Preview · Sep 01–30, 2026',
   export: 'Export data',

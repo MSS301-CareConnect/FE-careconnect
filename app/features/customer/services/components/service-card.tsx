@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { useServiceCategoryLabel } from '~/entities/care-catalog/use-service-category-label'
 import { openCenterPicker } from '~/entities/care-center/selected-center'
 import { Icon } from '~/shared/ui/icon'
 
@@ -11,6 +12,7 @@ const VISIBLE_PLANS = 3
 
 export function ServiceCard({ service }: { service: CustomerService }) {
   const { t, i18n } = useTranslation()
+  const categoryLabel = useServiceCategoryLabel()
   const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN'
   const money = new Intl.NumberFormat(locale, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 })
   const fromPrice = lowestPrice(service)
@@ -25,7 +27,9 @@ export function ServiceCard({ service }: { service: CustomerService }) {
           >
             <Icon className='text-2xl' name='medical_services' />
           </span>
-          <span className='text-xs font-bold uppercase tracking-[0.09em] text-primary'>{service.category}</span>
+          <span className='text-xs font-bold uppercase tracking-[0.09em] text-primary'>
+            {categoryLabel(service.category)}
+          </span>
         </div>
         <h3 className='mt-5 text-xl font-bold leading-snug tracking-[-0.025em] text-on-surface sm:text-2xl'>
           {service.name}

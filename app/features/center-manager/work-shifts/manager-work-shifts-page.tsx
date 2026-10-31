@@ -27,6 +27,8 @@ import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
+import { pickAvatar } from '~/entities/provider/provider-avatar'
+import { Avatar } from '~/shared/ui/avatar'
 
 const key = 'centerManager.provider' as const
 const inputClass =
@@ -78,11 +80,14 @@ function RegistrationCaregiver({
         aria-hidden='true'
         className='flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary-container text-primary'
       >
-        {avatar.data?.[0]?.downloadUrl ? (
-          <img alt='' className='h-full w-full object-cover' src={avatar.data[0].downloadUrl} />
-        ) : (
-          <Icon name='person' />
-        )}
+        <Avatar
+          className='h-full w-full'
+          decorative
+          icon='person'
+          name={name}
+          onExpired={() => void avatar.refetch()}
+          src={pickAvatar(avatar.data)?.downloadUrl}
+        />
       </span>
       <div className='min-w-0 space-y-2'>
         <div className='flex flex-wrap items-center gap-2'>

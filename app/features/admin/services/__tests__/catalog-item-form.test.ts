@@ -25,7 +25,7 @@ describe('catalog item form', () => {
       })
     ).toEqual({
       name: 'nameTooLong',
-      category: 'categoryTooLong',
+      category: 'categoryOutside',
       description: 'descriptionTooLong',
       status: 'statusRequired'
     })

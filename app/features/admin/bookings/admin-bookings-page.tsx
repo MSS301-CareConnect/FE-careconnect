@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router'
 import { bookingKeys, fetchBookings } from '~/entities/booking/booking-api'
 import { BOOKING_STATUSES, bookingErrorKey, formatDate, formatMoney } from '~/entities/booking/booking-format'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import { useCenterNames } from '~/entities/provider/use-provider-names'
 import type { BookingStatus, ListBookingsParams } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Pagination } from '~/shared/ui/pagination'
@@ -39,6 +40,7 @@ export function AdminBookingsPage() {
     placeholderData: keepPreviousData,
     retry: false
   })
+  const centerName = useCenterNames((bookings.data?.items ?? []).map((booking) => booking.centerId))
 
   function update(next: Record<string, string | undefined>) {
     const search = new URLSearchParams(params)
@@ -117,7 +119,7 @@ export function AdminBookingsPage() {
                       #{booking.bookingCode} · {booking.recipientName ?? t('admin.bookingsPage.noRecipient')}
                     </span>
                     <span className='block text-xs text-on-surface-variant'>
-                      {booking.customer?.fullName ?? t('admin.bookingsPage.unknown')} ·{' '}
+                      {booking.customer?.fullName ?? t('admin.bookingsPage.unknown')} · {centerName(booking.centerId)} ·{' '}
                       {t('admin.bookingsPage.startsOn', { date: formatDate(booking.startDate, i18n.language) })}
                     </span>
                   </span>

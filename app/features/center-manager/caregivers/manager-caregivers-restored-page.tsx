@@ -9,6 +9,7 @@ import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { CreateCaregiver } from './manager-caregivers-live-page'
+import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
 
 const key = 'centerManager.management' as const
 const providerKey = 'centerManager.provider' as const
@@ -308,9 +309,11 @@ export function ManagerCaregiversPage() {
                   <tr className='transition-colors hover:bg-surface-container-low/40' key={person.id}>
                     <td className='p-4'>
                       <div className='flex items-center gap-3'>
-                        <span className='flex h-11 w-11 items-center justify-center rounded-xl bg-secondary-container text-primary'>
-                          <Icon name='person' />
-                        </span>
+                        <CaregiverAvatar
+                          caregiverId={person.id}
+                          className='h-11 w-11 rounded-xl'
+                          name={person.fullName}
+                        />
                         <div>
                           <Link className='font-bold hover:text-primary' to={`/center-manager/caregivers/${person.id}`}>
                             {person.fullName}

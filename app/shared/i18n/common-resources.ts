@@ -33,12 +33,23 @@ export const commonEn = {
       vietnamese: 'Vietnamese',
       vietnameseShort: 'VI'
     },
+    serviceCategories: {
+      elderly: 'Elderly care',
+      postSurgery: 'Post-surgery',
+      rehabilitation: 'Rehabilitation',
+      chronic: 'Chronic illness',
+      nursing: 'Medical nursing',
+      motherBaby: 'Mother & baby',
+      other: 'Other'
+    },
     ui: {
       closeDialog: 'Close dialog',
       cancel: 'Cancel',
       confirm: 'Confirm',
       working: 'Working…',
       retry: 'Try again',
+      unknownName: 'Unknown',
+      loadingName: 'Loading…',
       Dismiss: 'Dismiss notification',
       offlineTitle: 'No internet connection',
       offlineDescription: 'Check your network connection. Actions will resume automatically when you are back online.',
@@ -145,12 +156,23 @@ export const commonVi = {
       vietnamese: 'Tiếng Việt',
       vietnameseShort: 'VI'
     },
+    serviceCategories: {
+      elderly: 'Người cao tuổi',
+      postSurgery: 'Sau phẫu thuật',
+      rehabilitation: 'Phục hồi chức năng',
+      chronic: 'Bệnh mạn tính',
+      nursing: 'Điều dưỡng y tế',
+      motherBaby: 'Mẹ và bé',
+      other: 'Khác'
+    },
     ui: {
       closeDialog: 'Đóng hộp thoại',
       cancel: 'Hủy',
       confirm: 'Xác nhận',
       working: 'Đang xử lý…',
       retry: 'Thử lại',
+      unknownName: 'Không xác định',
+      loadingName: 'Đang tải…',
       Dismiss: 'Đóng thông báo',
       offlineTitle: 'Mất kết nối mạng',
       offlineDescription: 'Vui lòng kiểm tra kết nối Internet. Các thao tác sẽ hoạt động trở lại khi có mạng.',

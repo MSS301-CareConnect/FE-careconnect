@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { cancelBookingRequest, fetchBooking, fetchBookings } from '~/entities/booking/booking-api'
+import { fetchCaregiver, fetchCenter } from '~/entities/provider/provider-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
@@ -17,6 +18,12 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   fetchBooking: vi.fn(),
   fetchBookingHistory: vi.fn().mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }),
   cancelBookingRequest: vi.fn()
+}))
+
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchCenter: vi.fn(),
+  fetchCaregiver: vi.fn()
 }))
 
 function renderUi(ui: ReactNode, path = '/admin/bookings') {
@@ -46,6 +53,8 @@ const detail: BookingDetailRecord = {
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  vi.mocked(fetchCenter).mockResolvedValue({ centerName: 'Trung tâm An Bình' } as never)
+  vi.mocked(fetchCaregiver).mockResolvedValue({ fullName: 'Trần Thu' } as never)
   await setAppLanguage('vi', false)
 })
 
@@ -62,6 +71,7 @@ describe('Admin bookings (M-11, M-13)', () => {
           startDate: '2026-11-02',
           startTime: '08:00',
           endTime: '10:00',
+          centerId: 'ct-1',
           customer: { fullName: 'Nguyễn An' }
         }
       ],
@@ -74,6 +84,30 @@ describe('Admin bookings (M-11, M-13)', () => {
 
     expect(await screen.findByText(/BK-001 · Bà Lan/)).toBeInTheDocument()
     expect(fetchBookings).toHaveBeenCalledWith(expect.objectContaining({ status: 'CONFIRMED', page: 0 }))
+    expect(await screen.findByText(/Trung tâm An Bình/)).toBeInTheDocument()
+  })
+
+  it('names the center and the caregiver of each visit instead of their IDs', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({
+      ...detail,
+      occurrences: [
+        {
+          id: 'oc-1',
+          occurrenceNo: 1,
+          status: 'SCHEDULED',
+          startAt: '2026-11-02T01:00:00Z',
+          endAt: '2026-11-02T03:00:00Z',
+          caregiverId: 'cg-1'
+        } as never
+      ]
+    })
+    renderUi(<AdminBookingDetailPage id='bk-1' />, '/admin/bookings/bk-1')
+    expect(await screen.findByRole('link', { name: 'Trung tâm An Bình' })).toHaveAttribute(
+      'href',
+      '/admin/centers/ct-1'
+    )
+    expect(await screen.findByText('Trần Thu')).toBeInTheDocument()
+    expect(screen.queryByText('ct-1')).not.toBeInTheDocument()
   })
 
   it('lets the admin cancel a running booking with a reason', async () => {

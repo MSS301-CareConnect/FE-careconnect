@@ -9,6 +9,7 @@ import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import { useCaregiverNames, useCenterName } from '~/entities/provider/use-provider-names'
 import type { BookingStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { SectionCard } from '~/shared/ui/section-card'
@@ -22,6 +23,8 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
   const queryClient = useQueryClient()
   const [cancelling, setCancelling] = useState(false)
   const booking = useQuery({ queryKey: bookingKeys.detail(id), queryFn: () => fetchBooking(id), retry: false })
+  const centerName = useCenterName(booking.data?.centerId)
+  const caregiverName = useCaregiverNames((booking.data?.occurrences ?? []).map((occurrence) => occurrence.caregiverId))
   useDocumentTitle(booking.data ? `#${booking.data.bookingCode}` : t('admin.bookingsPage.title'))
   const cancel = useMutation({
     mutationFn: (reason: string) => cancelBookingRequest(id, { reason }),
@@ -88,7 +91,11 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
           </div>
           <div>
             <dt className='text-xs text-on-surface-variant'>{t('admin.bookingsPage.center')}</dt>
-            <dd className='font-mono text-xs'>{data.centerId}</dd>
+            <dd>
+              <Link className='font-semibold text-primary hover:underline' to={`/admin/centers/${data.centerId}`}>
+                {centerName}
+              </Link>
+            </dd>
           </div>
           <div>
             <dt className='text-xs text-on-surface-variant'>{t('admin.bookingsPage.createdAt')}</dt>
@@ -103,7 +110,7 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
         </dl>
       </SectionCard>
       <SectionCard icon='event' title={t('admin.bookingsPage.occurrences')}>
-        <BookingOccurrenceList occurrences={data.occurrences ?? []} />
+        <BookingOccurrenceList caregiverName={caregiverName} occurrences={data.occurrences ?? []} />
       </SectionCard>
       <SectionCard icon='history' title={t('admin.bookingsPage.history')}>
         <BookingHistoryList bookingId={id} />

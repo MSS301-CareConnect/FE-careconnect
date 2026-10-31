@@ -4,7 +4,6 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchProviderStatistics, fetchSystemStatistics } from '~/entities/statistics/statistics-api'
 import { AdminLayout } from '~/features/admin/layout/admin-layout'
-import { AdminRevenuePage } from '~/features/admin/revenue/admin-revenue-page'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AdminDashboardPage } from '../admin-dashboard-page'
 
@@ -30,7 +29,6 @@ function renderAdmin(path = '/admin/dashboard') {
         <Routes>
           <Route element={<AdminLayout />} path='/admin'>
             <Route element={<AdminDashboardPage />} path='dashboard' />
-            <Route element={<AdminRevenuePage />} path='revenue' />
           </Route>
         </Routes>
         <Location />
@@ -50,37 +48,23 @@ describe('Admin dashboard', () => {
     await setAppLanguage('vi', false)
   })
 
-  it('uses a separate Admin shell, hides preview-only pages and labels sample charts', () => {
+  it('uses a separate Admin shell, hides preview-only pages and shows only live panels', async () => {
     renderAdmin()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tổng quan nền tảng')
     expect(screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Bảng điều khiển/ })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: /Quản lý Khách hàng/ })).toHaveAttribute('href', '/admin/customers')
-    expect(screen.getByRole('link', { name: /Quản lý Trung tâm/ })).toHaveAttribute('href', '/admin/centers')
-    expect(screen.getByRole('link', { name: /Dịch vụ & Bảng giá/ })).toHaveAttribute('href', '/admin/services')
+    expect(screen.getByRole('link', { name: /Tổng quan/ })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: /Khách hàng/ })).toHaveAttribute('href', '/admin/customers')
+    expect(screen.getByRole('link', { name: /^Trung tâm$/ })).toHaveAttribute('href', '/admin/centers')
+    expect(screen.getByRole('link', { name: /^Dịch vụ$/ })).toHaveAttribute('href', '/admin/services')
     // Pages without a backend stay out of the menu (D26).
     expect(screen.queryByRole('link', { name: /Kiểm soát chất lượng/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Cấu hình chính sách/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Giao dịch & Báo cáo/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Làm mới trực tiếp' })).not.toBeInTheDocument()
-    // Sample charts below the live panels carry a visible preview label (H-03).
-    expect(screen.getByRole('note')).toHaveTextContent('Bản xem thử · Kỳ báo cáo: 01–30/09/2026')
-    expect(screen.getByRole('note')).toHaveTextContent(/dữ liệu minh họa tháng 09\/2026/)
-    fireEvent.click(screen.getByRole('link', { name: 'Xem báo cáo doanh thu' }))
-    expect(screen.getByTestId('location')).toHaveTextContent('/admin/revenue')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Quản lý Giao dịch & Doanh thu')
-  })
-
-  it('shows sample insights and switches to English', async () => {
-    renderAdmin()
-    expect(screen.getByRole('heading', { name: 'Thống kê lịch hẹn' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Đội ngũ điều dưỡng & CCHN' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Xem báo cáo doanh thu' })).toHaveAttribute('href', '/admin/revenue')
-    expect(screen.getAllByText(/1[.,]482[.,]500[.,]000\s*₫/).length).toBeGreaterThan(0)
-    expect(screen.queryByRole('heading', { name: 'Tổng khách hàng' })).not.toBeInTheDocument()
+    // Sample financial charts are no longer rendered under the live numbers (A-15).
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Xem báo cáo doanh thu' })).not.toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Platform overview')
-    expect(screen.getByRole('heading', { name: 'Transaction value by service' })).toBeInTheDocument()
   })
 
   it('groups the sidebar menu without a topbar breadcrumb', () => {
@@ -90,20 +74,14 @@ describe('Admin dashboard', () => {
       within(navigation)
         .getAllByRole('list')
         .map((list) => list.getAttribute('aria-labelledby'))
-    ).toEqual(['admin-nav-overview', 'admin-nav-operations', 'admin-nav-customerCare', 'admin-nav-system'])
+    ).toEqual([null, 'admin-nav-operations', 'admin-nav-customerCare', 'admin-nav-system'])
     const operations = screen.getByRole('list', { name: 'Vận hành' })
-    expect(within(operations).getByRole('link', { name: /Quản lý Lịch đặt/ })).toHaveAttribute(
-      'href',
-      '/admin/bookings'
-    )
+    expect(within(operations).getByRole('link', { name: /Lịch đặt/ })).toHaveAttribute('href', '/admin/bookings')
     expect(within(operations).queryByRole('button')).not.toBeInTheDocument()
-    expect(within(operations).getByRole('link', { name: /Dịch vụ & Bảng giá/ })).toHaveAttribute(
-      'href',
-      '/admin/services'
-    )
+    expect(within(operations).getByRole('link', { name: /^Dịch vụ$/ })).toHaveAttribute('href', '/admin/services')
     const system = screen.getByRole('list', { name: 'Hệ thống' })
     expect(within(system).getByRole('link', { name: /Tài khoản/ })).toHaveAttribute('href', '/admin/accounts')
-    expect(within(system).getByRole('link', { name: /Sự cố đồng bộ/ })).toHaveAttribute('href', '/admin/incidents')
+    expect(within(system).getByRole('link', { name: /Sự cố/ })).toHaveAttribute('href', '/admin/incidents')
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })
 
@@ -118,7 +96,7 @@ describe('Admin dashboard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Mở menu quản trị' }))
     const navigation = screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })
-    fireEvent.click(within(navigation).getByRole('link', { name: /Bảng điều khiển/ }))
+    fireEvent.click(within(navigation).getByRole('link', { name: /Tổng quan/ }))
     expect(screen.getByRole('button', { name: 'Mở menu quản trị' })).toHaveAttribute('aria-expanded', 'false')
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })

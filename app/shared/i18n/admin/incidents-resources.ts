@@ -1,5 +1,5 @@
 export const adminIncidentsVi = {
-  title: 'Sự cố đồng bộ',
+  title: 'Sự cố',
   description:
     'Việc gửi giữa các dịch vụ (hoàn tiền, hóa đơn, khóa tài khoản trung tâm…) đã hết lượt thử lại. Gửi lại khi dịch vụ bên kia đã ổn, hoặc đánh dấu đã xử lý tay.',
   source: 'Nguồn',
@@ -12,7 +12,19 @@ export const adminIncidentsVi = {
     SENT: 'Đã gửi',
     ALL: 'Tất cả'
   },
-  subject: 'Đối tượng',
+  subject: 'Trung tâm',
+  technicalDetail: 'Chi tiết kỹ thuật',
+  events: {
+    REFUND: 'Hoàn tiền cho khách',
+    REMAINING_INVOICE: 'Tạo hóa đơn phần còn lại',
+    COMPLAINT_REFUND: 'Hoàn tiền theo khiếu nại',
+    RATING: 'Cập nhật điểm đánh giá',
+    SUSPEND: 'Khóa tài khoản khi tạm khóa trung tâm',
+    RESUME: 'Mở lại tài khoản khi mở lại trung tâm',
+    ACTIVATE: 'Kích hoạt tài khoản trung tâm',
+    CAREGIVER_DEACTIVATED: 'Xử lý lịch khi người chăm sóc ngừng làm',
+    other: 'Đồng bộ dữ liệu'
+  },
   attempts: 'Số lần thử',
   updatedAt: 'Cập nhật',
   requeue: 'Gửi lại',
@@ -26,7 +38,7 @@ export const adminIncidentsVi = {
 }
 
 export const adminIncidentsEn = {
-  title: 'Sync incidents',
+  title: 'Incidents',
   description:
     'Deliveries between services (refunds, invoices, center account locks…) that ran out of retries. Requeue once the other service is healthy, or mark them as handled by hand.',
   source: 'Source',
@@ -39,7 +51,19 @@ export const adminIncidentsEn = {
     SENT: 'Sent',
     ALL: 'All'
   },
-  subject: 'Subject',
+  subject: 'Center',
+  technicalDetail: 'Technical detail',
+  events: {
+    REFUND: 'Customer refund',
+    REMAINING_INVOICE: 'Remaining-balance invoice',
+    COMPLAINT_REFUND: 'Complaint refund',
+    RATING: 'Rating update',
+    SUSPEND: 'Lock accounts of a suspended center',
+    RESUME: 'Unlock accounts of a reopened center',
+    ACTIVATE: 'Activate center accounts',
+    CAREGIVER_DEACTIVATED: 'Reschedule after a caregiver left',
+    other: 'Data sync'
+  },
   attempts: 'Attempts',
   updatedAt: 'Updated',
   requeue: 'Requeue',

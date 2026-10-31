@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { useServiceCategoryLabel } from '~/entities/care-catalog/use-service-category-label'
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -17,6 +18,7 @@ type CatalogTableProps = {
 
 export function CatalogTable({ list, onEdit, onDelete }: CatalogTableProps) {
   const { t } = useTranslation()
+  const categoryLabel = useServiceCategoryLabel()
   const { query, items, filtered, rows, page, pageCount } = list
   return (
     <section className='overflow-hidden rounded-xl bg-white shadow-sm'>
@@ -62,12 +64,11 @@ export function CatalogTable({ list, onEdit, onDelete }: CatalogTableProps) {
                       />
                       <span>
                         <strong className='block max-w-60 break-words leading-5'>{item.name}</strong>
-                        <small className='mt-1 block text-outline'>{item.id}</small>
                       </span>
                     </div>
                   </td>
                   <td className='px-4 py-4'>
-                    <strong className='block max-w-44 break-words text-xs'>{item.category}</strong>
+                    <strong className='block max-w-44 break-words text-xs'>{categoryLabel(item.category)}</strong>
                   </td>
                   <td className='px-4 py-4'>
                     <p className='line-clamp-3 max-w-md whitespace-pre-line text-xs leading-5 text-on-surface-variant'>

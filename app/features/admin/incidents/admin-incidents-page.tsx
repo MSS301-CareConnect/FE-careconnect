@@ -110,6 +110,7 @@ export function AdminIncidentsPage() {
               onRequeue={(id) => requeue.mutate(id)}
               onSkip={(id, note) => skip.mutate({ id, note })}
               row={row}
+              source={source}
             />
           ))}
         </ul>

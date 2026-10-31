@@ -7,6 +7,12 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { AdminIncidentsPage } from './admin-incidents-page'
 import { fetchIncidents, requeueIncident, skipIncident } from './incidents-api'
+import { fetchCenter } from '~/entities/provider/provider-api'
+
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchCenter: vi.fn()
+}))
 
 vi.mock('./incidents-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./incidents-api')>()),
@@ -46,7 +52,10 @@ describe('AdminIncidentsPage (H-08)', () => {
     vi.mocked(requeueIncident).mockResolvedValue({} as never)
     renderPage()
 
-    expect(await screen.findByText('FeignException: 503')).toBeInTheDocument()
+    expect(await screen.findByText('Hoàn tiền cho khách')).toBeInTheDocument()
+    // The raw error stays behind a disclosure and no UUID is printed.
+    expect(screen.getByText('Chi tiết kỹ thuật')).toBeInTheDocument()
+    expect(screen.queryByText('bk-1')).not.toBeInTheDocument()
     expect(fetchIncidents).toHaveBeenCalledWith('booking', 'FAILED')
     fireEvent.click(screen.getByRole('button', { name: 'Gửi lại' }))
     await waitFor(() => expect(requeueIncident).toHaveBeenCalledWith('booking', 'ob-1'))
@@ -55,7 +64,9 @@ describe('AdminIncidentsPage (H-08)', () => {
   it('skips a ProviderService event only with a note', async () => {
     vi.mocked(fetchIncidents).mockResolvedValue([{ ...failed, eventType: 'SUSPEND', subjectId: 'ct-1' }])
     vi.mocked(skipIncident).mockResolvedValue({} as never)
+    vi.mocked(fetchCenter).mockResolvedValue({ centerName: 'Trung tâm An Bình' } as never)
     renderPage('/admin/incidents?source=provider&status=FAILED')
+    expect(await screen.findByText('Trung tâm An Bình')).toBeInTheDocument()
 
     const skipButton = await screen.findByRole('button', { name: 'Đã xử lý tay' })
     expect(fetchIncidents).toHaveBeenCalledWith('provider', 'FAILED')
