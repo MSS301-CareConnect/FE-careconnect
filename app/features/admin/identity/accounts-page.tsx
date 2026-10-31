@@ -19,9 +19,9 @@ import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
+import { AccountAvatar } from './components/account-avatar'
 import { CreateAccountDialog } from './components/create-account-dialog'
 import { RoleChips } from './components/role-chips'
-import { initials } from './account-format'
 
 const key = 'admin.identity.accounts' as const
 const PAGE_SIZE = 20
@@ -199,12 +199,12 @@ export function AccountsPage() {
                   >
                     <td className='px-4 py-3'>
                       <div className='flex items-center gap-3'>
-                        <span
-                          aria-hidden='true'
-                          className='grid h-9 w-9 shrink-0 place-items-center rounded-full bg-secondary-container text-xs font-bold text-primary'
-                        >
-                          {initials(user.fullName || user.email)}
-                        </span>
+                        <AccountAvatar
+                          className='h-9 w-9 rounded-full text-xs'
+                          name={user.fullName || user.email}
+                          roles={user.roles}
+                          userId={user.id}
+                        />
                         <span className='min-w-0'>
                           <Link
                             className='block font-semibold text-on-surface hover:text-primary'

@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 
 import { fetchPendingCaregivers, providerKeys, verifyCaregiver } from '~/entities/provider/provider-api'
+import { classifyApiError } from '~/shared/api/api-error'
 import type { VerificationRequest } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { PendingCaregiverCard } from './components/pending-caregiver-card'
 
@@ -25,9 +27,20 @@ export function AdminCaregiverQueuePage() {
     placeholderData: keepPreviousData,
     retry: false
   })
+  const notify = useActionToast()
   const decide = useMutation({
-    mutationFn: ({ id, request }: { id: string; request: VerificationRequest }) => verifyCaregiver(id, request),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['provider'] })
+    mutationFn: ({ id, request }: { id: string; request: VerificationRequest; name: string }) =>
+      verifyCaregiver(id, request),
+    onSuccess: (_saved, { request, name }) => {
+      notify.success(
+        t(request.status === 'VERIFIED' ? 'admin.toast.caregivers.verified' : 'admin.toast.caregivers.rejected', {
+          name
+        })
+      )
+      return queryClient.invalidateQueries({ queryKey: ['provider'] })
+    },
+    onError: (error, variables) =>
+      notify.systemError(error, t('admin.toast.caregivers.actions.review'), () => decide.mutate(variables))
   })
 
   return (
@@ -36,7 +49,7 @@ export function AdminCaregiverQueuePage() {
         <h1 className='text-2xl font-bold'>{t('admin.caregiverQueuePage.title')}</h1>
         <p className='mt-1 text-sm text-on-surface-variant'>{t('admin.caregiverQueuePage.description')}</p>
       </div>
-      {decide.isError ? (
+      {decide.isError && classifyApiError(decide.error).kind !== 'system' ? (
         <p className='text-sm text-error' role='alert'>
           {t('admin.caregiverQueuePage.decideError')}
         </p>
@@ -59,7 +72,7 @@ export function AdminCaregiverQueuePage() {
                 busy={decide.isPending}
                 caregiver={caregiver}
                 key={caregiver.id}
-                onDecide={(request) => decide.mutate({ id: caregiver.id, request })}
+                onDecide={(request) => decide.mutate({ id: caregiver.id, request, name: caregiver.fullName })}
               />
             ))}
           </ul>

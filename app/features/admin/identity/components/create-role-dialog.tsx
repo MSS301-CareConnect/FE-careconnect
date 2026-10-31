@@ -10,6 +10,7 @@ import { FormAlert } from '~/shared/ui/form-alert'
 import { Modal } from '~/shared/ui/modal'
 
 import { addRole, roleKeys } from '../identity-api'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.rolesPage.form' as const
 const ROLE_CODE = /^[A-Z][A-Z0-9_]{1,63}$/
@@ -40,14 +41,20 @@ export function CreateRoleDialog({
   const [description, setDescription] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
   const errors = useFormErrors<Field, FieldError>(ERROR_MAP, formRef)
+  const notify = useActionToast()
   const create = useMutation({
     mutationFn: () =>
       addRole({ roleCode: roleCode.trim(), roleName: roleName.trim(), description: description.trim() || undefined }),
     onSuccess: async (role) => {
+      notify.success(t('admin.toast.roles.created', { name: role.roleName ?? roleName.trim() }))
       await queryClient.invalidateQueries({ queryKey: roleKeys.roles })
       onCreated(role)
     },
-    onError: errors.fromApi
+    onError: (error) => {
+      if (!notify.systemError(error, t('admin.toast.roles.actions.create'), () => create.mutate())) {
+        errors.fromApi(error)
+      }
+    }
   })
 
   function submit(event: FormEvent) {

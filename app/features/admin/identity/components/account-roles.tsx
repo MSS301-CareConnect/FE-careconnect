@@ -12,6 +12,7 @@ import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { isBuiltInRole } from '../account-format'
 import { addUserRole, fetchRoles, removeUserRole, roleKeys } from '../identity-api'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.detail' as const
 /** Given through their own flows: a manager on the center page, a caregiver together with its provider profile (A-06). */
@@ -31,6 +32,11 @@ export function AccountRoles({ user, editable }: { user: UserResponse; editable:
   const [revoking, setRevoking] = useState<{ id: string; label: string } | null>(null)
   const roles = useQuery({ queryKey: roleKeys.roles, queryFn: fetchRoles, retry: false, enabled: editable })
   const label = (code: string) => (isBuiltInRole(code) ? t(`admin.identity.roles.${code}`) : code)
+  const notify = useActionToast()
+  const roleName = (roleId: string) => {
+    const role = roles.data?.find((item) => item.id === roleId)
+    return role?.roleCode ? label(role.roleCode) : (role?.roleName ?? '')
+  }
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: accountKeys.all })
@@ -38,21 +44,28 @@ export function AccountRoles({ user, editable }: { user: UserResponse; editable:
   }
   const assign = useMutation({
     mutationFn: (selected: string) => addUserRole(user.id!, selected),
-    onSuccess: async () => {
+    onSuccess: async (_saved, selected) => {
       setRoleId('')
+      notify.success(t('admin.toast.accounts.roleAssigned', { role: roleName(selected) }))
       await refresh()
-    }
+    },
+    onError: (error) => notify.systemError(error, t('admin.toast.accounts.actions.role'))
   })
   const revoke = useMutation({
     mutationFn: (selected: string) => removeUserRole(user.id!, selected),
     onSuccess: async () => {
+      notify.success(t('admin.toast.accounts.roleRevoked', { role: revoking?.label ?? '' }))
       setRevoking(null)
       await refresh()
     },
-    onError: () => setRevoking(null)
+    onError: (error) => {
+      setRevoking(null)
+      notify.systemError(error, t('admin.toast.accounts.actions.role'))
+    }
   })
   const failure = assign.error ?? revoke.error
   const classified = failure ? classifyApiError(failure, BUSINESS) : null
+  const businessFailure = classified?.kind === 'business' ? classified : null
   const options = (roles.data ?? []).filter(
     (role) =>
       role.id &&
@@ -121,9 +134,7 @@ export function AccountRoles({ user, editable }: { user: UserResponse; editable:
           <p className='text-xs text-on-surface-variant'>{t(`${key}.assignHint`)}</p>
         </div>
       ) : null}
-      {classified && classified.kind !== 'field' ? (
-        <FormAlert tone={classified.kind === 'system' ? 'error' : 'warning'}>{t(classified.key)}</FormAlert>
-      ) : null}
+      {businessFailure ? <FormAlert tone='warning'>{t(businessFailure.key)}</FormAlert> : null}
       <ConfirmDialog
         confirmLabel={t(`${key}.revoke`)}
         description={t(`${key}.revokeDescription`)}

@@ -14,8 +14,8 @@ import { Icon } from '~/shared/ui/icon'
 import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
-import { initials } from './account-format'
 import { AccountAccess } from './components/account-access'
+import { AccountAvatar, useAccountCaregiver } from './components/account-avatar'
 import { AccountProfileForm } from './components/account-profile-form'
 import { AccountRoles } from './components/account-roles'
 import { RoleChips } from './components/role-chips'
@@ -40,6 +40,27 @@ function CenterLink({ centerId }: { centerId: string }) {
     <Link className='font-semibold text-primary hover:underline' to={`/admin/centers/${centerId}`}>
       {name}
     </Link>
+  )
+}
+
+/** A caregiver account links to the profile the admin reviews in its center's caregiver list. */
+function CaregiverProfileLink({ userId, roles }: { userId: string | undefined; roles: readonly string[] | undefined }) {
+  const { t } = useTranslation()
+  const caregiver = useAccountCaregiver(userId, roles)
+  if (!caregiver.data) return null
+  return (
+    <div>
+      <dt className='text-on-surface-variant'>{t(`${key}.caregiverProfile`)}</dt>
+      <dd className='mt-1'>
+        <Link
+          className='inline-flex items-center gap-1 font-semibold text-primary hover:underline'
+          to={`/admin/centers/${caregiver.data.centerId}/caregivers?caregiver=${caregiver.data.id}`}
+        >
+          {caregiver.data.fullName}
+          <Icon className='text-base' name='arrow_forward' />
+        </Link>
+      </dd>
+    </div>
   )
 }
 
@@ -85,12 +106,12 @@ export function AccountDetailPage() {
       ) : (
         <>
           <header className='flex flex-wrap items-center gap-4'>
-            <span
-              aria-hidden='true'
-              className='grid h-14 w-14 place-items-center rounded-2xl bg-secondary-container text-lg font-bold text-primary'
-            >
-              {initials(account.data.fullName || account.data.email)}
-            </span>
+            <AccountAvatar
+              className='h-14 w-14 rounded-2xl text-lg'
+              name={account.data.fullName || account.data.email}
+              roles={account.data.roles}
+              userId={account.data.id}
+            />
             <div className='min-w-0 flex-1'>
               <h1 className='text-2xl font-extrabold tracking-tight'>{account.data.fullName || account.data.email}</h1>
               <p className='mt-1 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
@@ -117,6 +138,7 @@ export function AccountDetailPage() {
                       {account.data.centerId ? <CenterLink centerId={account.data.centerId} /> : t(`${key}.none`)}
                     </dd>
                   </div>
+                  <CaregiverProfileLink roles={account.data.roles} userId={account.data.id} />
                   <div>
                     <dt className='text-on-surface-variant'>{t(`${key}.createdAt`)}</dt>
                     <dd className='mt-1 tabular-nums'>

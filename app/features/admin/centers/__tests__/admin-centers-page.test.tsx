@@ -136,7 +136,11 @@ describe('AdminCentersPage', () => {
     fireEvent.change(within(dialog).getByLabelText('Mở cửa'), { target: { value: '22:00' } })
     fireEvent.change(within(dialog).getByLabelText('Đóng cửa'), { target: { value: '06:00' } })
     // Overnight hours are a note, not an error (D-04).
-    expect(within(dialog).getByText('Hoạt động qua đêm, đóng cửa lúc 06:00 hôm sau.')).toBeInTheDocument()
+    expect(
+      within(dialog).getByText(
+        /^Hoạt động qua đêm, đóng cửa lúc 06:00 hôm sau. Khách chỉ đặt được buổi kết thúc trong cùng ngày./
+      )
+    ).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo trung tâm' }))
 
     await waitFor(() =>

@@ -10,6 +10,7 @@ import { baseControlClass } from '~/shared/ui/form-field'
 import { FormAlert } from '~/shared/ui/form-alert'
 
 import { saveUser } from '../identity-api'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.detail' as const
 type Field = 'fullName' | 'phone'
@@ -30,18 +31,21 @@ export function AccountProfileForm({ user }: { user: UserResponse }) {
   const queryClient = useQueryClient()
   const [fullName, setFullName] = useState(user.fullName ?? '')
   const [phone, setPhone] = useState(user.phoneNumber ?? '')
-  const [saved, setSaved] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
   const errors = useFormErrors<Field, FieldError>(ERROR_MAP, formRef)
+  const notify = useActionToast()
   const save = useMutation({
     mutationFn: () => saveUser(user.id!, { fullName: fullName.trim(), phoneNumber: phone.trim() || undefined }),
-    onMutate: () => setSaved(false),
     onSuccess: async () => {
-      setSaved(true)
+      notify.success(t('admin.toast.accounts.saved', { name: fullName.trim() }))
       await queryClient.invalidateQueries({ queryKey: accountKeys.all })
       await queryClient.invalidateQueries({ queryKey: accountKeys.detail(user.id!) })
     },
-    onError: errors.fromApi
+    onError: (error) => {
+      if (!notify.systemError(error, t('admin.toast.accounts.actions.save'), () => save.mutate())) {
+        errors.fromApi(error)
+      }
+    }
   })
 
   function submit(event: FormEvent) {
@@ -70,7 +74,6 @@ export function AccountProfileForm({ user }: { user: UserResponse }) {
           onChange={(event) => {
             onChange(event.target.value)
             errors.clearField(field)
-            setSaved(false)
           }}
           value={value}
         />
@@ -96,11 +99,6 @@ export function AccountProfileForm({ user }: { user: UserResponse }) {
         <Button loading={save.isPending} loadingLabel={t('common.ui.working')} size='sm' type='submit'>
           {t(`${key}.save`)}
         </Button>
-        {saved ? (
-          <p className='text-sm text-on-surface-variant' role='status'>
-            {t(`${key}.saved`)}
-          </p>
-        ) : null}
       </div>
     </form>
   )

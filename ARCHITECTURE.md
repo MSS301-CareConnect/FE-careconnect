@@ -85,8 +85,7 @@ Home, Find Caregivers, Services, and Sign in; active Customers also see bookings
 their account menu. The `/customer` index, booking routes, and personal and patient
 profiles remain guarded. The current backend requires an authenticated session for
 caregiver search and detail, verified certificates, catalog items, center offerings,
-and price plans. Guest browse routes remain reachable, but their data requests return
-401 until the backend enables anonymous reads or the product requires sign-in for browsing.
+and price plans. Guest browse routes remain reachable, but their data requests return 401.
 
 The Customer header carries a center selector beside the logo, and the public `/` home
 page uses the same Customer layout so the selector appears from the first visit.
@@ -177,6 +176,16 @@ and details after mutations. The backend enforces all permissions; the UI hides
 actions based on `/api/v1/users/me` permissions and renders denied/error states.
 The account list reads the `content` array and `totalPages` from IdentityService's
 paginated `/api/v1/users` result; an invalid page shape becomes a retryable API error.
+Accounts show initials. A CAREGIVER account reads its ProviderService profile
+(`GET /caregivers/by-user/{userId}`) and shows that caregiver photo, with a link to the review in `/admin/centers/:id/caregivers`.
+
+Admin bookings (`/admin/bookings` and the center page's Bookings tab) use
+`entities/booking/bookings-browser.tsx`: a filtered list or a month calendar that expands
+ONE_TIME, DAILY and WEEKLY schedules into visits (`booking-month.ts`), both reading
+`GET /bookings` with URL-held filters. Booking history hides machine reasons such as
+`paymentReference=…` (`booking-history-reason.ts`) and shows "deposit received" instead.
+The Services page's Price plans tab compares the plans of every active center per
+standard service, read-only, since only center managers edit plans in CareCatalog.
 
 `/account/security` is available to every active web user. Password change and
 sign-out on every device use CSRF-protected cookie requests, then reload `/login`
@@ -320,6 +329,11 @@ targets and keyboard focus rings:
 - `form-field.tsx` (`FormField`, `TextInput`, `SelectInput`, `TextareaInput`): accessible label, helper text, error message, and `aria-invalid`/`aria-describedby` wiring.
 - `modal.tsx` (`Modal`, `ConfirmDialog`): native `<dialog>` modal and accessible confirmation dialog replacing browser `window.confirm`.
 - `toast.tsx` (`ToastProvider`, `useToast`): non-blocking status notifications (`aria-live="polite"`).
+- `toaster.tsx`, `app-toast.ts`, `use-action-toast.ts`: the admin portal's sonner toasts (bottom-right, token colors,
+  mounted once in `AdminLayout`). A mutation's success is a toast; a system failure (5xx, network) is a toast with a
+  retry that keeps the form and its input; validation errors stay under the field and business errors at the end of
+  the form (`FormAlert`). `toastSystemError` returns `false` for non-system errors so the caller renders them inline.
+  Other portals keep their inline outcomes until the admin pattern is extended to them.
 - `pagination.tsx` (`Pagination`): accessible pagination bar with `tabular-nums`.
 - `data-table.tsx` (`DataTableShell`): responsive table wrapper with sticky header support.
 - `state-panels.tsx` (`SkeletonBlock`, `TableSkeleton`, `CardGridSkeleton`, `EmptyState`, `ErrorState`, `ForbiddenState`, `OfflineBanner`): unified loading, empty, error, 403, and offline states.

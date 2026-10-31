@@ -645,3 +645,273 @@ Chi tiết trung tâm (thẩm định, nhân sự, hoạt động), Dịch vụ,
 Còn lại / ngoài phạm vi: các mục §0.2 cần BE; dữ liệu mẫu có 3 trung tâm trỏ tới tài khoản quản lý không tồn tại (hiện
 "Không xác định"); MediaService dev đôi lúc trả 504 khi tải ảnh trung tâm (giao diện rơi về biểu tượng); trang Dịch vụ vẫn
 còn các khối mẫu "Phụ phí & quy chuẩn ca trực" / "Phân bổ hình thức đặt ca" chưa nằm trong plan.
+
+---
+
+# Phần 2 — Plan nhỏ: các vấn đề lặt vặt trang Admin (2026-10-31)
+
+> Trạng thái: **đã chốt quyết định D-07 → D-10, chờ thực hiện** — chưa sửa code. Vẫn theo D-05 (không sửa BE, không thêm API); mục nào cần BE ghi rõ ở cột
+> Phạm vi. Nguồn khảo sát thêm: `BookingService` (`BookingServiceImpl.markDepositPaid`, `util/BookingSpecifications`,
+> `OccurrenceGeneratorImpl`), `PaymentService` (`PaymentOutboxServiceImpl`, `PaymentServiceImpl`), `CareCatalogService`
+> (`PricePlan`, `PricingUnit`), `MediaService` (`MediaPurpose`), `IdentityService` (`UserResponse`), lịch sử git của
+> `scripts/payment-demo.mjs`, `features/admin/services/components/pricing-guidelines.tsx`.
+
+### Quyết định đã chốt (2026-10-31)
+
+| #    | Câu hỏi                       | Quyết định                                                                                                                                        |
+| ---- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D-07 | Q-10 — ảnh tài khoản          | **Không sửa BE.** Giải thích rõ vì sao trung tâm / người chăm sóc có ảnh mà tài khoản thì không (V-05); FE chỉ làm phần dùng được với API hiện có |
+| D-08 | Q-11 — khối mẫu trang Dịch vụ | **Xóa** toàn bộ khối số liệu mẫu (phụ phí, phân bổ đặt ca, tiêu chuẩn giám sát, chính sách giá) và **làm lại phần hiển thị theo gói giá** (V-02)  |
+| D-09 | Q-12 — phạm vi toast          | **Làm cho admin trước**; ổn thì áp dụng cho các vai trò khác ở đợt sau                                                                            |
+| D-10 | Q-13 — mã giao dịch           | **Không hiển thị mã giao dịch cho bất kỳ ai** (kể cả admin), nhất là khi đang có dữ liệu demo; thay bằng câu dễ hiểu                              |
+
+## 8. Tóm tắt
+
+| #    | Vấn đề                                                                    | Kết luận khảo sát                                                                                                                                                                                                                                                                                                        | Hướng xử lý                                                                                                                                                                      | Phạm vi                |
+| ---- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| V-01 | Thiếu toast báo kết quả thao tác ở admin                                  | Dự án **chưa cài `sonner`**; `shared/ui/toast.tsx` chỉ có `ToastBanner` (không dùng ở đâu); mỗi trang tự hiện dòng "Đã lưu" hoặc không báo gì                                                                                                                                                                            | Cài `sonner`, dựng `Toaster` theo token màu dự án ở **góc dưới bên phải**; toast thành công cho mọi thao tác ghi và toast lỗi hệ thống; câu chữ đúng nav item + hành động        | 🟢 FE (+ 1 dependency) |
+| V-02 | Tab "Phụ phí & quy chuẩn ca trực" và các khối giá ở trang Dịch vụ         | **BE không có nghiệp vụ phụ phí** (không entity, field hay API ở Catalog / Booking / Payment). Giá chỉ là `PricePlan` (`HOUR` / `DAY` / `SHIFT` + `basePrice`). BE còn **không cho đặt ca qua đêm** (`OVERNIGHT_NOT_SUPPORTED` 5207)                                                                                     | (D-08) **Xóa** các khối mẫu; tab đổi thành **"Gói giá"** hiển thị gói giá thật của các trung tâm, ghi rõ "chưa hỗ trợ phụ phí"                                                   | 🟢 FE                  |
+| V-03 | Lịch đặt admin chỉ là danh sách, không lọc trung tâm, không xem dạng lịch | BE `GET /bookings` (ADMIN) đã lọc `centerId`, `from`/`to` (khoảng ngày **giao** với kỳ lọc), `status`, `keyword`, `caregiverId`; snapshot FE đã khai báo sẵn                                                                                                                                                             | Thêm lọc trung tâm + khoảng ngày; 2 chế độ **Danh sách / Lịch tháng**; xem chi tiết từ lịch; tab "Lịch đặt" trong chi tiết trung tâm                                             | 🟢 FE                  |
+| V-04 | `paymentReference=DEMOF0CA712D10EB4DEB` hiện trong lịch sử lịch đặt       | Là **mã giao dịch thanh toán cọc** PaymentService gửi khi xác nhận cọc; Booking ghi vào `reason` của lịch sử dạng `paymentReference=<mã>`. Tiền tố `DEMO` là **dữ liệu thử** do stub `scripts/payment-demo.mjs` (đã gỡ ở Đợt 1c) sinh ra: `DEMO` + 16 ký tự đầu của id payment. Giao dịch thật là `vnp_TxnRef` của VNPay | (D-10) **Ẩn mã với mọi người**; dòng lịch sử đó chỉ ghi "Đã nhận tiền cọc qua cổng thanh toán." Dữ liệu ở BE giữ nguyên để đối soát                                              | 🟢 FE                  |
+| V-05 | Ảnh tài khoản ở nav Tài khoản                                             | Identity **không có trường ảnh** cho user; trang hồ sơ khách **không có chức năng đổi ảnh**; admin **không thể** thêm ảnh cho user; MediaService chỉ cho token SERVICE gọi                                                                                                                                               | (D-07) Không sửa BE. Không có quyền nào "cấm khách" — **không có nơi lưu ảnh tài khoản** (V-05). FE: tài khoản người chăm sóc hiện ảnh hồ sơ PV; tài khoản khác giữ chữ viết tắt | 🟢 FE                  |
+
+## 9. Chi tiết
+
+### V-01 — Toast thông báo kết quả (sonner)
+
+**Hiện trạng**
+
+- Không có hệ thống toast. Phản hồi thành công rời rạc: chi tiết tài khoản có dòng "Đã lưu thay đổi", trang trung tâm có
+  khối xanh, trang Dịch vụ / Lịch đặt / Sự cố / Phân quyền chỉ đóng hộp thoại, không báo gì.
+- Lỗi hệ thống hiện ở cuối form (`FormAlert`, U-10) — đúng chỗ nhưng dễ bị bỏ qua khi form dài, và thao tác không có form
+  (nút Gửi lại ở Sự cố, nút Gỡ vai trò…) gần như không có chỗ báo.
+
+**Quyết định thiết kế**
+
+- **Thư viện:** `sonner` (nhẹ, hỗ trợ React 19, không cần provider riêng). Thêm bằng `pnpm add sonner`; không có install
+  script nên không phải sửa `allowBuilds`.
+- **Vị trí: dưới góc phải** (desktop). Góc trên phải là topbar có chuông thông báo và menu tài khoản, toast sẽ che chúng;
+  các nút chính của mỗi trang (Thêm…, Tạo…) cũng ở góc trên phải. Dưới góc phải không che nội dung đang làm và là vị trí
+  quen thuộc của trang quản trị. Màn < 640px: sonner tự trải ngang đáy màn hình.
+- **Màu đồng nhất token `app.css`** — `toastOptions.unstyled` + `classNames`, không dùng màu mặc định của sonner:
+
+  | Loại               | Nền / chữ / viền                                                        | Icon           |
+  | ------------------ | ----------------------------------------------------------------------- | -------------- |
+  | Thành công         | `bg-success-container text-on-success-container border-outline-variant` | `check_circle` |
+  | Lỗi hệ thống       | `bg-error-container text-on-error-container border-error/30`            | `error`        |
+  | Cảnh báo (khi cần) | `bg-warning-container text-on-warning-container border-warning/30`      | `warning`      |
+
+  Bo `rounded-xl`, bóng có offset (`shadow-md`), chữ `text-sm`, font Plus Jakarta Sans, nút đóng có `aria-label` i18n.
+  Thành công tự ẩn sau 4 giây; lỗi hệ thống 8 giây và có nút **Thử lại** khi thao tác lặp lại được.
+
+- **Chia việc giữa toast và form** (giữ U-10):
+  - Lỗi validation → **chỉ** dưới ô, không toast.
+  - Lỗi nghiệp vụ (409, trạng thái, quyền…) → **chỉ** ở cuối form vì người dùng cần sửa tại đó.
+  - Lỗi hệ thống (5xx, 503, mất mạng, timeout) → **toast lỗi**, giữ nguyên dữ liệu form; bỏ `FormAlert` hệ thống trùng lặp.
+  - Thành công → **toast thành công**, bỏ các dòng "Đã lưu…" rải rác.
+- **Câu chữ đúng nav item + hành động.** FE **không** hiển thị `message` của BE (quy tắc `FE-careconnect/AGENTS.md`); mỗi
+  hành động có key i18n riêng `admin.toast.<navItem>.<action>` (vi + en), kèm tên đối tượng khi biết. Helper
+  `shared/ui/app-toast.ts`: `toastSuccess(message)`, `toastSystemError(error, { message, retry })` — dùng `classifyApiError`,
+  chỉ toast khi `kind === 'system'`.
+
+**Bảng câu thông báo theo nav item** (đề xuất)
+
+| Nav item       | Hành động có toast thành công                                                                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dịch vụ        | Tạo ("Đã tạo dịch vụ “{{name}}”.") · Sửa ("Đã cập nhật dịch vụ “{{name}}”.") · Xóa ("Đã xóa dịch vụ “{{name}}”.")                                                                                                        |
+| Trung tâm      | Tạo · Sửa thông tin · Duyệt ("Đã duyệt và kích hoạt {{name}}.") · Từ chối · Tạm khóa · Ngừng hoạt động · Mở lại · Lưu trữ · Tạo tài khoản quản lý · Ghép / đổi người quản lý · Khóa tài khoản quản lý cũ · Tải / xóa ảnh |
+| Lịch đặt       | Hủy thay nền tảng ("Đã hủy lịch #{{code}} và hoàn 100% cho khách.")                                                                                                                                                      |
+| Người chăm sóc | Duyệt / từ chối hồ sơ · Duyệt / từ chối chứng chỉ                                                                                                                                                                        |
+| Khiếu nại      | Ra quyết định cấp cao                                                                                                                                                                                                    |
+| Tài khoản      | Tạo tài khoản · Lưu hồ sơ · Khóa / mở khóa · Vô hiệu hóa · Gán / gỡ vai trò · Gửi mã OTP · Đặt mật khẩu                                                                                                                  |
+| Phân quyền     | Tạo vai trò · Lưu quyền                                                                                                                                                                                                  |
+| Sự cố          | Gửi lại · Đánh dấu đã xử lý tay                                                                                                                                                                                          |
+
+Toast lỗi hệ thống dùng một mẫu câu theo nav item: "Chưa {{action}} được vì hệ thống đang gặp sự cố. Dữ liệu bạn nhập vẫn
+được giữ, hãy thử lại." (`{{action}}` lấy từ cùng bảng: "tạo dịch vụ", "duyệt trung tâm"…).
+
+**Việc cần làm**
+
+- [ ] `pnpm add sonner`; `shared/ui/toaster.tsx` (Toaster đã style theo token) gắn vào `features/admin/layout/admin-layout.tsx`.
+- [ ] `shared/ui/app-toast.ts` + i18n `shared/i18n/admin/toast-resources.ts` (vi/en cùng cấu trúc).
+- [ ] Gắn vào `onSuccess` / `onError` của các mutation trong bảng; bỏ dòng "Đã lưu…" và `FormAlert` hệ thống trùng.
+- [ ] Xóa `ToastBanner` không còn dùng.
+
+**AC:** tạo dịch vụ → toast xanh "Đã tạo dịch vụ “…”." ở góc dưới phải; BE Catalog lỗi 503 khi lưu → toast đỏ có nút
+Thử lại, form giữ nguyên dữ liệu; lỗi nhập liệu không sinh toast.
+
+---
+
+### V-02 — Phụ phí ở trang Dịch vụ
+
+**Khảo sát BE**
+
+- Tìm `surcharge` / phụ phí / ca đêm / ngày lễ trong toàn bộ BE: **không có** entity, cột, DTO, API hay quy tắc tính giá.
+- Giá = `PricePlan` của CareCatalog: `pricingUnit` ∈ {`HOUR`, `DAY`, `SHIFT`}, `durationMinutes`, `basePrice`, `isActive`.
+  Booking lấy giá từ báo giá Catalog và **chụp** vào `BookingItem` (`unitPrice`, `totalPrice`), không cộng phụ phí.
+- `OccurrenceGeneratorImpl` từ chối giờ kết thúc ≤ giờ bắt đầu (`OVERNIGHT_NOT_SUPPORTED` 5207) → hệ thống **không đặt được
+  buổi qua đêm**, nên "Ca đêm 22:00–06:00 +30%" mâu thuẫn trực tiếp với nghiệp vụ.
+
+**Hiện trạng FE (viết cứng)** — `features/admin/services/components/pricing-guidelines.tsx`:
+
+- Tab "Phụ phí & quy chuẩn ca trực": 3 thẻ +30% / +100% / +20%.
+- Khối "Phân bổ hình thức đặt ca" (số 6.300, "Ca 4 giờ 45% · Ca 8 giờ 30% · Lưu trú 25%"), "Quy chuẩn phụ phí ca đặc biệt",
+  "Tiêu chuẩn giám sát y khoa", "Chính sách quản lý giá dịch vụ" — đều là chữ / số mẫu.
+
+**Đề xuất (D-08: xóa khối mẫu, làm lại theo gói giá)**
+
+- [ ] Xóa `SurchargePreview`, `PricingGuidelines` và các key i18n `surcharge*`, `allocation*`, `policy*`, chuỗi tiêu chuẩn giám
+      sát trong `services-resources.ts`.
+- [ ] Tab thứ ba đổi tên **"Gói giá"** (`?tab=plans`), dữ liệu thật, chỉ đọc (admin không sửa giá — quy tắc Catalog):
+  - Bộ lọc: Trung tâm (tất cả trung tâm đang hoạt động / một trung tâm), Dịch vụ chuẩn, Đơn vị tính (Theo giờ / Theo ngày /
+    Theo ca), Trạng thái gói (đang áp dụng / tạm dừng).
+  - Bảng: Dịch vụ · Trung tâm · Tên gói · Đơn vị tính · Thời lượng (gói theo ca) · Giá · Trạng thái; sắp theo dịch vụ rồi
+    giá tăng dần.
+  - Tóm tắt phía trên (không dùng ô số to): mỗi dịch vụ chuẩn — số trung tâm cung cấp, giá thấp nhất – cao nhất theo từng
+    đơn vị tính, để admin so giá giữa các trung tâm mà không phải mở từng nơi.
+  - Nguồn: `GET /center-services` theo từng trung tâm + `GET /price-plans/center-offering/{id}` (đang dùng ở tab "Bảng giá
+    theo trung tâm"); tab cũ đó gộp vào tab này (B-04).
+  - Ghi chú cố định một dòng: "Nền tảng chưa hỗ trợ phụ phí (ca đêm, ngày lễ…). Giá khách trả là giá gói của trung tâm;
+    mỗi buổi phải kết thúc trong cùng ngày."
+- [ ] Trạng thái rỗng / lỗi / đang tải đầy đủ; số tiền định dạng `Intl` VND.
+
+---
+
+### V-03 — Lịch đặt: xem tất cả & theo trung tâm, dạng lịch
+
+**API (đã có, ADMIN được gọi)**
+
+- `GET /bookings?centerId=&status=&from=&to=&keyword=&caregiverId=&sort=&page=&size=` — `from`/`to` lọc lịch đặt có khoảng
+  `[startDate, endDate]` **giao** với kỳ chọn (`BookingSpecifications`) → đúng nhu cầu xem theo tháng.
+- `GET /bookings/{id}` và `GET /bookings/{id}/occurrences` cho chi tiết từng buổi.
+- Không có API cho admin liệt kê **buổi** theo trung tâm (`GET /booking-occurrences` chỉ cho CAREGIVER) → lịch tháng dựng từ
+  quy tắc lặp của lịch đặt (`scheduleType` ONE_TIME / DAILY / WEEKLY, `startDate`, `endDate`, `daysOfWeek`, `startTime`,
+  `endTime` — đều có trong `BookingSummaryRecord`).
+
+**Đề xuất**
+
+- [ ] Thanh lọc: **Trung tâm** (Tất cả / chọn một — danh sách từ `fetchCenters`), Trạng thái, Từ ngày – Đến ngày, ô tìm mã;
+      tất cả nằm trong URL search params.
+- [ ] Chuyển chế độ **Danh sách | Lịch tháng** (`?view=calendar&month=2026-11`):
+  - Danh sách: như hiện tại, thêm khoảng ngày, giờ, số buổi.
+  - Lịch tháng: lưới 7 cột; mỗi ngày liệt kê các buổi dự kiến (giờ + mã lịch + người bệnh), màu theo trạng thái lịch đặt;
+    lịch đã hủy / hết hạn mờ đi; ghi chú "Buổi dựng theo lịch lặp; trạng thái từng buổi xem trong chi tiết". Bấm một buổi →
+    `/admin/bookings/:id`, nút quay lại về đúng tháng đang xem.
+  - Dữ liệu: `from` = đầu tháng, `to` = cuối tháng, `size=100`, đọc tiếp các trang; quá ngưỡng thì nhắc "Hãy lọc theo
+    trung tâm".
+- [ ] Trang chi tiết trung tâm thêm tab **"Lịch đặt"** dùng lại cùng component với `centerId` cố định.
+- [ ] "Đến ngày" trước "Từ ngày" → nhắc dưới ô, không chặn chọn (U-10).
+
+---
+
+### V-04 — `paymentReference=DEMO…` là gì
+
+**Nguồn gốc (đã truy vết)**
+
+1. Khi tiền cọc được xác nhận, PaymentService gọi Booking `POST /bookings/{id}/deposit-paid` kèm `paymentReference` = mã tham
+   chiếu của lần thanh toán (`PaymentAttempt.reference`; với VNPay là `vnp_TxnRef`).
+2. Booking ghi mã đó vào **lý do** của sự kiện `AWAITING_DEPOSIT → CONFIRMED` dạng `paymentReference=<mã>`
+   (`BookingServiceImpl.PAYMENT_REFERENCE_PREFIX`).
+3. FE `entities/booking/booking-history-list.tsx` in nguyên `reason` → người dùng thấy chuỗi kỹ thuật.
+4. Mã tiền tố **`DEMO`** do stub thanh toán thử `scripts/payment-demo.mjs` sinh (`DEMO` + 16 ký tự đầu của id payment) trước
+   khi nối PaymentService thật (Đợt 1c, 2026-10-30) → **dữ liệu thử**, không có giao dịch tiền thật.
+
+**Ý nghĩa:** khóa để đối soát với cổng thanh toán (tra giao dịch trên VNPay merchant, xử lý khiếu nại "đã trả mà chưa
+xác nhận"). Dữ liệu ở BE **giữ nguyên**; chỉ không đưa lên giao diện (D-10).
+
+**Đề xuất (D-10: không hiển thị mã cho ai)**
+
+- [ ] `entities/booking/booking-history-reason.ts`: `reason` bắt đầu bằng `paymentReference=` → thay cả dòng bằng câu
+      "Đã nhận tiền cọc qua cổng thanh toán." (i18n), **không** in mã, kể cả mã `DEMO…`; áp dụng cho mọi portal dùng
+      `BookingHistoryList` (khách, quản lý, admin).
+- [ ] Rà các chỗ khác có thể in chuỗi kỹ thuật dạng `key=value` từ BE → cùng helper, chỉ cho qua lý do người dùng tự nhập.
+- [ ] Test: lịch sử có `paymentReference=DEMO…` và `paymentReference=<vnp_TxnRef>` đều chỉ hiện câu chung; lý do hủy do
+      khách nhập vẫn hiện nguyên.
+
+---
+
+### V-05 — Ảnh trong nav Tài khoản
+
+| Câu hỏi                                                          | Trả lời                                                                         | Bằng chứng                                                                                                                         |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Admin upload ảnh cho tài khoản được chưa?                        | **Chưa, và không làm được nếu không sửa BE**                                    | `UserResponse` của Identity không có trường ảnh; không API nào nhận ảnh cho user                                                   |
+| Khách upload ảnh ở trang của họ thì nav Tài khoản có thấy không? | **Khách hiện không upload được ảnh đại diện**                                   | `features/customer/my-profile` không có ô upload; key `customer.profile.changeAvatar` có trong i18n nhưng không component nào dùng |
+| Ảnh hồ sơ người bệnh?                                            | Không liên quan tài khoản; contract chỉ có `avatarUrl` dạng chuỗi, không upload | `CareRecipientRecord.avatarUrl`                                                                                                    |
+| Đã có ảnh nào của người dùng?                                    | **Có — ảnh hồ sơ người chăm sóc** (ProviderService `CAREGIVER_PROFILE`)         | Đã dùng ở U-11                                                                                                                     |
+| MediaService sẵn sàng chưa?                                      | Có purpose `USER_AVATAR` (jpg/png/webp ≤ 5 MB), chưa service nào lưu tham chiếu | `MediaService/.../MediaPurpose.java`                                                                                               |
+
+**Vì sao trung tâm và người chăm sóc upload được ảnh, còn tài khoản thì không? (D-07)**
+
+Không phải do phân quyền "cấm khách". Nguyên nhân là **không có service nào nhận và lưu ảnh cho tài khoản**:
+
+| Lớp                                                              | Thực tế trong code                                                                                                                                                                      | Hệ quả                                                                                                                     |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| MediaService (`/api/v1/media`)                                   | Mọi endpoint `@PreAuthorize("hasRole('SERVICE')")` — chỉ service khác gọi bằng token máy; **trình duyệt không gọi trực tiếp được** (với mọi vai trò, kể cả admin)                       | FE không thể tự upload file rồi gắn vào tài khoản                                                                          |
+| ProviderService (`/api/v1/provider-media/{ownerType}/{ownerId}`) | Cửa upload duy nhất của web. `ownerType` chỉ có `CARE_CENTER`, `CAREGIVER_PROFILE`, `CERTIFICATE`; POST/DELETE cho `ADMIN`, `CENTER_MANAGER`, `CAREGIVER` (khách chỉ GET ảnh công khai) | Ảnh trung tâm, ảnh hồ sơ người chăm sóc, file chứng chỉ có chỗ lưu (`provider_media`); **tài khoản không phải owner type** |
+| IdentityService (`users`)                                        | Không có cột ảnh, không gọi Media, `UserResponse` không có ảnh                                                                                                                          | Không có chỗ lưu `mediaFileId` của ảnh tài khoản                                                                           |
+| CareRecipientService                                             | Không gọi Media; `avatarUrl` chỉ là chuỗi                                                                                                                                               | Ảnh người bệnh cũng chưa upload được                                                                                       |
+| MediaService `MediaPurpose`                                      | Đã khai báo sẵn `USER_AVATAR`, `CARE_RECIPIENT_AVATAR`                                                                                                                                  | Hạ tầng lưu file sẵn sàng; chỉ thiếu service nghiệp vụ dùng tới                                                            |
+
+→ Khách hàng, quản lý trung tâm và admin **không có đường upload ảnh tài khoản** trong hệ thống hiện tại. Người chăm sóc có
+ảnh vì ảnh thuộc **hồ sơ chuyên môn** (ProviderService), không thuộc tài khoản đăng nhập. Không có cách làm đúng bằng FE
+thuần: mượn `provider-media` cho tài khoản là sai mô hình dữ liệu (owner type không tồn tại, khách bị chặn POST) nên **không
+đề xuất**.
+
+**Đề xuất trong phạm vi D-07 (chỉ FE)**
+
+- [ ] Danh sách & chi tiết tài khoản: tài khoản `CAREGIVER` hiện **ảnh hồ sơ người chăm sóc** (`GET /caregivers/by-user/{userId}`
+      → `CaregiverAvatar`), cập nhật ngay nhờ `invalidateOwnerMedia` (U-11); vai trò khác giữ chữ viết tắt.
+- [ ] Chi tiết tài khoản người chăm sóc có link "Xem hồ sơ người chăm sóc" để admin biết ảnh được quản lý ở đâu.
+- [ ] Gỡ key i18n không dùng `customer.profile.changeAvatar` để không ai tưởng chức năng đã có.
+- [ ] Ghi vào `ARCHITECTURE.md`: "Tài khoản chưa có ảnh đại diện; cần IdentityService lưu `USER_AVATAR`" cho đợt BE sau (làm
+      theo cách ProviderService gọi Media: upload qua Feign token SERVICE, lưu `media_file_id`, trả URL có hạn).
+
+## 10. Vấn đề phụ phát hiện thêm
+
+| Mã   | Vấn đề                                                                                 | Đề xuất                                                                                       |
+| ---- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| B-01 | Giờ trung tâm cho phép qua đêm (D-04) nhưng Booking không đặt được buổi qua đêm (5207) | Ghi chú ở trang trung tâm khi giờ qua đêm: "Khách chỉ đặt được buổi kết thúc trong cùng ngày" |
+| B-02 | `ToastBanner` trong `shared/ui/toast.tsx` không được dùng ở đâu                        | Thay bằng sonner (V-01)                                                                       |
+| B-03 | Lịch sử lịch đặt in `eventType` thô khi gặp loại lạ (`booking-history-list.tsx`)       | Fallback "Cập nhật lịch đặt"                                                                  |
+| B-04 | Tab "Bảng giá theo trung tâm" chỉ xem một trung tâm mỗi lần, không có tổng quan        | Gộp vào tab "Đơn vị & gói giá" (V-02)                                                         |
+
+## 11. Câu hỏi đã chốt
+
+Q-10 → D-07, Q-11 → D-08, Q-12 → D-09, Q-13 → D-10 (bảng "Quyết định đã chốt" đầu Phần 2).
+
+## 12. Kế hoạch triển khai Phần 2 (chỉ FE)
+
+| Đợt | Nội dung                                                                                                                                     | Mã         | Cỡ  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | --- |
+| H   | Cài sonner, `Toaster` theo token, `app-toast.ts`, i18n toast; gắn vào mọi thao tác ghi của 8 nav item; bỏ thông báo trùng                    | V-01, B-02 | M   |
+| I   | Lịch sử: ẩn mã giao dịch với mọi người, thay bằng câu chung; fallback `eventType`                                                            | V-04, B-03 | S   |
+| J   | Lịch đặt: lọc trung tâm + ngày, chế độ Lịch tháng, tab Lịch đặt ở chi tiết trung tâm                                                         | V-03       | M   |
+| K   | Dịch vụ: xóa khối mẫu; tab "Gói giá" dữ liệu thật (gộp tab bảng giá theo trung tâm), ghi chú chưa có phụ phí                                 | V-02, B-04 | M   |
+| L   | Tài khoản: ảnh người chăm sóc trong danh sách / chi tiết, link hồ sơ; gỡ i18n không dùng; ghi chú qua đêm ở trung tâm; ghi `ARCHITECTURE.md` | V-05, B-01 | S   |
+
+Thứ tự **H → I → J → K → L** (toast trước để các đợt sau dùng luôn).
+
+**File dự kiến chạm:** `package.json` / `pnpm-lock.yaml` (sonner), `app/shared/ui/toaster.tsx`, `app/shared/ui/app-toast.ts`,
+`app/shared/i18n/admin/toast-resources.ts`, `app/features/admin/layout/admin-layout.tsx`, các component có mutation trong
+`features/admin/**` và `entities/identity/**`, `features/admin/bookings/**` (+ `components/booking-calendar.tsx`),
+`features/admin/centers/center-detail-page.tsx`, `entities/booking/booking-history-list.tsx` (+ `booking-history-reason.ts`),
+`features/admin/services/components/pricing-guidelines.tsx`, `features/admin/identity/**`,
+`shared/i18n/customer/profile-resources.ts`, `ARCHITECTURE.md`. Không file `BE/` nào.
+
+**Kiểm thử:** test component cho toast (thành công / lỗi hệ thống / không toast khi lỗi validation), lịch tháng (dựng buổi
+từ `DAILY` / `WEEKLY` / `ONE_TIME`, bấm buổi mở chi tiết, lọc trung tâm gửi `centerId`), `paymentReference` không còn hiện mã ở
+mọi portal, tab "Gói giá"; `pnpm check`; chạy trình duyệt thật 1440px + 390px như Phần 1.
+
+### 12.1 Kết quả Phần 2 (2026-10-31) — đã làm, chỉ FE
+
+| Đợt | Trạng thái | Đã làm                                                                                                                                                                                                                                                                                                                                                           |
+| --- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| H   | ✅         | `shared/ui/toaster.tsx`, `app-toast.ts`, `use-action-toast.ts`; toast góc dưới phải theo token, gắn trong `AdminLayout`. Thành công → toast; lỗi hệ thống → toast có "Thử lại", giữ form; lỗi nghiệp vụ vẫn ở cuối form, validation dưới ô. Bỏ các dòng "Đã lưu" trùng.                                                                                          |
+| I   | ✅         | `entities/booking/booking-history-reason.ts`: `paymentReference=…` → "Đã nhận tiền cọc", chuỗi máy khác bị ẩn; `eventType` lạ → "Cập nhật khác". Áp dụng mọi portal.                                                                                                                                                                                             |
+| J   | ✅         | `entities/booking/bookings-browser.tsx`: lọc trung tâm / trạng thái / mã / khoảng ngày (ngược thì báo dưới ô, không gửi), chế độ Lịch tháng (dựng buổi ONE_TIME / DAILY / WEEKLY, bấm mở chi tiết; mobile thành agenda). Tab "Lịch đặt" trong chi tiết trung tâm.                                                                                                |
+| K   | ✅         | Xóa `center-pricing-panel`, `offering-price-plans`, `pricing-guidelines` (khối mẫu, phụ phí giả). Tab "Gói giá": so sánh gói của mọi trung tâm đang hoạt động theo dịch vụ chuẩn — khoảng giá theo đơn vị, nhãn "Thấp nhất" khi có so sánh thật, lọc trung tâm / dịch vụ / đơn vị / chỉ gói đang bán (giữ trên URL), mobile dạng danh sách. Link cũ `?tab=center | surcharge` tự sang "Gói giá". |
+| L   | ✅         | Tài khoản CAREGIVER hiện ảnh người chăm sóc (danh sách + chi tiết) và link "Xem hồ sơ người chăm sóc"; tài khoản khác giữ chữ viết tắt (Identity không có ảnh). Gỡ `customer.profile.avatarAlt/changeAvatar`. Ghi chú qua đêm ở chi tiết trung tâm và form. Cập nhật `ARCHITECTURE.md`.                                                                          |
+
+**Kiểm tra:** prettier, eslint, typecheck, vitest 81 file / 337 test, `node --test` 3/3, build đều qua. Đã chụp trình duyệt
+thật 1440px + 390px: Gói giá, Lịch tháng (lưới + agenda), Tài khoản — sửa thêm sau khi xem: nút đơn vị tính xuống dòng và
+bảng tràn ngang trên mobile, nhãn "Thấp nhất" khi chỉ có một gói, dòng buổi trên mobile lặp giờ và hiện mã thay vì tên.

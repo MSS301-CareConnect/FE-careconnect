@@ -9,13 +9,14 @@ import { Icon } from '~/shared/ui/icon'
 import { CatalogFilters } from './components/catalog-filters'
 import { CatalogItemDialog } from './components/catalog-item-dialog'
 import { CatalogTable } from './components/catalog-table'
-import { CenterPricingPanel } from './components/center-pricing-panel'
 import { DeleteCatalogItemDialog } from './components/delete-catalog-item-dialog'
-import { PricingGuidelines, SurchargePreview } from './components/pricing-guidelines'
+import { PricePlanBoard } from './components/price-plan-board'
 import { useCatalogList } from './hooks/use-catalog-list'
 
 const key = 'admin.servicesPage' as const
-const tabs = ['master', 'center', 'surcharge'] as const
+const tabs = ['master', 'plans'] as const
+/** Links saved before the price-plan board replaced the per-center and surcharge tabs. */
+const legacyPlanTabs = new Set(['center', 'surcharge'])
 
 type Editing = { mode: 'create' } | { mode: 'edit'; item: CatalogItemRecord }
 
@@ -25,7 +26,8 @@ export function AdminServicesPage() {
   const list = useCatalogList()
   const [editing, setEditing] = useState<Editing | null>(null)
   const [deleting, setDeleting] = useState<CatalogItemRecord | null>(null)
-  const tab = tabs.find((item) => item === params.get('tab')) ?? 'master'
+  const requested = params.get('tab')
+  const tab = legacyPlanTabs.has(requested ?? '') ? 'plans' : (tabs.find((item) => item === requested) ?? 'master')
   const number = new Intl.NumberFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN')
   useDocumentTitle(t(`${key}.documentTitle`))
 
@@ -51,7 +53,6 @@ export function AdminServicesPage() {
         <div className='max-w-3xl'>
           <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
           <p className='mt-2 text-sm leading-6 text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
-          <p className='mt-2 text-xs font-semibold text-primary'>{t(`${key}.scope`)}</p>
         </div>
         <div className='flex flex-wrap gap-2'>
           <button
@@ -64,20 +65,22 @@ export function AdminServicesPage() {
           </button>
         </div>
       </header>
-      <section aria-label={t(`${key}.metrics.total`)} className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
-        {metrics.map(([name, value, icon]) => (
-          <div className='rounded-xl bg-white p-5 shadow-sm' key={name}>
-            <div className='flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-outline'>
-              <span>{t(`${key}.metrics.${name}`)}</span>
-              <Icon className='text-xl text-primary' name={icon} />
+      {tab === 'master' ? (
+        <section aria-label={t(`${key}.metrics.total`)} className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+          {metrics.map(([name, value, icon]) => (
+            <div className='rounded-xl bg-white p-5 shadow-sm' key={name}>
+              <div className='flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-outline'>
+                <span>{t(`${key}.metrics.${name}`)}</span>
+                <Icon className='text-xl text-primary' name={icon} />
+              </div>
+              <strong className='mt-5 block text-3xl tabular-nums'>
+                {list.query.isSuccess ? number.format(value) : '—'}
+              </strong>
+              <p className='mt-2 text-xs text-on-surface-variant'>{t(`${key}.metricHints.${name}`)}</p>
             </div>
-            <strong className='mt-5 block text-3xl tabular-nums'>
-              {list.query.isSuccess ? number.format(value) : '—'}
-            </strong>
-            <p className='mt-2 text-xs text-on-surface-variant'>{t(`${key}.metricHints.${name}`)}</p>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      ) : null}
       <div
         aria-label={t('admin.services')}
         className='flex flex-wrap gap-2 rounded-xl bg-surface-container-low p-1.5'
@@ -109,9 +112,7 @@ export function AdminServicesPage() {
           <CatalogTable list={list} onDelete={setDeleting} onEdit={(item) => setEditing({ mode: 'edit', item })} />
         </>
       ) : null}
-      {tab === 'center' ? <CenterPricingPanel /> : null}
-      {tab === 'surcharge' ? <SurchargePreview /> : null}
-      <PricingGuidelines />
+      {tab === 'plans' ? <PricePlanBoard /> : null}
       {editing ? (
         <CatalogItemDialog
           item={editing.mode === 'edit' ? editing.item : undefined}

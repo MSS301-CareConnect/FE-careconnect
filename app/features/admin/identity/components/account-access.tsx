@@ -11,6 +11,7 @@ import { baseControlClass } from '~/shared/ui/form-field'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { removeUser } from '../identity-api'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.detail' as const
 const REASON_MAX = 500
@@ -34,6 +35,7 @@ export function AccountAccess({ user }: { user: UserResponse }) {
   const [reasonError, setReasonError] = useState<'reasonRequired' | 'reasonTooLong' | null>(null)
   const name = user.fullName || user.email || ''
   const locked = user.status === 'LOCKED'
+  const notify = useActionToast()
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: accountKeys.all })
@@ -42,22 +44,33 @@ export function AccountAccess({ user }: { user: UserResponse }) {
   const status = useMutation({
     mutationFn: (next: 'ACTIVE' | 'LOCKED') =>
       changeAccountStatus(user.id!, next, next === 'LOCKED' ? reason.trim() : undefined),
-    onSuccess: async () => {
+    onSuccess: async (_saved, next) => {
       setPending(null)
       setReason('')
+      notify.success(t(next === 'LOCKED' ? 'admin.toast.accounts.locked' : 'admin.toast.accounts.unlocked', { name }))
       await refresh()
+    },
+    onError: (error, next) => {
+      if (notify.systemError(error, t('admin.toast.accounts.actions.status'), () => status.mutate(next)))
+        setPending(null)
     }
   })
   const deactivate = useMutation({
     mutationFn: () => removeUser(user.id!),
     onSuccess: async () => {
+      notify.success(t('admin.toast.accounts.deactivated', { name }))
       await queryClient.invalidateQueries({ queryKey: accountKeys.all })
       navigate('/admin/accounts')
+    },
+    onError: (error) => {
+      if (notify.systemError(error, t('admin.toast.accounts.actions.deactivate'), () => deactivate.mutate())) {
+        setPending(null)
+      }
     }
   })
   const failure = status.error ?? deactivate.error
   const classified = failure ? classifyApiError(failure, BUSINESS) : null
-  const errorMessage = classified && classified.kind !== 'field' ? t(classified.key) : undefined
+  const errorMessage = classified && classified.kind === 'business' ? t(classified.key) : undefined
 
   function open(next: Pending) {
     status.reset()

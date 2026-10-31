@@ -5,6 +5,7 @@ import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { invalidateOwnerMedia } from './invalidate-provider-media'
 import { fetchProviderMedia, providerKeys, removeMedia, uploadMedia, type ProviderMediaOwner } from './provider-api'
@@ -34,6 +35,8 @@ export function ProviderMediaPanel({
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  // Shown where a Toaster is mounted (admin first, D-09); elsewhere the inline messages remain.
+  const notify = useActionToast()
   const [files, setFiles] = useState<File[]>([])
   const [fileError, setFileError] = useState<'count' | 'type' | 'size' | null>(null)
   const [inputKey, setInputKey] = useState(0)
@@ -50,15 +53,19 @@ export function ProviderMediaPanel({
     onSuccess: async () => {
       setFiles([])
       setInputKey((current) => current + 1)
+      notify.success(t('common.toast.mediaUploaded'))
       await invalidateOwnerMedia(queryClient, ownerType, ownerId)
-    }
+    },
+    onError: (error) => notify.systemError(error, t('common.toast.mediaAction'), () => upload.mutate())
   })
   const remove = useMutation({
     mutationFn: (mediaFileId: string) => removeMedia(ownerType, ownerId, mediaFileId),
     onSuccess: async () => {
       setRemovingMediaId(null)
+      notify.success(t('common.toast.mediaRemoved'))
       await invalidateOwnerMedia(queryClient, ownerType, ownerId)
-    }
+    },
+    onError: (error) => notify.systemError(error, t('common.toast.mediaAction'))
   })
   return (
     <section

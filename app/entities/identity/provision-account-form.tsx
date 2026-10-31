@@ -9,6 +9,7 @@ import { baseControlClass } from '~/shared/ui/form-field'
 import { FormAlert } from '~/shared/ui/form-alert'
 
 import { accountKeys, provisionAccount } from './account-api'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.form' as const
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -80,6 +81,7 @@ export function ProvisionAccountForm({
   const formRef = useRef<HTMLFormElement>(null)
   const errors = useFormErrors<Field, FieldError>(ERROR_MAP, formRef)
   const needsCenter = role === 'CENTER_MANAGER'
+  const notify = useActionToast()
 
   const create = useMutation({
     mutationFn: () =>
@@ -94,7 +96,11 @@ export function ProvisionAccountForm({
       await queryClient.invalidateQueries({ queryKey: accountKeys.all })
       onCreated(user, { sendCode })
     },
-    onError: errors.fromApi
+    onError: (error) => {
+      if (!notify.systemError(error, t('admin.toast.accounts.actions.create'), () => create.mutate())) {
+        errors.fromApi(error)
+      }
+    }
   })
 
   function submit(event: FormEvent) {

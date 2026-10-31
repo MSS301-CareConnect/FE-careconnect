@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import type { ComplaintRecord, ComplaintStatus } from '~/shared/api/generated/contracts'
 
 import { accept, adminResolve, aftercareErrorKey, aftercareKeys, fetchComplaints, resolve } from './aftercare-api'
+import { classifyApiError } from '~/shared/api/api-error'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const FILTERS = [
   'OPEN',
@@ -68,6 +70,7 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
   const queryClient = useQueryClient()
   const [resolution, setResolution] = useState('')
   const [refund, setRefund] = useState('')
+  const notify = useActionToast()
   const done = () => queryClient.invalidateQueries({ queryKey: aftercareKeys.complaintsAll })
   const acceptMutation = useMutation({ mutationFn: () => accept(complaint.id), onSuccess: done })
   const resolveMutation = useMutation({
@@ -78,9 +81,17 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
             refundAmount: refund.trim() ? Number(refund) : undefined
           })
         : resolve(complaint.id, resolution.trim()),
-    onSuccess: done
+    onSuccess: () => {
+      if (role === 'ADMIN') notify.success(t('admin.toast.complaints.resolved'))
+      return done()
+    },
+    onError: (error) => {
+      if (role === 'ADMIN') notify.systemError(error, t('admin.toast.complaints.actions.resolve'))
+    }
   })
-  const error = acceptMutation.error ?? resolveMutation.error
+  const failed = acceptMutation.error ?? resolveMutation.error
+  // In the admin portal a system failure is a toast; the inline message keeps business refusals.
+  const error = failed && !(role === 'ADMIN' && classifyApiError(failed).kind === 'system') ? failed : null
   const canAccept = role === 'CENTER_MANAGER' && complaint.status === 'OPEN'
   const canResolve =
     (role === 'CENTER_MANAGER' && complaint.status === 'IN_PROGRESS') ||

@@ -16,6 +16,7 @@ import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { BUILT_IN_ROLES, isBuiltInRole } from './account-format'
 import { CreateRoleDialog } from './components/create-role-dialog'
 import { fetchPermissions, fetchRoles, roleKeys, saveRolePermissions } from './identity-api'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.rolesPage' as const
 
@@ -62,8 +63,8 @@ export function RolesPage() {
   const [edited, setEdited] = useState<string[] | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [saved, setSaved] = useState(false)
   const canManageRoles = Boolean(authUser?.permissions?.includes('role:manage'))
+  const notify = useActionToast()
   useDocumentTitle(t(`${key}.documentTitle`))
 
   const allRoles = roles.data ?? []
@@ -84,12 +85,16 @@ export function RolesPage() {
     onSuccess: async () => {
       setConfirming(false)
       setEdited(null)
-      setSaved(true)
+      notify.success(t('admin.toast.roles.saved', { name: selected?.roleName ?? selected?.roleCode ?? '' }))
       await queryClient.invalidateQueries({ queryKey: roleKeys.roles })
     },
-    onError: () => setConfirming(false)
+    onError: (error) => {
+      setConfirming(false)
+      notify.systemError(error, t('admin.toast.roles.actions.save'), () => save.mutate())
+    }
   })
-  const saveFailure = save.error ? classifyApiError(save.error) : null
+  const classifiedSave = save.error ? classifyApiError(save.error) : null
+  const saveFailure = classifiedSave?.kind === 'business' ? classifiedSave : null
 
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
@@ -219,7 +224,6 @@ export function RolesPage() {
                         onClick={() => {
                           setSelectedId(role.id ?? '')
                           setEdited(null)
-                          setSaved(false)
                           save.reset()
                         }}
                         type='button'
@@ -260,7 +264,6 @@ export function RolesPage() {
                             className='mt-1 accent-primary'
                             disabled={!canManageRoles}
                             onChange={(event) => {
-                              setSaved(false)
                               setEdited(
                                 event.target.checked
                                   ? [...selectedPermissionIds, permission.id!]
@@ -273,21 +276,12 @@ export function RolesPage() {
                         </label>
                       ))}
                     </div>
-                    {saveFailure && saveFailure.kind !== 'field' ? (
-                      <FormAlert tone={saveFailure.kind === 'system' ? 'error' : 'warning'}>
-                        {t(saveFailure.key)}
-                      </FormAlert>
-                    ) : null}
+                    {saveFailure ? <FormAlert tone='warning'>{t(saveFailure.key)}</FormAlert> : null}
                     {canManageRoles ? (
                       <div className='flex items-center gap-3'>
                         <Button disabled={edited === null} onClick={() => setConfirming(true)} size='sm'>
                           {t(`${key}.save`)}
                         </Button>
-                        {saved ? (
-                          <p className='text-sm text-on-surface-variant' role='status'>
-                            {t(`${key}.saved`)}
-                          </p>
-                        ) : null}
                       </div>
                     ) : null}
                   </div>

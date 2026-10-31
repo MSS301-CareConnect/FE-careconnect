@@ -10,6 +10,7 @@ import { Button } from '~/shared/ui/button'
 import { Modal } from '~/shared/ui/modal'
 
 import { useCenterOptions } from '../hooks/use-center-options'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.accounts' as const
 
@@ -21,6 +22,7 @@ export function CreateAccountDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
   const authUser = useAuthUser()
   const [created, setCreated] = useState<{ user: UserResponse; sendCode: boolean } | null>(null)
+  const notify = useActionToast()
   const roles: ProvisionRole[] = []
   if (authUser?.permissions?.includes('user:manage')) roles.push('CUSTOMER')
   if (authUser?.permissions?.includes('manager:create')) roles.push('CENTER_MANAGER')
@@ -79,7 +81,10 @@ export function CreateAccountDialog({ onClose }: { onClose: () => void }) {
                   : undefined
           }
           onCancel={onClose}
-          onCreated={(user, options) => setCreated({ user, sendCode: options.sendCode })}
+          onCreated={(user, options) => {
+            notify.success(t('admin.toast.accounts.created', { name: user.fullName ?? user.email ?? '' }))
+            setCreated({ user, sendCode: options.sendCode })
+          }}
           roles={roles}
           submitLabel={t(`${key}.create`)}
         />

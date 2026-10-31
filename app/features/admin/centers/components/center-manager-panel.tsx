@@ -16,6 +16,7 @@ import { FormAlert } from '~/shared/ui/form-alert'
 import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 import { StatusBadge } from '~/shared/ui/status-badge'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { CENTER_BUSINESS_ERRORS } from '../center-errors'
 
@@ -51,6 +52,14 @@ function CreateManagerDialog({ center, onClose }: { center: ProviderCenterRecord
   const { t } = useTranslation()
   const [created, setCreated] = useState<{ user: UserResponse; sendCode: boolean } | null>(null)
   const link = useLinkManager(center)
+  const notify = useActionToast()
+  function linkCreated(user: UserResponse) {
+    const name = user.fullName ?? user.email ?? ''
+    link.mutate(user.id!, {
+      onSuccess: () => notify.success(t('admin.toast.centers.managerLinked', { name })),
+      onError: (error) => notify.systemError(error, t('admin.toast.centers.actions.link'))
+    })
+  }
   const failure = link.error ? classifyApiError(link.error, LINK_ERRORS) : null
 
   return (
@@ -67,7 +76,8 @@ function CreateManagerDialog({ center, onClose }: { center: ProviderCenterRecord
           onCancel={onClose}
           onCreated={(user, options) => {
             setCreated({ user, sendCode: options.sendCode })
-            link.mutate(user.id!)
+            notify.success(t('admin.toast.centers.managerCreated', { name: user.fullName ?? user.email ?? '' }))
+            linkCreated(user)
           }}
           roles={['CENTER_MANAGER']}
           submitLabel={t(`${key}.create`)}
@@ -91,7 +101,7 @@ function CreateManagerDialog({ center, onClose }: { center: ProviderCenterRecord
           {link.isError && failure && failure.kind !== 'field' ? (
             <FormAlert
               actionLabel={t(`${key}.retryLink`)}
-              onAction={() => link.mutate(created.user.id!)}
+              onAction={() => linkCreated(created.user)}
               tone={failure.kind === 'system' ? 'error' : 'warning'}
             >
               {t(`${key}.linkFailed`)} {t(failure.key)}
@@ -139,6 +149,7 @@ function ChooseManagerDialog({
   const options = (candidates.data?.content ?? []).filter((user) => user.id !== center.managerUserId)
   const link = useLinkManager(center)
   const failure = link.error ? classifyApiError(link.error, LINK_ERRORS) : null
+  const notify = useActionToast()
 
   /** Resolves true only when the new manager is linked. */
   async function submit() {
@@ -146,10 +157,17 @@ function ChooseManagerDialog({
       setMissing(true)
       return false
     }
+    const name = options.find((user) => user.id === selected)?.fullName ?? ''
     return link
       .mutateAsync(selected)
-      .then(() => true)
-      .catch(() => false)
+      .then(() => {
+        notify.success(t('admin.toast.centers.managerLinked', { name }))
+        return true
+      })
+      .catch((error: unknown) => {
+        notify.systemError(error, t('admin.toast.centers.actions.link'))
+        return false
+      })
   }
 
   // Lock the previous manager only after the new one is linked.
@@ -159,6 +177,8 @@ function ChooseManagerDialog({
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
+    onSuccess: () =>
+      notify.success(t('admin.toast.centers.oldManagerLocked', { name: current?.fullName ?? current?.email ?? '' })),
     onError: () => setOldLockFailed(true)
   })
 

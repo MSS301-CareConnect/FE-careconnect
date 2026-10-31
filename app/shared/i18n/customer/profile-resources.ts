@@ -34,8 +34,6 @@ export const profileEn = {
       'Manage personal information, update address for coordinator support, and secure your CareConnect family account.'
   },
   overview: {
-    avatarAlt: 'Profile picture of Nguyen Mai Anh',
-    changeAvatar: 'Change avatar',
     verifiedIdentity: 'Verified primary account',
     memberId: 'CC-KH8842',
     memberSince: 'Member since Mar 2024',
@@ -147,8 +145,6 @@ export const profileVi = {
     subtitle: 'Quản lý thông tin cá nhân, địa chỉ nhận chăm sóc và bảo mật tài khoản CareConnect của gia đình.'
   },
   overview: {
-    avatarAlt: 'Ảnh đại diện Nguyễn Mai Anh',
-    changeAvatar: 'Đổi ảnh đại diện',
     verifiedIdentity: 'Tài khoản chính chủ đã xác thực',
     memberId: 'CC-KH8842',
     memberSince: 'Thành viên từ T3/2024',

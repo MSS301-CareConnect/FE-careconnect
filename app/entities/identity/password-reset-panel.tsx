@@ -10,6 +10,7 @@ import { Icon } from '~/shared/ui/icon'
 
 import { confirmPasswordReset, sendPasswordResetCode } from './password-reset-api'
 import { validPassword } from './password-rules'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'auth.recovery.assist' as const
 /** IdentityService silently ignores a new code within 60 seconds of the previous one. */
@@ -59,6 +60,7 @@ export function PasswordResetPanel({ email, name, mode, sendOnOpen = false, clas
   const sendErrors = useFormErrors<Field, FieldError>()
   const resetFormRef = useRef<HTMLFormElement>(null)
   const resetErrors = useFormErrors<Field, FieldError>(ERROR_MAP, resetFormRef)
+  const notify = useActionToast()
 
   // Tracked from the callbacks: the observer's `isPending` can stay true when the first send starts from an effect
   // that React re-runs in development.
@@ -75,17 +77,26 @@ export function PasswordResetPanel({ email, name, mode, sendOnOpen = false, clas
       setDone(false)
       setCooldown(RESEND_SECONDS)
     },
-    onError: sendErrors.fromApi
+    onError: (error) => {
+      if (!notify.systemError(error, t('admin.toast.accounts.actions.code'), () => send.mutate())) {
+        sendErrors.fromApi(error)
+      }
+    }
   })
   const reset = useMutation({
     mutationFn: () => confirmPasswordReset({ email, otpCode, newPassword }),
     onSuccess: () => {
+      notify.success(t('admin.toast.accounts.passwordSet', { name }))
       setDone(true)
       setOtpCode('')
       setNewPassword('')
       setConfirmation('')
     },
-    onError: resetErrors.fromApi
+    onError: (error) => {
+      if (!notify.systemError(error, t('admin.toast.accounts.actions.password'), () => reset.mutate())) {
+        resetErrors.fromApi(error)
+      }
+    }
   })
 
   useEffect(() => {

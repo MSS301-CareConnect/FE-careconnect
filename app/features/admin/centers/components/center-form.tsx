@@ -9,6 +9,7 @@ import { useFormErrors } from '~/shared/lib/use-form-errors'
 import { Button } from '~/shared/ui/button'
 import { baseControlClass } from '~/shared/ui/form-field'
 import { FormAlert } from '~/shared/ui/form-alert'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { describeHours, formatCenterHours, parseCenterHours } from '../center-hours'
 import { CENTER_BUSINESS_ERRORS, type CenterBusinessKey } from '../center-errors'
@@ -68,6 +69,7 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
   const legacy = stored.kind === 'legacy' ? stored.text : ''
   const formRef = useRef<HTMLFormElement>(null)
   const errors = useFormErrors<Field, FieldError, CenterBusinessKey>(ERROR_MAP, formRef)
+  const notify = useActionToast()
   const hours = opensAt && closesAt ? describeHours(opensAt, closesAt) : null
 
   const save = useMutation({
@@ -86,9 +88,15 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
     onSuccess: async (saved) => {
       await invalidateOwnerMedia(queryClient, 'CARE_CENTER', saved.id)
       await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
+      notify.success(
+        t(center ? 'admin.toast.centers.updated' : 'admin.toast.centers.created', { name: saved.centerName })
+      )
       onSaved(saved)
     },
-    onError: errors.fromApi
+    onError: (error) => {
+      const action = t(center ? 'admin.toast.centers.actions.update' : 'admin.toast.centers.actions.create')
+      if (!notify.systemError(error, action, () => save.mutate())) errors.fromApi(error)
+    }
   })
 
   function submit(event: FormEvent) {

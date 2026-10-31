@@ -6,6 +6,7 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { baseControlClass } from '~/shared/ui/form-field'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
@@ -45,6 +46,7 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
     queryFn: () => fetchCertificates(id),
     retry: false
   })
+  const notify = useActionToast()
   const review = useMutation({
     mutationFn: (status: 'VERIFIED' | 'REJECTED') =>
       verifyCaregiver(id, {
@@ -52,21 +54,38 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         reason: status === 'REJECTED' ? reason.trim() : undefined,
         version: caregiver.data!.version
       }),
-    onSuccess: async () => {
+    onSuccess: async (_saved, status) => {
       setConfirmReject(null)
+      notify.success(
+        t(status === 'VERIFIED' ? 'admin.toast.caregivers.verified' : 'admin.toast.caregivers.rejected', {
+          name: caregiver.data?.fullName ?? ''
+        })
+      )
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(id) })
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(centerId) })
     },
-    onError: () => setConfirmReject(null)
+    onError: (error) => {
+      setConfirmReject(null)
+      notify.systemError(error, t('admin.toast.caregivers.actions.review'))
+    }
   })
   const reviewCertificate = useMutation({
     mutationFn: ({ certificateId, approved, version }: { certificateId: string; approved: boolean; version: number }) =>
       verifyCertificate(certificateId, { approved, reason: approved ? undefined : reason.trim(), version }),
-    onSuccess: async () => {
+    onSuccess: async (_saved, { certificateId, approved }) => {
       setConfirmReject(null)
+      const name = certificates.data?.find((item) => item.id === certificateId)?.certificateName ?? ''
+      notify.success(
+        t(approved ? 'admin.toast.caregivers.certificateVerified' : 'admin.toast.caregivers.certificateRejected', {
+          name
+        })
+      )
       await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(id) })
     },
-    onError: () => setConfirmReject(null)
+    onError: (error) => {
+      setConfirmReject(null)
+      notify.systemError(error, t('admin.toast.caregivers.actions.certificate'))
+    }
   })
   if (caregiver.isPending) return <p role='status'>{t(`${key}.loading`)}</p>
   if (caregiver.isError)

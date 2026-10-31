@@ -14,6 +14,7 @@ import {
 import { fetchCenters } from '~/entities/provider/provider-api'
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
+import { Toaster } from '~/shared/ui/toaster'
 
 import { AdminServicesPage } from '../admin-services-page'
 
@@ -64,7 +65,15 @@ function renderPage(path = '/admin/services') {
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
-          <Route element={<AdminServicesPage />} path='/admin/services' />
+          <Route
+            element={
+              <>
+                <AdminServicesPage />
+                <Toaster />
+              </>
+            }
+            path='/admin/services'
+          />
         </Routes>
         <Location />
       </MemoryRouter>
@@ -142,8 +151,8 @@ describe('Admin service catalog', () => {
     expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('keeps a form-level alert only for server failures', async () => {
-    vi.mocked(createCatalog).mockRejectedValue(apiError(500, 9999))
+  it('reports a system failure as a toast with a retry and keeps the dialog and its input', async () => {
+    vi.mocked(createCatalog).mockRejectedValueOnce(apiError(503, 9999))
     renderPage()
     const dialog = await openCreateDialog()
     fireEvent.change(within(dialog).getByLabelText(/Tên dịch vụ/), { target: { value: 'Vật lý trị liệu' } })
@@ -151,10 +160,17 @@ describe('Admin service catalog', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo dịch vụ' }))
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
-      'Chưa thể lưu dịch vụ lúc này. Vui lòng thử lại sau.'
-    )
-    expect(within(dialog).getByLabelText(/Tên dịch vụ/)).not.toHaveAttribute('aria-invalid', 'true')
+    expect(
+      await screen.findByText(
+        'Chưa tạo dịch vụ được vì hệ thống đang gặp sự cố. Dữ liệu bạn nhập vẫn được giữ, hãy thử lại.'
+      )
+    ).toBeInTheDocument()
+    expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+    expect(within(dialog).getByLabelText(/Tên dịch vụ/)).toHaveValue('Vật lý trị liệu')
+
+    vi.mocked(createCatalog).mockResolvedValueOnce({ ...elderCare, id: 'item-3', name: 'Vật lý trị liệu' })
+    fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }))
+    expect((await screen.findAllByText('Đã tạo dịch vụ “Vật lý trị liệu”.')).length).toBeGreaterThan(0)
   })
 
   it('offers only the six short categories and creates a service with the POST contract fields', async () => {
@@ -178,6 +194,7 @@ describe('Admin service catalog', () => {
       status: 'INACTIVE'
     })
     expect(fetchCatalogItems).toHaveBeenCalledTimes(2)
+    expect((await screen.findAllByText('Đã tạo dịch vụ “Vật lý trị liệu”.')).length).toBeGreaterThan(0)
   })
 
   it('stores the same Vietnamese category value when the page is in English', async () => {
@@ -254,39 +271,71 @@ describe('Admin service catalog', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
   })
 
-  it('shows read-only center price plans for the selected center', async () => {
+  it('compares the price plans of active centers per service, read-only', async () => {
     vi.mocked(fetchCenters).mockResolvedValue({
-      items: [{ id: 'center-1', centerName: 'Care One', centerStatus: 'ACTIVE', version: 0 }],
+      items: [
+        { id: 'center-1', centerName: 'Care One', centerStatus: 'ACTIVE', version: 0 },
+        { id: 'center-2', centerName: 'Care Two', centerStatus: 'ACTIVE', version: 0 }
+      ],
       page: 0,
-      size: 50,
-      totalElements: 1,
+      size: 100,
+      totalElements: 2,
       totalPages: 1
     })
-    vi.mocked(fetchCenterOfferings).mockResolvedValue([
-      { id: 'offering-1', centerId: 'center-1', catalogItem: elderCare, status: 'ACTIVE' }
+    vi.mocked(fetchCenterOfferings).mockImplementation(async (centerId) => [
+      { id: `offering-${centerId}`, centerId, catalogItem: elderCare, status: 'ACTIVE' }
     ])
-    vi.mocked(fetchPricePlans).mockResolvedValue([
-      {
-        id: 'plan-1',
-        centerOfferingId: 'offering-1',
-        planName: 'Ca 4 giờ',
-        pricingUnit: 'SHIFT',
-        durationMinutes: 240,
-        basePrice: 350000,
-        isActive: true
-      }
-    ])
-    renderPage()
+    vi.mocked(fetchPricePlans).mockImplementation(async (offeringId) =>
+      offeringId === 'offering-center-1'
+        ? [
+            {
+              id: 'plan-1',
+              centerOfferingId: offeringId,
+              planName: 'Gói giờ',
+              pricingUnit: 'HOUR',
+              durationMinutes: 60,
+              basePrice: 120000,
+              isActive: true
+            },
+            {
+              id: 'plan-3',
+              centerOfferingId: offeringId,
+              planName: 'Ca cũ',
+              pricingUnit: 'SHIFT',
+              durationMinutes: 240,
+              basePrice: 300000,
+              isActive: false
+            }
+          ]
+        : [
+            {
+              id: 'plan-2',
+              centerOfferingId: offeringId,
+              planName: 'Giờ linh hoạt',
+              pricingUnit: 'HOUR',
+              durationMinutes: 60,
+              basePrice: 150000,
+              isActive: true
+            }
+          ]
+    )
+    renderPage('/admin/services?tab=center')
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Bảng giá theo trung tâm' }))
-    expect(screen.getByText('Chọn một trung tâm để xem dịch vụ và bảng giá đang áp dụng.')).toBeInTheDocument()
-    await screen.findByRole('option', { name: 'Care One' })
-    fireEvent.change(screen.getByLabelText('Trung tâm'), { target: { value: 'center-1' } })
+    expect(screen.getByRole('tab', { name: 'Gói giá' })).toHaveAttribute('aria-selected', 'true')
+    expect(within(await screen.findByRole('table')).getByText('Giờ linh hoạt')).toBeInTheDocument()
+    expect(screen.getByText('2 trung tâm · 2 gói', { exact: false })).toBeInTheDocument()
+    expect(screen.getByText(/120\.000\s₫ – 150\.000\s₫/)).toBeInTheDocument()
+    expect(within(screen.getByRole('row', { name: /Care One/ })).getByText('Thấp nhất')).toBeInTheDocument()
+    expect(screen.queryAllByText('Ca cũ')).toHaveLength(0)
 
-    expect(await screen.findByText('Ca 4 giờ')).toBeInTheDocument()
-    expect(screen.getByText(/350\.000/)).toBeInTheDocument()
-    expect(fetchCenterOfferings).toHaveBeenCalledWith('center-1')
-    expect(screen.getByTestId('location')).toHaveTextContent('tab=center&center=center-1')
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Chỉ gói đang bán' }))
+    expect(within(await screen.findByRole('row', { name: /Ca cũ/ })).getByText('Tạm dừng')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Trung tâm'), { target: { value: 'center-2' } })
+
+    await waitFor(() => expect(screen.queryAllByText('Gói giờ')).toHaveLength(0))
+    expect(within(await screen.findByRole('table')).getByText('Giờ linh hoạt')).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent('planCenter=center-2')
     expect(screen.queryByRole('button', { name: /Chỉnh sửa dịch vụ/ })).not.toBeInTheDocument()
   })
 
@@ -295,6 +344,6 @@ describe('Admin service catalog', () => {
     await screen.findByRole('table')
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Services')
-    expect(screen.getByRole('tab', { name: 'Platform master catalog' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Standard catalog' })).toHaveAttribute('aria-selected', 'true')
   })
 })
