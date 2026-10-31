@@ -3,7 +3,9 @@ import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { careCatalogKeys, removeCatalog } from '~/entities/care-catalog/care-catalog-api'
+import { classifyApiError } from '~/shared/api/api-error'
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
+import { toastSuccess, toastSystemError } from '~/shared/ui/app-toast'
 import { Icon } from '~/shared/ui/icon'
 
 import { catalogFormError } from '../hooks/use-catalog-item-form'
@@ -23,8 +25,15 @@ export function DeleteCatalogItemDialog({ item, onClose }: DeleteCatalogItemDial
     mutationFn: () => removeCatalog(item.id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: careCatalogKeys.all })
+      toastSuccess(t('admin.toast.services.deleted', { name: item.name }))
       onClose()
-    }
+    },
+    onError: (error) =>
+      toastSystemError(error, {
+        message: t('common.toast.systemError', { action: t('admin.toast.services.actions.delete') }),
+        retryLabel: t('common.toast.retry'),
+        retry: () => remove.mutate()
+      })
   })
 
   return (
@@ -50,7 +59,7 @@ export function DeleteCatalogItemDialog({ item, onClose }: DeleteCatalogItemDial
             <p className='mt-2 text-sm leading-6 text-on-surface-variant'>{t(`${key}.body`, { name: item.name })}</p>
           </div>
         </div>
-        {remove.isError ? (
+        {remove.isError && classifyApiError(remove.error).kind !== 'system' ? (
           <p className='mt-4 rounded-lg bg-error-container/40 p-3 text-sm text-error' role='alert'>
             {t(`${key}.errors.${catalogFormError(remove.error)}`)}
           </p>

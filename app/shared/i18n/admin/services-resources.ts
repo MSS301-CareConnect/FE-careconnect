@@ -2,9 +2,6 @@ export const adminServicesVi = {
   documentTitle: 'Danh mục & bảng giá | Quản trị CareConnect',
   title: 'Dịch vụ',
   subtitle: 'Danh mục dịch vụ chuẩn và giá theo trung tâm.',
-  scope: 'Thay đổi danh mục chuẩn được áp dụng ngay cho các trung tâm và khách hàng.',
-  badge: 'Dịch vụ Y tế Tiêu chuẩn',
-  liveSource: 'Cập nhật theo thời gian thực',
   add: 'Thêm dịch vụ mới',
   metrics: {
     total: 'Tổng dịch vụ chuẩn',
@@ -17,11 +14,6 @@ export const adminServicesVi = {
     active: 'Trung tâm có thể đăng ký cung cấp',
     inactive: 'Ẩn khỏi trung tâm và khách hàng',
     categories: 'Số danh mục đang dùng'
-  },
-  tabs: {
-    master: 'Danh mục chuẩn toàn hệ thống',
-    center: 'Bảng giá theo trung tâm',
-    surcharge: 'Phụ phí & quy chuẩn ca trực'
   },
   search: 'Tìm theo tên hoặc mô tả dịch vụ',
   category: 'Danh mục',
@@ -98,50 +90,50 @@ export const adminServicesVi = {
       failed: 'Chưa thể xóa dịch vụ lúc này. Vui lòng thử lại sau.'
     }
   },
-  centerPricing: {
-    title: 'Bảng giá dịch vụ theo trung tâm',
-    hint: 'Quản lý trung tâm đăng ký dịch vụ và cấu hình bảng giá. Quản trị viên xem để đối chiếu giá hiển thị cho khách hàng.',
-    centerSearch: 'Tìm trung tâm',
+  tabs: { master: 'Danh mục chuẩn', plans: 'Gói giá' },
+  plans: {
+    title: 'Gói giá các trung tâm',
+    hint: 'So sánh gói giá của các trung tâm đang hoạt động theo từng dịch vụ chuẩn. Quản lý trung tâm tạo và sửa gói giá; ở đây chỉ xem.',
     center: 'Trung tâm',
-    chooseCenter: 'Chọn trung tâm',
-    centersLoading: 'Đang tải danh sách trung tâm...',
-    centersError: 'Không thể tải danh sách trung tâm.',
-    noCenters: 'Không tìm thấy trung tâm phù hợp.',
-    selectPrompt: 'Chọn một trung tâm để xem dịch vụ và bảng giá đang áp dụng.',
-    loading: 'Đang tải dịch vụ của trung tâm...',
-    loadError: 'Không thể tải dịch vụ của trung tâm.',
-    empty: 'Trung tâm này chưa đăng ký dịch vụ nào.',
-    results: '{{count}} dịch vụ trung tâm',
+    allCenters: 'Tất cả trung tâm đang hoạt động',
+    service: 'Dịch vụ',
+    allServices: 'Tất cả dịch vụ',
+    unit: 'Đơn vị tính',
+    allUnits: 'Tất cả',
+    units: { HOUR: 'Theo giờ', DAY: 'Theo ngày', SHIFT: 'Theo ca' },
+    per: { HOUR: '/ giờ', DAY: '/ ngày', SHIFT: '/ ca' },
+    sellableOnly: 'Chỉ gói đang bán',
+    note: 'Giá theo giờ là đơn giá mỗi giờ, nhân với số giờ của buổi; gói theo ngày / ca là giá trọn một ngày / ca. Nền tảng chưa hỗ trợ phụ phí (ca đêm, ngày lễ…) và mỗi buổi phải kết thúc trong cùng ngày.',
+    summary: '{{centers}} trung tâm · {{plans}} gói',
+    range: '{{min}} – {{max}}',
     columns: {
-      service: 'Dịch vụ',
-      category: 'Nhóm danh mục',
-      plans: 'Bảng giá',
+      center: 'Trung tâm',
+      plan: 'Gói',
+      unit: 'Đơn vị',
+      duration: 'Thời lượng',
+      price: 'Giá',
       status: 'Trạng thái'
     },
-    plansLoading: 'Đang tải bảng giá...',
-    plansError: 'Không thể tải bảng giá.',
-    plansEmpty: 'Chưa cấu hình bảng giá.',
-    duration: '{{count, number}} phút',
-    planInactive: 'Tạm ngưng',
-    pricingUnits: { HOUR: 'Theo giờ', DAY: 'Theo ngày', SHIFT: 'Theo ca' }
-  },
-  allocation: 'Phân bổ hình thức đặt ca',
-  allocationHint: 'Ca 4 giờ 45% · Ca 8 giờ 30% · Lưu trú 24/24 25%.',
-  surcharge: 'Quy chuẩn phụ phí ca đặc biệt',
-  surchargeItems: { night: 'Ca đêm (22:00–06:00)', holiday: 'Ngày lễ, Tết', senior: 'Điều dưỡng trưởng / chuyên khoa' },
-  medical: 'Tiêu chuẩn giám sát y khoa',
-  medicalHint: 'Chứng chỉ chuyên môn, định mức vật tư và bảo hiểm được thẩm định trước khi áp dụng cho từng dịch vụ.',
-  policy: 'Chính sách quản lý giá dịch vụ',
-  policyHint: 'Biểu phí và điều kiện phê duyệt cần được Quản trị viên xác nhận trước khi áp dụng.'
+    durationHour: 'Đơn giá 1 giờ',
+    durationHours: '{{count, number}} giờ',
+    durationMinutes: '{{count, number}} phút',
+    lowest: 'Thấp nhất',
+    sellable: 'Đang bán',
+    notSellable: 'Tạm dừng',
+    results: '{{count}} dịch vụ có gói giá',
+    empty: 'Chưa có gói giá phù hợp.',
+    emptyHint: 'Thử bỏ bớt bộ lọc, hoặc trung tâm chưa cấu hình gói giá.',
+    noActiveCenters: 'Chưa có trung tâm nào đang hoạt động.',
+    loading: 'Đang tải gói giá…',
+    error: 'Không tải được gói giá.',
+    retry: 'Thử lại'
+  }
 } as const
 
 export const adminServicesEn = {
   documentTitle: 'Service catalog & pricing | CareConnect Admin',
   title: 'Services',
   subtitle: 'Standard service catalog and prices by center.',
-  scope: 'Changes to the standard catalog apply immediately to centers and customers.',
-  badge: 'Standard healthcare services',
-  liveSource: 'Updated in real time',
   add: 'Add service',
   metrics: {
     total: 'Standard services',
@@ -154,11 +146,6 @@ export const adminServicesEn = {
     active: 'Centers can register to offer them',
     inactive: 'Hidden from centers and customers',
     categories: 'Distinct classification groups'
-  },
-  tabs: {
-    master: 'Platform master catalog',
-    center: 'Prices by center',
-    surcharge: 'Surcharges & shift rules'
   },
   search: 'Search by name or description',
   category: 'Category',
@@ -235,43 +222,35 @@ export const adminServicesEn = {
       failed: 'The service could not be deleted right now. Try again later.'
     }
   },
-  centerPricing: {
-    title: 'Service prices by center',
-    hint: 'Center managers register services and configure price plans. Admins review them to reconcile prices shown to customers.',
-    centerSearch: 'Search centers',
+  tabs: { master: 'Standard catalog', plans: 'Price plans' },
+  plans: {
+    title: 'Center price plans',
+    hint: 'Compare the price plans of active centers for each standard service. Center managers create and edit plans; this view is read-only.',
     center: 'Center',
-    chooseCenter: 'Choose a center',
-    centersLoading: 'Loading centers...',
-    centersError: 'Centers could not be loaded.',
-    noCenters: 'No matching centers.',
-    selectPrompt: 'Choose a center to see its services and active price plans.',
-    loading: 'Loading center services...',
-    loadError: 'Center services could not be loaded.',
-    empty: 'This center has not registered any services.',
-    results: '{{count}} center services',
-    columns: {
-      service: 'Service',
-      category: 'Category',
-      plans: 'Price plans',
-      status: 'Status'
-    },
-    plansLoading: 'Loading price plans...',
-    plansError: 'Price plans could not be loaded.',
-    plansEmpty: 'No price plan configured.',
-    duration: '{{count, number}} min',
-    planInactive: 'Paused',
-    pricingUnits: { HOUR: 'Hourly', DAY: 'Daily', SHIFT: 'Per shift' }
-  },
-  allocation: 'Booking format distribution',
-  allocationHint: '4-hour shifts 45% · 8-hour shifts 30% · live-in care 25%.',
-  surcharge: 'Special shift surcharges',
-  surchargeItems: {
-    night: 'Night shift (22:00–06:00)',
-    holiday: 'Public holidays',
-    senior: 'Lead / specialist caregiver'
-  },
-  medical: 'Medical oversight standards',
-  medicalHint: 'Professional certificates, supply standards and insurance are verified before they apply to a service.',
-  policy: 'Service pricing policy',
-  policyHint: 'Rates and approval conditions must be confirmed by an Administrator before they apply.'
+    allCenters: 'All active centers',
+    service: 'Service',
+    allServices: 'All services',
+    unit: 'Pricing unit',
+    allUnits: 'All',
+    units: { HOUR: 'Hourly', DAY: 'Daily', SHIFT: 'Per shift' },
+    per: { HOUR: '/ hour', DAY: '/ day', SHIFT: '/ shift' },
+    sellableOnly: 'On sale only',
+    note: 'An hourly price is charged per hour of the visit; a daily or shift plan is the price of one whole day or shift. Surcharges (nights, holidays…) are not supported yet, and every visit must end on the day it starts.',
+    summary: '{{centers}} centers · {{plans}} plans',
+    range: '{{min}} – {{max}}',
+    columns: { center: 'Center', plan: 'Plan', unit: 'Unit', duration: 'Duration', price: 'Price', status: 'Status' },
+    durationHour: 'Price per hour',
+    durationHours: '{{count, number}} hours',
+    durationMinutes: '{{count, number}} minutes',
+    lowest: 'Lowest',
+    sellable: 'On sale',
+    notSellable: 'Paused',
+    results: '{{count}} services with price plans',
+    empty: 'No matching price plans.',
+    emptyHint: 'Remove a filter, or the centers have not set up price plans yet.',
+    noActiveCenters: 'No center is active yet.',
+    loading: 'Loading price plans…',
+    error: 'Price plans could not be loaded.',
+    retry: 'Retry'
+  }
 } as const

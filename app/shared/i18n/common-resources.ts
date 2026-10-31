@@ -33,6 +33,15 @@ export const commonEn = {
       vietnamese: 'Vietnamese',
       vietnameseShort: 'VI'
     },
+    toast: {
+      region: 'Notifications',
+      close: 'Close notification',
+      retry: 'Retry',
+      mediaUploaded: 'Files uploaded.',
+      mediaRemoved: 'File removed.',
+      mediaAction: 'update the files',
+      systemError: 'Could not {{action}} because the system is having trouble. Your input is kept; please try again.'
+    },
     serviceCategories: {
       elderly: 'Elderly care',
       postSurgery: 'Post-surgery',
@@ -155,6 +164,15 @@ export const commonVi = {
       switchTo: 'Chuyển sang {{language}}',
       vietnamese: 'Tiếng Việt',
       vietnameseShort: 'VI'
+    },
+    toast: {
+      region: 'Thông báo',
+      close: 'Đóng thông báo',
+      retry: 'Thử lại',
+      mediaUploaded: 'Đã tải tệp lên.',
+      mediaRemoved: 'Đã xóa tệp.',
+      mediaAction: 'cập nhật tệp',
+      systemError: 'Chưa {{action}} được vì hệ thống đang gặp sự cố. Dữ liệu bạn nhập vẫn được giữ, hãy thử lại.'
     },
     serviceCategories: {
       elderly: 'Người cao tuổi',

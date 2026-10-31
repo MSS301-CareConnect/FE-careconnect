@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
 
+import { Toaster } from '~/shared/ui/toaster'
+
 import { AdminSidebar } from './components/admin-sidebar'
 import { AdminTopbar } from './components/admin-topbar'
 
@@ -30,6 +32,8 @@ export function AdminLayout() {
           {t('admin.footer')}
         </footer>
       </div>
+      {/* Admin first (D-09); other portals adopt the same Toaster once it has proven itself here. */}
+      <Toaster />
     </div>
   )
 }

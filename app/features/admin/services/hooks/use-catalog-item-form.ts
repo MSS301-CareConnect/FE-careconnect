@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   careCatalogErrorCode,
@@ -9,6 +10,7 @@ import {
   saveCatalog
 } from '~/entities/care-catalog/care-catalog-api'
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
+import { toastSuccess, toastSystemError } from '~/shared/ui/app-toast'
 
 import {
   draftFromRecord,
@@ -34,6 +36,7 @@ export function catalogFormError(error: unknown): CatalogFormError {
 }
 
 export function useCatalogItemForm(item: CatalogItemRecord | undefined, onSaved: (saved: CatalogItemRecord) => void) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [draft, setDraft] = useState<CatalogItemDraft>(() => (item ? draftFromRecord(item) : EMPTY_CATALOG_ITEM))
   const [errors, setErrors] = useState<CatalogItemErrors>({})
@@ -46,9 +49,23 @@ export function useCatalogItemForm(item: CatalogItemRecord | undefined, onSaved:
       item ? saveCatalog(item.id, { ...request, version: item.version }) : createCatalog(request),
     onSuccess: async (saved) => {
       await queryClient.invalidateQueries({ queryKey: careCatalogKeys.all })
+      toastSuccess(
+        t(item ? 'admin.toast.services.updated' : 'admin.toast.services.created', {
+          name: saved.name ?? draft.name.trim()
+        })
+      )
       onSaved(saved)
     },
-    onError: (error) => {
+    onError: (error, request) => {
+      // A system failure is a toast with a retry; the dialog stays open with what was typed.
+      const shown = toastSystemError(error, {
+        message: t('common.toast.systemError', {
+          action: t(item ? 'admin.toast.services.actions.update' : 'admin.toast.services.actions.create')
+        }),
+        retryLabel: t('common.toast.retry'),
+        retry: () => save.mutate(request)
+      })
+      if (shown) return
       const fieldErrors = fieldErrorsFromServerCode(careCatalogErrorCode(error))
       if (fieldErrors) {
         setErrors(fieldErrors)

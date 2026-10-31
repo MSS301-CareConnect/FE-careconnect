@@ -9,6 +9,8 @@ import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
 import { IncidentRow } from './components/incident-row'
 import { fetchIncidents, incidentKeys, requeueIncident, skipIncident, type IncidentSource } from './incidents-api'
+import { classifyApiError } from '~/shared/api/api-error'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const SOURCES: IncidentSource[] = ['booking', 'provider']
 const STATUSES: (OutboxStatus | 'ALL')[] = ['FAILED', 'PENDING', 'SKIPPED', 'SENT', 'ALL']
@@ -35,12 +37,28 @@ export function AdminIncidentsPage() {
     retry: false
   })
   const refresh = () => queryClient.invalidateQueries({ queryKey: incidentKeys.all })
-  const requeue = useMutation({ mutationFn: (id: string) => requeueIncident(source, id), onSuccess: refresh })
+  const notify = useActionToast()
+  const requeue = useMutation({
+    mutationFn: (id: string) => requeueIncident(source, id),
+    onSuccess: () => {
+      notify.success(t('admin.toast.incidents.requeued'))
+      return refresh()
+    },
+    onError: (error, id) =>
+      notify.systemError(error, t('admin.toast.incidents.actions.requeue'), () => requeue.mutate(id))
+  })
   const skip = useMutation({
     mutationFn: ({ id, note }: { id: string; note: string }) => skipIncident(source, id, note),
-    onSuccess: refresh
+    onSuccess: () => {
+      notify.success(t('admin.toast.incidents.skipped'))
+      return refresh()
+    },
+    onError: (error, variables) =>
+      notify.systemError(error, t('admin.toast.incidents.actions.skip'), () => skip.mutate(variables))
   })
-  const actionError = requeue.error ?? skip.error
+  const failed = requeue.error ?? skip.error
+  // System failures are toasts; only a business refusal (already handled by someone else…) stays on the page.
+  const actionError = failed && classifyApiError(failed).kind !== 'system' ? failed : null
 
   function select(next: { source?: IncidentSource; status?: OutboxStatus | 'ALL' }) {
     const search = new URLSearchParams(params)

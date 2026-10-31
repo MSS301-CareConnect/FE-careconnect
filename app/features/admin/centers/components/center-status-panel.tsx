@@ -11,6 +11,7 @@ import { baseControlClass } from '~/shared/ui/form-field'
 import { FormAlert } from '~/shared/ui/form-alert'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { CENTER_BUSINESS_ERRORS } from '../center-errors'
 import { parseCenterHours } from '../center-hours'
@@ -68,7 +69,7 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
   const [reason, setReason] = useState('')
   const [reasonError, setReasonError] = useState<'reasonRequired' | 'reasonTooLong' | null>(null)
   const [managerMissing, setManagerMissing] = useState(false)
-  const [done, setDone] = useState<string | null>(null)
+  const notify = useActionToast()
   const manager = useQuery({
     queryKey: accountKeys.detail(center.managerUserId ?? ''),
     queryFn: () => fetchAccount(center.managerUserId!),
@@ -92,25 +93,28 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
     onSuccess: async (_saved, next) => {
       setTarget(null)
       setReason('')
-      setDone(
-        next === 'ACTIVE' && center.centerStatus === 'PENDING'
-          ? t(`${key}.review.approved`)
-          : next === 'REJECTED'
-            ? t(`${key}.review.rejected`)
-            : t(`${key}.statusActions.changed`)
-      )
+      // The panel remounts with the new version, so the outcome is a toast rather than inline text.
+      const sentence = {
+        ACTIVE: center.centerStatus === 'PENDING' ? 'approved' : 'reopened',
+        REJECTED: 'rejected',
+        SUSPENDED: 'suspended',
+        INACTIVE: 'deactivated'
+      } as const
+      notify.success(t(`admin.toast.centers.${sentence[next]}`, { name: center.centerName }))
       await queryClient.invalidateQueries({ queryKey: providerKeys.center(center.id) })
       await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
       await queryClient.invalidateQueries({ queryKey: accountKeys.all })
+    },
+    onError: (error, next) => {
+      if (notify.systemError(error, t('admin.toast.centers.actions.status'), () => change.mutate(next))) setTarget(null)
     }
   })
   const failure = change.error ? classifyApiError(change.error, { business: CENTER_BUSINESS_ERRORS }) : null
-  const failureText = failure && failure.kind !== 'field' ? t(failure.key) : undefined
+  const failureText = failure && failure.kind === 'business' ? t(failure.key) : undefined
   const name = center.centerName
 
   function open(next: Target) {
     change.reset()
-    setDone(null)
     setReasonError(null)
     setTarget(next)
   }
@@ -232,15 +236,6 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
           )}
         </>
       )}
-      {done ? (
-        <p
-          className='flex items-center gap-2 rounded-xl bg-success-container px-3 py-2 text-sm text-on-success-container'
-          role='status'
-        >
-          <Icon className='text-lg' name='check_circle' />
-          {done}
-        </p>
-      ) : null}
       <ConfirmDialog
         confirmLabel={target ? confirmLabel[target] : undefined}
         description={dialog?.description}
