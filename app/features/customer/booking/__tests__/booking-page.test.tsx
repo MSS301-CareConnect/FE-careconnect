@@ -50,6 +50,7 @@ function renderPage(path: string) {
         <Routes>
           <Route element={<CustomerBookingPage />} path='/customer/booking' />
           <Route element={<DetailRoute />} path='/customer/bookings/:id' />
+          <Route element={<output data-testid='bookings-list-route' />} path='/customer/bookings' />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
@@ -231,6 +232,65 @@ describe('CustomerBookingPage', () => {
     expect(key).toMatch(/^[0-9a-f-]{36}$/)
     // The note does not change the price, so it never triggers another quote.
     expect(fetchBookingQuote).toHaveBeenCalledTimes(1)
+  })
+
+  it('accepts at most four distinct one-time dates and quotes the 30% deposit', async () => {
+    renderPage('/customer/booking?caregiver=cg-1')
+    fireEvent.click(await screen.findByRole('radio', { name: /Bà Lan/ }))
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Gói giá' }), { target: { value: 'plan-1' } })
+
+    fireEvent.change(screen.getByLabelText('Buổi 1'), { target: { value: '2030-01-02' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày chăm sóc' }))
+    fireEvent.change(screen.getByLabelText('Buổi 2'), { target: { value: '2030-01-05' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày chăm sóc' }))
+    fireEvent.change(screen.getByLabelText('Buổi 3'), { target: { value: '2030-01-08' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày chăm sóc' }))
+    fireEvent.change(screen.getByLabelText('Buổi 4'), { target: { value: '2030-01-11' } })
+
+    expect(screen.queryByRole('button', { name: 'Thêm ngày chăm sóc' })).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(fetchBookingQuote).toHaveBeenCalledWith(expect.objectContaining({ startDate: '2030-01-11' }))
+    )
+    expect(await screen.findByText('Tiền cọc dự kiến · 30%')).toBeInTheDocument()
+    expect(await screen.findByText(/240\.000/)).toBeInTheDocument()
+  })
+
+  it('does not resend a successful date when a later date fails and the customer retries', async () => {
+    const bookingResult = {
+      bookingCode: 'BK0001',
+      status: 'PENDING' as const,
+      recipientId: 'rec-1',
+      centerId: 'center-1',
+      scheduleType: 'ONE_TIME' as const,
+      startDate: '2030-01-02',
+      startTime: '08:00',
+      endTime: '10:00'
+    }
+    vi.mocked(placeBooking)
+      .mockResolvedValueOnce({ ...bookingResult, id: 'bk-1' })
+      .mockRejectedValueOnce(Object.assign(new Error('Unavailable'), { status: 503 }))
+      .mockResolvedValueOnce({ ...bookingResult, id: 'bk-2' })
+    renderPage('/customer/booking?caregiver=cg-1')
+    fireEvent.click(await screen.findByRole('radio', { name: /Bà Lan/ }))
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Gói giá' }), { target: { value: 'plan-1' } })
+    fireEvent.change(screen.getByLabelText('Buổi 1'), { target: { value: '2030-01-02' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày chăm sóc' }))
+    fireEvent.change(screen.getByLabelText('Buổi 2'), { target: { value: '2030-01-05' } })
+    await screen.findByText('Tiền cọc dự kiến · 30%')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi yêu cầu đặt lịch' }))
+    expect(await screen.findByText(/Đã gửi 1 buổi/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi yêu cầu đặt lịch' }))
+    expect(await screen.findByTestId('bookings-list-route')).toBeInTheDocument()
+    expect(placeBooking).toHaveBeenCalledTimes(3)
+    expect(vi.mocked(placeBooking).mock.calls.map(([body]) => body.startDate)).toEqual([
+      '2030-01-02',
+      '2030-01-05',
+      '2030-01-05'
+    ])
+    expect(vi.mocked(placeBooking).mock.calls[1][1]).toBe(vi.mocked(placeBooking).mock.calls[2][1])
   })
 
   it('lets the center assign the caregiver and shows a translated backend error', async () => {

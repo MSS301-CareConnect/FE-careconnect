@@ -44,6 +44,19 @@ describe('session expiry handling (H-07)', () => {
     await waitFor(() => expect(onSessionExpired).toHaveBeenCalledTimes(1))
   })
 
+  it('keeps the user on the page when refresh has a temporary server failure', async () => {
+    vi.mocked(refreshSession).mockRejectedValue(Object.assign(new Error('Unavailable'), { status: 503 }))
+    const onSessionExpired = vi.fn()
+    const client = createQueryClient({ onSessionExpired })
+    client.setQueryData(['auth', 'current-user'], { id: 'customer-1' })
+
+    await client
+      .fetchQuery({ queryKey: ['bookings'], queryFn: () => Promise.reject(unauthorized()) })
+      .catch(() => undefined)
+    await waitFor(() => expect(refreshSession).toHaveBeenCalledTimes(1))
+    expect(onSessionExpired).not.toHaveBeenCalled()
+  })
+
   it('refreshes after a 401 mutation and ignores other failures', async () => {
     vi.mocked(refreshSession).mockResolvedValue()
     const client = createQueryClient({ onSessionExpired: vi.fn() })

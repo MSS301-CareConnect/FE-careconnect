@@ -19,7 +19,7 @@ export interface QueryClientOptions {
 /**
  * H-07: an access token expiring mid-session no longer surfaces as a generic error. A 401 from any query or mutation
  * refreshes the session once (shared across concurrent failures); queries are then fetched again, a mutation keeps
- * its error so the user can repeat it with the new session. A failed refresh ends the session and returns to sign-in.
+ * its error so the user can repeat it with the new session. An unauthorized refresh ends the session and returns to sign-in.
  * The session query itself already refreshes in `loadSession`, so it is left out.
  */
 export function createQueryClient({ onSessionExpired = redirectToLogin }: QueryClientOptions = {}) {
@@ -32,8 +32,9 @@ export function createQueryClient({ onSessionExpired = redirectToLogin }: QueryC
     try {
       await refreshSession()
       retry?.()
-    } catch {
-      onSessionExpired()
+    } catch (error) {
+      // A temporary IdentityService or network failure does not revoke the session.
+      if (errorStatus(error) === 401) onSessionExpired()
     }
   }
   const client: QueryClient = new QueryClient({

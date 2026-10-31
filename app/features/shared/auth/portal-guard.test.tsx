@@ -8,6 +8,7 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 import { PortalGuard } from './portal-guard'
 import { useAuthUser } from './auth-user-context'
 import { loadSession } from './session-api'
+import type { PortalRole } from './role-path'
 
 vi.mock('./session-api', () => ({
   sessionQueryKey: ['auth', 'current-user'],
@@ -27,17 +28,17 @@ function ProtectedContent() {
   )
 }
 
-function renderAdmin() {
+function renderPortal(role: PortalRole = 'ADMIN') {
   const loginContent = 'Login screen'
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/admin/dashboard']}>
+      <MemoryRouter initialEntries={[`/${role.toLowerCase().replace('_', '-')}/dashboard`]}>
         <Routes>
           <Route
-            path='/admin/dashboard'
+            path='/:portal/dashboard'
             element={
-              <PortalGuard role='ADMIN'>
+              <PortalGuard role={role}>
                 <ProtectedContent />
               </PortalGuard>
             }
@@ -57,22 +58,31 @@ beforeEach(async () => {
 describe('portal guard', () => {
   it('redirects anonymous visitors before rendering a portal', async () => {
     vi.mocked(loadSession).mockResolvedValue(null)
-    renderAdmin()
+    renderPortal()
     expect(await screen.findByText('Login screen')).toBeInTheDocument()
     expect(screen.queryByText('Protected dashboard')).not.toBeInTheDocument()
   })
 
   it('denies a logged-in user with the wrong backend role', async () => {
     vi.mocked(loadSession).mockResolvedValue({ id: 'u-1', status: 'ACTIVE', roles: ['CUSTOMER'] })
-    renderAdmin()
+    renderPortal()
     expect(await screen.findByRole('heading', { name: 'Không có quyền truy cập' })).toBeInTheDocument()
     expect(screen.queryByText('Protected dashboard')).not.toBeInTheDocument()
   })
 
   it('renders the portal only for an active user with its role', async () => {
     vi.mocked(loadSession).mockResolvedValue({ id: 'u-1', fullName: 'An Nguyen', status: 'ACTIVE', roles: ['ADMIN'] })
-    renderAdmin()
+    renderPortal()
     expect(await screen.findByText('Protected dashboard')).toBeInTheDocument()
     expect(screen.getByText('An Nguyen')).toBeInTheDocument()
   })
+
+  it.each(['CUSTOMER', 'CENTER_MANAGER', 'CAREGIVER'] as const)(
+    'keeps an active %s user in their portal',
+    async (role) => {
+      vi.mocked(loadSession).mockResolvedValue({ id: 'u-1', fullName: 'An Nguyen', status: 'ACTIVE', roles: [role] })
+      renderPortal(role)
+      expect(await screen.findByText('Protected dashboard')).toBeInTheDocument()
+    }
+  )
 })
