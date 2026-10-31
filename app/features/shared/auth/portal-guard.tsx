@@ -10,7 +10,13 @@ import { AuthUserContext } from './auth-user-context'
 export function PortalGuard({ children, role }: { children: ReactNode; role: PortalRole }) {
   const { t } = useTranslation()
   const location = useLocation()
-  const session = useQuery({ queryKey: sessionQueryKey, queryFn: loadSession, retry: false, staleTime: 30_000 })
+  const session = useQuery({
+    queryKey: sessionQueryKey,
+    queryFn: loadSession,
+    retry: false,
+    staleTime: 30_000,
+    refetchInterval: (query) => (query.state.data ? 60_000 : false)
+  })
 
   if (session.isPending) {
     return (

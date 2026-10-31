@@ -54,6 +54,11 @@ authenticated user and roles. A 401 from `/api/v1/users/me` triggers one refresh
 attempt and a retry; another 401 means the
 session has ended. Other API failures show a retry state instead of treating the
 user as signed out.
+While an authenticated portal is open, its session query checks `/api/v1/users/me`
+once a minute, allowing an expired access cookie to refresh without waiting for a
+business request. Concurrent refreshes in one tab share a promise; browser tabs
+coordinate refresh-token rotation with a Web Lock. A transient refresh failure
+does not force navigation to login; an authentication rejection does.
 
 Each portal parent route wraps its layout with a TanStack Query session guard.
 The guard renders children only after `/api/v1/users/me` confirms an active user with the
@@ -678,6 +683,11 @@ Contract update workflow:
   the exact amount of the opened session.
 - The booking form reads `GET /payments/me/outstanding` and, while an overdue invoice exists, shows a banner linking to
   `/customer/payments` and disables submit, so the customer learns about the block before filling the form.
+- The Customer booking form's one-time option accepts up to four distinct dates. BookingService's `ONE_TIME` request
+  represents only one date, so the frontend quotes each date and creates separate bookings in date order. Successful
+  requests keep their IDs and idempotency keys in the form while it remains open; a retry sends only dates that failed.
+  The sidebar totals the backend quotes and emphasizes an estimated 30% deposit. If a quote reports a different
+  effective deposit policy, submission stops rather than showing an amount that differs from the payment flow.
 - Booking aftercare (`booking-aftercare.tsx`) shows care reports and the new-complaint action only once a visit has
   taken place; the review has no preset rating; each complaint keeps its own escalation reason and error, and
   withdrawing asks for confirmation.

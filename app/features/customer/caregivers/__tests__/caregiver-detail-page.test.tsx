@@ -3,31 +3,38 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchPublicCaregiver } from '~/entities/provider/provider-api'
+import { fetchProviderMedia, fetchPublicCaregiver, fetchVerifiedCertificates } from '~/entities/provider/provider-api'
+import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { CustomerCaregiverDetailPage } from '../caregiver-detail-page'
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
-  fetchPublicCaregiver: vi.fn()
+  fetchPublicCaregiver: vi.fn(),
+  fetchVerifiedCertificates: vi.fn(),
+  fetchProviderMedia: vi.fn()
 }))
 
-function renderPage() {
+function renderPage(signedIn = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/customer/caregivers/cg-1']}>
-        <Routes>
-          <Route element={<CustomerCaregiverDetailPage />} path='/customer/caregivers/:caregiverId' />
-        </Routes>
-      </MemoryRouter>
+      <AuthUserContext value={signedIn ? { id: 'customer-1', roles: ['CUSTOMER'], status: 'ACTIVE' } : null}>
+        <MemoryRouter initialEntries={['/customer/caregivers/cg-1']}>
+          <Routes>
+            <Route element={<CustomerCaregiverDetailPage />} path='/customer/caregivers/:caregiverId' />
+          </Routes>
+        </MemoryRouter>
+      </AuthUserContext>
     </QueryClientProvider>
   )
 }
 
 beforeEach(async () => {
   vi.mocked(fetchPublicCaregiver).mockReset()
+  vi.mocked(fetchVerifiedCertificates).mockReset()
+  vi.mocked(fetchProviderMedia).mockReset()
   await setAppLanguage('en', false)
 })
 
@@ -40,6 +47,7 @@ describe('Customer caregiver profile', () => {
       fullName: 'Lan Nguyen',
       gender: 'FEMALE',
       experienceYears: 12,
+      avatarUrl: '/avatars/lan.png',
       bio: 'Twelve years of hospital nursing.',
       ratingAverage: 4.85,
       ratingCount: 46,
@@ -50,11 +58,13 @@ describe('Customer caregiver profile', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Lan Nguyen' })).toBeInTheDocument()
     expect(fetchPublicCaregiver).toHaveBeenCalledWith('cg-1')
+    expect(screen.getByRole('img', { name: 'Profile photo of Lan Nguyen' })).toHaveAttribute('src', '/avatars/lan.png')
     expect(screen.getByText('Twelve years of hospital nursing.')).toBeInTheDocument()
     expect(screen.getByText('12 years of experience')).toBeInTheDocument()
     expect(screen.getByText('Elderly care at home')).toBeInTheDocument()
     expect(screen.getByText('First aid')).toBeInTheDocument()
     expect(screen.getByText('Issued by Red Cross')).toBeInTheDocument()
+    expect(fetchVerifiedCertificates).not.toHaveBeenCalled()
     const booking = screen.getByRole('complementary')
     expect(within(booking).getByRole('link', { name: 'Book this caregiver' })).toHaveAttribute(
       'href',
@@ -62,11 +72,99 @@ describe('Customer caregiver profile', () => {
     )
   })
 
-  it('keeps empty sections explicit', async () => {
+  it('shows certificate photos directly in the certificate grid for a signed-in customer', async () => {
+    vi.mocked(fetchPublicCaregiver).mockResolvedValue({
+      caregiverId: 'cg-1',
+      fullName: 'Lan Nguyen',
+      services: [{ careServiceId: 'svc-1', serviceName: 'Elderly care at home' }],
+      certificates: [{ certificateName: 'First aid', issuedBy: 'Red Cross', issuedDate: '2025-03-10' }]
+    })
+    vi.mocked(fetchVerifiedCertificates).mockResolvedValue([
+      {
+        id: 'cert-1',
+        caregiverId: 'cg-1',
+        certificateName: 'First aid',
+        issuedBy: 'Red Cross',
+        issuedDate: '2025-03-10',
+        verificationStatus: 'ADMIN_VERIFIED',
+        version: 1
+      }
+    ])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([
+      { mediaFileId: 'photo-1', mediaFileType: 'IMAGE', contentType: 'image/jpeg', downloadUrl: '/certificate.jpg' }
+    ])
+    renderPage(true)
+
+    expect(await screen.findByRole('img', { name: 'First aid' })).toHaveAttribute('src', '/certificate.jpg')
+    expect(fetchVerifiedCertificates).toHaveBeenCalledWith('cg-1')
+    expect(fetchProviderMedia).toHaveBeenCalledWith('CERTIFICATE', 'cert-1')
+    const services = screen.getByRole('heading', { name: 'Services provided' })
+    const certificates = screen.getByRole('heading', { name: 'Verified certificates' })
+    expect(services.compareDocumentPosition(certificates) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('uses verified certificate IDs and embeds PDF proof even when public metadata differs', async () => {
+    vi.mocked(fetchPublicCaregiver).mockResolvedValue({
+      caregiverId: 'cg-1',
+      fullName: 'Lan Nguyen',
+      certificates: [{ certificateName: 'Nursing diploma', issuedBy: 'City hospital' }]
+    })
+    vi.mocked(fetchVerifiedCertificates).mockResolvedValue([
+      {
+        id: 'cert-2',
+        caregiverId: 'cg-1',
+        certificateName: 'Nursing diploma',
+        issuedBy: 'City Hospital',
+        issuedDate: '2026-10-13',
+        verificationStatus: 'ADMIN_VERIFIED',
+        version: 1
+      }
+    ])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([
+      {
+        mediaFileId: 'proof-2',
+        mediaFileType: 'DOCUMENT',
+        contentType: 'application/pdf',
+        downloadUrl: '/nursing-diploma.pdf'
+      }
+    ])
+    renderPage(true)
+
+    expect(await screen.findByTitle('Preview of certificate Nursing diploma')).toHaveAttribute(
+      'src',
+      '/nursing-diploma.pdf'
+    )
+    expect(fetchProviderMedia).toHaveBeenCalledWith('CERTIFICATE', 'cert-2')
+  })
+
+  it('explains when a verified certificate has no uploaded proof', async () => {
+    vi.mocked(fetchPublicCaregiver).mockResolvedValue({
+      caregiverId: 'cg-1',
+      fullName: 'Lan Nguyen',
+      certificates: [{ certificateName: 'Nursing diploma' }]
+    })
+    vi.mocked(fetchVerifiedCertificates).mockResolvedValue([
+      {
+        id: 'cert-2',
+        caregiverId: 'cg-1',
+        certificateName: 'Nursing diploma',
+        issuedBy: 'City Hospital',
+        verificationStatus: 'ADMIN_VERIFIED',
+        version: 1
+      }
+    ])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
+    renderPage(true)
+
+    expect(await screen.findByText('No image or PDF has been attached to this certificate.')).toBeInTheDocument()
+  })
+
+  it('keeps services and certificates explicit without adding an empty introduction panel', async () => {
     vi.mocked(fetchPublicCaregiver).mockResolvedValue({ caregiverId: 'cg-1', fullName: 'Lan Nguyen' })
     renderPage()
 
-    expect(await screen.findByText('This caregiver has not added an introduction yet.')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Lan Nguyen' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'About' })).not.toBeInTheDocument()
     expect(screen.getByText('This caregiver has not registered any services yet.')).toBeInTheDocument()
     expect(screen.getByText('No verified certificates yet.')).toBeInTheDocument()
     expect(screen.getByText('No reviews yet')).toBeInTheDocument()

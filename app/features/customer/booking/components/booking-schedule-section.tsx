@@ -2,6 +2,7 @@ import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { WEEKDAYS } from '~/entities/booking/booking-format'
+import { Icon } from '~/shared/ui/icon'
 
 import type { useBookingForm } from '../hooks/use-booking-form'
 import { BookingPanel, bookingField } from './booking-panel'
@@ -17,6 +18,8 @@ export function BookingScheduleSection({ form }: { form: Form }) {
   const repeating = schedule.scheduleType !== 'ONE_TIME'
   const invalidTime = Boolean(schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime)
   const invalidRange = repeating && Boolean(schedule.endDate && schedule.endDate < schedule.startDate)
+  const duplicateDate =
+    !repeating && new Set(schedule.oneTimeDates.filter(Boolean)).size !== schedule.oneTimeDates.filter(Boolean).length
 
   return (
     <BookingPanel
@@ -47,16 +50,74 @@ export function BookingScheduleSection({ form }: { form: Form }) {
           </div>
         </fieldset>
 
+        {!repeating ? (
+          <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4 sm:p-5'>
+            <div className='flex flex-wrap items-center justify-between gap-2'>
+              <div>
+                <p className={label}>{t('customer.booking.schedule.selectedDates')}</p>
+                <p className='mt-1 text-xs text-on-surface-variant'>{t('customer.booking.schedule.dateLimit')}</p>
+              </div>
+              <span className='rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-primary'>
+                {t('customer.booking.schedule.dateCount', { count: schedule.oneTimeDates.length })}
+              </span>
+            </div>
+            <div className='mt-4 grid gap-3 sm:grid-cols-2'>
+              {schedule.oneTimeDates.map((date, index) => (
+                <div className='flex items-end gap-2' key={index}>
+                  <label className={`${label} min-w-0 flex-1`}>
+                    {t('customer.booking.schedule.visitDate', { number: index + 1 })}
+                    <input
+                      aria-invalid={Boolean(date && schedule.oneTimeDates.indexOf(date) !== index)}
+                      className={bookingField}
+                      onChange={(event) => form.updateOneTimeDate(index, event.target.value)}
+                      type='date'
+                      value={date}
+                    />
+                  </label>
+                  {schedule.oneTimeDates.length > 1 ? (
+                    <button
+                      aria-label={t('customer.booking.schedule.removeDate', { number: index + 1 })}
+                      className='mb-0.5 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-outline-variant text-on-surface-variant hover:border-error hover:text-error'
+                      onClick={() => form.removeOneTimeDate(index)}
+                      type='button'
+                    >
+                      <Icon name='close' />
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            {duplicateDate ? (
+              <p className='mt-2 text-sm text-error' role='alert'>
+                {t('customer.booking.schedule.duplicateDate')}
+              </p>
+            ) : null}
+            {schedule.oneTimeDates.length < 4 ? (
+              <button
+                className='mt-4 rounded-xl border border-primary px-4 py-2.5 text-sm font-bold text-primary hover:bg-primary-fixed'
+                onClick={form.addOneTimeDate}
+                type='button'
+              >
+                {t('customer.booking.schedule.addDate')}
+              </button>
+            ) : null}
+            <p className='mt-3 text-xs leading-5 text-on-surface-variant'>
+              {t('customer.booking.schedule.separateRequests')}
+            </p>
+          </div>
+        ) : null}
         <div className='grid gap-4 sm:grid-cols-2'>
-          <label className={label}>
-            {repeating ? t('customer.booking.schedule.startDate') : t('customer.booking.schedule.date')}
-            <input
-              className={bookingField}
-              onChange={(event) => updateSchedule({ startDate: event.target.value })}
-              type='date'
-              value={schedule.startDate}
-            />
-          </label>
+          {repeating ? (
+            <label className={label}>
+              {t('customer.booking.schedule.startDate')}
+              <input
+                className={bookingField}
+                onChange={(event) => updateSchedule({ startDate: event.target.value })}
+                type='date'
+                value={schedule.startDate}
+              />
+            </label>
+          ) : null}
           {repeating ? (
             <label className={label}>
               {t('customer.booking.schedule.endDate')}

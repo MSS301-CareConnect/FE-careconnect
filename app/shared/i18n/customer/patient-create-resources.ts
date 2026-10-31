@@ -8,7 +8,7 @@ export const patientCreateEn = {
     myAccount: 'My Account',
     patientProfiles: 'Family member health profiles',
     current: 'Add new patient profile',
-    backToList: 'Back to profiles list'
+    backToList: 'Back to profiles'
   },
   header: {
     badge: 'CareConnect health record',
@@ -37,13 +37,13 @@ export const patientCreateEn = {
   },
   sidebar: {
     stepper: {
-      title: 'Form Progress',
+      title: 'Jump to section',
       status: '{{completed}}/{{total}} Completed',
-      step1Title: '1. Basic information',
+      step1Title: 'Basic information',
       step1Subtitle: 'Name, date of birth, blood type, BMI',
-      step2Title: '2. Physical & Pathologies',
+      step2Title: 'Physical & Pathologies',
       step2Subtitle: 'Chronic illnesses, allergy history',
-      step3Title: '3. Prescriptions & Schedule',
+      step3Title: 'Prescriptions & Schedule',
       step3Subtitle: 'Dosages and critical instructions'
     },
     security: {
@@ -169,7 +169,7 @@ export const patientCreateVi = {
     myAccount: 'Tài khoản của tôi',
     patientProfiles: 'Hồ sơ người thân cần chăm sóc',
     current: 'Thêm hồ sơ người bệnh mới',
-    backToList: 'Quay lại danh sách hồ sơ'
+    backToList: 'Quay lại hồ sơ'
   },
   header: {
     badge: 'Hồ sơ sức khỏe CareConnect',
@@ -198,13 +198,13 @@ export const patientCreateVi = {
   },
   sidebar: {
     stepper: {
-      title: 'Tiến trình hoàn thiện',
+      title: 'Đi tới mục',
       status: '{{completed}}/{{total}} Hoàn thành',
-      step1Title: '1. Thông tin cơ bản',
+      step1Title: 'Thông tin cơ bản',
       step1Subtitle: 'Họ tên, ngày sinh, nhóm máu, chiều cao, cân nặng',
-      step2Title: '2. Thể chất & Bệnh nền',
+      step2Title: 'Thể chất & Bệnh nền',
       step2Subtitle: 'Bệnh mạn tính, tiền sử dị ứng',
-      step3Title: '3. Đơn thuốc & Lịch uống',
+      step3Title: 'Đơn thuốc & Lịch uống',
       step3Subtitle: 'Liều dùng và lưu ý quan trọng'
     },
     security: {

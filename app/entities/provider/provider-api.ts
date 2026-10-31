@@ -111,6 +111,7 @@ export const providerKeys = {
   publicCaregiver: (id: string) => ['provider', 'public-caregiver', id] as const,
   serviceCaregivers: (params: SearchProviderCaregiversParams) => ['provider', 'service-caregivers', params] as const,
   certificates: (id: string) => ['provider', 'certificates', id] as const,
+  verifiedCertificates: (id: string) => ['provider', 'verified-certificates', id] as const,
   shifts: (centerId: string) => ['provider', 'shifts', centerId] as const,
   shift: (id: string) => ['provider', 'shift', id] as const,
   registrations: (id: string) => ['provider', 'registrations', id] as const,

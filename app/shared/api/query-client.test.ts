@@ -20,6 +20,7 @@ describe('session expiry handling (H-07)', () => {
     vi.mocked(refreshSession).mockResolvedValue()
     const onSessionExpired = vi.fn()
     const client = createQueryClient({ onSessionExpired })
+    client.setQueryData(['auth', 'current-user'], { id: 'customer-1' })
     const queryFn = vi.fn().mockRejectedValueOnce(unauthorized()).mockResolvedValue('fresh data')
 
     await client.fetchQuery({ queryKey: ['bookings'], queryFn }).catch(() => undefined)
@@ -34,6 +35,7 @@ describe('session expiry handling (H-07)', () => {
     vi.mocked(refreshSession).mockRejectedValue(unauthorized())
     const onSessionExpired = vi.fn()
     const client = createQueryClient({ onSessionExpired })
+    client.setQueryData(['auth', 'current-user'], { id: 'customer-1' })
 
     await client
       .fetchQuery({ queryKey: ['bookings'], queryFn: () => Promise.reject(unauthorized()) })
@@ -42,9 +44,23 @@ describe('session expiry handling (H-07)', () => {
     await waitFor(() => expect(onSessionExpired).toHaveBeenCalledTimes(1))
   })
 
+  it('keeps the user on the page when refresh has a temporary server failure', async () => {
+    vi.mocked(refreshSession).mockRejectedValue(Object.assign(new Error('Unavailable'), { status: 503 }))
+    const onSessionExpired = vi.fn()
+    const client = createQueryClient({ onSessionExpired })
+    client.setQueryData(['auth', 'current-user'], { id: 'customer-1' })
+
+    await client
+      .fetchQuery({ queryKey: ['bookings'], queryFn: () => Promise.reject(unauthorized()) })
+      .catch(() => undefined)
+    await waitFor(() => expect(refreshSession).toHaveBeenCalledTimes(1))
+    expect(onSessionExpired).not.toHaveBeenCalled()
+  })
+
   it('refreshes after a 401 mutation and ignores other failures', async () => {
     vi.mocked(refreshSession).mockResolvedValue()
     const client = createQueryClient({ onSessionExpired: vi.fn() })
+    client.setQueryData(['auth', 'current-user'], { id: 'customer-1' })
 
     await client
       .getMutationCache()
@@ -69,5 +85,23 @@ describe('session expiry handling (H-07)', () => {
       .catch(() => undefined)
 
     expect(refreshSession).not.toHaveBeenCalled()
+  })
+
+  it('keeps guests on public pages when a browse request returns 401', async () => {
+    const onSessionExpired = vi.fn()
+    const client = createQueryClient({ onSessionExpired })
+    client.setQueryData(['auth', 'current-user'], null)
+
+    await client
+      .fetchQuery({ queryKey: ['provider', 'catalog'], queryFn: () => Promise.reject(unauthorized()) })
+      .catch(() => undefined)
+    await client
+      .getMutationCache()
+      .build(client, { mutationFn: () => Promise.reject(unauthorized()) })
+      .execute(undefined)
+      .catch(() => undefined)
+
+    expect(refreshSession).not.toHaveBeenCalled()
+    expect(onSessionExpired).not.toHaveBeenCalled()
   })
 })

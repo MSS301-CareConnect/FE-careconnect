@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { sessionQueryKey } from '~/features/shared/auth/session-api'
@@ -10,6 +10,7 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
 import { saveMyProfile } from './profile-api'
+import { PasswordChangePanel } from './password-change-panel'
 
 const inputClass =
   'mt-2 h-12 w-full rounded-lg bg-surface-container-low px-4 outline-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/30'
@@ -137,6 +138,8 @@ function ProfileForm({ user }: { user: UserResponse }) {
 
 export function MyProfilePage() {
   const { t, i18n } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const activeSection = searchParams.get('section') === 'security' ? 'security' : 'personal'
   const user = useAuthUser()
   useDocumentTitle(t('customer.profile.documentTitle'))
 
@@ -211,16 +214,18 @@ export function MyProfilePage() {
             <h2 className='px-3 py-2 text-xs font-bold uppercase tracking-wide text-on-surface-variant'>
               {t('customer.profile.nav.title')}
             </h2>
-            <a
-              className='flex items-center gap-3 rounded-xl bg-secondary-container/50 px-3 py-3 text-sm font-semibold text-primary'
-              href='#personal-info'
+            <Link
+              aria-current={activeSection === 'personal' ? 'page' : undefined}
+              className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm ${activeSection === 'personal' ? 'bg-secondary-container/50 font-semibold text-primary' : 'text-on-surface-variant hover:bg-surface-container-low'}`}
+              to='/customer/my-profile'
             >
               <Icon name='person' />
               {t('customer.profile.nav.personalInfo')}
-            </a>
+            </Link>
             <Link
-              className='flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-on-surface-variant hover:bg-surface-container-low'
-              to='/account/security'
+              aria-current={activeSection === 'security' ? 'page' : undefined}
+              className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm ${activeSection === 'security' ? 'bg-secondary-container/50 font-semibold text-primary' : 'text-on-surface-variant hover:bg-surface-container-low'}`}
+              to='/customer/my-profile?section=security'
             >
               <Icon name='lock_reset' />
               {t('customer.profile.nav.security')}
@@ -232,64 +237,45 @@ export function MyProfilePage() {
               <Icon name='family_restroom' />
               {t('customer.profile.nav.familyProfiles')}
             </Link>
-            <Link
-              className='flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-on-surface-variant hover:bg-surface-container-low'
-              to='/customer/bookings'
-            >
-              <Icon name='calendar_month' />
-              {t('customer.profile.nav.bookingHistory')}
-            </Link>
           </nav>
         </aside>
         <div className='space-y-5 lg:col-span-8'>
-          <section className='rounded-2xl bg-white p-6 shadow-sm sm:p-8' id='personal-info'>
-            <div className='flex items-center gap-3 border-b border-outline-variant/25 pb-5'>
-              <span className='flex h-11 w-11 items-center justify-center rounded-xl bg-secondary-container text-primary'>
-                <Icon name='badge' />
-              </span>
-              <div>
-                <h2 className='text-xl font-bold'>{t('customer.profile.form.title')}</h2>
-                <p className='mt-1 text-xs text-on-surface-variant'>{t('customer.profile.live.formHint')}</p>
-              </div>
-            </div>
-            <ProfileForm key={user.id} user={user} />
-          </section>
-          <section className='flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-6 shadow-sm'>
-            <div className='flex items-center gap-4'>
-              <span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-primary'>
-                <Icon name='shield_lock' />
-              </span>
-              <div>
-                <h2 className='font-bold'>{t('auth.security.title')}</h2>
-                <p className='mt-1 text-sm text-on-surface-variant'>{t('customer.profile.live.securityHint')}</p>
-              </div>
-            </div>
-            <Link
-              className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white'
-              to='/account/security'
-            >
-              {t('customer.profile.live.openSecurity')}
-              <Icon name='arrow_forward' />
-            </Link>
-          </section>
-          <section className='flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-6 shadow-sm'>
-            <div className='flex items-center gap-4'>
-              <span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-container-low text-primary'>
-                <Icon name='family_restroom' />
-              </span>
-              <div>
-                <h2 className='font-bold'>{t('customer.profile.nav.familyProfiles')}</h2>
-                <p className='mt-1 text-sm text-on-surface-variant'>{t('customer.profile.live.familyHint')}</p>
-              </div>
-            </div>
-            <Link
-              className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2.5 text-sm font-semibold text-primary'
-              to='/customer/patient-profiles'
-            >
-              {t('customer.profile.familyInsight.viewDetails')}
-              <Icon name='arrow_forward' />
-            </Link>
-          </section>
+          {activeSection === 'security' ? (
+            <PasswordChangePanel />
+          ) : (
+            <>
+              <section className='rounded-2xl bg-white p-6 shadow-sm sm:p-8' id='personal-info'>
+                <div className='flex items-center gap-3 border-b border-outline-variant/25 pb-5'>
+                  <span className='flex h-11 w-11 items-center justify-center rounded-xl bg-secondary-container text-primary'>
+                    <Icon name='badge' />
+                  </span>
+                  <div>
+                    <h2 className='text-xl font-bold'>{t('customer.profile.form.title')}</h2>
+                    <p className='mt-1 text-xs text-on-surface-variant'>{t('customer.profile.live.formHint')}</p>
+                  </div>
+                </div>
+                <ProfileForm key={user.id} user={user} />
+              </section>
+              <section className='flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-6 shadow-sm'>
+                <div className='flex items-center gap-4'>
+                  <span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-container-low text-primary'>
+                    <Icon name='family_restroom' />
+                  </span>
+                  <div>
+                    <h2 className='font-bold'>{t('customer.profile.nav.familyProfiles')}</h2>
+                    <p className='mt-1 text-sm text-on-surface-variant'>{t('customer.profile.live.familyHint')}</p>
+                  </div>
+                </div>
+                <Link
+                  className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2.5 text-sm font-semibold text-primary'
+                  to='/customer/patient-profiles'
+                >
+                  {t('customer.profile.familyInsight.viewDetails')}
+                  <Icon name='arrow_forward' />
+                </Link>
+              </section>
+            </>
+          )}
         </div>
       </div>
     </main>

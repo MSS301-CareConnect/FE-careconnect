@@ -18,6 +18,7 @@ import {
 } from '~/entities/provider/provider-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { getManagedUser } from '~/shared/api/generated/api/account/account'
 import type {
   ProviderShiftRegistrationRecord,
   ProviderWorkShiftRecord,
@@ -72,51 +73,79 @@ function RegistrationCaregiver({
     retry: false
   })
   const profile = belongsToCenter ? caregiver.data : undefined
+  const userId = profile?.userId
+  const account = useQuery({
+    queryKey: ['center-manager', 'caregiver-account', userId],
+    queryFn: async () => {
+      if (!userId) throw new Error('Caregiver account ID is missing')
+      const response = await getManagedUser(userId, { credentials: 'include' })
+      if (response.data.code !== 200) throw new Error('Unable to load caregiver account')
+      return response.data.result
+    },
+    enabled: Boolean(userId),
+    retry: false
+  })
   const name = profile?.fullName || registration.caregiverName || t(`${key}.unknown`)
+  const email = account.data?.centerId === centerId ? account.data.email : undefined
 
   return (
-    <div className='flex min-w-0 flex-1 items-start gap-4'>
-      <span
-        aria-hidden='true'
-        className='flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary-container text-primary'
-      >
-        <Avatar
-          className='h-full w-full'
-          decorative
-          icon='person'
-          name={name}
-          onExpired={() => void avatar.refetch()}
-          src={pickAvatar(avatar.data)?.downloadUrl}
+    <>
+      {profile ? (
+        <Link
+          aria-label={t(`${key}.viewDetails`, { name })}
+          className='absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          to={`/center-manager/caregivers/${registration.caregiverId}`}
         />
-      </span>
-      <div className='min-w-0 space-y-2'>
-        <div className='flex flex-wrap items-center gap-2'>
-          <strong className='text-base'>{name}</strong>
-          <ProviderStatusBadge
-            label={t(`${key}.${registrationStatusKeys[registration.registrationStatus]}`)}
-            status={registration.registrationStatus}
+      ) : null}
+      <div
+        className={`pointer-events-none relative grid min-w-0 gap-6 ${profile ? 'lg:grid-cols-[minmax(15rem,0.75fr)_minmax(0,2fr)]' : ''}`}
+      >
+        <div className='flex min-w-0 items-start gap-4'>
+          {/* Same newest-image rule and refresh as every other avatar (U-11). */}
+          <Avatar
+            className='h-20 w-20 rounded-2xl text-3xl'
+            decorative
+            icon='person'
+            name={name}
+            onExpired={() => void avatar.refetch()}
+            src={pickAvatar(avatar.data)?.downloadUrl}
           />
-        </div>
-        {caregiver.isPending ? (
-          <p className='text-sm text-on-surface-variant' role='status'>
-            {t(`${key}.loading`)}
-          </p>
-        ) : null}
-        {caregiver.isError ? (
-          <div className='text-sm text-error' role='alert'>
-            {t(`${key}.caregiverError`)}{' '}
-            <button className='font-semibold underline' onClick={() => void caregiver.refetch()} type='button'>
-              {t(`${key}.retry`)}
-            </button>
+          <div className='min-w-0 space-y-3'>
+            <div className='flex flex-wrap items-center gap-3'>
+              <strong className='text-xl'>{name}</strong>
+              <ProviderStatusBadge
+                label={t(`${key}.${registrationStatusKeys[registration.registrationStatus]}`)}
+                status={registration.registrationStatus}
+              />
+            </div>
+            {caregiver.isPending ? (
+              <p className='text-sm text-on-surface-variant' role='status'>
+                {t(`${key}.loading`)}
+              </p>
+            ) : null}
+            {caregiver.isError ? (
+              <div className='text-sm text-error' role='alert'>
+                {t(`${key}.caregiverError`)}{' '}
+                <button
+                  className='pointer-events-auto relative font-semibold underline'
+                  onClick={() => void caregiver.refetch()}
+                  type='button'
+                >
+                  {t(`${key}.retry`)}
+                </button>
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        </div>
         {profile ? (
-          <>
-            <dl className='flex flex-wrap gap-x-5 gap-y-1 text-sm text-on-surface-variant'>
+          <div className='min-w-0 border-t border-outline-variant/40 pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6'>
+            <dl className='grid gap-4 sm:grid-cols-2 2xl:grid-cols-4'>
               {profile.gender ? (
-                <div className='flex gap-1'>
-                  <dt>{t(`${key}.gender`)}:</dt>
-                  <dd>
+                <div className='space-y-1'>
+                  <dt className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
+                    {t(`${key}.gender`)}
+                  </dt>
+                  <dd className='font-semibold'>
                     {t(
                       `${key}.${profile.gender === 'MALE' ? 'male' : profile.gender === 'FEMALE' ? 'female' : 'other'}`
                     )}
@@ -124,29 +153,43 @@ function RegistrationCaregiver({
                 </div>
               ) : null}
               {profile.dateOfBirth ? (
-                <div className='flex gap-1'>
-                  <dt>{t(`${key}.birthDate`)}:</dt>
-                  <dd>{formatProviderDate(profile.dateOfBirth, i18n.language)}</dd>
+                <div className='space-y-1'>
+                  <dt className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
+                    {t(`${key}.birthDate`)}
+                  </dt>
+                  <dd className='font-semibold'>{formatProviderDate(profile.dateOfBirth, i18n.language)}</dd>
                 </div>
               ) : null}
               {profile.experienceYears !== undefined ? (
-                <div className='flex gap-1'>
-                  <dt>{t(`${key}.experience`)}:</dt>
-                  <dd>{t(`${key}.yearsValue`, { count: profile.experienceYears })}</dd>
+                <div className='space-y-1'>
+                  <dt className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
+                    {t(`${key}.experience`)}
+                  </dt>
+                  <dd className='font-semibold'>{t(`${key}.yearsValue`, { count: profile.experienceYears })}</dd>
                 </div>
               ) : null}
+              <div className='min-w-0 space-y-1'>
+                <dt className='text-xs font-semibold uppercase tracking-wide text-on-surface-variant'>
+                  {t(`${key}.email`)}
+                </dt>
+                <dd className='break-all font-semibold'>
+                  {email ?? (userId && account.isPending ? t(`${key}.loading`) : t(`${key}.emailUnavailable`))}
+                  {account.isError ? (
+                    <button
+                      className='pointer-events-auto relative mt-1 block text-sm font-semibold text-primary underline'
+                      onClick={() => void account.refetch()}
+                      type='button'
+                    >
+                      {t(`${key}.retry`)}
+                    </button>
+                  ) : null}
+                </dd>
+              </div>
             </dl>
-            {profile.bio ? <p className='max-w-2xl text-sm leading-6 text-on-surface-variant'>{profile.bio}</p> : null}
-            <Link
-              className='inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline'
-              to={`/center-manager/caregivers/${registration.caregiverId}`}
-            >
-              {t(`${key}.viewDetails`, { name })}
-            </Link>
-          </>
+          </div>
         ) : null}
       </div>
-    </div>
+    </>
   )
 }
 
@@ -678,7 +721,6 @@ export function ManagerWorkShiftDetailPage() {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
-  const [reason, setReason] = useState('')
   const [registrationPage, setRegistrationPage] = useState(0)
   const shift = useQuery({
     queryKey: providerKeys.shift(id),
@@ -709,7 +751,7 @@ export function ManagerWorkShiftDetailPage() {
       registrationId: string
       version: number
       status: 'APPROVED' | 'REJECTED'
-    }) => reviewShiftRegistration(registrationId, { version, status, reason: reason.trim() || undefined }),
+    }) => reviewShiftRegistration(registrationId, { version, status }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: providerKeys.registrations(id) })
       await queryClient.invalidateQueries({ queryKey: providerKeys.shift(id) })
@@ -847,10 +889,6 @@ export function ManagerWorkShiftDetailPage() {
           <Icon className='text-xl text-primary' name='assignment_ind' />
           <h2 className='text-lg font-bold'>{t(`${key}.registrations`)}</h2>
         </div>
-        <label className='block text-sm'>
-          {t(`${key}.reason`)}
-          <input className={inputClass} onChange={(event) => setReason(event.target.value)} value={reason} />
-        </label>
         {registrations.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
         {registrations.isError ? (
           <div role='alert'>
@@ -864,12 +902,15 @@ export function ManagerWorkShiftDetailPage() {
           <p>{t(`${key}.registrationsEmpty`)}</p>
         ) : null}
         {registrations.isSuccess ? (
-          <ul className='divide-y divide-outline-variant/20'>
+          <ul className='space-y-4'>
             {registrations.data.items.map((registration) => (
-              <li className='flex flex-wrap items-start justify-between gap-4 py-5' key={registration.id}>
+              <li
+                className='relative rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 transition-colors hover:border-primary/40 sm:p-6'
+                key={registration.id}
+              >
                 <RegistrationCaregiver centerId={centerId} registration={registration} />
                 {registration.registrationStatus === 'PENDING' ? (
-                  <div className='flex gap-3'>
+                  <div className='pointer-events-auto relative z-10 mt-6 flex flex-wrap justify-end gap-3 border-t border-outline-variant/40 pt-5'>
                     <button
                       className='rounded-lg bg-secondary-container px-3 py-2 text-sm font-semibold text-primary disabled:opacity-50'
                       disabled={review.isPending}

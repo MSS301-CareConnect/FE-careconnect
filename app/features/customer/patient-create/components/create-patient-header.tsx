@@ -14,35 +14,13 @@ export function CreatePatientHeader({ onCancel, onSubmit, isSubmitting }: Create
 
   return (
     <div className='flex flex-col gap-6'>
-      {/* Breadcrumb Navigation */}
-      <div className='flex flex-col justify-between gap-3 sm:flex-row sm:items-center'>
-        <nav
-          aria-label={t('customer.patientCreate.breadcrumb.current')}
-          className='flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant'
-        >
-          <Link to='/customer' className='transition-colors hover:text-primary'>
-            {t('customer.patientCreate.breadcrumb.home')}
-          </Link>
-          <Icon name='chevron_right' className='text-xs text-outline-variant' />
-          <Link to='/customer/my-profile' className='transition-colors hover:text-primary'>
-            {t('customer.patientCreate.breadcrumb.myAccount')}
-          </Link>
-          <Icon name='chevron_right' className='text-xs text-outline-variant' />
-          <Link to='/customer/patient-profiles' className='transition-colors hover:text-primary'>
-            {t('customer.patientCreate.breadcrumb.patientProfiles')}
-          </Link>
-          <Icon name='chevron_right' className='text-xs text-outline-variant' />
-          <span className='font-semibold text-primary'>{t('customer.patientCreate.breadcrumb.current')}</span>
-        </nav>
-
-        <Link
-          to='/customer/patient-profiles'
-          className='group inline-flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:text-primary'
-        >
-          <Icon name='arrow_back' className='text-base transition-transform group-hover:-translate-x-1' />
-          <span>{t('customer.patientCreate.breadcrumb.backToList')}</span>
-        </Link>
-      </div>
+      <Link
+        to='/customer/patient-profiles'
+        className='group inline-flex w-fit items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary-container focus-visible:rounded focus-visible:outline-2 focus-visible:outline-primary'
+      >
+        <Icon name='arrow_back' className='text-lg transition-transform group-hover:-translate-x-1' />
+        <span>{t('customer.patientCreate.breadcrumb.backToList')}</span>
+      </Link>
 
       {/* Main Header Banner */}
       <div className='flex flex-col justify-between gap-6 pb-2 lg:flex-row lg:items-center'>

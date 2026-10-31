@@ -101,6 +101,7 @@ export const managerProviderVi = {
   caregiverName: 'Họ và tên',
   userId: 'Mã tài khoản',
   email: 'Email đăng nhập',
+  emailUnavailable: 'Chưa thể hiển thị email',
   phoneNumber: 'Số điện thoại',
   retryProfile: 'Thử lưu hồ sơ lại',
   profileAfterAccountError:
@@ -275,6 +276,7 @@ export const managerProviderEn = {
   caregiverName: 'Full name',
   userId: 'Account ID',
   email: 'Sign-in email',
+  emailUnavailable: 'Email unavailable',
   phoneNumber: 'Phone number',
   retryProfile: 'Retry saving profile',
   profileAfterAccountError:

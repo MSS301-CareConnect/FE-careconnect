@@ -89,30 +89,36 @@ export function PatientCreatePage() {
               </div>
             ) : null}
 
-            <BasicInfoSection formData={formData} bmi={bmi} errors={errors} onUpdate={updateField} />
+            <div className='scroll-mt-28 focus:outline-none' id='patient-basic-info' tabIndex={-1}>
+              <BasicInfoSection formData={formData} bmi={bmi} errors={errors} onUpdate={updateField} />
+            </div>
 
-            <MedicalHistorySection
-              formData={formData}
-              errors={errors}
-              onUpdate={updateField}
-              onEmergencyContactChange={updateEmergencyContact}
-              onToggleChronic={handleToggleChronic}
-              newAllergyText={newAllergyText}
-              onNewAllergyChange={setNewAllergyText}
-              onAddAllergy={handleAddAllergy}
-              onRemoveAllergy={handleRemoveAllergy}
-            />
+            <div className='scroll-mt-28 focus:outline-none' id='patient-medical-history' tabIndex={-1}>
+              <MedicalHistorySection
+                formData={formData}
+                errors={errors}
+                onUpdate={updateField}
+                onEmergencyContactChange={updateEmergencyContact}
+                onToggleChronic={handleToggleChronic}
+                newAllergyText={newAllergyText}
+                onNewAllergyChange={setNewAllergyText}
+                onAddAllergy={handleAddAllergy}
+                onRemoveAllergy={handleRemoveAllergy}
+              />
+            </div>
 
-            <MedicationsSection
-              medications={formData.medications}
-              errors={errors}
-              onAddMedicine={handleAddMedicine}
-              onUpdateMedicine={handleUpdateMedicine}
-              onDeleteMedicine={handleDeleteMedicine}
-              onCancel={handleCancel}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-            />
+            <div className='scroll-mt-28 focus:outline-none' id='patient-medications' tabIndex={-1}>
+              <MedicationsSection
+                medications={formData.medications}
+                errors={errors}
+                onAddMedicine={handleAddMedicine}
+                onUpdateMedicine={handleUpdateMedicine}
+                onDeleteMedicine={handleDeleteMedicine}
+                onCancel={handleCancel}
+                onSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
+              />
+            </div>
           </div>
         </div>
       </div>

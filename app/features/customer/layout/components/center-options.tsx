@@ -1,11 +1,9 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { useServiceCenters, type ServiceCenterOption } from '~/entities/care-center/care-center-api'
 import { formatMoney } from '~/entities/booking/booking-format'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
-import { apiErrorStatus } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'customer.centerPicker' as const
@@ -94,21 +92,6 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
         <Icon aria-hidden='true' className='animate-spin text-xl text-primary' name='progress_activity' />
         {t(`${key}.states.loading`)}
       </p>
-    )
-
-  if (centers.isError && apiErrorStatus(centers.error) === 401)
-    return (
-      <div className='px-3 py-5'>
-        <p className='text-sm font-bold text-on-surface'>{t(`${key}.states.signInTitle`)}</p>
-        <p className='mt-1 text-sm leading-6 text-on-surface-variant'>{t(`${key}.states.signInText`)}</p>
-        <Link
-          className='mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-          to='/login'
-        >
-          {t(`${key}.states.signIn`)}
-          <Icon aria-hidden='true' className='text-lg' name='arrow_forward' />
-        </Link>
-      </div>
     )
 
   if (centers.isError)
