@@ -297,6 +297,8 @@ import type {
   UserListResponse,
   UserPage,
   UserResponse,
+  UserStatisticsRecord,
+  UserStatisticsResponse,
   VerificationRequest,
   VerifyRegistrationRequest,
   VerifyRegistrationResponse,
@@ -1121,12 +1123,35 @@ export const getSessionListResponseMock = (
   ...overrideResponse
 })
 
+export const getUserStatisticsRecordMock = (
+  overrideResponse: Partial<UserStatisticsRecord> = {}
+): UserStatisticsRecord => ({
+  usersByRole: {
+    [faker.string.alphanumeric(5)]: faker.number.int()
+  },
+  usersByStatus: {
+    [faker.string.alphanumeric(5)]: faker.number.int()
+  },
+  newCustomers: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getUserStatisticsResponseMock = (
+  overrideResponse: Partial<UserStatisticsResponse> = {}
+): UserStatisticsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getUserStatisticsRecordMock() },
+  ...overrideResponse
+})
+
 export const getUserResponseMock = (overrideResponse: Partial<UserResponse> = {}): UserResponse => ({
   id: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   email: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   fullName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   phoneNumber: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   status: faker.helpers.arrayElement([faker.helpers.arrayElement(['ACTIVE', 'LOCKED'] as const), undefined]),
+  statusReason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   centerId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   roles: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>

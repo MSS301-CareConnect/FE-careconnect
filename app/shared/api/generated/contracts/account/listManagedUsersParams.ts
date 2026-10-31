@@ -5,8 +5,18 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { ListManagedUsersRole } from './listManagedUsersRole'
+import type { ListManagedUsersStatus } from './listManagedUsersStatus'
 
 export type ListManagedUsersParams = {
+  role?: ListManagedUsersRole
+  status?: ListManagedUsersStatus
+  centerId?: string
+  keyword?: string
+  /**
+   * createdAt | fullName | email | status, optionally followed by ",asc" or ",desc".
+   */
+  sort?: string
   /**
    * @minimum 0
    */

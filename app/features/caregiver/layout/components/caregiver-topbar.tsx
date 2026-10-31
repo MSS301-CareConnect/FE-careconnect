@@ -10,6 +10,7 @@ import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { activeCaregiverNavigation } from '../caregiver-navigation.constants'
 import { CAREGIVER_SIDEBAR_ID } from './caregiver-sidebar'
+import { pickAvatar } from '~/entities/provider/provider-avatar'
 
 export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean; onToggleMenu: () => void }) {
   const { t } = useTranslation()
@@ -23,7 +24,7 @@ export function CaregiverTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean;
     enabled: Boolean(profileId),
     retry: false
   })
-  const avatarUrl = media.data?.find((item) => item.mediaFileType === 'IMAGE' && item.downloadUrl)?.downloadUrl
+  const avatarUrl = pickAvatar(media.data)?.downloadUrl
 
   return (
     <header className='sticky top-0 z-30 border-b border-outline-variant/25 bg-white/95 shadow-sm backdrop-blur print:hidden'>

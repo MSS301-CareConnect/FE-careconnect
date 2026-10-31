@@ -6,7 +6,7 @@ import { Link, useSearchParams } from 'react-router'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
 import { PasswordField } from './password-field'
-import { validPassword } from './password-validation'
+import { validPassword } from '~/entities/identity/password-rules'
 import { beginRegistration, registrationErrorKey, resendOtp, verifyRegistration } from './registration-api'
 
 const inputClass =

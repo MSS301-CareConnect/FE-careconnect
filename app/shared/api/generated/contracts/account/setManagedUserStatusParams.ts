@@ -9,4 +9,9 @@ import type { SetManagedUserStatusStatus } from './setManagedUserStatusStatus'
 
 export type SetManagedUserStatusParams = {
   status: SetManagedUserStatusStatus
+  /**
+   * Required by IdentityService when locking (LOCK_REASON_REQUIRED 1118).
+   * @maxLength 500
+   */
+  reason?: string
 }

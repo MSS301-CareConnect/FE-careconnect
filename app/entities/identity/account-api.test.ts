@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { listManagedUsers } from '~/shared/api/generated/api/account/account'
 import type { UserListResponse } from '~/shared/api/generated/contracts'
-import { fetchUsers } from '../identity-api'
+import { fetchAccounts } from './account-api'
 
 vi.mock('~/shared/api/generated/api/account/account', () => ({ listManagedUsers: vi.fn() }))
 
 beforeEach(() => vi.mocked(listManagedUsers).mockReset())
 
-describe('fetchUsers', () => {
-  it('reads accounts from the paginated IdentityService response', async () => {
+describe('fetchAccounts', () => {
+  it('sends the server-side filters and reads the paginated response', async () => {
     vi.mocked(listManagedUsers).mockResolvedValue({
       data: {
         code: 200,
@@ -19,14 +19,17 @@ describe('fetchUsers', () => {
       headers: new Headers()
     })
 
-    await expect(fetchUsers(1, 20)).resolves.toEqual({
+    await expect(fetchAccounts({ page: 1, size: 20, role: 'CENTER_MANAGER', keyword: 'mai' })).resolves.toEqual({
       content: [{ id: 'one', fullName: 'Mai Anh' }],
       page: 1,
       size: 20,
       totalElements: 21,
       totalPages: 2
     })
-    expect(listManagedUsers).toHaveBeenCalledWith({ page: 1, size: 20 }, { credentials: 'include' })
+    expect(listManagedUsers).toHaveBeenCalledWith(
+      { page: 1, size: 20, role: 'CENTER_MANAGER', keyword: 'mai' },
+      { credentials: 'include' }
+    )
   })
 
   it('rejects an invalid page so the account screen can show its retry state', async () => {
@@ -36,6 +39,6 @@ describe('fetchUsers', () => {
       headers: new Headers()
     })
 
-    await expect(fetchUsers(0, 20)).rejects.toThrow('Invalid IdentityService user page')
+    await expect(fetchAccounts({ page: 0, size: 20 })).rejects.toThrow('Invalid IdentityService user page')
   })
 })

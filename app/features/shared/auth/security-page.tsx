@@ -9,7 +9,7 @@ import { LanguageSwitch } from '~/shared/ui/language-switch'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { PasswordField } from './password-field'
-import { validPassword } from './password-validation'
+import { validPassword } from '~/entities/identity/password-rules'
 import { homeForUser } from './role-path'
 import { isForbiddenError, loadSession, sessionQueryKey } from './session-api'
 import { changePassword, signOutEverywhere } from './security-api'

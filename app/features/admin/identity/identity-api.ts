@@ -1,18 +1,13 @@
 import {
   assignManagedUserRole,
   deleteManagedUser,
-  getManagedUser,
-  listManagedUsers,
-  provisionUser,
   revokeManagedUserRole,
-  setManagedUserStatus,
   updateManagedUser
 } from '~/shared/api/generated/api/account/account'
 import { createManagedRole, listManagedRoles, setManagedRolePermissions } from '~/shared/api/generated/api/role/role'
 import { listManagedPermissions } from '~/shared/api/generated/api/permission/permission'
 import type {
   CreateRoleRequest,
-  ProvisionUserRequest,
   SetRolePermissionsRequest,
   UpdateProfileRequest
 } from '~/shared/api/generated/contracts'
@@ -28,25 +23,17 @@ async function writeOptions() {
   return { credentials: 'include' as const, headers: await csrfHeaders() }
 }
 
-export async function fetchUsers(page: number, size: number) {
-  const users = result(await listManagedUsers({ page, size }, readOptions))
-  if (!users || !Array.isArray(users.content)) throw new Error('Invalid IdentityService user page')
-  return users
+export const roleKeys = {
+  roles: ['identity', 'roles'] as const,
+  permissions: ['identity', 'permissions'] as const
 }
-export async function fetchUser(id: string) {
-  return result(await getManagedUser(id, readOptions))
-}
-export async function addUser(request: ProvisionUserRequest) {
-  return result(await provisionUser(request, await writeOptions()))
-}
+
 export async function saveUser(id: string, request: UpdateProfileRequest) {
   return result(await updateManagedUser(id, request, await writeOptions()))
 }
+/** IdentityService soft delete: the account leaves every list and can no longer sign in. */
 export async function removeUser(id: string) {
   return result(await deleteManagedUser(id, await writeOptions()))
-}
-export async function changeUserStatus(id: string, status: 'ACTIVE' | 'LOCKED') {
-  return result(await setManagedUserStatus(id, { status }, await writeOptions()))
 }
 export async function addUserRole(id: string, roleId: string) {
   return result(await assignManagedUserRole(id, roleId, await writeOptions()))

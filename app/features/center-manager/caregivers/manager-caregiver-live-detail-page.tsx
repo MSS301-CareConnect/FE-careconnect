@@ -23,6 +23,8 @@ import { ConfirmDialog } from '~/shared/ui/modal'
 
 import { CaregiverServicesEditor } from './components/caregiver-services-editor'
 import { ManagerCertificates } from './components/manager-certificates'
+import { pickAvatar } from '~/entities/provider/provider-avatar'
+import { Avatar } from '~/shared/ui/avatar'
 
 const key = 'centerManager.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
@@ -233,15 +235,13 @@ export function ManagerCaregiverDetailPage() {
           <div className='flex flex-wrap items-start justify-between gap-5'>
             <div className='flex min-w-0 flex-wrap items-center gap-5'>
               <span className='flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-secondary-container text-primary sm:h-28 sm:w-28'>
-                {avatarMedia.data?.[0]?.downloadUrl ? (
-                  <img
-                    alt={caregiver.data.fullName}
-                    className='h-full w-full object-cover'
-                    src={avatarMedia.data[0].downloadUrl}
-                  />
-                ) : (
-                  <Icon className='text-5xl' name='person' />
-                )}
+                <Avatar
+                  className='h-full w-full'
+                  icon='person'
+                  name={caregiver.data.fullName}
+                  onExpired={() => void avatarMedia.refetch()}
+                  src={pickAvatar(avatarMedia.data)?.downloadUrl}
+                />
               </span>
               <div className='min-w-0'>
                 <div className='flex flex-wrap items-center gap-2'>

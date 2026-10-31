@@ -1,7 +1,7 @@
 import { requestPasswordReset, resetPassword } from '~/shared/api/generated/api/account/account'
 import type { PasswordResetEmailRequest, ResetPasswordRequest } from '~/shared/api/generated/contracts'
 
-import { csrfHeaders } from './session-api'
+import { csrfHeaders } from '~/shared/api/csrf'
 
 function requireSuccess(code: number) {
   if (code !== 200) throw new Error(`IdentityService returned code ${code}`)

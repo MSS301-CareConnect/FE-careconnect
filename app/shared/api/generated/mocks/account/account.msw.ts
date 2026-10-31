@@ -15,6 +15,7 @@ import type {
   RegisterResponse,
   ResendRegistrationOtpResponse,
   UserListResponse,
+  UserStatisticsResponse,
   VerifyRegistrationResponse
 } from '../../contracts'
 
@@ -24,6 +25,7 @@ import {
   getDeleteManagedUserResponseMock,
   getGetCurrentUserResponseMock,
   getGetManagedUserResponseMock,
+  getGetUserStatisticsResponseMock,
   getListManagedUsersResponseMock,
   getProvisionUserResponseMock,
   getRegisterCustomerResponseMock,
@@ -43,6 +45,7 @@ export {
   getChangeMyPasswordResponseMock,
   getListManagedUsersResponseMock,
   getProvisionUserResponseMock,
+  getGetUserStatisticsResponseMock,
   getGetManagedUserResponseMock,
   getUpdateManagedUserResponseMock,
   getDeleteManagedUserResponseMock,
@@ -169,6 +172,32 @@ export const getProvisionUserMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getProvisionUserResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetUserStatisticsMockHandler = (
+  overrideResponse?:
+    | UserStatisticsResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<UserStatisticsResponse> | UserStatisticsResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/users/statistics',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetUserStatisticsResponseMock(),
         { status: 200 }
       )
     },
@@ -453,6 +482,7 @@ export const getAccountMock = () => [
   getChangeMyPasswordMockHandler(),
   getListManagedUsersMockHandler(),
   getProvisionUserMockHandler(),
+  getGetUserStatisticsMockHandler(),
   getGetManagedUserMockHandler(),
   getUpdateManagedUserMockHandler(),
   getDeleteManagedUserMockHandler(),

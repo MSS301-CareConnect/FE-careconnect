@@ -1,14 +1,18 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 
 import { PasswordField } from './password-field'
-import { confirmPasswordReset, passwordRecoveryErrorKey, sendPasswordResetCode } from './password-recovery-api'
-import { validPassword } from './password-validation'
+import {
+  confirmPasswordReset,
+  passwordRecoveryErrorKey,
+  sendPasswordResetCode
+} from '~/entities/identity/password-reset-api'
+import { validPassword } from '~/entities/identity/password-rules'
 
 const inputClass =
   'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
@@ -16,7 +20,9 @@ const inputClass =
 export function PasswordRecoveryPage() {
   const { t } = useTranslation()
   useDocumentTitle(t('auth.recovery.documentTitle'))
-  const [email, setEmail] = useState('')
+  const [params] = useSearchParams()
+  // An administrator who created the account can send its owner here with the email filled in.
+  const [email, setEmail] = useState(() => params.get('email') ?? '')
   const [otpCode, setOtpCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')

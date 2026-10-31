@@ -18,6 +18,9 @@ import { formatProviderDate } from '~/entities/provider/provider-format'
 import { CaregiverTimeOffs } from '~/entities/provider/caregiver-time-offs'
 import { ProviderMediaPanel, validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { invalidateOwnerMedia } from '~/entities/provider/invalidate-provider-media'
+import { pickAvatar } from '~/entities/provider/provider-avatar'
+import { Avatar } from '~/shared/ui/avatar'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -59,20 +62,39 @@ export function CaregiverProviderProfilePage() {
     enabled: Boolean(profile.data?.id),
     retry: false
   })
+  // Shown the moment a file is picked, until the uploaded image replaces it (U-11).
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [oldAvatarLeft, setOldAvatarLeft] = useState(false)
   const replaceAvatar = useMutation({
     mutationFn: async (file: File) => {
       const ownerId = profile.data!.id
-      await uploadMedia('CAREGIVER_PROFILE', ownerId, [file])
-      await Promise.all(
-        (avatarMedia.data ?? []).map((item) => removeMedia('CAREGIVER_PROFILE', ownerId, item.mediaFileId))
+      const previous = avatarMedia.data ?? []
+      const uploaded = await uploadMedia('CAREGIVER_PROFILE', ownerId, [file])
+      queryClient.setQueryData(providerKeys.media('CAREGIVER_PROFILE', ownerId), [...previous, ...(uploaded ?? [])])
+      // Keep exactly one profile photo so every screen, including ProviderService's public cards, shows the new one.
+      const results = await Promise.allSettled(
+        previous.map((item) =>
+          removeMedia('CAREGIVER_PROFILE', ownerId, item.mediaFileId).catch(() =>
+            removeMedia('CAREGIVER_PROFILE', ownerId, item.mediaFileId)
+          )
+        )
       )
+      return results.some((outcome) => outcome.status === 'rejected')
     },
+    onMutate: (file) => {
+      setOldAvatarLeft(false)
+      setAvatarPreview(URL.createObjectURL(file))
+    },
+    onSuccess: (leftOld) => setOldAvatarLeft(leftOld),
     onSettled: async () => {
+      setAvatarPreview((current) => {
+        if (current) URL.revokeObjectURL(current)
+        return null
+      })
       if (!profile.data?.id) return
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: providerKeys.media('CAREGIVER_PROFILE', profile.data.id) }),
-        queryClient.invalidateQueries({ queryKey: providerKeys.catalog })
-      ])
+      await invalidateOwnerMedia(queryClient, 'CAREGIVER_PROFILE', profile.data.id, {
+        centerId: profile.data.centerId
+      })
     }
   })
   const create = useMutation({
@@ -151,15 +173,13 @@ export function CaregiverProviderProfilePage() {
               <div className='flex flex-col gap-6 sm:flex-row sm:items-center'>
                 <div className='flex shrink-0 flex-col items-start gap-2'>
                   <div className='flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-surface-container-low text-primary sm:h-28 sm:w-28'>
-                    {avatarMedia.data?.[0]?.downloadUrl ? (
-                      <img
-                        alt={t(`${key}.avatarAlt`, { name: profile.data.fullName })}
-                        className='h-full w-full object-cover'
-                        src={avatarMedia.data[0].downloadUrl}
-                      />
-                    ) : (
-                      <Icon className='text-6xl' name='person' />
-                    )}
+                    <Avatar
+                      className={`h-full w-full ${replaceAvatar.isPending ? 'opacity-70' : ''}`}
+                      icon='person'
+                      name={t(`${key}.avatarAlt`, { name: profile.data.fullName })}
+                      onExpired={() => void avatarMedia.refetch()}
+                      src={avatarPreview ?? pickAvatar(avatarMedia.data)?.downloadUrl}
+                    />
                   </div>
                   <button
                     className='text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 print:hidden'
@@ -220,6 +240,11 @@ export function CaregiverProviderProfilePage() {
               {replaceAvatar.isSuccess ? (
                 <p className='mt-4 text-sm font-medium text-primary print:hidden' role='status'>
                   {t(`${key}.avatarUploadSuccess`)}
+                </p>
+              ) : null}
+              {oldAvatarLeft ? (
+                <p className='mt-2 text-sm text-on-surface-variant print:hidden' role='status'>
+                  {t(`${key}.avatarOldLeft`)}
                 </p>
               ) : null}
               <dl className='mt-7 grid gap-x-8 gap-y-6 border-t border-outline-variant/50 pt-7 sm:grid-cols-2 xl:grid-cols-4'>

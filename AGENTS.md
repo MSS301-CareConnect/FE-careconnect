@@ -143,6 +143,11 @@ providers --------------------------+
 - Add behavior-focused tests next to features. Prefer accessible queries.
 - Keep a clean browser console and verify changed routes in a real browser.
 - Keep loading, empty, error, and permission-denied states explicit for API screens.
+- Admin and Center Manager screens never render a UUID; show the name (or "Unknown") and keep IDs in URLs only.
+- Forms report failures in three tiers (`shared/api/api-error.ts`, `shared/lib/use-form-errors.ts`,
+  `shared/ui/form-alert.tsx`): validation under its input, business and system failures at the end of the form.
+  Validate every field on the client first because services return only their first validation code. Date and time
+  inputs are never locked or auto-corrected; a wrong value gets a note under the input.
 - Do not manually edit `pnpm-lock.yaml`; change dependencies through pnpm.
 - Do not commit `.env`, build output, coverage, or generated React Router types.
 - Update `ARCHITECTURE.md` when changing a boundary, public interface, rendering

@@ -225,6 +225,31 @@ paths:
         - Account
       operationId: listManagedUsers
       parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [ADMIN, CENTER_MANAGER, CAREGIVER, CUSTOMER]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, LOCKED]
+        - name: centerId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: keyword
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: 'createdAt | fullName | email | status, optionally followed by ",asc" or ",desc".'
+          schema:
+            type: string
+            default: createdAt,desc
         - name: page
           in: query
           schema:
@@ -267,6 +292,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CurrentUserResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+  /v1/users/statistics:
+    get:
+      tags:
+        - Account
+      operationId: getUserStatistics
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Platform-wide account counts by role and status (ADMIN).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatisticsResponse'
         '400': *a1
         '401': *a2
         '403': *a3
@@ -347,6 +400,12 @@ paths:
           schema:
             type: string
             enum: [ACTIVE, LOCKED]
+        - name: reason
+          in: query
+          description: Required by IdentityService when locking (LOCK_REASON_REQUIRED 1118).
+          schema:
+            type: string
+            maxLength: 500
       responses:
         '200':
           description: Updated account status; sessions are revoked when changed.
@@ -8793,6 +8852,33 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SessionRecord'
+    UserStatisticsResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/UserStatisticsRecord'
+    UserStatisticsRecord:
+      type: object
+      required: [usersByRole, usersByStatus, newCustomers]
+      properties:
+        usersByRole:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        usersByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        newCustomers:
+          type: integer
+          format: int64
     UserListResponse:
       type: object
       required: [code, message, result]
@@ -9044,6 +9130,8 @@ components:
           enum:
             - ACTIVE
             - LOCKED
+        statusReason:
+          type: string
         centerId:
           type: string
           format: uuid

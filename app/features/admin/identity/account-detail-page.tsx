@@ -1,342 +1,167 @@
-import { useState, type FormEvent } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { apiRequestErrorKey } from '~/shared/api/error-details'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
+
+import { accountKeys, fetchAccount } from '~/entities/identity/account-api'
+import { PasswordResetPanel } from '~/entities/identity/password-reset-panel'
+import { useCenterName } from '~/entities/provider/use-provider-names'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
+import { apiErrorStatus } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { ConfirmDialog } from '~/shared/ui/modal'
+import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
-import {
-  addUserRole,
-  changeUserStatus,
-  fetchRoles,
-  fetchUser,
-  removeUser,
-  removeUserRole,
-  saveUser
-} from './identity-api'
 
-const builtIn = ['CUSTOMER', 'CAREGIVER', 'CENTER_MANAGER', 'ADMIN']
-const inputClass =
-  'mt-1 block w-full rounded-lg bg-surface-container-low px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30'
+import { initials } from './account-format'
+import { AccountAccess } from './components/account-access'
+import { AccountProfileForm } from './components/account-profile-form'
+import { AccountRoles } from './components/account-roles'
+import { RoleChips } from './components/role-chips'
+
+const key = 'admin.identity.detail' as const
+
+function Panel({ title, icon, children }: { title: string; icon: string; children: ReactNode }) {
+  return (
+    <section className='space-y-4 rounded-xl border border-outline-variant/40 bg-white p-5 sm:p-6'>
+      <h2 className='flex items-center gap-2 text-base font-bold text-on-surface'>
+        <Icon className='text-xl text-primary' name={icon} />
+        {title}
+      </h2>
+      {children}
+    </section>
+  )
+}
+
+function CenterLink({ centerId }: { centerId: string }) {
+  const name = useCenterName(centerId)
+  return (
+    <Link className='font-semibold text-primary hover:underline' to={`/admin/centers/${centerId}`}>
+      {name}
+    </Link>
+  )
+}
 
 export function AccountDetailPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { id = '' } = useParams()
-  const navigate = useNavigate()
   const authUser = useAuthUser()
-  const client = useQueryClient()
-  const user = useQuery({
-    queryKey: ['identity', 'user', id],
-    queryFn: () => fetchUser(id),
+  const account = useQuery({
+    queryKey: accountKeys.detail(id),
+    queryFn: () => fetchAccount(id),
     enabled: Boolean(id),
     retry: false
   })
-  const roles = useQuery({
-    queryKey: ['identity', 'roles'],
-    queryFn: fetchRoles,
-    retry: false,
-    enabled: authUser?.permissions?.includes('role:manage')
-  })
-  const [fullName, setFullName] = useState<string | null>(null)
-  const [phone, setPhone] = useState<string | null>(null)
-  const [roleId, setRoleId] = useState('')
-  const [message, setMessage] = useState('')
-  const [confirmAction, setConfirmAction] = useState<
-    { type: 'lock' } | { type: 'delete' } | { type: 'revoke'; roleId: string } | null
-  >(null)
-  function refresh() {
-    void client.invalidateQueries({ queryKey: ['identity', 'users'] })
-    void client.invalidateQueries({ queryKey: ['identity', 'user', id] })
-  }
-  const update = useMutation({
-    mutationFn: () =>
-      saveUser(id, {
-        fullName: (fullName ?? user.data?.fullName ?? '').trim(),
-        phoneNumber: (phone ?? user.data?.phoneNumber ?? '').trim() || undefined
-      }),
-    onSuccess: () => {
-      setMessage(t('admin.identity.saved'))
-      refresh()
-    },
-    onError: (error) => setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
-  })
-  const status = useMutation({
-    mutationFn: (value: 'ACTIVE' | 'LOCKED') => changeUserStatus(id, value),
-    onSuccess: () => {
-      setConfirmAction(null)
-      setMessage(t('admin.identity.saved'))
-      refresh()
-    },
-    onError: (error) => {
-      setConfirmAction(null)
-      setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
-    }
-  })
-  const deletion = useMutation({
-    mutationFn: () => removeUser(id),
-    onSuccess: () => {
-      setConfirmAction(null)
-      void client.invalidateQueries({ queryKey: ['identity', 'users'] })
-      navigate('/admin/accounts')
-    },
-    onError: (error) => {
-      setConfirmAction(null)
-      setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
-    }
-  })
-  const assignment = useMutation({
-    mutationFn: (selected: string) => addUserRole(id, selected),
-    onSuccess: () => {
-      setMessage(t('admin.identity.saved'))
-      refresh()
-    },
-    onError: (error) => setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
-  })
-  const revocation = useMutation({
-    mutationFn: (selected: string) => removeUserRole(id, selected),
-    onSuccess: () => {
-      setConfirmAction(null)
-      setMessage(t('admin.identity.saved'))
-      refresh()
-    },
-    onError: (error) => {
-      setConfirmAction(null)
-      setMessage(t(apiRequestErrorKey(error, 'admin.identity.actionError')))
-    }
-  })
-  const canManage = authUser?.permissions?.includes('user:manage')
-  const canManageRoles = authUser?.permissions?.includes('role:manage')
+  useDocumentTitle(t(`${key}.documentTitle`))
+  const canManage = Boolean(authUser?.permissions?.includes('user:manage'))
+  const canManageRoles = Boolean(authUser?.permissions?.includes('role:manage'))
   const isSelf = authUser?.id === id
-  useDocumentTitle(t('admin.identity.detail'))
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    setMessage('')
-    if (phone && !/^\d{10,11}$/.test(phone)) {
-      setMessage(t('admin.identity.invalidPhone'))
-      return
-    }
-    update.mutate()
-  }
+  const date = new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN', { dateStyle: 'long' })
+
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-center gap-4'>
-        <span className='flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-container text-2xl font-bold text-primary'>
-          {user.data?.fullName
-            ?.split(' ')
-            .slice(-2)
-            .map((part) => part[0])
-            .join('') || <Icon name='person' />}
-        </span>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
-            {user.data?.fullName || t('admin.identity.detail')}
-          </h1>
-          <p className='mt-1 text-sm text-on-surface-variant'>
-            {user.data?.email || t('admin.identity.accountDetailSubtitle')}
-          </p>
-        </div>
-      </header>
-      {message && (
-        <p role='status' className='rounded-lg bg-surface-container p-3'>
-          {message}
-        </p>
-      )}
-      {user.isPending ? (
-        <p className='rounded-xl bg-white p-8' role='status'>
-          {t('admin.identity.loading')}
-        </p>
-      ) : user.isError ? (
-        <div className='rounded-xl bg-white p-8' role='alert'>
-          <p>{t(isForbiddenError(user.error) ? 'admin.identity.forbidden' : 'admin.identity.error')}</p>
-          <button
-            className='mt-2 font-semibold text-primary underline'
-            onClick={() => void user.refetch()}
-            type='button'
-          >
-            {t('admin.identity.retry')}
-          </button>
-        </div>
+    <main className='mx-auto max-w-6xl space-y-6 px-4 py-7 sm:px-6'>
+      <Link
+        className='inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline'
+        to='/admin/accounts'
+      >
+        <Icon className='text-base' name='arrow_back' />
+        {t(`${key}.back`)}
+      </Link>
+      {account.isPending ? (
+        <SkeletonBlock label={t(`${key}.loading`)} rows={6} />
+      ) : account.isError ? (
+        <ErrorState
+          message={t(
+            isForbiddenError(account.error)
+              ? `${key}.forbidden`
+              : apiErrorStatus(account.error) === 404
+                ? `${key}.notFound`
+                : `${key}.error`
+          )}
+          onRetry={() => void account.refetch()}
+          retryLabel={t(`${key}.retry`)}
+        />
       ) : (
-        <div className='grid items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]'>
-          <section className='space-y-5 rounded-xl bg-white p-6 shadow-sm'>
-            <div className='flex items-center gap-3 border-b border-outline-variant/20 pb-4'>
-              <Icon className='text-xl text-primary' name='badge' />
-              <h2 className='text-lg font-bold'>{t('admin.identity.accountInformation')}</h2>
+        <>
+          <header className='flex flex-wrap items-center gap-4'>
+            <span
+              aria-hidden='true'
+              className='grid h-14 w-14 place-items-center rounded-2xl bg-secondary-container text-lg font-bold text-primary'
+            >
+              {initials(account.data.fullName || account.data.email)}
+            </span>
+            <div className='min-w-0 flex-1'>
+              <h1 className='text-2xl font-extrabold tracking-tight'>{account.data.fullName || account.data.email}</h1>
+              <p className='mt-1 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
+                {account.data.email}
+                <StatusBadge dot tone={account.data.status === 'ACTIVE' ? 'success' : 'error'}>
+                  {t(`admin.identity.status.${account.data.status ?? 'ACTIVE'}`)}
+                </StatusBadge>
+              </p>
             </div>
-            <p>
-              <strong>{t('admin.identity.email')}:</strong> {user.data.email}
-            </p>
-            <p className='flex items-center gap-2'>
-              <strong>{t('admin.identity.status')}:</strong>{' '}
-              <StatusBadge tone={user.data.status === 'ACTIVE' ? 'success' : 'error'}>
-                {t(user.data.status === 'ACTIVE' ? 'admin.identity.active' : 'admin.identity.locked')}
-              </StatusBadge>
-            </p>
-            {canManage && (
-              <form className='grid gap-4 border-t border-outline-variant/20 pt-5 sm:grid-cols-2' onSubmit={submit}>
-                <label>
-                  {t('admin.identity.fullName')}
-                  <input
-                    className={inputClass}
-                    maxLength={255}
-                    required
-                    value={fullName ?? user.data.fullName ?? ''}
-                    onChange={(e) => setFullName(e.target.value)}
+          </header>
+          <div className='grid items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]'>
+            <div className='space-y-5'>
+              <Panel icon='badge' title={t(`${key}.information`)}>
+                <dl className='grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2'>
+                  <div>
+                    <dt className='text-on-surface-variant'>{t(`${key}.roles`)}</dt>
+                    <dd className='mt-1'>
+                      <RoleChips roles={account.data.roles} />
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className='text-on-surface-variant'>{t(`${key}.center`)}</dt>
+                    <dd className='mt-1'>
+                      {account.data.centerId ? <CenterLink centerId={account.data.centerId} /> : t(`${key}.none`)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className='text-on-surface-variant'>{t(`${key}.createdAt`)}</dt>
+                    <dd className='mt-1 tabular-nums'>
+                      {account.data.createdAt ? date.format(new Date(account.data.createdAt)) : t(`${key}.none`)}
+                    </dd>
+                  </div>
+                  {account.data.status === 'LOCKED' && account.data.statusReason ? (
+                    <div>
+                      <dt className='text-on-surface-variant'>{t(`${key}.status`)}</dt>
+                      <dd className='mt-1'>{t(`${key}.lockReasonValue`, { reason: account.data.statusReason })}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+                {canManage ? (
+                  <div className='border-t border-outline-variant/30 pt-4'>
+                    <AccountProfileForm key={account.dataUpdatedAt} user={account.data} />
+                  </div>
+                ) : null}
+              </Panel>
+              {canManage && account.data.email ? (
+                <div className='rounded-xl border border-outline-variant/40 bg-white p-5 sm:p-6'>
+                  <PasswordResetPanel
+                    email={account.data.email}
+                    mode='existing'
+                    name={account.data.fullName || account.data.email}
                   />
-                </label>
-                <label>
-                  {t('admin.identity.phone')}
-                  <input
-                    className={inputClass}
-                    inputMode='numeric'
-                    value={phone ?? user.data.phoneNumber ?? ''}
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-                </label>
-                <button
-                  className='rounded-lg bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50 sm:col-span-2 sm:justify-self-start'
-                  disabled={update.isPending}
-                  type='submit'
-                >
-                  {t('admin.identity.save')}
-                </button>
-              </form>
-            )}
-            {canManage && !isSelf && (
-              <div className='flex flex-wrap gap-3 border-t border-outline-variant/20 pt-5'>
-                <button
-                  className='rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold disabled:opacity-50'
-                  disabled={status.isPending}
-                  onClick={() => setConfirmAction({ type: 'lock' })}
-                  type='button'
-                >
-                  {t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')}
-                </button>
-                <button
-                  className='rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container disabled:opacity-50'
-                  disabled={deletion.isPending}
-                  onClick={() => setConfirmAction({ type: 'delete' })}
-                  type='button'
-                >
-                  {t('admin.identity.delete')}
-                </button>
-              </div>
-            )}
-          </section>
-          <section className='space-y-5 rounded-xl bg-white p-6 shadow-sm'>
-            <div className='flex items-center gap-3 border-b border-outline-variant/20 pb-4'>
-              <Icon className='text-xl text-primary' name='admin_panel_settings' />
-              <h2 className='text-lg font-bold'>{t('admin.identity.role')}</h2>
-            </div>
-            {user.data.roles?.length ? (
-              <ul className='space-y-2'>
-                {user.data.roles.map((code) => (
-                  <li
-                    className='flex items-center justify-between gap-3 rounded-lg bg-surface-container-low px-3 py-3'
-                    key={code}
-                  >
-                    <span className='font-semibold text-primary'>{code}</span>
-                    {canManageRoles && !isSelf && roles.data?.find((role) => role.roleCode === code)?.id && (
-                      <button
-                        className='text-error underline disabled:opacity-50'
-                        disabled={revocation.isPending}
-                        onClick={() => {
-                          const selected = roles.data?.find((role) => role.roleCode === code)?.id
-                          if (selected) setConfirmAction({ type: 'revoke', roleId: selected })
-                        }}
-                        type='button'
-                      >
-                        {t('admin.identity.revokeRole')}
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>{t('admin.identity.noRoles')}</p>
-            )}
-            {canManageRoles &&
-              !isSelf &&
-              (roles.isPending ? (
-                <p role='status'>{t('admin.identity.loading')}</p>
-              ) : roles.isError ? (
-                <p role='alert'>{t('admin.identity.rolesUnavailable')}</p>
-              ) : (
-                <div className='flex flex-wrap gap-2 border-t border-outline-variant/20 pt-5'>
-                  <select
-                    aria-label={t('admin.identity.role')}
-                    className={`${inputClass} min-w-[180px] flex-1`}
-                    value={roleId}
-                    onChange={(e) => setRoleId(e.target.value)}
-                  >
-                    <option value=''>{t('admin.identity.role')}</option>
-                    {roles.data
-                      .filter(
-                        (role) =>
-                          role.id &&
-                          role.roleCode &&
-                          !user.data.roles?.includes(role.roleCode) &&
-                          (builtIn.includes(role.roleCode) || role.active)
-                      )
-                      .map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.roleName ?? role.roleCode}
-                        </option>
-                      ))}
-                  </select>
-                  <button
-                    className='rounded-lg bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50'
-                    disabled={!roleId || assignment.isPending}
-                    onClick={() => assignment.mutate(roleId)}
-                    type='button'
-                  >
-                    {t('admin.identity.assignRole')}
-                  </button>
                 </div>
-              ))}
-          </section>
-          <ConfirmDialog
-            cancelLabel={t('admin.identity.cancel')}
-            confirmLabel={
-              confirmAction?.type === 'lock'
-                ? t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')
-                : confirmAction?.type === 'delete'
-                  ? t('admin.identity.delete')
-                  : t('admin.identity.revokeRole')
-            }
-            description={
-              confirmAction?.type === 'lock'
-                ? t('admin.identity.confirmLock')
-                : confirmAction?.type === 'delete'
-                  ? t('admin.identity.confirmDelete')
-                  : t('admin.identity.confirmRevoke')
-            }
-            loading={status.isPending || deletion.isPending || revocation.isPending}
-            onClose={() => setConfirmAction(null)}
-            onConfirm={() => {
-              if (confirmAction?.type === 'lock') {
-                status.mutate(user.data.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE')
-              } else if (confirmAction?.type === 'delete') {
-                deletion.mutate()
-              } else if (confirmAction?.type === 'revoke') {
-                revocation.mutate(confirmAction.roleId)
-              }
-            }}
-            open={Boolean(confirmAction)}
-            title={
-              confirmAction?.type === 'lock'
-                ? t(user.data.status === 'ACTIVE' ? 'admin.identity.lock' : 'admin.identity.unlock')
-                : confirmAction?.type === 'delete'
-                  ? t('admin.identity.delete')
-                  : t('admin.identity.revokeRole')
-            }
-            tone={confirmAction?.type === 'lock' && user.data.status !== 'ACTIVE' ? 'primary' : 'danger'}
-          />
-        </div>
+              ) : null}
+            </div>
+            <div className='space-y-5'>
+              <Panel icon='admin_panel_settings' title={t(`${key}.rolesTitle`)}>
+                <AccountRoles editable={canManageRoles && !isSelf} user={account.data} />
+              </Panel>
+              {canManage ? (
+                <Panel icon='lock' title={t(`${key}.access`)}>
+                  {isSelf ? (
+                    <p className='text-sm text-on-surface-variant'>{t(`${key}.selfNote`)}</p>
+                  ) : (
+                    <AccountAccess user={account.data} />
+                  )}
+                </Panel>
+              ) : null}
+            </div>
+          </div>
+        </>
       )}
     </main>
   )

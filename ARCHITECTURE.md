@@ -389,8 +389,7 @@ ProviderService outbox events that ran out of retries and requeues them or marks
 It does not import feature internals from the other roles. Both pages use distinct,
 dated September 2026 design snapshots because the supplied KPI totals describe
 different examples. They are not combined into a platform ledger or presented as
-live data. Dashboard charts are static sample visuals, rendered below the live operational panels under a
-visible preview note. The revenue list owns its
+live data. The dashboard shows only the live operational panels; its former sample charts were removed (A-15). The revenue list owns its
 sample transactions and URL-based search, filters, pagination, and selected-row
 preview; CSV export includes the filtered sample rows. Bank reconciliation,
 payout approval, invoices, live gateway status, refresh, and unimplemented Admin
@@ -414,20 +413,27 @@ keep a dialog-level alert. Delete is the backend soft delete. The prices-by-cent
 picks a ProviderService center and shows its center offerings and price plans read-only,
 paginated client-side, because the backend lets only CENTER_MANAGER create or change
 offerings and price plans. Surcharges, booking distribution and pricing policy remain
-labeled design samples. `/admin/centers` now
-uses ProviderService for backend-paginated centers, detail, create, edit, status
-change, and archive. URL search parameters hold the keyword, status, page, and
-selected center; a whole row opens the center and Escape closes it. The status form offers only the transitions
-ProviderService allows from the current status (PENDING → ACTIVE/REJECTED, ACTIVE → SUSPENDED/INACTIVE,
-SUSPENDED/INACTIVE → ACTIVE), requires a reason for REJECTED, SUSPENDED and INACTIVE, and warns that suspending locks the
-center's accounts and cancels its upcoming visits with a full refund. Archiving is permanent in ProviderService: the
-"Archived" filter sends `includeDeleted=true` and lists archived centers read-only, because their detail returns 404.
-Operating hours are edited as an opening and a closing time and stored in the existing text field as `HH:mm - HH:mm`. The Admin caregiver review route uses the selected center ID and
-ProviderService for caregiver and certificate verification. Certificates are reviewed in two steps: the center
-manager confirms a PENDING certificate on the caregiver detail (`CENTER_VERIFIED`), then the admin approves or
-rejects it (`ADMIN_VERIFIED` / `REJECTED`); both send `{ approved, reason, version }`. The admin center KPIs read
-platform-wide status counts from `/care-centers/statistics` (M-15). Identity account
-provisioning remains a separate workflow at `/admin/accounts`.
+labeled design samples. `/admin/centers` lists
+ProviderService centers by status tab (platform counts from `/care-centers/statistics`) with a server keyword search;
+`?center=<id>` links from before redirect to `/admin/centers/:id`. The center page (2026-10-30) has Overview, Staff,
+Activity and Images tabs. Overview reviews a PENDING center from a checklist (contact, hours, manager, images) with
+Approve / Reject buttons, and gives an operating center Suspend / Set inactive / Reopen buttons; REJECTED, SUSPENDED and
+INACTIVE need a reason. Its Manager section creates a CENTER_MANAGER account for this center (`POST /users`), links it
+with the center PUT and emails a password code, or picks one of the center's active manager accounts; changing the
+manager offers to lock the previous account because ProviderService does not revoke its Identity access. Staff counts
+and lists caregivers with a work status taken from the Identity account and the ProviderService profile, never from
+check-in. Activity reads `/statistics/centers?centerId=`. Operating hours stay `HH:mm - HH:mm`; a closing time before the
+opening time means overnight and equal times mean 24 hours. Archiving is permanent and lists read-only under the
+Archived tab. Caregivers and certificates are reviewed at `/admin/centers/:id/caregivers`; each rejection asks its own
+reason. `/admin/accounts` filters, searches and pages on the server (`GET /users` role, status, keyword) with counts from
+`GET /users/statistics`; creating an account continues into `entities/identity/password-reset-panel.tsx`, which sends
+the owner an email OTP (`/auth/forgot-password`) and lets the owner finish on `/forgot-password?email=` or the
+administrator type the code the owner reads out (`/auth/reset-password`). Account details show the center and the lock
+reason, lock with a required reason, and do not assign CENTER_MANAGER or CAREGIVER (they come from the center and the
+caregiver flows). `/admin/roles` explains each system role and permission. Service categories are the six groups of
+`entities/care-catalog/service-category.ts`; older long values read into their group without a data migration.
+Profile photos and center logos use the newest image (`entities/provider/provider-avatar.ts`); uploads refresh every
+cache that shows the owner (`invalidate-provider-media.ts`) and a caregiver keeps a single profile photo.
 The policy and caregiver quality pages use independent, dated Admin design snapshots.
 Policy deposit and payout cycle controls update a local simulation only; no values
 are saved or presented as active financial rules. Quality list filters and tabs

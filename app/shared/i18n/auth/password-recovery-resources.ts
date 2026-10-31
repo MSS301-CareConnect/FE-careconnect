@@ -18,7 +18,38 @@ export const recoveryEn = {
   invalidOtp: 'Enter a valid six-digit code. It may have expired.',
   passwordRules: 'Use at least 8 characters with upper and lowercase letters, a number, and a symbol.',
   passwordMismatch: 'Passwords do not match.',
-  requestFailed: 'Unable to complete the request. Please try again.'
+  requestFailed: 'Unable to complete the request. Please try again.',
+  assist: {
+    titleNew: 'Set a password',
+    titleExisting: 'Change password with a code',
+    descriptionNew: 'This account has no password yet. Send a six-digit code to the owner’s email.',
+    descriptionExisting: 'Send a six-digit code to the owner’s email to set a new password.',
+    send: 'Send code to {{email}}',
+    resend: 'Send a new code',
+    resendIn: 'Send again in {{seconds}}s',
+    sent: 'A code was sent to {{email}}. It is valid for a few minutes.',
+    selfServeTitle: 'The owner sets it',
+    selfServe: 'They open the link below, enter the code from their email and choose a password.',
+    selfServeLink: 'Open the reset page',
+    assistedTitle: 'Set it together',
+    assisted: 'When you are on a call with the owner, enter the code they received and the new password.',
+    code: 'Code from email',
+    newPassword: 'New password',
+    confirmPassword: 'Repeat new password',
+    rules: 'At least 8 characters with upper and lowercase letters, a number and a symbol.',
+    submit: 'Set password',
+    submitting: 'Saving…',
+    success: 'Password set. {{name}} can sign in with {{email}}.',
+    signOutNote: 'Setting a new password signs this account out of every device.',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    errors: {
+      codeFormat: 'Enter the six digits from the email.',
+      codeInvalid: 'This code is wrong or has expired. Send a new code.',
+      passwordRules: 'Use at least 8 characters with upper and lowercase letters, a number and a symbol.',
+      passwordMismatch: 'The two passwords do not match.'
+    }
+  }
 } as const
 
 export const recoveryVi = {
@@ -41,5 +72,36 @@ export const recoveryVi = {
   invalidOtp: 'Nhập mã 6 chữ số hợp lệ. Mã có thể đã hết hạn.',
   passwordRules: 'Dùng ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
   passwordMismatch: 'Mật khẩu xác nhận không khớp.',
-  requestFailed: 'Không thể hoàn tất yêu cầu. Vui lòng thử lại.'
+  requestFailed: 'Không thể hoàn tất yêu cầu. Vui lòng thử lại.',
+  assist: {
+    titleNew: 'Đặt mật khẩu',
+    titleExisting: 'Đổi mật khẩu bằng mã OTP',
+    descriptionNew: 'Tài khoản chưa có mật khẩu. Gửi mã 6 số tới email của chủ tài khoản.',
+    descriptionExisting: 'Gửi mã 6 số tới email của chủ tài khoản để đặt mật khẩu mới.',
+    send: 'Gửi mã tới {{email}}',
+    resend: 'Gửi mã mới',
+    resendIn: 'Gửi lại sau {{seconds}} giây',
+    sent: 'Đã gửi mã tới {{email}}. Mã có hiệu lực trong vài phút.',
+    selfServeTitle: 'Người dùng tự đặt',
+    selfServe: 'Họ mở liên kết dưới đây, nhập mã trong email và chọn mật khẩu.',
+    selfServeLink: 'Mở trang đặt mật khẩu',
+    assistedTitle: 'Đặt cùng người dùng',
+    assisted: 'Khi đang gọi điện với chủ tài khoản, nhập mã họ nhận được và mật khẩu mới.',
+    code: 'Mã trong email',
+    newPassword: 'Mật khẩu mới',
+    confirmPassword: 'Nhập lại mật khẩu mới',
+    rules: 'Ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
+    submit: 'Đặt mật khẩu',
+    submitting: 'Đang lưu…',
+    success: 'Đã đặt mật khẩu. {{name}} có thể đăng nhập bằng {{email}}.',
+    signOutNote: 'Đặt mật khẩu mới sẽ đăng xuất tài khoản này khỏi mọi thiết bị.',
+    showPassword: 'Hiện mật khẩu',
+    hidePassword: 'Ẩn mật khẩu',
+    errors: {
+      codeFormat: 'Nhập đủ 6 chữ số trong email.',
+      codeInvalid: 'Mã không đúng hoặc đã hết hạn. Hãy gửi mã mới.',
+      passwordRules: 'Dùng ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
+      passwordMismatch: 'Hai mật khẩu chưa khớp.'
+    }
+  }
 } as const

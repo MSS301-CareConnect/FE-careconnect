@@ -5,10 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
-import { confirmPasswordReset, sendPasswordResetCode } from './password-recovery-api'
+import { confirmPasswordReset, sendPasswordResetCode } from '~/entities/identity/password-reset-api'
 import { PasswordRecoveryPage } from './password-recovery-page'
 
-vi.mock('./password-recovery-api', () => ({
+vi.mock('~/entities/identity/password-reset-api', () => ({
   sendPasswordResetCode: vi.fn(),
   confirmPasswordReset: vi.fn(),
   passwordRecoveryErrorKey: () => 'auth.recovery.requestFailed'

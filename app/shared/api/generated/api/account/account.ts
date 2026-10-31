@@ -25,6 +25,7 @@ import type {
   ChangePasswordRequest,
   CurrentUserResponse,
   EmptyActionResponse,
+  GetUserStatisticsParams,
   ListManagedUsersParams,
   N400Response,
   N401Response,
@@ -42,6 +43,7 @@ import type {
   SetManagedUserStatusParams,
   UpdateProfileRequest,
   UserListResponse,
+  UserStatisticsResponse,
   VerifyRegistrationRequest,
   VerifyRegistrationResponse
 } from '../../contracts'
@@ -849,6 +851,206 @@ export const useProvisionUser = <
 ): UseMutationResult<Awaited<ReturnType<typeof provisionUser>>, TError, { data: ProvisionUserRequest }, TContext> => {
   return useMutation(getProvisionUserMutationOptions(options), queryClient)
 }
+export type getUserStatisticsResponse200 = {
+  data: UserStatisticsResponse
+  status: 200
+}
+
+export type getUserStatisticsResponse400 = {
+  data: N400Response
+  status: 400
+}
+
+export type getUserStatisticsResponse401 = {
+  data: N401Response
+  status: 401
+}
+
+export type getUserStatisticsResponse403 = {
+  data: N403Response
+  status: 403
+}
+
+export type getUserStatisticsResponse500 = {
+  data: N500Response
+  status: 500
+}
+
+export type getUserStatisticsResponse503 = {
+  data: N503Response
+  status: 503
+}
+
+export type getUserStatisticsResponseSuccess = getUserStatisticsResponse200 & {
+  headers: Headers
+}
+export type getUserStatisticsResponseError = (
+  | getUserStatisticsResponse400
+  | getUserStatisticsResponse401
+  | getUserStatisticsResponse403
+  | getUserStatisticsResponse500
+  | getUserStatisticsResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetUserStatisticsUrl = (params?: GetUserStatisticsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/users/statistics?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/users/statistics`
+}
+
+export const getUserStatistics = async (
+  params?: GetUserStatisticsParams,
+  options?: RequestInit
+): Promise<getUserStatisticsResponseSuccess> => {
+  const res = await fetch(getGetUserStatisticsUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getUserStatisticsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getUserStatisticsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getUserStatisticsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getUserStatisticsResponseSuccess
+}
+
+export const getGetUserStatisticsQueryKey = (params?: GetUserStatisticsParams) => {
+  return [`${env.API_BASE_URL}/v1/users/statistics`, ...(params ? [params] : [])] as const
+}
+
+export const getGetUserStatisticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserStatistics>>,
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  }
+>(
+  params?: GetUserStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserStatisticsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserStatistics>>> = ({ signal }) =>
+    getUserStatistics(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUserStatistics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUserStatisticsQueryResult = NonNullable<Awaited<ReturnType<typeof getUserStatistics>>>
+export type GetUserStatisticsQueryError = globalThis.Error & {
+  info?: N400Response | N401Response | N403Response | N500Response | N503Response
+  status?: number
+}
+
+export function useGetUserStatistics<
+  TData = Awaited<ReturnType<typeof getUserStatistics>>,
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  }
+>(
+  params: undefined | GetUserStatisticsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserStatistics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getUserStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserStatistics<
+  TData = Awaited<ReturnType<typeof getUserStatistics>>,
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  }
+>(
+  params?: GetUserStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserStatistics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getUserStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserStatistics<
+  TData = Awaited<ReturnType<typeof getUserStatistics>>,
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  }
+>(
+  params?: GetUserStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetUserStatistics<
+  TData = Awaited<ReturnType<typeof getUserStatistics>>,
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  }
+>(
+  params?: GetUserStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUserStatisticsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
 export type getManagedUserResponse200 = {
   data: CurrentUserResponse
   status: 200

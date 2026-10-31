@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { confirmPasswordReset, sendPasswordResetCode } from './password-recovery-api'
+import { confirmPasswordReset, sendPasswordResetCode } from './password-reset-api'
 
 function reply(data: unknown): Response {
   return { status: 200, ok: true, text: async () => JSON.stringify(data), headers: new Headers() } as Response

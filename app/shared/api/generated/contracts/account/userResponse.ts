@@ -13,6 +13,7 @@ export interface UserResponse {
   fullName?: string
   phoneNumber?: string
   status?: UserResponseStatus
+  statusReason?: string
   centerId?: string
   roles?: string[]
   permissions?: string[]
