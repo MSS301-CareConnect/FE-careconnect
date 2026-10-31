@@ -65,6 +65,7 @@ import { adminIncidentsEn, adminIncidentsVi } from './admin/incidents-resources'
 import { adminBookingsEn, adminBookingsVi } from './admin/bookings-resources'
 import { adminCaregiverQueueEn, adminCaregiverQueueVi } from './admin/caregiver-queue-resources'
 import { adminProviderEn, adminProviderVi } from './admin/provider-resources'
+import { adminToastEn, adminToastVi } from './admin/toast-resources'
 
 export const resources = {
   en: {
@@ -131,7 +132,8 @@ export const resources = {
         bookingsPage: adminBookingsEn,
         caregiverQueuePage: adminCaregiverQueueEn,
         identity: identityEn,
-        provider: adminProviderEn
+        provider: adminProviderEn,
+        toast: adminToastEn
       }
     }
   },
@@ -199,7 +201,8 @@ export const resources = {
         bookingsPage: adminBookingsVi,
         caregiverQueuePage: adminCaregiverQueueVi,
         identity: identityVi,
-        provider: adminProviderVi
+        provider: adminProviderVi,
+        toast: adminToastVi
       }
     }
   }

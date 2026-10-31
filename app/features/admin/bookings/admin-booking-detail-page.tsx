@@ -12,7 +12,9 @@ import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { useCaregiverNames, useCenterName } from '~/entities/provider/use-provider-names'
 import type { BookingStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { classifyApiError } from '~/shared/api/api-error'
 import { SectionCard } from '~/shared/ui/section-card'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 // Statuses that still hold a schedule; BookingService rejects a cancel outside them.
 const CANCELLABLE: ReadonlySet<BookingStatus> = new Set(['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS'])
@@ -26,10 +28,17 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
   const centerName = useCenterName(booking.data?.centerId)
   const caregiverName = useCaregiverNames((booking.data?.occurrences ?? []).map((occurrence) => occurrence.caregiverId))
   useDocumentTitle(booking.data ? `#${booking.data.bookingCode}` : t('admin.bookingsPage.title'))
+  const notify = useActionToast()
   const cancel = useMutation({
     mutationFn: (reason: string) => cancelBookingRequest(id, { reason }),
+    onError: (error, reason) => {
+      if (notify.systemError(error, t('admin.toast.bookings.actions.cancel'), () => cancel.mutate(reason))) {
+        setCancelling(false)
+      }
+    },
     onSuccess: async () => {
       setCancelling(false)
+      notify.success(t('admin.toast.bookings.cancelled', { code: booking.data?.bookingCode ?? '' }))
       await queryClient.invalidateQueries({ queryKey: bookingKeys.all })
     }
   })
@@ -120,7 +129,11 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
           confirmLabel={t('admin.bookingsPage.cancel')}
           danger
           description={t('admin.bookingsPage.cancelHint')}
-          error={cancel.error ? t(bookingErrorKey(cancel.error)) : undefined}
+          error={
+            cancel.error && classifyApiError(cancel.error).kind !== 'system'
+              ? t(bookingErrorKey(cancel.error))
+              : undefined
+          }
           label={t('admin.bookingsPage.reason')}
           onClose={() => setCancelling(false)}
           onConfirm={(reason) => cancel.mutate(reason)}

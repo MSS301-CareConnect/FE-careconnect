@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 
+import { BookingsBrowser } from '~/entities/booking/bookings-browser'
 import { fetchCenter, fetchProviderMedia, providerKeys, removeCenter } from '~/entities/provider/provider-api'
 import { pickAvatar } from '~/entities/provider/provider-avatar'
 import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
@@ -17,8 +18,10 @@ import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
+import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { CENTER_BUSINESS_ERRORS } from './center-errors'
+import { parseCenterHours } from './center-hours'
 import { useHoursLabel } from './hooks/use-hours-label'
 import { CenterForm } from './components/center-form'
 import { CenterManagerPanel } from './components/center-manager-panel'
@@ -26,12 +29,15 @@ import { CenterStaffTab } from './components/center-staff-tab'
 import { CenterStatusPanel } from './components/center-status-panel'
 
 const key = 'admin.centersPage' as const
-const TABS = ['overview', 'staff', 'activity', 'images'] as const
+const TABS = ['overview', 'staff', 'bookings', 'activity', 'images'] as const
 type Tab = (typeof TABS)[number]
+const bookingPath = (bookingId: string) => `/admin/bookings/${bookingId}`
 
 function Overview({ center }: { center: ProviderCenterRecord }) {
   const { t } = useTranslation()
   const hours = useHoursLabel()
+  // Booking rejects visits that cross midnight (5207), so an overnight center still sells same-day visits only.
+  const overnight = parseCenterHours(center.operatingHours).kind === 'overnight'
   const rows = [
     ['email', center.email],
     ['phone', center.phoneNumber],
@@ -46,7 +52,14 @@ function Overview({ center }: { center: ProviderCenterRecord }) {
           {rows.map(([name, value]) => (
             <div className='grid gap-0.5 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3' key={name}>
               <dt className='text-on-surface-variant'>{t(`${key}.detail.${name}`)}</dt>
-              <dd className='break-words font-medium text-on-surface'>{value || t(`${key}.detail.none`)}</dd>
+              <dd className='break-words font-medium text-on-surface'>
+                {value || t(`${key}.detail.none`)}
+                {name === 'hours' && overnight ? (
+                  <span className='mt-1 block text-xs font-normal leading-5 text-on-surface-variant'>
+                    {t(`${key}.detail.overnightBooking`)}
+                  </span>
+                ) : null}
+              </dd>
             </div>
           ))}
         </dl>
@@ -70,7 +83,6 @@ export function CenterDetailPage({ id }: { id: string }) {
   const tab: Tab = TABS.find((item) => item === params.get('tab')) ?? 'overview'
   const [editing, setEditing] = useState(false)
   const [archiving, setArchiving] = useState(false)
-  const [saved, setSaved] = useState(false)
   const center = useQuery({ queryKey: providerKeys.center(id), queryFn: () => fetchCenter(id), retry: false })
   const media = useQuery({
     queryKey: providerKeys.media('CARE_CENTER', id),
@@ -79,9 +91,16 @@ export function CenterDetailPage({ id }: { id: string }) {
     retry: false
   })
   useDocumentTitle(center.data?.centerName ?? t(`${key}.detail.documentTitle`))
+  const notify = useActionToast()
   const archive = useMutation({
     mutationFn: () => removeCenter(id, center.data!.version),
+    onError: (error) => {
+      if (notify.systemError(error, t('admin.toast.centers.actions.archive'), () => archive.mutate())) {
+        setArchiving(false)
+      }
+    },
     onSuccess: async () => {
+      notify.success(t('admin.toast.centers.archived', { name: center.data?.centerName ?? '' }))
       await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
       navigate('/admin/centers?status=ARCHIVED')
     }
@@ -158,11 +177,6 @@ export function CenterDetailPage({ id }: { id: string }) {
               </Button>
             </div>
           </header>
-          {saved ? (
-            <p className='rounded-xl bg-success-container px-4 py-2.5 text-sm text-on-success-container' role='status'>
-              {t(`${key}.detail.saved`)}
-            </p>
-          ) : null}
           <div
             aria-label={t(`${key}.detail.tabsLabel`)}
             className='flex gap-1 overflow-x-auto border-b border-outline-variant/40'
@@ -186,25 +200,19 @@ export function CenterDetailPage({ id }: { id: string }) {
           <div aria-labelledby={`center-tab-${tab}`} id={`center-panel-${tab}`} role='tabpanel'>
             {tab === 'overview' ? <Overview center={center.data} /> : null}
             {tab === 'staff' ? <CenterStaffTab centerId={id} /> : null}
+            {tab === 'bookings' ? <BookingsBrowser detailPath={bookingPath} fixedCenterId={id} /> : null}
             {tab === 'activity' ? <OperationalStatisticsPanel centerId={id} scope='center' /> : null}
             {tab === 'images' ? <ProviderMediaPanel ownerId={id} ownerType='CARE_CENTER' /> : null}
           </div>
           {editing ? (
             <Modal maxWidthClass='max-w-2xl' onClose={() => setEditing(false)} open title={t(`${key}.form.editTitle`)}>
-              <CenterForm
-                center={center.data}
-                onCancel={() => setEditing(false)}
-                onSaved={() => {
-                  setEditing(false)
-                  setSaved(true)
-                }}
-              />
+              <CenterForm center={center.data} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
             </Modal>
           ) : null}
           <ConfirmDialog
             confirmLabel={t(`${key}.detail.archive`)}
             description={t(`${key}.detail.archiveDescription`)}
-            error={archiveFailure && archiveFailure.kind !== 'field' ? t(archiveFailure.key) : undefined}
+            error={archiveFailure && archiveFailure.kind === 'business' ? t(archiveFailure.key) : undefined}
             loading={archive.isPending}
             onClose={() => setArchiving(false)}
             onConfirm={() => archive.mutate()}

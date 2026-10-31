@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { BOOKING_STATUSES, OCCURRENCE_STATUSES, formatDateTime } from './booking-format'
 import { bookingKeys, fetchBookingHistory } from './booking-api'
+import { historyReason } from './booking-history-reason'
 
 const EVENT_TYPES = [
   'BOOKING_STATUS_CHANGED',
@@ -15,6 +16,17 @@ type EventType = (typeof EVENT_TYPES)[number]
 
 function knownEvent(value: string): EventType | undefined {
   return EVENT_TYPES.find((item) => item === value)
+}
+
+function HistoryReasonText({ reason }: { reason?: string | null }) {
+  const { t } = useTranslation()
+  const shown = historyReason(reason)
+  if (!shown) return null
+  return (
+    <p className='mt-1 text-sm text-on-surface-variant'>
+      {shown.kind === 'depositReceived' ? t('booking.history.depositReceived') : shown.text}
+    </p>
+  )
 }
 
 /** Status changes and occurrence events of one booking, oldest first, from GET /bookings/{id}/history. */
@@ -57,7 +69,7 @@ export function BookingHistoryList({ bookingId }: { bookingId: string }) {
             <span aria-hidden='true' className='mt-1.5 h-3 w-3 rounded-full bg-primary' />
             <div className='min-w-0'>
               <p className='text-sm font-semibold text-on-surface'>
-                {type ? t(`booking.history.events.${type}`) : entry.eventType}
+                {type ? t(`booking.history.events.${type}`) : t('booking.history.events.other')}
                 {entry.toStatus ? (
                   <span className='font-normal text-on-surface-variant'>
                     {' · '}
@@ -71,7 +83,7 @@ export function BookingHistoryList({ bookingId }: { bookingId: string }) {
                 ) : null}
               </p>
               <p className='text-xs text-on-surface-variant'>{formatDateTime(entry.changedAt, i18n.language)}</p>
-              {entry.reason ? <p className='mt-1 text-sm text-on-surface-variant'>{entry.reason}</p> : null}
+              <HistoryReasonText reason={entry.reason} />
             </div>
           </li>
         )
