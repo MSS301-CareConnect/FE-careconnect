@@ -1,20 +1,14 @@
-import { apiErrorCode, apiRequestErrorKey } from '~/shared/api/error-details'
-
-/** ProviderService codes about a center's manager, shown as plain sentences instead of a generic failure. */
-const MANAGER_ERRORS = {
-  4118: 'admin.provider.errors.managerTaken',
-  4120: 'admin.provider.errors.managerRequired',
-  4500: 'admin.provider.errors.identityUnavailable',
-  4501: 'admin.provider.errors.managerNotFound',
-  4502: 'admin.provider.errors.managerInvalid',
-  4503: 'admin.provider.errors.managerCenterMismatch'
+/** ProviderService center codes (4100–4122, 4500–4503) as business sentences shown at the end of a form or dialog. */
+export const CENTER_BUSINESS_ERRORS = {
+  4114: 'admin.centersPage.detail.business.stale',
+  4115: 'admin.centersPage.detail.business.archived',
+  4121: 'admin.centersPage.detail.business.hasBookings',
+  4122: 'admin.centersPage.detail.business.transition',
+  4120: 'admin.centersPage.detail.business.managerRequired',
+  4118: 'admin.centersPage.detail.business.managerTaken',
+  4501: 'admin.centersPage.detail.business.managerNotFound',
+  4502: 'admin.centersPage.detail.business.managerInvalid',
+  4503: 'admin.centersPage.detail.business.managerMismatch'
 } as const
 
-type Fallback = 'admin.provider.saveError' | 'admin.provider.actionError'
-
-export function centerErrorKey(error: unknown, fallback: Fallback) {
-  const code = apiErrorCode(error)
-  return code !== undefined && code in MANAGER_ERRORS
-    ? MANAGER_ERRORS[code as keyof typeof MANAGER_ERRORS]
-    : apiRequestErrorKey(error, fallback)
-}
+export type CenterBusinessKey = (typeof CENTER_BUSINESS_ERRORS)[keyof typeof CENTER_BUSINESS_ERRORS]

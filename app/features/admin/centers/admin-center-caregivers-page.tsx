@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { baseControlClass } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
@@ -31,7 +33,9 @@ const certificateKeys = {
 function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  // The reason belongs to one rejection at a time; it is asked inside that rejection's dialog (A-07).
   const [reason, setReason] = useState('')
+  const [reasonMissing, setReasonMissing] = useState(false)
   const [confirmReject, setConfirmReject] = useState<
     { type: 'caregiver' } | { type: 'certificate'; certificateId: string; version: number } | null
   >(null)
@@ -43,7 +47,11 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
   })
   const review = useMutation({
     mutationFn: (status: 'VERIFIED' | 'REJECTED') =>
-      verifyCaregiver(id, { status, reason: reason.trim() || undefined, version: caregiver.data!.version }),
+      verifyCaregiver(id, {
+        status,
+        reason: status === 'REJECTED' ? reason.trim() : undefined,
+        version: caregiver.data!.version
+      }),
     onSuccess: async () => {
       setConfirmReject(null)
       await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(id) })
@@ -53,7 +61,7 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
   })
   const reviewCertificate = useMutation({
     mutationFn: ({ certificateId, approved, version }: { certificateId: string; approved: boolean; version: number }) =>
-      verifyCertificate(certificateId, { approved, reason: reason.trim() || undefined, version }),
+      verifyCertificate(certificateId, { approved, reason: approved ? undefined : reason.trim(), version }),
     onSuccess: async () => {
       setConfirmReject(null)
       await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(id) })
@@ -90,14 +98,6 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
           </ProviderStatusBadge>
         </span>
       </div>
-      <label className='block text-sm'>
-        {t(`${key}.reason`)}
-        <input
-          className='mt-1 w-full rounded-lg bg-surface-container-low p-3 outline-none focus:ring-2 focus:ring-primary'
-          onChange={(event) => setReason(event.target.value)}
-          value={reason}
-        />
-      </label>
       <div className='flex gap-3'>
         <button
           className='rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-50'
@@ -110,7 +110,11 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         <button
           className='rounded-lg border px-3 py-2 disabled:opacity-50'
           disabled={review.isPending}
-          onClick={() => setConfirmReject({ type: 'caregiver' })}
+          onClick={() => {
+            setReason('')
+            setReasonMissing(false)
+            setConfirmReject({ type: 'caregiver' })
+          }}
           type='button'
         >
           {t(`${key}.reject`)}
@@ -163,13 +167,15 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
                   <button
                     className='text-error underline disabled:opacity-50'
                     disabled={reviewCertificate.isPending}
-                    onClick={() =>
+                    onClick={() => {
+                      setReason('')
+                      setReasonMissing(false)
                       setConfirmReject({
                         type: 'certificate',
                         certificateId: certificate.id,
                         version: certificate.version
                       })
-                    }
+                    }}
                     type='button'
                   >
                     {t(`${key}.reject`)}
@@ -190,6 +196,10 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         loading={review.isPending || reviewCertificate.isPending}
         onClose={() => setConfirmReject(null)}
         onConfirm={() => {
+          if (!reason.trim()) {
+            setReasonMissing(true)
+            return
+          }
           if (confirmReject?.type === 'caregiver') {
             review.mutate('REJECTED')
           } else if (confirmReject?.type === 'certificate') {
@@ -203,7 +213,28 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
         open={Boolean(confirmReject)}
         title={t(`${key}.reject`)}
         tone='danger'
-      />
+      >
+        <label className='block text-sm font-semibold' htmlFor='reject-reason'>
+          {t(`${key}.reason`)}
+        </label>
+        <textarea
+          aria-describedby={reasonMissing ? 'reject-reason-error' : undefined}
+          aria-invalid={reasonMissing ? true : undefined}
+          className={`${baseControlClass} mt-1 min-h-20`}
+          id='reject-reason'
+          maxLength={500}
+          onChange={(event) => {
+            setReason(event.target.value)
+            setReasonMissing(false)
+          }}
+          value={reason}
+        />
+        {reasonMissing ? (
+          <p className='mt-1 text-xs font-medium text-error' id='reject-reason-error'>
+            {t(`${key}.reasonMissing`)}
+          </p>
+        ) : null}
+      </ConfirmDialog>
     </section>
   )
 }
@@ -238,10 +269,10 @@ export function AdminCenterCaregiversPage() {
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
       <Link
         className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold text-primary'
-        to='/admin/centers'
+        to={`/admin/centers/${id}?tab=staff`}
       >
         <Icon name='arrow_back' />
-        {t(`${key}.backToCenters`)}
+        {center.data?.centerName ?? t(`${key}.backToCenters`)}
       </Link>
       <header className='flex flex-wrap items-center justify-between gap-4'>
         <div>
@@ -274,9 +305,7 @@ export function AdminCenterCaregiversPage() {
                   key={person.id}
                 >
                   <div className='flex items-center gap-3'>
-                    <span className='flex h-12 w-12 items-center justify-center rounded-xl bg-secondary-container text-primary'>
-                      <Icon name='person' />
-                    </span>
+                    <CaregiverAvatar caregiverId={person.id} className='h-12 w-12 rounded-xl' name={person.fullName} />
                     <div>
                       <strong>{person.fullName}</strong>
                       <div className='mt-1 flex flex-wrap items-center gap-2 text-sm text-outline'>

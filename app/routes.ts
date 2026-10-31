@@ -13,6 +13,7 @@ export default [
       route('revenue', 'routes/admin/revenue.tsx'),
       route('services', 'routes/admin/services.tsx'),
       route('centers', 'routes/admin/centers.tsx'),
+      route('centers/:id', 'routes/admin/center-detail.tsx'),
       route('centers/:id/caregivers', 'routes/admin/center-caregivers.tsx'),
       route('policies', 'routes/admin/policies.tsx'),
       route('quality', 'routes/admin/quality.tsx'),

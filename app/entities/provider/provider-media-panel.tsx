@@ -6,6 +6,7 @@ import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 
+import { invalidateOwnerMedia } from './invalidate-provider-media'
 import { fetchProviderMedia, providerKeys, removeMedia, uploadMedia, type ProviderMediaOwner } from './provider-api'
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -49,20 +50,14 @@ export function ProviderMediaPanel({
     onSuccess: async () => {
       setFiles([])
       setInputKey((current) => current + 1)
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey }),
-        queryClient.invalidateQueries({ queryKey: providerKeys.catalog })
-      ])
+      await invalidateOwnerMedia(queryClient, ownerType, ownerId)
     }
   })
   const remove = useMutation({
     mutationFn: (mediaFileId: string) => removeMedia(ownerType, ownerId, mediaFileId),
     onSuccess: async () => {
       setRemovingMediaId(null)
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey }),
-        queryClient.invalidateQueries({ queryKey: providerKeys.catalog })
-      ])
+      await invalidateOwnerMedia(queryClient, ownerType, ownerId)
     }
   })
   return (

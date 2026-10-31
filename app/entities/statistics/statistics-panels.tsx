@@ -30,11 +30,16 @@ function QueryMessage({ retry, error }: { retry: () => void; error: boolean }) {
   )
 }
 
-export function OperationalStatisticsPanel({ scope }: { scope: OperationalScope }) {
+export function OperationalStatisticsPanel({ scope, centerId }: { scope: OperationalScope; centerId?: string }) {
   const { t, i18n } = useTranslation()
   const query = useQuery({
-    queryKey: scope === 'center' ? statisticsKeys.center : statisticsKeys.system,
-    queryFn: scope === 'center' ? fetchCenterStatistics : fetchSystemStatistics,
+    queryKey:
+      scope === 'system'
+        ? statisticsKeys.system
+        : centerId
+          ? statisticsKeys.centerById(centerId)
+          : statisticsKeys.center,
+    queryFn: () => (scope === 'center' ? fetchCenterStatistics(centerId) : fetchSystemStatistics()),
     retry: false
   })
   if (query.isPending || query.isError) {

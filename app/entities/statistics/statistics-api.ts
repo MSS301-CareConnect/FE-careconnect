@@ -10,12 +10,14 @@ const readOptions = { credentials: 'include' as const }
 
 export const statisticsKeys = {
   center: ['statistics', 'center'] as const,
+  centerById: (centerId: string) => ['statistics', 'center', centerId] as const,
   system: ['statistics', 'system'] as const,
   providers: ['statistics', 'providers'] as const
 }
 
-export async function fetchCenterStatistics() {
-  return result(await getCenterStatistics(undefined, readOptions))
+/** A manager reads their own center; an ADMIN passes the center to read (BookingService scopes by role). */
+export async function fetchCenterStatistics(centerId?: string) {
+  return result(await getCenterStatistics(centerId ? { centerId } : undefined, readOptions))
 }
 
 export async function fetchSystemStatistics() {

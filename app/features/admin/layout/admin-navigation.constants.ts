@@ -5,10 +5,13 @@
 export const adminNavigation = [
   {
     key: 'overview',
+    // A one-item group needs no heading.
+    labelled: false,
     items: [{ key: 'dashboard', to: '/admin/dashboard', icon: 'dashboard' }]
   },
   {
     key: 'operations',
+    labelled: true,
     items: [
       { key: 'services', to: '/admin/services', icon: 'medical_information' },
       { key: 'centers', to: '/admin/centers', icon: 'apartment' },
@@ -18,6 +21,7 @@ export const adminNavigation = [
   },
   {
     key: 'customerCare',
+    labelled: true,
     items: [
       { key: 'customers', to: '/admin/customers', icon: 'groups' },
       { key: 'reviewsComplaints', to: '/admin/reviews-complaints', icon: 'forum' }
@@ -25,6 +29,7 @@ export const adminNavigation = [
   },
   {
     key: 'system',
+    labelled: true,
     items: [
       { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
       { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },

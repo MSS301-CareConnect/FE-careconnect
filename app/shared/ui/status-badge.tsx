@@ -34,7 +34,7 @@ export interface StatusBadgeProps {
 export function StatusBadge({ tone, children, dot = false, className = '' }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold leading-none ${toneClasses[tone]} ${className}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 py-1 text-xs font-semibold leading-none ${toneClasses[tone]} ${className}`}
     >
       {dot ? <span aria-hidden='true' className={`h-1.5 w-1.5 rounded-full ${dotClasses[tone]}`} /> : null}
       {children}

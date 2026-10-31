@@ -54,13 +54,15 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         <nav aria-label={t('admin.menu')} className='flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 py-4'>
           {adminNavigation.map((group) => (
             <div key={group.key}>
-              <p
-                className='px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-outline'
-                id={`admin-nav-${group.key}`}
-              >
-                {t(`admin.groups.${group.key}`)}
-              </p>
-              <ul aria-labelledby={`admin-nav-${group.key}`} className='space-y-0.5'>
+              {group.labelled ? (
+                <p
+                  className='px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-outline'
+                  id={`admin-nav-${group.key}`}
+                >
+                  {t(`admin.groups.${group.key}`)}
+                </p>
+              ) : null}
+              <ul aria-labelledby={group.labelled ? `admin-nav-${group.key}` : undefined} className='space-y-0.5'>
                 {group.items.map((item) => {
                   const active = isActiveItem(item, pathname)
                   return (

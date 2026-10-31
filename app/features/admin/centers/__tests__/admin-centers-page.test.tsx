@@ -1,258 +1,164 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  changeCenterStatus,
-  createCenter,
-  fetchCenter,
-  fetchCenters,
-  saveCenter
-} from '~/entities/provider/provider-api'
+import { fetchAccounts } from '~/entities/identity/account-api'
+import { createCenter, fetchCenters, fetchProviderMedia } from '~/entities/provider/provider-api'
 import { fetchProviderStatistics } from '~/entities/statistics/statistics-api'
-import { listManagedUsers } from '~/shared/api/generated/api/account/account'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
+
 import { AdminCentersPage } from '../admin-centers-page'
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
   fetchCenters: vi.fn(),
-  fetchCenter: vi.fn(),
-  changeCenterStatus: vi.fn(),
-  saveCenter: vi.fn(),
+  fetchProviderMedia: vi.fn(),
   createCenter: vi.fn()
 }))
 vi.mock('~/entities/statistics/statistics-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/statistics/statistics-api')>()),
-  fetchProviderStatistics: vi.fn().mockRejectedValue(new Error('offline'))
+  fetchProviderStatistics: vi.fn()
 }))
-vi.mock('~/shared/api/generated/api/account/account', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('~/shared/api/generated/api/account/account')>()),
-  listManagedUsers: vi.fn()
+vi.mock('~/entities/identity/account-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/identity/account-api')>()),
+  fetchAccounts: vi.fn()
 }))
-
-const accounts = [
-  {
-    id: 'mgr-1',
-    fullName: 'Lan Tran',
-    email: 'lan@example.com',
-    status: 'ACTIVE',
-    roles: ['CENTER_MANAGER'],
-    centerId: 'center-1'
-  },
-  // H-12: a manager provisioned for another center is not offered for this one.
-  {
-    id: 'mgr-3',
-    fullName: 'Other Center Manager',
-    email: 'other@example.com',
-    status: 'ACTIVE',
-    roles: ['CENTER_MANAGER'],
-    centerId: 'center-9'
-  },
-  { id: 'mgr-2', fullName: 'Locked Manager', email: 'locked@example.com', status: 'LOCKED', roles: ['CENTER_MANAGER'] },
-  { id: 'cus-1', fullName: 'A Customer', email: 'customer@example.com', status: 'ACTIVE', roles: ['CUSTOMER'] }
-] as const
 
 const center: ProviderCenterRecord = {
   id: 'center-1',
   centerName: 'Care One',
+  email: 'care@example.com',
+  phoneNumber: '0901234567',
+  address: '1 Lê Lợi',
   centerStatus: 'PENDING',
-  address: 'Main Street',
-  email: 'center@example.com',
-  version: 2
+  managerUserId: 'mgr-1',
+  version: 3
 }
 
-function renderPage() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+function Location() {
+  const location = useLocation()
+  return <output data-testid='location'>{location.pathname + location.search}</output>
+}
+
+function renderPage(path = '/admin/centers') {
   render(
-    <QueryClientProvider client={client}>
-      <MemoryRouter>
-        <AdminCentersPage />
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}
+    >
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route element={<AdminCentersPage />} path='/admin/centers' />
+          <Route element={<span data-testid='detail' />} path='/admin/centers/:id' />
+        </Routes>
+        <Location />
       </MemoryRouter>
     </QueryClientProvider>
   )
 }
 
 beforeEach(async () => {
-  vi.mocked(fetchCenters).mockReset()
-  vi.mocked(fetchCenter).mockReset()
-  vi.mocked(changeCenterStatus).mockReset()
-  vi.mocked(saveCenter).mockReset()
-  vi.mocked(listManagedUsers)
-    .mockReset()
-    .mockResolvedValue({
-      status: 200,
-      headers: new Headers(),
-      data: {
-        code: 200,
-        message: 'OK',
-        result: { content: [...accounts], page: 0, size: 100, totalElements: accounts.length, totalPages: 1 }
-      }
-    } as unknown as Awaited<ReturnType<typeof listManagedUsers>>)
-  await setAppLanguage('en', false)
+  vi.clearAllMocks()
+  vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
+  vi.mocked(fetchProviderMedia).mockResolvedValue([])
+  vi.mocked(fetchProviderStatistics).mockResolvedValue({
+    centersByStatus: { PENDING: 2, ACTIVE: 5 },
+    caregiversByStatus: {},
+    caregiversByVerification: {}
+  })
+  vi.mocked(fetchAccounts).mockResolvedValue({
+    content: [{ id: 'mgr-1', fullName: 'Lan Tran', status: 'ACTIVE', roles: ['CENTER_MANAGER'] }],
+    page: 0,
+    size: 100,
+    totalElements: 1,
+    totalPages: 1
+  })
+  await setAppLanguage('vi', false)
 })
 
-describe('Admin provider centers', () => {
-  it('shows platform-wide status counts instead of counting the current page (M-15)', async () => {
-    vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
-    vi.mocked(fetchProviderStatistics).mockResolvedValueOnce({
-      centersByStatus: { PENDING: 7, ACTIVE: 12, SUSPENDED: 3 }
-    })
+describe('AdminCentersPage', () => {
+  it('lists centers with their manager by name, platform counts on the tabs and no license wording', async () => {
     renderPage()
-
-    expect(await screen.findByText('12')).toBeInTheDocument()
-    expect(screen.getByText('7')).toBeInTheDocument()
-    expect(screen.getAllByText('Across the platform')).toHaveLength(3)
+    expect(await screen.findByRole('link', { name: 'Care One' })).toHaveAttribute('href', '/admin/centers/center-1')
+    expect(await screen.findByText('Lan Tran')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /Chờ duyệt\s*2/ })).toBeInTheDocument()
+    expect(screen.getByText('Thẩm định')).toBeInTheDocument()
+    expect(screen.queryByText(/GPKD|giấy phép/i)).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText(/GPKD/)).not.toBeInTheDocument()
+    expect(screen.queryByText('center-1')).not.toBeInTheDocument()
   })
 
-  it('loads centers, opens the real detail, and sends its version when updating status', async () => {
-    vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
-    vi.mocked(fetchCenter).mockResolvedValue(center)
-    vi.mocked(changeCenterStatus).mockResolvedValue({ ...center, centerStatus: 'ACTIVE', version: 3 })
+  it('filters by status tab and searches on the server', async () => {
     renderPage()
-
-    expect(await screen.findByText('Care One')).toBeInTheDocument()
-    expect(fetchCenters).toHaveBeenCalledWith({ page: 0, size: 20, status: undefined, keyword: undefined })
-    fireEvent.click(screen.getByRole('button', { name: 'Care One' }))
-    expect(await screen.findByText('center@example.com')).toBeInTheDocument()
-    fireEvent.click(await screen.findByRole('button', { name: 'Update status' }))
+    await screen.findByRole('link', { name: 'Care One' })
+    fireEvent.click(screen.getByRole('tab', { name: /Đang hoạt động/ }))
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'care' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Tìm' }))
     await waitFor(() =>
-      expect(changeCenterStatus).toHaveBeenCalledWith('center-1', { status: 'ACTIVE', reason: undefined, version: 2 })
+      expect(fetchCenters).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'ACTIVE', keyword: 'care' }))
     )
   })
 
-  it('shows a retry state when the center list fails', async () => {
-    vi.mocked(fetchCenters)
-      .mockRejectedValueOnce(new Error('Unavailable'))
-      .mockResolvedValueOnce({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
-    renderPage()
-    expect(await screen.findByText('Unable to load centers.')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
-    expect(await screen.findByText('No matching centers found.')).toBeInTheDocument()
-  })
-
-  it('explains that a center needs an active manager instead of a generic failure', async () => {
-    vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
-    vi.mocked(fetchCenter).mockResolvedValue(center)
-    vi.mocked(changeCenterStatus).mockRejectedValue(
-      Object.assign(new Error('Conflict'), { status: 409, info: { code: 4120, message: 'Trung tâm phải có manager' } })
-    )
-    renderPage()
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Care One' }))
-    expect(await screen.findByText('A center needs a manager before it can be activated.')).toBeInTheDocument()
-    fireEvent.click(await screen.findByRole('button', { name: 'Update status' }))
-    expect(
-      await screen.findByText(/This center cannot be activated yet because it has no active manager\./)
-    ).toHaveAttribute('role', 'alert')
-  })
-
-  it('assigns a manager from active center manager accounts by name and email', async () => {
-    vi.mocked(fetchCenters).mockResolvedValue({ items: [center], page: 0, size: 20, totalElements: 1, totalPages: 1 })
-    vi.mocked(fetchCenter).mockResolvedValue(center)
-    vi.mocked(saveCenter).mockResolvedValue({ ...center, managerUserId: 'mgr-1', version: 3 })
-    renderPage()
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Care One' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Choose a manager' }))
-    const picker = screen.getByRole('combobox', { name: 'Center manager' })
-    await waitFor(() => expect(picker).toBeEnabled())
-    expect(
-      within(picker)
-        .getAllByRole('option')
-        .map((option) => option.textContent)
-    ).toEqual(['No manager selected', 'Lan Tran · lan@example.com'])
-    expect(screen.queryByRole('textbox', { name: /manager/i })).not.toBeInTheDocument()
-
-    fireEvent.change(picker, { target: { value: 'mgr-1' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await waitFor(() =>
-      expect(saveCenter).toHaveBeenCalledWith(
-        'center-1',
-        expect.objectContaining({ managerUserId: 'mgr-1', version: 2 })
-      )
-    )
-    expect(listManagedUsers).toHaveBeenCalledWith({ page: 0, size: 100 }, { credentials: 'include' })
-  })
-
-  it('lists archived centers read-only when that status is chosen', async () => {
+  it('lists archived centers read-only', async () => {
     vi.mocked(fetchCenters).mockResolvedValue({
-      items: [{ ...center, centerStatus: 'ARCHIVED', updatedAt: '2026-10-20T08:00:00Z' }],
+      items: [{ ...center, centerStatus: 'ARCHIVED', updatedAt: '2026-10-01T00:00:00Z' }],
       page: 0,
       size: 20,
       totalElements: 1,
       totalPages: 1
     })
-    renderPage()
-
-    fireEvent.change(await screen.findByRole('combobox', { name: 'Status' }), { target: { value: 'ARCHIVED' } })
-    await waitFor(() =>
-      expect(fetchCenters).toHaveBeenLastCalledWith(
-        expect.objectContaining({ status: 'ARCHIVED', includeDeleted: true })
-      )
-    )
-    expect(await screen.findByText(/Archived Oct 20, 2026/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Care One' })).not.toBeInTheDocument()
-    expect(
-      screen.getByText('Archived centers are kept for reference and cannot be opened or edited.')
-    ).toBeInTheDocument()
+    renderPage('/admin/centers?status=ARCHIVED')
+    expect(await screen.findByText('Care One')).toBeInTheDocument()
+    expect(fetchCenters).toHaveBeenCalledWith(expect.objectContaining({ status: 'ARCHIVED', includeDeleted: true }))
+    expect(screen.queryByRole('link', { name: 'Care One' })).not.toBeInTheDocument()
   })
 
-  it('offers only allowed transitions and requires a reason to suspend', async () => {
-    const active = { ...center, centerStatus: 'ACTIVE' as const, managerUserId: 'mgr-1' }
-    vi.mocked(fetchCenters).mockResolvedValue({ items: [active], page: 0, size: 20, totalElements: 1, totalPages: 1 })
-    vi.mocked(fetchCenter).mockResolvedValue(active)
-    vi.mocked(changeCenterStatus).mockResolvedValue({ ...active, centerStatus: 'SUSPENDED', version: 3 })
-    renderPage()
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Care One' }))
-    const select = await screen.findByRole('combobox', { name: 'Change to' })
-    expect(
-      within(select)
-        .getAllByRole('option')
-        .map((option) => option.textContent)
-    ).toEqual(['Suspended', 'Inactive'])
-    expect(screen.getByText(/locks its manager and caregiver accounts/)).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Update status' }))
-    expect(await screen.findByText(/Enter a reason so the center/)).toBeInTheDocument()
-    expect(changeCenterStatus).not.toHaveBeenCalled()
-
-    fireEvent.change(screen.getByRole('textbox', { name: 'Reason (required)' }), {
-      target: { value: 'License expired' }
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Update status' }))
-    await waitFor(() =>
-      expect(changeCenterStatus).toHaveBeenCalledWith('center-1', {
-        status: 'SUSPENDED',
-        reason: 'License expired',
-        version: 2
-      })
-    )
+  it('opens an old ?center= link on the center page', async () => {
+    renderPage('/admin/centers?center=center-1')
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/admin/centers/center-1'))
   })
 
-  it('composes operating hours from an opening and closing time', async () => {
-    vi.mocked(fetchCenters).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
-    vi.mocked(createCenter).mockResolvedValue({ ...center, operatingHours: '07:00 - 21:00' })
+  it('creates a center with overnight hours and opens it', async () => {
+    vi.mocked(createCenter).mockResolvedValue({ ...center, id: 'center-2' })
     renderPage()
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Add center manually' }))
-    fireEvent.change(screen.getByLabelText('Center name'), { target: { value: 'Care Two' } })
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'two@example.com' } })
-    fireEvent.change(screen.getByLabelText('Address'), { target: { value: '1 Le Loi' } })
-    fireEvent.change(screen.getByLabelText('Opens at'), { target: { value: '21:00' } })
-    fireEvent.change(screen.getByLabelText('Closes at'), { target: { value: '07:00' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-    expect(await screen.findByText(/the center must close after it opens/)).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Thêm trung tâm' }))
+    const dialog = screen.getByRole('dialog', { name: 'Thêm trung tâm' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo trung tâm' }))
+    expect(within(dialog).getByLabelText('Tên trung tâm')).toHaveAccessibleDescription('Nhập tên trung tâm.')
+    expect(within(dialog).getByLabelText('Tên trung tâm')).toHaveFocus()
+    expect(within(dialog).getByLabelText('Địa chỉ')).toHaveAccessibleDescription('Nhập địa chỉ trung tâm.')
     expect(createCenter).not.toHaveBeenCalled()
 
-    fireEvent.change(screen.getByLabelText('Opens at'), { target: { value: '07:00' } })
-    fireEvent.change(screen.getByLabelText('Closes at'), { target: { value: '21:00' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    fireEvent.change(within(dialog).getByLabelText('Tên trung tâm'), { target: { value: 'Night Care' } })
+    fireEvent.change(within(dialog).getByLabelText('Email'), { target: { value: 'night@example.com' } })
+    fireEvent.change(within(dialog).getByLabelText('Địa chỉ'), { target: { value: '2 Lê Lợi' } })
+    fireEvent.change(within(dialog).getByLabelText('Mở cửa'), { target: { value: '22:00' } })
+    fireEvent.change(within(dialog).getByLabelText('Đóng cửa'), { target: { value: '06:00' } })
+    // Overnight hours are a note, not an error (D-04).
+    expect(within(dialog).getByText('Hoạt động qua đêm, đóng cửa lúc 06:00 hôm sau.')).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo trung tâm' }))
+
     await waitFor(() =>
-      expect(createCenter).toHaveBeenCalledWith(expect.objectContaining({ operatingHours: '07:00 - 21:00' }))
+      expect(createCenter).toHaveBeenCalledWith({
+        centerName: 'Night Care',
+        email: 'night@example.com',
+        address: '2 Lê Lợi',
+        operatingHours: '22:00 - 06:00'
+      })
     )
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/admin/centers/center-2'))
+  })
+
+  it('asks for the missing time instead of blocking the time inputs', async () => {
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Thêm trung tâm' }))
+    const dialog = screen.getByRole('dialog', { name: 'Thêm trung tâm' })
+    fireEvent.change(within(dialog).getByLabelText('Mở cửa'), { target: { value: '08:00' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo trung tâm' }))
+    expect(within(dialog).getByText('Chọn cả giờ mở và giờ đóng cửa, hoặc để trống cả hai.')).toBeInTheDocument()
+    expect(within(dialog).getByLabelText('Đóng cửa')).toBeEnabled()
+    fireEvent.change(within(dialog).getByLabelText('Đóng cửa'), { target: { value: '07:00' } })
+    expect(within(dialog).queryByText('Chọn cả giờ mở và giờ đóng cửa, hoặc để trống cả hai.')).not.toBeInTheDocument()
   })
 })
