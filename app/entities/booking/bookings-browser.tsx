@@ -13,7 +13,7 @@ import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
 import { bookingKeys, fetchBookings } from './booking-api'
-import { BOOKING_STATUSES, bookingDay, formatDate, formatMoney, shortTime } from './booking-format'
+import { BOOKING_STATUSES, bookingDay, bookingTypeKey, formatDate, formatMoney, shortTime } from './booking-format'
 import { BookingMonthCalendar } from './booking-month-calendar'
 import { monthRange, planVisits, shiftMonth } from './booking-month'
 import { BookingStatusBadge } from './booking-status-badge'
@@ -302,14 +302,16 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
                         {fixedCenterId ? '' : ` · ${centerName(booking.centerId)}`}
                       </span>
                       <span className='mt-0.5 block text-xs tabular-nums text-on-surface-variant'>
-                        {t(`booking.scheduleType.${booking.scheduleType}`)} ·{' '}
+                        {t(bookingTypeKey(booking))} ·{' '}
                         {booking.endDate && booking.endDate !== booking.startDate
                           ? t(`${key}.range`, {
                               from: formatDate(booking.startDate, i18n.language),
                               to: formatDate(booking.endDate, i18n.language)
                             })
                           : formatDate(booking.startDate, i18n.language)}{' '}
-                        · {t(`${key}.time`, { start: shortTime(booking.startTime), end: shortTime(booking.endTime) })}
+                        {booking.startTime
+                          ? ` · ${t(`${key}.time`, { start: shortTime(booking.startTime), end: shortTime(booking.endTime) })}`
+                          : null}
                       </span>
                     </span>
                     <span className='flex items-center gap-3 sm:justify-end'>

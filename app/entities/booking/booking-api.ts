@@ -3,6 +3,7 @@ import {
   cancelBooking,
   createBooking,
   getBooking,
+  listBookingHeldSchedules,
   listBookingHistory,
   listBookings,
   previewBookingCancellation,
@@ -26,12 +27,18 @@ import {
   startCareSession,
   updateCareSessionTask
 } from '~/shared/api/generated/api/care-session/care-session'
+import {
+  getCenterBookingPolicy,
+  updateCenterBookingPolicy
+} from '~/shared/api/generated/api/center-booking-policy/center-booking-policy'
 import type {
   BookingCancelRequest,
   BookingCreateRequest,
   BookingQuoteRequest,
   CareSessionStartRequest,
   CareTaskUpdateRequest,
+  CenterBookingPolicyRequest,
+  ListBookingHeldSchedulesParams,
   ListBookingsParams,
   ListMyBookingOccurrencesParams,
   NoShowDecisionRequest
@@ -72,11 +79,25 @@ export const bookingKeys = {
   quote: (request: BookingQuoteRequest | null) => ['booking', 'quote', request] as const,
   occurrences: (params: ListMyBookingOccurrencesParams) => ['booking', 'occurrences', params] as const,
   occurrence: (id: string) => ['booking', 'occurrence', id] as const,
-  session: (id: string) => ['booking', 'session', id] as const
+  session: (id: string) => ['booking', 'session', id] as const,
+  heldSchedules: (params: ListBookingHeldSchedulesParams) => ['booking', 'held-schedules', params] as const,
+  centerPolicy: (centerId: string) => ['booking', 'center-policy', centerId] as const
 }
 
 export async function fetchBookings(params: ListBookingsParams = {}) {
   return result(await listBookings(params, readOptions))
+}
+/** Booking policy in effect for a center (spec §8): advance notice, deadlines, deposit and refund rules. */
+export async function fetchCenterBookingPolicy(centerId: string) {
+  return result(await getCenterBookingPolicy(centerId, readOptions))
+}
+/** Replaces a center's booking policy (CENTER_MANAGER own center, ADMIN any); `version` guards concurrent edits. */
+export async function updateCenterBookingPolicyRequest(centerId: string, request: CenterBookingPolicyRequest) {
+  return result(await updateCenterBookingPolicy(centerId, request, await writeOptions()))
+}
+/** Caregiver schedules already held by bookings, and the caregiver's busy slots, to lock them in the SHIFT picker. */
+export async function fetchHeldSchedules(params: ListBookingHeldSchedulesParams) {
+  return result(await listBookingHeldSchedules(params, readOptions))
 }
 export async function fetchBooking(id: string) {
   return result(await getBooking(id, readOptions))

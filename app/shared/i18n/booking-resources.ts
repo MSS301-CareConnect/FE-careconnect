@@ -1,7 +1,8 @@
 export const bookingSharedVi = {
   status: {
-    PENDING: 'Chờ trung tâm duyệt',
-    AWAITING_DEPOSIT: 'Chờ đặt cọc',
+    PENDING_CENTER_CONFIRMATION: 'Chờ trung tâm xác nhận',
+    PENDING_CAREGIVER_ASSIGNMENT: 'Chờ phân người chăm sóc',
+    AWAITING_INITIAL_PAYMENT: 'Chờ thanh toán',
     CONFIRMED: 'Đã xác nhận',
     IN_PROGRESS: 'Đang chăm sóc',
     COMPLETED: 'Hoàn tất',
@@ -10,16 +11,23 @@ export const bookingSharedVi = {
     EXPIRED: 'Hết hạn'
   },
   occurrenceStatus: {
+    PENDING_ASSIGNMENT: 'Chờ phân công',
+    RESERVED: 'Đang giữ lịch',
     SCHEDULED: 'Đã lên lịch',
     ACKNOWLEDGED: 'Đã nhận ca',
     IN_PROGRESS: 'Đang diễn ra',
     COMPLETED: 'Đã xong',
     CANCELLED: 'Đã hủy',
-    MISSED: 'Bỏ lỡ',
-    CUSTOMER_NO_SHOW: 'Khách vắng mặt'
+    EXPIRED: 'Hết hiệu lực',
+    CUSTOMER_NO_SHOW: 'Khách vắng mặt',
+    CAREGIVER_MISSED: 'Người chăm sóc vắng'
   },
-  scheduleType: {
-    ONE_TIME: 'Một buổi',
+  bookingType: {
+    SHIFT: 'Theo ca',
+    RECURRING: 'Định kỳ',
+    CUSTOM: 'Tự chọn buổi'
+  },
+  frequency: {
     DAILY: 'Hằng ngày',
     WEEKLY: 'Hằng tuần'
   },
@@ -129,6 +137,74 @@ export const bookingSharedVi = {
     medications: 'Thuốc đang dùng',
     emergencyContact: 'Liên hệ khẩn cấp: {{name}} {{phone}}'
   },
+  policy: {
+    loading: 'Đang tải chính sách đặt lịch…',
+    loadError: 'Không tải được chính sách đặt lịch của trung tâm.',
+    defaultInUse: 'Trung tâm đang dùng chính sách mặc định của nền tảng. Lưu để áp dụng chính sách riêng.',
+    customized: 'Chính sách riêng của trung tâm, cập nhật lần cuối {{time}}.',
+    save: 'Lưu chính sách',
+    saveAction: 'lưu chính sách đặt lịch',
+    saved: 'Đã lưu chính sách đặt lịch. Booking mới dùng ngay; booking đã thanh toán giữ chính sách lúc thanh toán.',
+    groups: {
+      advance: 'Đặt trước tối thiểu',
+      deadlines: 'Hạn xử lý',
+      payment: 'Thanh toán',
+      refund: 'Hoàn tiền khi khách hủy',
+      checkIn: 'Cửa sổ check-in'
+    },
+    groupHints: {
+      advance: 'Khách phải đặt trước giờ buổi đầu ít nhất bấy nhiêu thời gian, theo từng loại booking.',
+      deadlines: 'Thời gian trung tâm xác nhận, phân người chăm sóc và khách thanh toán khoản đầu.',
+      payment: 'SHIFT luôn trả 100% khi được xác nhận; RECURRING / CUSTOM trả cọc rồi trả nốt trước buổi đầu.',
+      refund: 'Tính trên số tiền khách đã trả cho từng buổi bị hủy, theo thời gian còn lại trước buổi đó.',
+      checkIn: 'Người chăm sóc được check-in sớm / trễ so với giờ bắt đầu buổi.'
+    },
+    units: {
+      hours: 'Đơn vị: giờ (vd 1,5 = 90 phút).',
+      minutes: 'Đơn vị: phút.',
+      percent: 'Đơn vị: %.'
+    },
+    fields: {
+      shiftMinAdvanceMinutes: 'SHIFT',
+      recurringMinAdvanceMinutes: 'RECURRING',
+      customMinAdvanceMinutes: 'CUSTOM',
+      confirmationTimeoutMinutes: 'Hạn trung tâm xác nhận',
+      assignmentTimeoutMinutes: 'Hạn phân người chăm sóc',
+      initialPaymentTimeoutMinutes: 'Hạn thanh toán khoản đầu',
+      depositPercent: 'Tỷ lệ cọc (RECURRING / CUSTOM)',
+      remainingPaymentDueBeforeMinutes: 'Trả nốt trước buổi đầu',
+      overduePaymentForfeitPercent: 'Giữ lại khi quá hạn trả nốt',
+      remainingPaymentReminderMinutes: 'Nhắc trả nốt (giờ trước hạn)',
+      refundThresholdMinutes: 'Mốc hủy sớm',
+      refundPercentBeforeThreshold: 'Hoàn khi hủy từ mốc trở lên',
+      refundPercentAfterThreshold: 'Hoàn khi hủy dưới mốc',
+      checkInEarlyMinutes: 'Check-in sớm tối đa',
+      checkInLateMinutes: 'Check-in trễ tối đa'
+    },
+    remindersHint: 'Các mốc cách nhau bằng dấu phẩy, vd 72, 48. Tối đa 5 mốc, để trống nếu không nhắc.',
+    checkInNotApplied:
+      'Hai giá trị này được lưu theo trung tâm nhưng hệ thống check-in hiện vẫn dùng cửa sổ chung của nền tảng.',
+    tightTitle: 'Có tổ hợp quá ngắn — vẫn lưu được, nhưng booking đặt sát mức tối thiểu sẽ có hạn ngắn hơn:',
+    tight: {
+      shift: 'SHIFT: xác nhận + thanh toán cần {{needed}} giờ, nhưng chỉ đặt trước tối thiểu {{available}} giờ.',
+      recurring:
+        'RECURRING: xác nhận + phân công + thanh toán cần {{needed}} giờ, nhưng chỉ còn {{available}} giờ trước hạn trả nốt.',
+      custom:
+        'CUSTOM: xác nhận + phân công + thanh toán cần {{needed}} giờ, nhưng chỉ còn {{available}} giờ trước hạn trả nốt.'
+    },
+    errors: {
+      required: 'Nhập giá trị.',
+      notNumber: 'Giá trị phải là số.',
+      tooSmall: 'Giá trị nhỏ hơn mức cho phép.',
+      tooLarge: 'Giá trị lớn hơn mức cho phép (tối đa 720 giờ, check-in tối đa 1440 phút, tỷ lệ tối đa 100%).',
+      wholeMinutes: 'Thời lượng phải tròn phút.',
+      advanceBeforeRemaining: 'Phải lớn hơn thời gian “Trả nốt trước buổi đầu”, nếu không khách không kịp thanh toán.',
+      afterAboveBefore: 'Không được hoàn nhiều hơn mức hủy sớm.',
+      reminders: 'Mỗi mốc là số giờ lớn hơn 0 và không quá 720.',
+      remindersDuplicate: 'Các mốc nhắc không được trùng nhau.',
+      remindersTooMany: 'Tối đa 5 mốc nhắc.'
+    }
+  },
   errors: {
     e5004: 'Hệ thống đặt lịch đang tạm gián đoạn, vui lòng thử lại sau ít phút.',
     e5006: 'Thông tin vừa được người khác cập nhật, vui lòng tải lại trang rồi thử lại.',
@@ -161,6 +237,9 @@ export const bookingSharedVi = {
     e5221: 'Buổi chăm sóc không ở trạng thái cho phép thao tác này.',
     e5222: 'Chỉ check-in được từ 30 phút trước tới 30 phút sau giờ bắt đầu buổi.',
     e5223: 'Lịch đặt chưa được xác nhận (chưa đặt cọc) hoặc đã kết thúc.',
+    e5242: 'Khách chưa thanh toán đủ lịch đặt nên chưa bắt đầu chăm sóc được.',
+    e5413: 'Chính sách có giá trị không hợp lệ hoặc mâu thuẫn nhau.',
+    e5414: 'Cần nhập đủ mọi giá trị của chính sách.',
     e5225: 'Thời lượng mỗi buổi vượt quá thời lượng của gói giá theo ca.',
     e5226: 'Người chăm sóc không có ca làm việc (hoặc đang nghỉ) vào thời gian đã chọn.',
     e5228: 'Bạn đang có quá nhiều lịch đặt chờ duyệt, vui lòng chờ trung tâm duyệt hoặc hủy bớt.',
@@ -193,8 +272,9 @@ export const bookingSharedVi = {
 
 export const bookingSharedEn = {
   status: {
-    PENDING: 'Awaiting center review',
-    AWAITING_DEPOSIT: 'Awaiting deposit',
+    PENDING_CENTER_CONFIRMATION: 'Awaiting center confirmation',
+    PENDING_CAREGIVER_ASSIGNMENT: 'Awaiting caregiver assignment',
+    AWAITING_INITIAL_PAYMENT: 'Awaiting payment',
     CONFIRMED: 'Confirmed',
     IN_PROGRESS: 'In care',
     COMPLETED: 'Completed',
@@ -203,16 +283,23 @@ export const bookingSharedEn = {
     EXPIRED: 'Expired'
   },
   occurrenceStatus: {
+    PENDING_ASSIGNMENT: 'Awaiting assignment',
+    RESERVED: 'Reserved',
     SCHEDULED: 'Scheduled',
     ACKNOWLEDGED: 'Acknowledged',
     IN_PROGRESS: 'In progress',
     COMPLETED: 'Done',
     CANCELLED: 'Cancelled',
-    MISSED: 'Missed',
-    CUSTOMER_NO_SHOW: 'Customer no-show'
+    EXPIRED: 'Expired',
+    CUSTOMER_NO_SHOW: 'Customer no-show',
+    CAREGIVER_MISSED: 'Caregiver missed'
   },
-  scheduleType: {
-    ONE_TIME: 'One visit',
+  bookingType: {
+    SHIFT: 'Shift',
+    RECURRING: 'Recurring',
+    CUSTOM: 'Custom visits'
+  },
+  frequency: {
     DAILY: 'Daily',
     WEEKLY: 'Weekly'
   },
@@ -322,6 +409,78 @@ export const bookingSharedEn = {
     medications: 'Current medications',
     emergencyContact: 'Emergency contact: {{name}} {{phone}}'
   },
+  policy: {
+    loading: 'Loading the booking policy…',
+    loadError: 'Could not load the center booking policy.',
+    defaultInUse: 'This center uses the platform default policy. Save to give it its own policy.',
+    customized: 'The center’s own policy, last updated {{time}}.',
+    save: 'Save policy',
+    saveAction: 'save the booking policy',
+    saved: 'Booking policy saved. New bookings use it right away; paid bookings keep the policy they were paid under.',
+    groups: {
+      advance: 'Minimum notice',
+      deadlines: 'Deadlines',
+      payment: 'Payment',
+      refund: 'Refunds when the customer cancels',
+      checkIn: 'Check-in window'
+    },
+    groupHints: {
+      advance: 'How long before the first visit a customer must book, per booking type.',
+      deadlines:
+        'Time for the center to confirm and assign a caregiver, and for the customer to make the initial payment.',
+      payment:
+        'SHIFT always pays 100% once confirmed; RECURRING / CUSTOM pay a deposit and the rest before the first visit.',
+      refund: 'Applied to what the customer paid for each cancelled visit, by the time left before that visit.',
+      checkIn: 'How early or late a caregiver may check in around the visit start.'
+    },
+    units: {
+      hours: 'In hours (1.5 = 90 minutes).',
+      minutes: 'In minutes.',
+      percent: 'In %.'
+    },
+    fields: {
+      shiftMinAdvanceMinutes: 'SHIFT',
+      recurringMinAdvanceMinutes: 'RECURRING',
+      customMinAdvanceMinutes: 'CUSTOM',
+      confirmationTimeoutMinutes: 'Center confirmation',
+      assignmentTimeoutMinutes: 'Caregiver assignment',
+      initialPaymentTimeoutMinutes: 'Initial payment',
+      depositPercent: 'Deposit (RECURRING / CUSTOM)',
+      remainingPaymentDueBeforeMinutes: 'Rest due before the first visit',
+      overduePaymentForfeitPercent: 'Kept when the rest is overdue',
+      remainingPaymentReminderMinutes: 'Reminders (hours before due)',
+      refundThresholdMinutes: 'Early-cancellation cut-off',
+      refundPercentBeforeThreshold: 'Refund at or before the cut-off',
+      refundPercentAfterThreshold: 'Refund after the cut-off',
+      checkInEarlyMinutes: 'Earliest check-in',
+      checkInLateMinutes: 'Latest check-in'
+    },
+    remindersHint: 'Separate the times with commas, e.g. 72, 48. At most 5; leave empty for no reminder.',
+    checkInNotApplied:
+      'These two values are stored per center, but check-in still uses the platform-wide window for now.',
+    tightTitle:
+      'Some combinations are tight — you can save them, but bookings made at the minimum notice get shorter deadlines:',
+    tight: {
+      shift: 'SHIFT: confirmation + payment need {{needed}} hours, but the minimum notice is {{available}} hours.',
+      recurring:
+        'RECURRING: confirmation + assignment + payment need {{needed}} hours, but only {{available}} hours are left before the rest is due.',
+      custom:
+        'CUSTOM: confirmation + assignment + payment need {{needed}} hours, but only {{available}} hours are left before the rest is due.'
+    },
+    errors: {
+      required: 'Enter a value.',
+      notNumber: 'The value must be a number.',
+      tooSmall: 'The value is below the allowed minimum.',
+      tooLarge: 'The value is above the allowed maximum (720 hours, check-in 1440 minutes, rates 100%).',
+      wholeMinutes: 'Durations must be whole minutes.',
+      advanceBeforeRemaining:
+        'Must be longer than “Rest due before the first visit”, or the customer cannot pay in time.',
+      afterAboveBefore: 'Cannot refund more than for an early cancellation.',
+      reminders: 'Each reminder is a number of hours above 0 and at most 720.',
+      remindersDuplicate: 'Reminders must differ.',
+      remindersTooMany: 'At most 5 reminders.'
+    }
+  },
   errors: {
     e5004: 'Booking is temporarily unavailable. Please try again in a few minutes.',
     e5006: 'Someone else just changed this data. Reload and try again.',
@@ -354,6 +513,9 @@ export const bookingSharedEn = {
     e5221: 'The visit is not in a status that allows this action.',
     e5222: 'Check-in is open from 30 minutes before to 30 minutes after the scheduled start.',
     e5223: 'The booking is not confirmed (no deposit yet) or has ended.',
+    e5242: 'The customer has not paid the booking in full, so care cannot start yet.',
+    e5413: 'Some policy values are invalid or contradict each other.',
+    e5414: 'Every policy value is required.',
     e5225: 'Each visit is longer than the selected per-shift price plan allows.',
     e5226: 'The caregiver has no approved work shift (or is on leave) at that time.',
     e5228: 'You have too many bookings awaiting review. Wait for the center or cancel one.',

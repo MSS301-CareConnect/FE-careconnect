@@ -1,4 +1,9 @@
-import type { BookingStatus, OccurrenceStatus } from '~/shared/api/generated/contracts'
+import type {
+  BookingRecurrenceFrequency,
+  BookingStatus,
+  BookingType,
+  OccurrenceStatus
+} from '~/shared/api/generated/contracts'
 
 import { bookingErrorCode, bookingErrorStatus } from './booking-api'
 import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
@@ -7,8 +12,9 @@ import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-
 export const BOOKING_TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 export const BOOKING_STATUSES = [
-  'PENDING',
-  'AWAITING_DEPOSIT',
+  'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_ASSIGNMENT',
+  'AWAITING_INITIAL_PAYMENT',
   'CONFIRMED',
   'IN_PROGRESS',
   'COMPLETED',
@@ -18,14 +24,34 @@ export const BOOKING_STATUSES = [
 ] as const satisfies readonly BookingStatus[]
 
 export const OCCURRENCE_STATUSES = [
+  'PENDING_ASSIGNMENT',
+  'RESERVED',
   'SCHEDULED',
   'ACKNOWLEDGED',
   'IN_PROGRESS',
   'COMPLETED',
   'CANCELLED',
-  'MISSED',
-  'CUSTOMER_NO_SHOW'
+  'EXPIRED',
+  'CUSTOMER_NO_SHOW',
+  'CAREGIVER_MISSED'
 ] as const satisfies readonly OccurrenceStatus[]
+
+/** Booking statuses before the initial payment: the center can still reject (spec §11.1). */
+export const AWAITING_CENTER_STATUSES: ReadonlySet<BookingStatus> = new Set([
+  'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_ASSIGNMENT'
+])
+
+/** Translation key of a booking's type; RECURRING shows its frequency. */
+export function bookingTypeKey(booking: {
+  bookingType: BookingType
+  recurrenceFrequency?: BookingRecurrenceFrequency
+}) {
+  if (booking.bookingType === 'RECURRING' && booking.recurrenceFrequency) {
+    return `booking.frequency.${booking.recurrenceFrequency}` as const
+  }
+  return `booking.bookingType.${booking.bookingType}` as const
+}
 
 /** ISO weekdays as BookingService stores them: 1 = Monday … 7 = Sunday. */
 export const WEEKDAYS = ['1', '2', '3', '4', '5', '6', '7'] as const
@@ -34,17 +60,26 @@ export function weekdayKey(day: number) {
   return WEEKDAYS.find((item) => item === String(day))
 }
 
+/** ISO instant of a Vietnam-time date and HH:mm; Vietnam keeps UTC+07:00 all year (no daylight saving). */
+export function vietnamInstant(date: string, time: string) {
+  return new Date(`${date}T${time}:00+07:00`).toISOString()
+}
+
 /** True once the scheduled start of a visit has passed. */
 export function hasStarted(startAt: string, now = Date.now()) {
   return new Date(startAt).getTime() <= now
 }
 
+const NOT_STARTED_OCCURRENCES: ReadonlySet<OccurrenceStatus> = new Set([
+  'PENDING_ASSIGNMENT',
+  'RESERVED',
+  'SCHEDULED',
+  'ACKNOWLEDGED'
+])
+
 /** Occurrences that have not started yet and can still be cancelled or reassigned. */
 export function isUpcomingOccurrence(occurrence: { status: OccurrenceStatus; startAt: string }, now = Date.now()) {
-  return (
-    (occurrence.status === 'SCHEDULED' || occurrence.status === 'ACKNOWLEDGED') &&
-    new Date(occurrence.startAt).getTime() > now
-  )
+  return NOT_STARTED_OCCURRENCES.has(occurrence.status) && new Date(occurrence.startAt).getTime() > now
 }
 
 export function formatMoney(value: number | undefined, language: string) {
@@ -106,8 +141,8 @@ export function bookingDay(value: Date) {
 
 const KNOWN_ERROR_CODES = [
   5004, 5006, 5007, 5100, 5101, 5102, 5107, 5110, 5157, 5150, 5151, 5153, 5154, 5159, 5205, 5206, 5207, 5208, 5211,
-  5212, 5213, 5214, 5215, 5216, 5218, 5221, 5222, 5223, 5225, 5226, 5228, 5234, 5235, 5236, 5300, 5301, 5302, 5400,
-  5403, 5404, 5405, 5406, 5408, 5601, 5602, 5700, 5801, 5802, 5804, 5805, 5812, 5813, 5814, 5817, 5822
+  5212, 5213, 5214, 5215, 5216, 5218, 5221, 5222, 5223, 5225, 5226, 5228, 5234, 5235, 5236, 5242, 5300, 5301, 5302,
+  5400, 5403, 5404, 5405, 5406, 5408, 5413, 5414, 5601, 5602, 5700, 5801, 5802, 5804, 5805, 5812, 5813, 5814, 5817, 5822
 ] as const
 
 export type BookingErrorKey =

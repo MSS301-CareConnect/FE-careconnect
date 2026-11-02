@@ -64,11 +64,13 @@ function VisitLink({
       to={detailPath(visit.bookingId)}
     >
       <span aria-hidden='true' className={`h-2 w-2 shrink-0 rounded-full ${DOT[BOOKING_STATUS_TONES[visit.status]]}`} />
-      <span className='shrink-0 font-semibold tabular-nums'>
-        {detailed
-          ? t('booking.browser.time', { start: shortTime(visit.startTime), end: shortTime(visit.endTime) })
-          : shortTime(visit.startTime)}
-      </span>
+      {visit.startTime ? (
+        <span className='shrink-0 font-semibold tabular-nums'>
+          {detailed
+            ? t('booking.browser.time', { start: shortTime(visit.startTime), end: shortTime(visit.endTime) })
+            : shortTime(visit.startTime)}
+        </span>
+      ) : null}
       <span className={`min-w-0 truncate ${ended ? 'line-through' : ''}`}>
         {visit.recipientName ?? (detailed ? t('booking.browser.noRecipient') : `#${visit.bookingCode}`)}
         {detailed && centerName ? ` · ${centerName(visit.centerId)}` : ''}

@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   acceptBookingRequest,
+  assignBookingCaregiver,
+  cancelBookingRequest,
   decideNoShow,
   fetchBooking,
   fetchBookingHistory,
@@ -28,7 +30,9 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   fetchBookingHistory: vi.fn(),
   fetchOccurrence: vi.fn(),
   acceptBookingRequest: vi.fn(),
+  assignBookingCaregiver: vi.fn(),
   rejectBookingRequest: vi.fn(),
+  cancelBookingRequest: vi.fn(),
   decideNoShow: vi.fn()
 }))
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
@@ -41,13 +45,11 @@ const emptyPage = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 
 const booking: BookingDetailRecord = {
   id: 'bk-1',
   bookingCode: 'BK0001',
-  status: 'PENDING',
+  status: 'PENDING_CENTER_CONFIRMATION',
   recipientId: 'rec-1',
   centerId: 'center-1',
-  scheduleType: 'ONE_TIME',
+  bookingType: 'CUSTOM',
   startDate: '2026-11-01',
-  startTime: '08:00',
-  endTime: '10:00',
   totalAmount: 200000,
   customer: { fullName: 'Nguyễn Minh', phoneNumber: '0901234567' },
   recipientSnapshot: { fullName: 'Bà Lan', allergies: 'Hải sản' },
@@ -57,7 +59,7 @@ const booking: BookingDetailRecord = {
       occurrenceNo: 1,
       startAt: new Date(Date.now() + 86_400_000).toISOString(),
       endAt: new Date(Date.now() + 93_600_000).toISOString(),
-      status: 'SCHEDULED'
+      status: 'PENDING_ASSIGNMENT'
     }
   ]
 }
@@ -110,7 +112,7 @@ beforeEach(async () => {
 describe('Center Manager bookings', () => {
   it('lists the center bookings and opens the pending review queue', async () => {
     vi.mocked(fetchBookings).mockImplementation(async (params) =>
-      params?.status === 'PENDING' && params.size === 1
+      params?.status === 'PENDING_CENTER_CONFIRMATION' && params.size === 1
         ? { ...emptyPage, size: 1, totalElements: 2, totalPages: 2 }
         : {
             ...emptyPage,
@@ -132,13 +134,19 @@ describe('Center Manager bookings', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Xem yêu cầu chờ duyệt' }))
     await waitFor(() =>
-      expect(fetchBookings).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'PENDING', size: 20 }))
+      expect(fetchBookings).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: 'PENDING_CENTER_CONFIRMATION', size: 20 })
+      )
     )
   })
 
   it('accepts a pending booking with the caregiver the manager chooses', async () => {
     vi.mocked(fetchBooking).mockResolvedValue(booking)
-    vi.mocked(acceptBookingRequest).mockResolvedValue({ ...booking, status: 'AWAITING_DEPOSIT', caregiverId: 'cg-2' })
+    vi.mocked(acceptBookingRequest).mockResolvedValue({
+      ...booking,
+      status: 'AWAITING_INITIAL_PAYMENT',
+      caregiverId: 'cg-2'
+    })
     wrap(<ManagerBookingDetailPage />, '/center-manager/bookings/bk-1')
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Bà Lan' })).toBeInTheDocument()
@@ -146,13 +154,41 @@ describe('Center Manager bookings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Chấp nhận' }))
     const dialog = screen.getByRole('dialog', { name: 'Chấp nhận lịch đặt #BK0001' })
     const confirm = within(dialog).getByRole('button', { name: 'Chấp nhận' })
-    expect(confirm).toBeDisabled()
+    // Spec §5.2: a CUSTOM booking without caregiver may be confirmed first and assigned later.
+    expect(confirm).toBeEnabled()
+    expect(within(dialog).getByRole('option', { name: 'Phân công sau' })).toBeInTheDocument()
 
     await within(dialog).findByRole('option', { name: 'Anh Nam' })
     fireEvent.change(within(dialog).getByRole('combobox', { name: 'Người chăm sóc' }), { target: { value: 'cg-2' } })
     fireEvent.click(confirm)
 
     await waitFor(() => expect(acceptBookingRequest).toHaveBeenCalledWith('bk-1', 'cg-2'))
+  })
+
+  it('assigns a caregiver to a confirmed booking that is waiting for one (spec §5.3)', async () => {
+    const waiting: BookingDetailRecord = {
+      ...booking,
+      status: 'PENDING_CAREGIVER_ASSIGNMENT',
+      assignmentDueAt: '2026-10-31T10:00:00Z'
+    }
+    vi.mocked(fetchBooking).mockResolvedValue(waiting)
+    vi.mocked(assignBookingCaregiver).mockResolvedValue({
+      ...waiting,
+      status: 'AWAITING_INITIAL_PAYMENT',
+      caregiverId: 'cg-2'
+    })
+    wrap(<ManagerBookingDetailPage />, '/center-manager/bookings/bk-1')
+
+    expect(await screen.findByText(/Cần phân người chăm sóc trước/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Chấp nhận' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Từ chối' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Phân người chăm sóc' }))
+    const dialog = screen.getByRole('dialog', { name: 'Phân người chăm sóc cho lịch đặt #BK0001' })
+    await within(dialog).findByRole('option', { name: /Anh Nam/ })
+    fireEvent.change(within(dialog).getByRole('combobox', { name: 'Người chăm sóc' }), { target: { value: 'cg-2' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Phân người chăm sóc' }))
+
+    await waitFor(() => expect(assignBookingCaregiver).toHaveBeenCalledWith('bk-1', 'cg-2'))
   })
 
   it('marks which caregivers are free for every upcoming visit (M-16)', async () => {
@@ -228,5 +264,40 @@ describe('Center Manager bookings', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận khách vắng' }))
 
     await waitFor(() => expect(decideNoShow).toHaveBeenCalledWith('occ-1', { approved: true, note: 'Đã gọi khách' }))
+  })
+
+  it('cancels one upcoming visit of a paid booking (B16) and only that visit', async () => {
+    const upcoming = { ...booking.occurrences![0], status: 'SCHEDULED' as const, caregiverId: 'cg-1' }
+    const confirmed = { ...booking, status: 'CONFIRMED' as const, caregiverId: 'cg-1', occurrences: [upcoming] }
+    vi.mocked(fetchBooking).mockResolvedValue(confirmed)
+    vi.mocked(cancelBookingRequest).mockResolvedValue(confirmed)
+    wrap(<ManagerBookingDetailPage />, '/center-manager/bookings/bk-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Hủy buổi' }))
+    const dialog = screen.getByRole('dialog', { name: 'Hủy buổi 1' })
+    expect(within(dialog).getByText(/khách được hoàn toàn bộ số đã trả cho buổi/)).toBeInTheDocument()
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'Người chăm sóc ốm' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Hủy buổi' }))
+
+    await waitFor(() =>
+      expect(cancelBookingRequest).toHaveBeenCalledWith('bk-1', {
+        reason: 'Người chăm sóc ốm',
+        occurrenceIds: ['occ-1']
+      })
+    )
+  })
+
+  it('offers no single-visit cancel before the customer has paid', async () => {
+    const upcoming = { ...booking.occurrences![0], status: 'RESERVED' as const, caregiverId: 'cg-1' }
+    vi.mocked(fetchBooking).mockResolvedValue({
+      ...booking,
+      status: 'AWAITING_INITIAL_PAYMENT',
+      caregiverId: 'cg-1',
+      occurrences: [upcoming]
+    })
+    wrap(<ManagerBookingDetailPage />, '/center-manager/bookings/bk-1')
+
+    expect(await screen.findByRole('button', { name: 'Hủy lịch đặt' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Hủy buổi' })).not.toBeInTheDocument()
   })
 })

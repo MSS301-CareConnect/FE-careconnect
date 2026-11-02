@@ -7,7 +7,8 @@
  */
 import type { BookingStatus } from '../bookingStatus'
 import type { BookingCustomerRecord } from './bookingCustomerRecord'
-import type { BookingScheduleType } from './bookingScheduleType'
+import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
+import type { BookingType } from './bookingType'
 
 export interface BookingSummaryRecord {
   id: string
@@ -19,11 +20,12 @@ export interface BookingSummaryRecord {
   recipientName?: string
   centerId?: string
   caregiverId?: string
-  scheduleType: BookingScheduleType
+  bookingType: BookingType
+  recurrenceFrequency?: BookingRecurrenceFrequency
   startDate: string
   endDate?: string
-  startTime: string
-  endTime: string
+  startTime?: string
+  endTime?: string
   daysOfWeek?: number[]
   totalAmount?: number
   createdAt?: string

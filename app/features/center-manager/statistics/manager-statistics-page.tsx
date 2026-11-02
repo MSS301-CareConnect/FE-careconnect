@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { OperationalStatisticsPanel } from '~/entities/statistics/statistics-panels'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 
+import { CenterRevenuePanel } from './components/center-revenue-panel'
+
 export function ManagerStatisticsPage() {
   const { t } = useTranslation()
   useDocumentTitle(t('centerManager.statisticsPage.documentTitle'))
@@ -16,6 +18,7 @@ export function ManagerStatisticsPage() {
         <p className='mt-2 text-sm text-on-surface-variant'>{t('centerManager.statisticsPage.subtitle')}</p>
       </header>
       <OperationalStatisticsPanel scope='center' />
+      <CenterRevenuePanel />
     </div>
   )
 }

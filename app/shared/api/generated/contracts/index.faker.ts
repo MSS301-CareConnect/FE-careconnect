@@ -17,6 +17,9 @@ import type {
   BookingCustomerRecord,
   BookingDetailRecord,
   BookingDetailResponse,
+  BookingHeldScheduleBusySlotRecord,
+  BookingHeldScheduleRecord,
+  BookingHeldScheduleResponse,
   BookingHistoryPage,
   BookingHistoryPageResponse,
   BookingHistoryRecord,
@@ -35,8 +38,8 @@ import type {
   BookingQuoteRequest,
   BookingQuoteResponse,
   BookingRecipientSnapshotRecord,
+  BookingRecurrenceFrequency,
   BookingRefundRecord,
-  BookingScheduleType,
   BookingServiceRequest,
   BookingSnapshotEmergencyContactRecord,
   BookingSnapshotMedicationRecord,
@@ -44,6 +47,7 @@ import type {
   BookingSummaryPage,
   BookingSummaryPageResponse,
   BookingSummaryRecord,
+  BookingType,
   BookingUnitType,
   CancellationPreviewItemRecord,
   CancellationPreviewRecord,
@@ -94,6 +98,9 @@ import type {
   CatalogItemRecord,
   CatalogItemRequest,
   CatalogItemResponse,
+  CenterBookingPolicyRecord,
+  CenterBookingPolicyRequest,
+  CenterBookingPolicyResponse,
   CenterCreateRequest,
   CenterOfferingPage,
   CenterOfferingPageResponse,
@@ -197,6 +204,8 @@ import type {
   ProviderAvailabilityCheckResponse,
   ProviderAvailabilityWindowListResponse,
   ProviderAvailabilityWindowRecord,
+  ProviderBookableScheduleListResponse,
+  ProviderBookableScheduleRecord,
   ProviderCaregiverCardPage,
   ProviderCaregiverCardPageResponse,
   ProviderCaregiverCardRecord,
@@ -269,6 +278,8 @@ import type {
   ReportPhotoRecord,
   ResendRegistrationOtpResponse,
   ResetPasswordRequest,
+  RevenueRecord,
+  RevenueResponse,
   RoleActionResponse,
   RoleListResponse,
   RoleRecord,
@@ -812,6 +823,30 @@ export const getProviderTimeOffResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderTimeOffRecordMock() },
+  ...overrideResponse
+})
+
+export const getProviderBookableScheduleRecordMock = (
+  overrideResponse: Partial<ProviderBookableScheduleRecord> = {}
+): ProviderBookableScheduleRecord => ({
+  id: faker.string.uuid(),
+  caregiverId: faker.string.uuid(),
+  centerId: faker.string.uuid(),
+  workShiftId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  workDate: faker.date.past().toISOString().slice(0, 10),
+  startTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  endTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  ...overrideResponse
+})
+
+export const getProviderBookableScheduleListResponseMock = (
+  overrideResponse: Partial<ProviderBookableScheduleListResponse> = {}
+): ProviderBookableScheduleListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderBookableScheduleRecordMock()
+  })),
   ...overrideResponse
 })
 
@@ -2250,8 +2285,9 @@ export const getRecipientBatchRequestMock = (
 
 export const getBookingStatusMock = (): BookingStatus =>
   faker.helpers.arrayElement([
-    'PENDING',
-    'AWAITING_DEPOSIT',
+    'PENDING_CENTER_CONFIRMATION',
+    'PENDING_CAREGIVER_ASSIGNMENT',
+    'AWAITING_INITIAL_PAYMENT',
     'CONFIRMED',
     'IN_PROGRESS',
     'COMPLETED',
@@ -2262,17 +2298,23 @@ export const getBookingStatusMock = (): BookingStatus =>
 
 export const getOccurrenceStatusMock = (): OccurrenceStatus =>
   faker.helpers.arrayElement([
+    'PENDING_ASSIGNMENT',
+    'RESERVED',
     'SCHEDULED',
     'ACKNOWLEDGED',
     'IN_PROGRESS',
     'COMPLETED',
     'CANCELLED',
-    'MISSED',
-    'CUSTOMER_NO_SHOW'
+    'EXPIRED',
+    'CUSTOMER_NO_SHOW',
+    'CAREGIVER_MISSED'
   ] as const)
 
-export const getBookingScheduleTypeMock = (): BookingScheduleType =>
-  faker.helpers.arrayElement(['ONE_TIME', 'DAILY', 'WEEKLY'] as const)
+export const getBookingTypeMock = (): BookingType =>
+  faker.helpers.arrayElement(['SHIFT', 'RECURRING', 'CUSTOM'] as const)
+
+export const getBookingRecurrenceFrequencyMock = (): BookingRecurrenceFrequency =>
+  faker.helpers.arrayElement(['DAILY', 'WEEKLY'] as const)
 
 export const getBookingUnitTypeMock = (): BookingUnitType =>
   faker.helpers.arrayElement(['HOUR', 'DAY', 'SHIFT'] as const)
@@ -2466,16 +2508,24 @@ export const getBookingCreateRequestMock = (
 ): BookingCreateRequest => ({
   recipientId: faker.string.uuid(),
   centerId: faker.string.uuid(),
+  bookingType: getBookingTypeMock(),
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
-  scheduleType: getBookingScheduleTypeMock(),
-  startDate: faker.date.past().toISOString().slice(0, 10),
+  caregiverScheduleId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  frequency: faker.helpers.arrayElement([getBookingRecurrenceFrequencyMock(), undefined]),
+  startDate: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
   endDate: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
-  startTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  endTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  endTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   daysOfWeek: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
       faker.number.int({ min: 1, max: 7 })
     ),
+    undefined
+  ]),
+  slots: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 366 }) }, (_, i) => i + 1).map(() => ({
+      ...getTimeSlotRequestMock()
+    })),
     undefined
   ]),
   customerNote: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 0, max: 2000 } }), undefined]),
@@ -2490,16 +2540,24 @@ export const getBookingQuoteRequestMock = (
 ): BookingQuoteRequest => ({
   recipientId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   centerId: faker.string.uuid(),
+  bookingType: getBookingTypeMock(),
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
-  scheduleType: getBookingScheduleTypeMock(),
-  startDate: faker.date.past().toISOString().slice(0, 10),
+  caregiverScheduleId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  frequency: faker.helpers.arrayElement([getBookingRecurrenceFrequencyMock(), undefined]),
+  startDate: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
   endDate: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
-  startTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  endTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  endTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   daysOfWeek: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
       faker.number.int({ min: 1, max: 7 })
     ),
+    undefined
+  ]),
+  slots: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 366 }) }, (_, i) => i + 1).map(() => ({
+      ...getTimeSlotRequestMock()
+    })),
     undefined
   ]),
   customerNote: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 0, max: 2000 } }), undefined]),
@@ -2712,6 +2770,7 @@ export const getBookingOccurrenceRecordMock = (
   actualStartAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   actualEndAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  caregiverScheduleId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   status: getOccurrenceStatusMock(),
   cancelReason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   cancelledAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
@@ -2828,11 +2887,12 @@ export const getBookingDetailRecordMock = (
   centerId: faker.string.uuid(),
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   caregiverUserId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
-  scheduleType: getBookingScheduleTypeMock(),
+  bookingType: getBookingTypeMock(),
+  recurrenceFrequency: faker.helpers.arrayElement([getBookingRecurrenceFrequencyMock(), undefined]),
   startDate: faker.date.past().toISOString().slice(0, 10),
   endDate: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
-  startTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  endTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  endTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   daysOfWeek: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => faker.number.int()),
     undefined
@@ -2843,10 +2903,14 @@ export const getBookingDetailRecordMock = (
   customerNote: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   subtotal: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   depositAmount: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  initialPaymentPercent: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   totalAmount: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   acceptanceDueAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   acceptedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  assignmentDueAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   depositDueAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  remainingPaymentDueAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  fullyPaidAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   confirmedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   startedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   completedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
@@ -2886,11 +2950,12 @@ export const getBookingSummaryRecordMock = (
   recipientName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   centerId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
-  scheduleType: getBookingScheduleTypeMock(),
+  bookingType: getBookingTypeMock(),
+  recurrenceFrequency: faker.helpers.arrayElement([getBookingRecurrenceFrequencyMock(), undefined]),
   startDate: faker.date.past().toISOString().slice(0, 10),
   endDate: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
-  startTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  endTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  startTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  endTime: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   daysOfWeek: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => faker.number.int()),
     undefined
@@ -2938,6 +3003,97 @@ export const getBookingQuoteOccurrenceRecordMock = (
   startAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   endAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   priceAmount: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  ...overrideResponse
+})
+
+export const getBookingHeldScheduleBusySlotRecordMock = (
+  overrideResponse: Partial<BookingHeldScheduleBusySlotRecord> = {}
+): BookingHeldScheduleBusySlotRecord => ({
+  startAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  endAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  ...overrideResponse
+})
+
+export const getBookingHeldScheduleRecordMock = (
+  overrideResponse: Partial<BookingHeldScheduleRecord> = {}
+): BookingHeldScheduleRecord => ({
+  caregiverId: faker.string.uuid(),
+  heldScheduleIds: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+    faker.string.uuid()
+  ),
+  busySlots: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getBookingHeldScheduleBusySlotRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getBookingHeldScheduleResponseMock = (
+  overrideResponse: Partial<BookingHeldScheduleResponse> = {}
+): BookingHeldScheduleResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingHeldScheduleRecordMock() },
+  ...overrideResponse
+})
+
+export const getCenterBookingPolicyRecordMock = (
+  overrideResponse: Partial<CenterBookingPolicyRecord> = {}
+): CenterBookingPolicyRecord => ({
+  centerId: faker.string.uuid(),
+  customized: faker.datatype.boolean(),
+  shiftMinAdvanceMinutes: faker.number.int(),
+  recurringMinAdvanceMinutes: faker.number.int(),
+  customMinAdvanceMinutes: faker.number.int(),
+  confirmationTimeoutMinutes: faker.number.int(),
+  assignmentTimeoutMinutes: faker.number.int(),
+  initialPaymentTimeoutMinutes: faker.number.int(),
+  remainingPaymentDueBeforeMinutes: faker.number.int(),
+  remainingPaymentReminderMinutes: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+    () => faker.number.int()
+  ),
+  depositPercent: faker.number.float({ fractionDigits: 2 }),
+  checkInEarlyMinutes: faker.number.int(),
+  checkInLateMinutes: faker.number.int(),
+  refundThresholdMinutes: faker.number.int(),
+  refundPercentBeforeThreshold: faker.number.float({ fractionDigits: 2 }),
+  refundPercentAfterThreshold: faker.number.float({ fractionDigits: 2 }),
+  overduePaymentForfeitPercent: faker.number.float({ fractionDigits: 2 }),
+  version: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  updatedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  updatedBy: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  ...overrideResponse
+})
+
+export const getCenterBookingPolicyResponseMock = (
+  overrideResponse: Partial<CenterBookingPolicyResponse> = {}
+): CenterBookingPolicyResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCenterBookingPolicyRecordMock() },
+  ...overrideResponse
+})
+
+export const getCenterBookingPolicyRequestMock = (
+  overrideResponse: Partial<CenterBookingPolicyRequest> = {}
+): CenterBookingPolicyRequest => ({
+  shiftMinAdvanceMinutes: faker.number.int({ min: 0, max: 43200 }),
+  recurringMinAdvanceMinutes: faker.number.int({ min: 0, max: 43200 }),
+  customMinAdvanceMinutes: faker.number.int({ min: 0, max: 43200 }),
+  confirmationTimeoutMinutes: faker.number.int({ min: 1, max: 43200 }),
+  assignmentTimeoutMinutes: faker.number.int({ min: 1, max: 43200 }),
+  initialPaymentTimeoutMinutes: faker.number.int({ min: 1, max: 43200 }),
+  remainingPaymentDueBeforeMinutes: faker.number.int({ min: 0, max: 43200 }),
+  remainingPaymentReminderMinutes: Array.from({ length: faker.number.int({ min: 1, max: 5 }) }, (_, i) => i + 1).map(
+    () => faker.number.int({ min: 1, max: 43200 })
+  ),
+  depositPercent: faker.number.float({ min: 1, max: 100, fractionDigits: 2 }),
+  checkInEarlyMinutes: faker.number.int({ min: 0, max: 1440 }),
+  checkInLateMinutes: faker.number.int({ min: 0, max: 1440 }),
+  refundThresholdMinutes: faker.number.int({ min: 0, max: 43200 }),
+  refundPercentBeforeThreshold: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+  refundPercentAfterThreshold: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+  overduePaymentForfeitPercent: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+  version: faker.helpers.arrayElement([faker.number.int(), undefined]),
   ...overrideResponse
 })
 
@@ -3632,7 +3788,7 @@ export const getPaymentReturnRecordMock = (
 })
 
 export const getInvoiceStatusMock = (): InvoiceStatus =>
-  faker.helpers.arrayElement(['PENDING', 'PAID', 'OVERDUE', 'WAIVED'] as const)
+  faker.helpers.arrayElement(['PENDING', 'PAID', 'OVERDUE', 'WAIVED', 'EXPIRED', 'CANCELLED'] as const)
 
 export const getRemainingInvoiceRecordMock = (
   overrideResponse: Partial<RemainingInvoiceRecord> = {}
@@ -3765,6 +3921,22 @@ export const getPaymentReturnResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getPaymentReturnRecordMock() },
+  ...overrideResponse
+})
+
+export const getRevenueRecordMock = (overrideResponse: Partial<RevenueRecord> = {}): RevenueRecord => ({
+  successfulPaymentCount: faker.number.int(),
+  grossRevenue: faker.number.float({ fractionDigits: 2 }),
+  totalRefunded: faker.number.float({ fractionDigits: 2 }),
+  totalRevenue: faker.number.float({ fractionDigits: 2 }),
+  averagePayment: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse
+})
+
+export const getRevenueResponseMock = (overrideResponse: Partial<RevenueResponse> = {}): RevenueResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getRevenueRecordMock() },
   ...overrideResponse
 })
 

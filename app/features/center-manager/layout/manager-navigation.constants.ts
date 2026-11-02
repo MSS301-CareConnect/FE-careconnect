@@ -39,6 +39,12 @@ export const managerNavigation = [
     key: 'coordination',
     items: [
       { key: 'bookings', label: 'centerManager.bookings', to: '/center-manager/bookings', icon: 'calendar_month' },
+      {
+        key: 'policy',
+        label: 'centerManager.policyPage.menu',
+        to: '/center-manager/policy',
+        icon: 'rule'
+      },
       { key: 'feedback', label: 'centerManager.feedback', to: '/center-manager/complaints', icon: 'reviews' }
     ]
   }

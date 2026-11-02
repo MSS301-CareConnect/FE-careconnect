@@ -5,22 +5,27 @@ import { useTranslation } from 'react-i18next'
 import {
   assignOccurrenceCaregiver,
   bookingKeys,
+  cancelBookingRequest,
   decideNoShow,
   fetchOccurrence,
   forceEndSession
 } from '~/entities/booking/booking-api'
 import { bookingErrorKey, hasStarted, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
-import type { BookingOccurrenceRecord } from '~/shared/api/generated/contracts'
+import type { BookingOccurrenceRecord, BookingStatus } from '~/shared/api/generated/contracts'
 
 import type { useCenterCaregivers } from '../hooks/use-center-caregivers'
 import { CaregiverAssignDialog } from './caregiver-assign-dialog'
 
-type Dialog = 'assign' | 'approve' | 'reject' | 'forceEnd' | null
+type Dialog = 'assign' | 'approve' | 'reject' | 'forceEnd' | 'cancel' | null
 const action = 'rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-primary shadow-sm hover:bg-surface-container'
+// Spec §10.1 (B16): once paid, the center cancels single visits (full refund of what was paid for them); an unpaid
+// booking is rejected or cancelled whole.
+const VISIT_CANCELLABLE: ReadonlySet<BookingStatus> = new Set(['CONFIRMED', 'IN_PROGRESS'])
 
 export interface ManagerOccurrenceActionsProps {
   bookingId: string
+  bookingStatus: BookingStatus
   occurrence: BookingOccurrenceRecord
   caregivers: ReturnType<typeof useCenterCaregivers>
 }
@@ -29,7 +34,12 @@ export interface ManagerOccurrenceActionsProps {
  * Started visits load their occurrence detail, the only place BookingService exposes the no-show report
  * and the care session ID.
  */
-export function ManagerOccurrenceActions({ bookingId, occurrence, caregivers }: ManagerOccurrenceActionsProps) {
+export function ManagerOccurrenceActions({
+  bookingId,
+  bookingStatus,
+  occurrence,
+  caregivers
+}: ManagerOccurrenceActionsProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -60,15 +70,25 @@ export function ManagerOccurrenceActions({ bookingId, occurrence, caregivers }: 
     mutationFn: (reason: string) => forceEndSession(detail.data?.sessionId ?? '', reason),
     onSuccess: refresh
   })
+  const cancel = useMutation({
+    mutationFn: (reason: string) => cancelBookingRequest(bookingId, { reason, occurrenceIds: [occurrence.id] }),
+    onSuccess: refresh
+  })
+  const upcoming = isUpcomingOccurrence(occurrence)
 
   const awaitingDecision = Boolean(detail.data?.noShowReportedAt && !detail.data.noShowDecidedAt)
   const sessionId = occurrence.status === 'IN_PROGRESS' ? detail.data?.sessionId : undefined
 
   return (
     <>
-      {isUpcomingOccurrence(occurrence) ? (
+      {upcoming ? (
         <button className={action} onClick={() => setDialog('assign')} type='button'>
           {t('centerManager.bookingDetail.occurrence.reassign')}
+        </button>
+      ) : null}
+      {upcoming && VISIT_CANCELLABLE.has(bookingStatus) ? (
+        <button className={`${action} text-error`} onClick={() => setDialog('cancel')} type='button'>
+          {t('centerManager.bookingDetail.occurrence.cancel')}
         </button>
       ) : null}
       {awaitingDecision ? (
@@ -127,6 +147,19 @@ export function ManagerOccurrenceActions({ bookingId, occurrence, caregivers }: 
           onConfirm={(note) => decide.mutate({ approved: false, note })}
           pending={decide.isPending}
           title={t('centerManager.bookingDetail.occurrence.rejectTitle')}
+        />
+      ) : null}
+      {dialog === 'cancel' ? (
+        <BookingReasonDialog
+          confirmLabel={t('centerManager.bookingDetail.occurrence.cancel')}
+          danger
+          description={t('centerManager.bookingDetail.occurrence.cancelHint')}
+          error={cancel.error ? t(bookingErrorKey(cancel.error)) : undefined}
+          label={t('centerManager.bookingDetail.reason')}
+          onClose={() => setDialog(null)}
+          onConfirm={(reason) => cancel.mutate(reason)}
+          pending={cancel.isPending}
+          title={t('centerManager.bookingDetail.occurrence.cancelTitle', { number: occurrence.occurrenceNo })}
         />
       ) : null}
       {dialog === 'forceEnd' ? (

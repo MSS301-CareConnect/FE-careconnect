@@ -33,7 +33,7 @@ export function ManagerBookingFilters({ list }: { list: List }) {
               type='button'
             >
               {item ? t(`booking.status.${item}`) : t('centerManager.bookingManagement.filters.all')}
-              {item === 'PENDING' && list.pendingCount ? (
+              {item === 'PENDING_CENTER_CONFIRMATION' && list.pendingCount ? (
                 <span
                   className={`rounded-md px-1.5 py-0.5 text-xs font-bold tabular-nums ${active ? 'bg-white/20 text-white' : 'bg-warning-container text-on-warning-container'}`}
                 >

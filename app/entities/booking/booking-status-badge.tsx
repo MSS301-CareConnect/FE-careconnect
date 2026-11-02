@@ -4,8 +4,9 @@ import type { BookingStatus, OccurrenceStatus } from '~/shared/api/generated/con
 import { StatusBadge, type StatusTone } from '~/shared/ui/status-badge'
 
 export const BOOKING_STATUS_TONES: Record<BookingStatus, StatusTone> = {
-  PENDING: 'warning',
-  AWAITING_DEPOSIT: 'caution',
+  PENDING_CENTER_CONFIRMATION: 'warning',
+  PENDING_CAREGIVER_ASSIGNMENT: 'warning',
+  AWAITING_INITIAL_PAYMENT: 'caution',
   CONFIRMED: 'info',
   IN_PROGRESS: 'active',
   COMPLETED: 'success',
@@ -15,13 +16,16 @@ export const BOOKING_STATUS_TONES: Record<BookingStatus, StatusTone> = {
 }
 
 export const OCCURRENCE_STATUS_TONES: Record<OccurrenceStatus, StatusTone> = {
+  PENDING_ASSIGNMENT: 'warning',
+  RESERVED: 'caution',
   SCHEDULED: 'info',
   ACKNOWLEDGED: 'info',
   IN_PROGRESS: 'active',
   COMPLETED: 'success',
   CANCELLED: 'neutral',
-  MISSED: 'danger',
-  CUSTOMER_NO_SHOW: 'warning'
+  EXPIRED: 'neutral',
+  CUSTOMER_NO_SHOW: 'warning',
+  CAREGIVER_MISSED: 'danger'
 }
 
 export function BookingStatusBadge({ status }: { status: BookingStatus }) {

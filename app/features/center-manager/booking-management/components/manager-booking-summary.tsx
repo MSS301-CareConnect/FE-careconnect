@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
-import { formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
-import { useDepositAmount } from '~/entities/payment/payment-api'
+import { bookingTypeKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
+import { initialPaymentOf } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -9,12 +9,15 @@ import { Icon } from '~/shared/ui/icon'
 export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecord }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
-  const deposit = useDepositAmount(booking)
+  const deposit = initialPaymentOf(booking)
   const milestones = [
     ['createdAt', booking.createdAt],
     ['acceptedAt', booking.acceptedAt],
-    ['depositDueAt', booking.status === 'AWAITING_DEPOSIT' ? booking.depositDueAt : undefined],
+    ['assignmentDueAt', booking.status === 'PENDING_CAREGIVER_ASSIGNMENT' ? booking.assignmentDueAt : undefined],
+    ['depositDueAt', booking.status === 'AWAITING_INITIAL_PAYMENT' ? booking.depositDueAt : undefined],
+    ['remainingPaymentDueAt', booking.fullyPaidAt ? undefined : booking.remainingPaymentDueAt],
     ['confirmedAt', booking.confirmedAt],
+    ['fullyPaidAt', booking.fullyPaidAt],
     ['completedAt', booking.completedAt]
   ] as const
 
@@ -44,8 +47,8 @@ export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecor
           {booking.endDate && booking.endDate !== booking.startDate ? ` – ${formatDay(booking.endDate, language)}` : ''}
         </p>
         <p className='text-on-surface-variant tabular-nums'>
-          {t(`booking.scheduleType.${booking.scheduleType}`)} · {shortTime(booking.startTime)}–
-          {shortTime(booking.endTime)}
+          {t(bookingTypeKey(booking))}
+          {booking.startTime ? ` · ${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''}
         </p>
         {booking.serviceAddress ? <p className='mt-2 text-on-surface-variant'>{booking.serviceAddress}</p> : null}
         {booking.customerNote ? (
@@ -68,7 +71,7 @@ export function ManagerBookingSummary({ booking }: { booking: BookingDetailRecor
             <div className='flex justify-between gap-3 text-on-surface-variant'>
               <dt>
                 {deposit.estimated
-                  ? t('centerManager.bookingDetail.depositEstimated')
+                  ? t('centerManager.bookingDetail.depositEstimated', { percent: deposit.percent ?? '' })
                   : t('centerManager.bookingDetail.deposit')}
               </dt>
               <dd className='tabular-nums'>{formatMoney(deposit.amount, language)}</dd>

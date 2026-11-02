@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
+import { BookingCaregiverSection } from './components/booking-caregiver-section'
 import { BookingPatientSection } from './components/booking-patient-section'
 import { BookingProviderSection } from './components/booking-provider-section'
 import { BookingScheduleSection } from './components/booking-schedule-section'
@@ -74,6 +75,7 @@ export function CustomerBookingPage() {
             <BookingPatientSection form={form} />
             <BookingProviderSection form={form} />
             <BookingServicesSection form={form} />
+            <BookingCaregiverSection form={form} />
             <BookingScheduleSection form={form} />
           </div>
           <BookingSummarySidebar form={form} />

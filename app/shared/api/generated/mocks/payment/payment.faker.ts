@@ -12,7 +12,8 @@ import type {
   OutstandingDebtResponse,
   PaymentPageResponse,
   PaymentResponse,
-  PaymentReturnResponse
+  PaymentReturnResponse,
+  RevenueResponse
 } from '../../contracts'
 
 import {
@@ -20,7 +21,8 @@ import {
   getOutstandingDebtRecordMock,
   getPaymentPageRecordMock,
   getPaymentRecordMock,
-  getPaymentReturnRecordMock
+  getPaymentReturnRecordMock,
+  getRevenueRecordMock
 } from '../../contracts/index.faker'
 
 export const getListPaymentsResponseMock = (
@@ -47,6 +49,15 @@ export const getGetPaymentByBookingResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getPaymentRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetPaymentRevenueResponseMock = (
+  overrideResponse: Partial<Extract<RevenueResponse, object>> = {}
+): RevenueResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getRevenueRecordMock() },
   ...overrideResponse
 })
 

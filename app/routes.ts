@@ -41,6 +41,7 @@ export default [
       route('work-shifts/:id', 'routes/center-manager/work-shift-detail.tsx'),
       route('bookings', 'routes/center-manager/bookings.tsx'),
       route('bookings/:id', 'routes/center-manager/booking-detail.tsx'),
+      route('policy', 'routes/center-manager/policy.tsx'),
       route('complaints', 'routes/center-manager/complaints.tsx')
     ])
   ]),

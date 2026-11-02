@@ -116,7 +116,7 @@ describe('Customer payments page', () => {
     renderPage()
 
     const history = await screen.findByRole('region', { name: 'Lịch sử thanh toán' })
-    expect(await within(history).findByText('Tiền cọc')).toBeInTheDocument()
+    expect(await within(history).findByText('Khoản thanh toán đầu')).toBeInTheDocument()
     expect(within(history).getByText(/300\.000/)).toBeInTheDocument()
     const refunds = screen.getByRole('region', { name: 'Hoàn tiền' })
     expect(await within(refunds).findByText('Bạn hủy buổi chăm sóc')).toBeInTheDocument()

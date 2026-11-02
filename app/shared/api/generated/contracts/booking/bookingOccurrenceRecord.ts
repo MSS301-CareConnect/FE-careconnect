@@ -18,6 +18,7 @@ export interface BookingOccurrenceRecord {
   actualStartAt?: string
   actualEndAt?: string
   caregiverId?: string
+  caregiverScheduleId?: string
   status: OccurrenceStatus
   cancelReason?: string
   cancelledAt?: string

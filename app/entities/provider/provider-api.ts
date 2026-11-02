@@ -29,6 +29,7 @@ import {
   getPublicProviderCaregiver,
   searchProviderCaregivers,
   listMyProviderCaregiverSchedules,
+  listProviderBookableSchedules,
   updateProviderCaregiverScheduleStatus
 } from '~/shared/api/generated/api/provider-caregiver/provider-caregiver'
 import {
@@ -78,6 +79,7 @@ import type {
   WorkShiftRequest,
   CatalogProviderCaregiversParams,
   ListMyProviderCaregiverSchedulesParams,
+  ListProviderBookableSchedulesParams,
   ListMyProviderShiftRegistrationsParams,
   ListProviderCenterSchedulesParams,
   ScheduleStatusRequest,
@@ -118,6 +120,8 @@ export const providerKeys = {
   catalog: ['provider', 'catalog'] as const,
   myProfile: ['provider', 'my-profile'] as const,
   mySchedules: ['provider', 'my-schedules'] as const,
+  bookableSchedules: (caregiverId: string, params: ListProviderBookableSchedulesParams) =>
+    ['provider', 'bookable-schedules', caregiverId, params] as const,
   centerSchedules: (id: string) => ['provider', 'center-schedules', id] as const,
   myRegistrations: ['provider', 'my-registrations'] as const,
   media: (ownerType: ProviderMediaOwner, ownerId: string) => ['provider', 'media', ownerType, ownerId] as const
@@ -257,6 +261,10 @@ export async function fetchVerifiedCertificates(caregiverId: string) {
 }
 export async function fetchMyCaregiverProfile() {
   return result(await getMyProviderCaregiverProfile(readOptions))
+}
+/** SCHEDULED schedules of a bookable caregiver, from today, for a SHIFT booking (spec booking §3). */
+export async function fetchBookableSchedules(caregiverId: string, params: ListProviderBookableSchedulesParams = {}) {
+  return result(await listProviderBookableSchedules(caregiverId, params, readOptions))
 }
 export async function fetchMySchedules(params: ListMyProviderCaregiverSchedulesParams = {}) {
   return result(await listMyProviderCaregiverSchedules(params, readOptions))

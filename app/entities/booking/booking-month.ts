@@ -9,8 +9,9 @@ export interface PlannedVisit {
   status: BookingStatus
   recipientName?: string
   centerId?: string
-  startTime: string
-  endTime: string
+  /** Only RECURRING bookings carry a daily time range in the list; SHIFT / CUSTOM times live on each visit. */
+  startTime?: string
+  endTime?: string
 }
 
 function toUtc(day: DayKey) {
@@ -52,20 +53,21 @@ export function monthGrid(month: string): DayKey[] {
 }
 
 /**
- * Visits of each booking that fall inside `[from, to]`, built from the booking's schedule rule exactly as
- * BookingService's `OccurrenceGenerator` does: ONE_TIME on its start date, DAILY every day, WEEKLY on the ISO weekdays
- * of `daysOfWeek`. Per-visit changes (a cancelled visit, a reassigned caregiver) live in the booking detail.
+ * Visits of each booking that fall inside `[from, to]`. RECURRING follows the schedule rule exactly as BookingService's
+ * `OccurrenceGenerator` does (DAILY every day, WEEKLY on the ISO weekdays of `daysOfWeek`). SHIFT is its single day.
+ * The list has no per-visit times of a CUSTOM booking, so it shows on its first day only; the detail lists every visit.
+ * Per-visit changes (a cancelled visit, a reassigned caregiver) live in the booking detail.
  */
 export function planVisits(bookings: readonly BookingSummaryRecord[], from: DayKey, to: DayKey) {
   const byDay = new Map<DayKey, PlannedVisit[]>()
   for (const booking of bookings) {
-    const last = booking.scheduleType === 'ONE_TIME' ? booking.startDate : (booking.endDate ?? booking.startDate)
+    const last = booking.bookingType === 'RECURRING' ? (booking.endDate ?? booking.startDate) : booking.startDate
     const start = Math.max(toUtc(booking.startDate), toUtc(from))
     const end = Math.min(toUtc(last), toUtc(to))
     const weekdays = new Set(booking.daysOfWeek ?? [])
     for (let time = start; time <= end; time += DAY_MS) {
       const day = fromUtc(time)
-      if (booking.scheduleType === 'WEEKLY' && !weekdays.has(isoWeekday(day))) continue
+      if (booking.recurrenceFrequency === 'WEEKLY' && !weekdays.has(isoWeekday(day))) continue
       const visits = byDay.get(day) ?? []
       visits.push({
         bookingId: booking.id,
@@ -79,6 +81,6 @@ export function planVisits(bookings: readonly BookingSummaryRecord[], from: DayK
       byDay.set(day, visits)
     }
   }
-  for (const visits of byDay.values()) visits.sort((a, b) => a.startTime.localeCompare(b.startTime))
+  for (const visits of byDay.values()) visits.sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''))
   return byDay
 }

@@ -11,6 +11,7 @@ import type {
   EmptyActionResponse,
   ProviderAvailabilityCheckResponse,
   ProviderAvailabilityWindowListResponse,
+  ProviderBookableScheduleListResponse,
   ProviderCaregiverCardPageResponse,
   ProviderCaregiverPageResponse,
   ProviderCaregiverPublicResponse,
@@ -25,6 +26,7 @@ import type {
 import {
   getProviderAvailabilityCheckRecordMock,
   getProviderAvailabilityWindowRecordMock,
+  getProviderBookableScheduleRecordMock,
   getProviderCaregiverCardPageMock,
   getProviderCaregiverPageMock,
   getProviderCaregiverPublicRecordMock,
@@ -207,6 +209,17 @@ export const getSetProviderCaregiverStatusResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderCaregiverRecordMock() },
+  ...overrideResponse
+})
+
+export const getListProviderBookableSchedulesResponseMock = (
+  overrideResponse: Partial<Extract<ProviderBookableScheduleListResponse, object>> = {}
+): ProviderBookableScheduleListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderBookableScheduleRecordMock()
+  })),
   ...overrideResponse
 })
 

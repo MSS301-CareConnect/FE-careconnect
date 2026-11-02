@@ -10,6 +10,7 @@ import type { RequestHandlerOptions } from 'msw'
 
 import type {
   BookingDetailResponse,
+  BookingHeldScheduleResponse,
   BookingHistoryPageResponse,
   BookingOccurrencePageResponse,
   BookingOccurrenceResponse,
@@ -23,6 +24,7 @@ import {
   getCancelBookingResponseMock,
   getCreateBookingResponseMock,
   getGetBookingResponseMock,
+  getListBookingHeldSchedulesResponseMock,
   getListBookingHistoryResponseMock,
   getListBookingOccurrencesResponseMock,
   getListBookingsResponseMock,
@@ -37,6 +39,7 @@ export {
   getListBookingsResponseMock,
   getCreateBookingResponseMock,
   getQuoteBookingResponseMock,
+  getListBookingHeldSchedulesResponseMock,
   getGetBookingResponseMock,
   getListBookingHistoryResponseMock,
   getListBookingOccurrencesResponseMock,
@@ -117,6 +120,32 @@ export const getQuoteBookingMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getQuoteBookingResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListBookingHeldSchedulesMockHandler = (
+  overrideResponse?:
+    | BookingHeldScheduleResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<BookingHeldScheduleResponse> | BookingHeldScheduleResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/bookings/held-schedules',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListBookingHeldSchedulesResponseMock(),
         { status: 200 }
       )
     },
@@ -359,6 +388,7 @@ export const getBookingMock = () => [
   getListBookingsMockHandler(),
   getCreateBookingMockHandler(),
   getQuoteBookingMockHandler(),
+  getListBookingHeldSchedulesMockHandler(),
   getGetBookingMockHandler(),
   getListBookingHistoryMockHandler(),
   getListBookingOccurrencesMockHandler(),

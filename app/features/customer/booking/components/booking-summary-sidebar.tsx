@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { bookingErrorKey, formatClock, formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import { Icon } from '~/shared/ui/icon'
@@ -9,22 +8,29 @@ import type { useBookingForm } from '../hooks/use-booking-form'
 type Form = ReturnType<typeof useBookingForm>
 const VISIBLE_OCCURRENCES = 4
 
-/** Uses BookingService quotes for every selected date; only the 30% deposit is emphasized. */
+/**
+ * BookingService's quote of the whole booking. The initial payment follows the center policy (spec §4, §8): 100% for
+ * SHIFT, the deposit percent for RECURRING / CUSTOM — never a fixed rate in the browser (B15).
+ */
 export function BookingSummarySidebar({ form }: { form: Form }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
   const { quote, create } = form
-  const quotes = quote.data ?? []
-  const occurrences = quotes.flatMap((item) => item.occurrences ?? [])
-  const total = quotes.reduce((sum, item) => sum + item.totalAmount, 0)
-  const deposit = quotes.reduce(
-    (sum, item) =>
-      sum +
-      (item.depositPercent === 30 && item.estimatedDepositAmount != null
-        ? item.estimatedDepositAmount
-        : Math.round(item.totalAmount * 0.3)),
-    0
-  )
+  const occurrences = quote.data?.occurrences ?? []
+  const total = quote.data?.totalAmount ?? 0
+  const deposit = quote.data?.estimatedDepositAmount
+  const depositPercent = quote.data?.depositPercent
+  // Spec §9.1: RECURRING / CUSTOM pay the rest before the first visit, by the center policy cut-off.
+  const firstStart = occurrences.reduce<number | undefined>((earliest, occurrence) => {
+    const start = occurrence.startAt ? Date.parse(occurrence.startAt) : undefined
+    if (start === undefined) return earliest
+    return earliest === undefined || start < earliest ? start : earliest
+  }, undefined)
+  const dueBefore = form.policy.data?.remainingPaymentDueBeforeMinutes
+  const remainingDue =
+    depositPercent !== undefined && depositPercent < 100 && firstStart !== undefined && dueBefore !== undefined
+      ? new Date(firstStart - dueBefore * 60_000).toISOString()
+      : undefined
   const caregiver = form.centerCaregivers.find((item) => item.id === form.selectedCaregiverId)
 
   return (
@@ -78,7 +84,7 @@ export function BookingSummarySidebar({ form }: { form: Form }) {
       {form.request && quote.isSuccess ? (
         <>
           <ul className='flex flex-col gap-3 text-sm'>
-            {(quotes[0]?.lines ?? []).map((line) => (
+            {(quote.data?.lines ?? []).map((line) => (
               <li className='flex items-start justify-between gap-3' key={line.careServiceId}>
                 <span className='min-w-0'>
                   <span className='block font-semibold text-on-surface'>{line.serviceName}</span>
@@ -119,45 +125,41 @@ export function BookingSummarySidebar({ form }: { form: Form }) {
               <dt>{t('customer.booking.summary.total')}</dt>
               <dd className='tabular-nums'>{formatMoney(total, language)}</dd>
             </div>
-            <div className='rounded-2xl bg-primary px-4 py-4 text-on-primary'>
-              <dt className='text-sm font-semibold'>{t('customer.booking.summary.deposit')}</dt>
-              <dd className='mt-1 text-3xl font-extrabold tracking-[-0.04em] tabular-nums'>
-                {formatMoney(deposit, language)}
-              </dd>
-              <p className='mt-1 text-xs text-on-primary/80'>{t('customer.booking.summary.depositHint')}</p>
-            </div>
+            {deposit !== undefined && depositPercent !== undefined ? (
+              <div className='rounded-2xl bg-primary px-4 py-4 text-on-primary'>
+                <dt className='text-sm font-semibold'>
+                  {t('customer.booking.summary.deposit', { percent: depositPercent })}
+                </dt>
+                <dd className='mt-1 text-3xl font-extrabold tracking-[-0.04em] tabular-nums'>
+                  {formatMoney(deposit, language)}
+                </dd>
+                <p className='mt-1 text-xs text-on-primary/80'>{t('customer.booking.summary.depositHint')}</p>
+                {remainingDue && deposit !== undefined ? (
+                  <p className='mt-2 text-xs text-on-primary/90'>
+                    {t('customer.booking.summary.remainingDue', {
+                      amount: formatMoney(Math.max(0, total - deposit), language),
+                      time: formatDateTime(remainingDue, language)
+                    })}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </dl>
         </>
       ) : null}
 
-      {form.depositPolicyMismatch ? (
-        <p
-          className='rounded-xl border border-error/25 bg-error-container p-3 text-sm text-on-error-container'
-          role='alert'
-        >
-          {t('customer.booking.summary.policyMismatch')}
-        </p>
-      ) : null}
       {create.isError ? (
         <p
           className='rounded-xl border border-error/25 bg-error-container p-3 text-sm text-on-error-container'
           role='alert'
         >
           {t(bookingErrorKey(create.error))}
-          {form.completedCount > 0 ? (
-            <span className='mt-2 block'>
-              {t('customer.booking.summary.partialSuccess', { count: form.completedCount })}{' '}
-              <Link className='font-semibold underline' to='/customer/bookings'>
-                {t('customer.booking.summary.viewSent')}
-              </Link>
-            </span>
-          ) : null}
         </p>
       ) : null}
 
       <button
         className='group inline-flex min-h-13 items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-[transform,background-color] duration-300 hover:bg-primary-container active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:bg-outline disabled:active:scale-100'
-        disabled={!form.request || !quote.isSuccess || create.isPending || form.hasDebt || form.depositPolicyMismatch}
+        disabled={!form.request || !quote.isSuccess || create.isPending || form.hasDebt}
         onClick={form.submit}
         type='button'
       >

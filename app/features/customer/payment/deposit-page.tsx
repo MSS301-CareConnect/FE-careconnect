@@ -5,10 +5,10 @@ import { Link } from 'react-router'
 import { bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
 import { bookingErrorKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
 import {
+  initialPaymentOf,
   paymentErrorKey,
   redirectToCheckout,
-  startDepositCheckout,
-  useDepositAmount
+  startDepositCheckout
 } from '~/entities/payment/payment-api'
 import { RefundPolicySummary } from '~/entities/payment/refund-policy'
 import { AssignedCaregiverCard } from '~/entities/provider/assigned-caregiver-card'
@@ -17,7 +17,10 @@ import { Icon } from '~/shared/ui/icon'
 
 import { PaymentShell, paymentPanel, primaryAction, secondaryAction } from './components/payment-shell'
 
-/** Opens a VNPay deposit checkout for a booking awaiting its deposit and hands over to the VNPay page. */
+/**
+ * Opens a VNPay checkout for the initial payment of a booking (spec §9.1: SHIFT 100%, RECURRING / CUSTOM the deposit
+ * percent of the center policy) and hands over to the VNPay page.
+ */
 export function DepositPage({ bookingId }: { bookingId: string }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
@@ -32,7 +35,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
     onSuccess: (checkout) => redirectToCheckout(checkout.checkoutUrl)
   })
   // PaymentService decides the charged amount when the session opens; this is what the customer sees first.
-  const deposit = useDepositAmount(booking.data)
+  const deposit = initialPaymentOf(booking.data)
   useDocumentTitle(t('customer.payment.deposit.documentTitle', { code: booking.data?.bookingCode ?? '' }))
 
   const data = booking.data
@@ -55,7 +58,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
         </p>
       ) : null}
 
-      {data && data.status !== 'AWAITING_DEPOSIT' ? (
+      {data && data.status !== 'AWAITING_INITIAL_PAYMENT' ? (
         <section className={`${paymentPanel} flex flex-col items-start gap-3`}>
           <h2 className='text-xl font-bold'>{t('customer.payment.deposit.notAwaiting')}</h2>
           <p className='text-sm text-on-surface-variant'>
@@ -67,7 +70,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
         </section>
       ) : null}
 
-      {data && data.status === 'AWAITING_DEPOSIT' ? (
+      {data && data.status === 'AWAITING_INITIAL_PAYMENT' ? (
         <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8'>
           <div className={`${paymentPanel} flex flex-col divide-y divide-outline-variant/60`}>
             <div className='pb-6'>
@@ -94,7 +97,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
               ) : null}
               <p className='mt-5 flex items-start gap-2 rounded-xl bg-surface-container-low p-4 text-sm leading-6 text-on-surface-variant'>
                 <Icon className='text-lg text-primary' name='verified_user' />
-                {t('customer.payment.deposit.policy')}
+                {deposit.remaining ? t('customer.payment.deposit.policy') : t('customer.payment.deposit.policyFull')}
               </p>
             </section>
           </div>
@@ -109,6 +112,11 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
               <p className='mt-1 text-4xl font-extrabold tracking-[-0.045em] text-primary tabular-nums'>
                 {deposit.amount !== undefined ? formatMoney(deposit.amount, language) : '—'}
               </p>
+              {deposit.percent !== undefined ? (
+                <p className='mt-1 text-sm text-on-surface-variant'>
+                  {t('customer.payment.deposit.percentOfTotal', { percent: deposit.percent })}
+                </p>
+              ) : null}
               {data.depositDueAt ? (
                 <p className='mt-2 flex items-center gap-1.5 text-sm font-semibold text-warning'>
                   <Icon className='text-lg' name='schedule' />
@@ -141,11 +149,18 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
                 <dd className='font-semibold tabular-nums'>{formatMoney(data.totalAmount, language)}</dd>
               </div>
               <div className='flex justify-between gap-3'>
-                <dt className='text-on-surface-variant'>{t('customer.payment.deposit.remaining')}</dt>
+                <dt className='text-on-surface-variant'>
+                  {t('customer.payment.deposit.remaining')}
+                  {deposit.remaining && data.remainingPaymentDueAt ? (
+                    <span className='block text-xs'>
+                      {t('customer.payment.deposit.remainingDue', {
+                        time: formatDateTime(data.remainingPaymentDueAt, language)
+                      })}
+                    </span>
+                  ) : null}
+                </dt>
                 <dd className='font-semibold tabular-nums'>
-                  {deposit.amount !== undefined
-                    ? formatMoney(Math.max(0, (data.totalAmount ?? 0) - deposit.amount), language)
-                    : '—'}
+                  {deposit.remaining !== undefined ? formatMoney(deposit.remaining, language) : '—'}
                 </dd>
               </div>
             </dl>
@@ -155,12 +170,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
                 {t(paymentErrorKey(pay.error))}
               </p>
             ) : null}
-            <button
-              className={primaryAction}
-              disabled={pay.isPending || deposit.isPending}
-              onClick={() => pay.mutate()}
-              type='button'
-            >
+            <button className={primaryAction} disabled={pay.isPending} onClick={() => pay.mutate()} type='button'>
               {pay.isPending
                 ? t('customer.payment.deposit.paying')
                 : deposit.amount !== undefined && !deposit.estimated

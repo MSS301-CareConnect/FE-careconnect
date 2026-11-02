@@ -52,6 +52,7 @@ import { managerProviderEn, managerProviderVi } from './center-manager/provider-
 import { managerScheduleEn, managerScheduleVi } from './center-manager/schedule-resources'
 import { managerServicesEn, managerServicesVi } from './center-manager/services-resources'
 import { managerStatisticsEn, managerStatisticsVi } from './center-manager/statistics-resources'
+import { managerPolicyEn, managerPolicyVi } from './center-manager/policy-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
 import { adminCentersEn, adminCentersVi } from './admin/centers-resources'
@@ -117,7 +118,8 @@ export const resources = {
         provider: managerProviderEn,
         schedules: managerScheduleEn,
         services: managerServicesEn,
-        statisticsPage: managerStatisticsEn
+        statisticsPage: managerStatisticsEn,
+        policyPage: managerPolicyEn
       },
       admin: {
         ...adminLayoutEn,
@@ -186,7 +188,8 @@ export const resources = {
         provider: managerProviderVi,
         schedules: managerScheduleVi,
         services: managerServicesVi,
-        statisticsPage: managerStatisticsVi
+        statisticsPage: managerStatisticsVi,
+        policyPage: managerPolicyVi
       },
       admin: {
         ...adminLayoutVi,

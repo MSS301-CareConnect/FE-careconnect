@@ -180,8 +180,9 @@ Accounts show initials. A CAREGIVER account reads its ProviderService profile
 (`GET /caregivers/by-user/{userId}`) and shows that caregiver photo, with a link to the review in `/admin/centers/:id/caregivers`.
 
 Admin bookings (`/admin/bookings` and the center page's Bookings tab) use
-`entities/booking/bookings-browser.tsx`: a filtered list or a month calendar that expands
-ONE_TIME, DAILY and WEEKLY schedules into visits (`booking-month.ts`), both reading
+`entities/booking/bookings-browser.tsx`: a filtered list or a month calendar that expands RECURRING
+DAILY / WEEKLY schedules into visits and shows SHIFT and CUSTOM bookings on their first day (`booking-month.ts`; the list
+carries no per-visit times of a CUSTOM booking), both reading
 `GET /bookings` with URL-held filters. Booking history hides machine reasons such as
 `paymentReference=…` (`booking-history-reason.ts`) and shows "deposit received" instead.
 The Services page's Price plans tab compares the plans of every active center per
@@ -389,8 +390,9 @@ using ProviderService `/caregivers/search` with the booking's services and visit
 backend checks again on save. No-show reports are decided per visit.
 
 The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts` groups the
-menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue,
-quality and policy previews keep their routes but are left out of the menu until a backend exists (D26).
+menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue and
+quality previews keep their routes but are left out of the menu until a backend exists (D26). `/admin/policies` is
+live since booking spec v1.0 (2026-11-02): the admin picks an active center and edits its booking policy.
 At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
 navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
 navigation. The topbar holds the language switch, notifications and the account menu;
@@ -453,13 +455,18 @@ caregiver flows). `/admin/roles` explains each system role and permission. Servi
 `entities/care-catalog/service-category.ts`; older long values read into their group without a data migration.
 Profile photos and center logos use the newest image (`entities/provider/provider-avatar.ts`); uploads refresh every
 cache that shows the owner (`invalidate-provider-media.ts`) and a caregiver keeps a single profile photo.
-The policy and caregiver quality pages use independent, dated Admin design snapshots.
-Policy deposit and payout cycle controls update a local simulation only; no values
-are saved or presented as active financial rules. Quality list filters and tabs
+The caregiver quality page uses an independent, dated Admin design snapshot. Quality list filters and tabs
 use URL search parameters, and a selected caregiver opens a read-only sample
 profile. Sample OCR, license, legal, clinical, payment and risk data are not
-live verification results. Policy publication, caregiver approval/rejection,
-license checking and clinical calls await backend contracts and authorization.
+live verification results. Caregiver approval/rejection, license checking and clinical calls await backend
+contracts and authorization.
+
+Center booking policies (spec §8) are edited by one form, `entities/booking/center-booking-policy-form.tsx`, used by
+`/center-manager/policy` (the manager's own center, from the session) and `/admin/policies` (any active center). It
+reads and writes `GET / PUT /center-booking-policies/{centerId}`, shows durations in hours and stores whole minutes,
+checks every field and BookingService's consistency rules on the client, warns (without blocking) when the
+confirmation, assignment and payment deadlines do not fit the minimum notice, and sends the `version` it read (null
+for a center still on the platform defaults) so a concurrent save answers 409.
 
 ### Feature-internal organization
 
@@ -677,8 +684,8 @@ Contract update workflow:
 - No token, private key, or service credential belongs in a `VITE_*` variable.
 - Payments use the real PaymentService through the gateway (Đợt 1c, 2026-10-30); the former
   `pnpm dev` payment demo and its `PaymentDemo` tag were removed. `entities/payment` wraps
-  the generated `Payment`, `PaymentPolicy`, `Refund` and `RemainingInvoice` clients.
-  `/customer/bookings/:id/deposit` opens a VNPay checkout
+  the generated `Payment`, `Refund` and `RemainingInvoice` clients.
+  `/customer/bookings/:id/deposit` (the initial payment, booking spec v1.0 §9.1) opens a VNPay checkout
   (`POST /payments/bookings/{bookingId}/checkout`, provider VNPAY, D16) and leaves the app
   for the returned `checkoutUrl`; the customer picks QR, ATM or card on the VNPay page.
   PaymentService `VNPAY_RETURN_URL` must point to `/customer/payments/vnpay-return`: that
@@ -688,26 +695,42 @@ Contract update workflow:
   return route: PENDING shows "confirming" (never a success mark), polling stops after 60 seconds with a check-again
   action and a link to the payments list, and a REMAINING payment is named as an invoice, not a deposit.
 - Before paying, the deposit page shows the assigned caregiver (`entities/provider/assigned-caregiver-card.tsx`, public
-  caregiver profile) and the refund tiers and cooling-off of `GET /payment-policies/effective`
-  (`entities/payment/refund-policy.tsx`). The cancel dialog reads PaymentService refund-quote rule codes
-  (`TIER_<min>_<max>`, `COOLING_OFF`, `FULL_REFUND_*`) as words through `refundRuleLabel`; codes are never shown.
-- BookingService leaves `depositAmount` empty: PaymentService computes the deposit per visit
-  from the center's policy snapshot. `useDepositAmount` shows the booking total times the
-  `depositPercent` of `GET /payment-policies/effective` as an estimate; the VNPay page shows
-  the exact amount of the opened session.
+  caregiver profile) and the refund rules of the center booking policy (`GET /center-booking-policies/{centerId}`:
+  refund percent from / under the cut-off and the share kept when the remaining balance is overdue) in
+  `entities/payment/refund-policy.tsx`. The cancel dialog reads PaymentService refund-quote rule codes
+  (`BEFORE_THRESHOLD`, `AFTER_THRESHOLD`, `FULL_REFUND_*`, `PAYMENT_OVERDUE`…) as words through `refundRuleLabel`;
+  codes are never shown.
+- BookingService leaves `depositAmount` empty: PaymentService computes the initial payment per visit. `initialPaymentOf`
+  shows the booking total times the `initialPaymentPercent` BookingService fixed at creation (SHIFT 100, RECURRING /
+  CUSTOM the center deposit percent) as an estimate, and what remains; the VNPay page shows the exact amount.
+- RECURRING / CUSTOM bookings are paid in full before the first visit: PaymentService opens the remaining-balance
+  invoice together with the initial payment. While a CONFIRMED booking has `remainingPaymentDueAt` and no `fullyPaidAt`,
+  the booking detail states the amount and due time and opens the invoice checkout directly (the pending invoice of the
+  booking is found among the customer's `GET /remaining-invoices?status=PENDING`); a paid booking shows "paid in
+  full". The booking form sidebar states when the rest will be due (first visit minus the policy cut-off).
 - The booking form reads `GET /payments/me/outstanding` and, while an overdue invoice exists, shows a banner linking to
   `/customer/payments` and disables submit, so the customer learns about the block before filling the form.
-- The Customer booking form's one-time option accepts up to four distinct dates. BookingService's `ONE_TIME` request
-  represents only one date, so the frontend quotes each date and creates separate bookings in date order. Successful
-  requests keep their IDs and idempotency keys in the form while it remains open; a retry sends only dates that failed.
-  The sidebar totals the backend quotes and emphasizes an estimated 30% deposit. If a quote reports a different
-  effective deposit policy, submission stops rather than showing an amount that differs from the payment flow.
+- The Customer booking form (booking spec v1.0, 2026-11-02) sends one booking of type SHIFT, RECURRING or CUSTOM. The
+  customer picks the center, then services, then a caregiver among those who provide every chosen service
+  (`/caregivers/search`). SHIFT requires a caregiver and one of their shifts (`GET /caregivers/{id}/schedules`); shifts a
+  booking already holds (`GET /bookings/held-schedules`) are locked. CUSTOM lists visits with their own times and blocks
+  overlapping ones before BookingService checks again. The retried submit keeps its Idempotency-Key. The sidebar shows
+  the quote's initial-payment percent and amount from the center booking policy (`GET /center-booking-policies/{id}`);
+  no rate is fixed in the browser.
+- The Center Manager booking detail confirms a RECURRING / CUSTOM booking without a caregiver
+  (PENDING_CAREGIVER_ASSIGNMENT) and assigns one later before the policy deadline; the customer pays only after that.
+  Once paid (CONFIRMED / IN_PROGRESS) the manager also cancels a single upcoming visit (`occurrenceIds`, full refund of
+  what was paid for it, B16); before payment the booking is rejected or cancelled whole. The summary shows the
+  remaining-balance due time and when the customer paid in full.
+- `/center-manager/statistics` adds the center's net revenue (`GET /payments/revenue`; the token decides the center,
+  spec §9.3) for this month, the last 30 days or this year.
 - Booking aftercare (`booking-aftercare.tsx`) shows care reports and the new-complaint action only once a visit has
   taken place; the review has no preset rating; each complaint keeps its own escalation reason and error, and
   withdrawing asks for confirmation.
 - `/customer/payments` (account menu "Payments & refunds") lists remaining-balance invoices
   with a VNPay pay action (`POST /remaining-invoices/{id}/payments`), warns when an OVERDUE
-  invoice blocks new bookings (`GET /payments/me/outstanding`), and shows the customer's
+  invoice blocks new bookings (`GET /payments/me/outstanding`; an unpaid balance due before the first visit becomes
+  EXPIRED with its booking, never a debt), and shows the customer's
   payment history (`GET /payments`, real `refundedAmount`) and refunds (`GET /refunds`).
   PaymentService error codes map to `payment.errors.e<code>` translations.
 

@@ -6,10 +6,11 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type BookingScheduleType = (typeof BookingScheduleType)[keyof typeof BookingScheduleType]
-
-export const BookingScheduleType = {
-  ONE_TIME: 'ONE_TIME',
-  DAILY: 'DAILY',
-  WEEKLY: 'WEEKLY'
-} as const
+export type GetPaymentRevenueParams = {
+  from: string
+  to: string
+  /**
+   * ADMIN only; a center manager always reads the center of the token
+   */
+  centerId?: string
+}

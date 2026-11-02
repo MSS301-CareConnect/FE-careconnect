@@ -26,6 +26,7 @@ import type {
   BookingCancelRequest,
   BookingCreateRequest,
   BookingDetailResponse,
+  BookingHeldScheduleResponse,
   BookingHistoryPageResponse,
   BookingOccurrencePageResponse,
   BookingOccurrenceResponse,
@@ -35,6 +36,7 @@ import type {
   CancellationPreviewRequest,
   CancellationPreviewResponse,
   CaregiverAssignRequest,
+  ListBookingHeldSchedulesParams,
   ListBookingHistoryParams,
   ListBookingOccurrencesParams,
   ListBookingsParams,
@@ -530,6 +532,206 @@ export const useQuoteBooking = <TError = globalThis.Error & { info?: void; statu
 ): UseMutationResult<Awaited<ReturnType<typeof quoteBooking>>, TError, { data: BookingQuoteRequest }, TContext> => {
   return useMutation(getQuoteBookingMutationOptions(options), queryClient)
 }
+export type listBookingHeldSchedulesResponse200 = {
+  data: BookingHeldScheduleResponse
+  status: 200
+}
+
+export type listBookingHeldSchedulesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listBookingHeldSchedulesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listBookingHeldSchedulesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listBookingHeldSchedulesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listBookingHeldSchedulesResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listBookingHeldSchedulesResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listBookingHeldSchedulesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listBookingHeldSchedulesResponseSuccess = listBookingHeldSchedulesResponse200 & {
+  headers: Headers
+}
+export type listBookingHeldSchedulesResponseError = (
+  | listBookingHeldSchedulesResponse400
+  | listBookingHeldSchedulesResponse401
+  | listBookingHeldSchedulesResponse403
+  | listBookingHeldSchedulesResponse404
+  | listBookingHeldSchedulesResponse409
+  | listBookingHeldSchedulesResponse500
+  | listBookingHeldSchedulesResponse503
+) & {
+  headers: Headers
+}
+
+export const getListBookingHeldSchedulesUrl = (params: ListBookingHeldSchedulesParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/bookings/held-schedules?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/bookings/held-schedules`
+}
+
+/**
+ * @summary Caregiver schedules already held by bookings and busy slots, to lock them in the SHIFT picker (max 31 days)
+ */
+export const listBookingHeldSchedules = async (
+  params: ListBookingHeldSchedulesParams,
+  options?: RequestInit
+): Promise<listBookingHeldSchedulesResponseSuccess> => {
+  const res = await fetch(getListBookingHeldSchedulesUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listBookingHeldSchedulesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listBookingHeldSchedulesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listBookingHeldSchedulesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listBookingHeldSchedulesResponseSuccess
+}
+
+export const getListBookingHeldSchedulesQueryKey = (params?: ListBookingHeldSchedulesParams) => {
+  return [`${env.API_BASE_URL}/v1/bookings/held-schedules`, ...(params ? [params] : [])] as const
+}
+
+export const getListBookingHeldSchedulesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListBookingHeldSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listBookingHeldSchedules>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListBookingHeldSchedulesQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listBookingHeldSchedules>>> = ({ signal }) =>
+    listBookingHeldSchedules(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListBookingHeldSchedulesQueryResult = NonNullable<Awaited<ReturnType<typeof listBookingHeldSchedules>>>
+export type ListBookingHeldSchedulesQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListBookingHeldSchedules<
+  TData = Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListBookingHeldSchedulesParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listBookingHeldSchedules>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+          TError,
+          Awaited<ReturnType<typeof listBookingHeldSchedules>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBookingHeldSchedules<
+  TData = Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListBookingHeldSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listBookingHeldSchedules>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+          TError,
+          Awaited<ReturnType<typeof listBookingHeldSchedules>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBookingHeldSchedules<
+  TData = Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListBookingHeldSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listBookingHeldSchedules>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Caregiver schedules already held by bookings and busy slots, to lock them in the SHIFT picker (max 31 days)
+ */
+
+export function useListBookingHeldSchedules<
+  TData = Awaited<ReturnType<typeof listBookingHeldSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListBookingHeldSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listBookingHeldSchedules>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListBookingHeldSchedulesQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
 export type getBookingResponse200 = {
   data: BookingDetailResponse
   status: 200
@@ -1471,7 +1673,7 @@ export const getAcceptBookingUrl = (id: string) => {
 }
 
 /**
- * @summary CENTER_MANAGER accepts a PENDING booking (AWAITING_DEPOSIT)
+ * @summary CENTER_MANAGER confirms a PENDING_CENTER_CONFIRMATION booking (with caregiver → AWAITING_INITIAL_PAYMENT, without → PENDING_CAREGIVER_ASSIGNMENT)
  */
 export const acceptBooking = async (
   id: string,
@@ -1539,7 +1741,7 @@ export type AcceptBookingMutationBody = AcceptRequest | undefined
 export type AcceptBookingMutationError = globalThis.Error & { info?: void; status?: number }
 
 /**
- * @summary CENTER_MANAGER accepts a PENDING booking (AWAITING_DEPOSIT)
+ * @summary CENTER_MANAGER confirms a PENDING_CENTER_CONFIRMATION booking (with caregiver → AWAITING_INITIAL_PAYMENT, without → PENDING_CAREGIVER_ASSIGNMENT)
  */
 export const useAcceptBooking = <TError = globalThis.Error & { info?: void; status?: number }, TContext = unknown>(
   options?: {

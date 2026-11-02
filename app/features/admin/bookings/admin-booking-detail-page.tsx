@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { bookingErrorStatus, bookingKeys, cancelBookingRequest, fetchBooking } from '~/entities/booking/booking-api'
-import { bookingErrorKey, formatDateTime, formatMoney } from '~/entities/booking/booking-format'
+import { bookingErrorKey, bookingTypeKey, formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
@@ -17,7 +17,13 @@ import { SectionCard } from '~/shared/ui/section-card'
 import { useActionToast } from '~/shared/ui/use-action-toast'
 
 // Statuses that still hold a schedule; BookingService rejects a cancel outside them.
-const CANCELLABLE: ReadonlySet<BookingStatus> = new Set(['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS'])
+const CANCELLABLE: ReadonlySet<BookingStatus> = new Set([
+  'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_ASSIGNMENT',
+  'AWAITING_INITIAL_PAYMENT',
+  'CONFIRMED',
+  'IN_PROGRESS'
+])
 
 /** M-11: one booking as the platform sees it, with the admin's cancel-on-behalf action (full refund like a center cancel). */
 export function AdminBookingDetailPage({ id }: { id: string }) {
@@ -75,7 +81,7 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
           </h1>
           <p className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
             <BookingStatusBadge status={data.status} />
-            <span>{t(`booking.scheduleType.${data.scheduleType}`)}</span>
+            <span>{t(bookingTypeKey(data))}</span>
             <span className='tabular-nums'>{formatMoney(data.totalAmount, language)}</span>
           </p>
         </div>

@@ -12,28 +12,42 @@ export const bookingDetailEn = {
   occurrences: 'Care visits',
   history: 'History',
   refunded: 'Refund: {{refund}}',
-  payDeposit: 'Pay the {{deposit}} deposit',
-  payDepositNoAmount: 'Pay the deposit',
+  payDeposit: 'Pay {{deposit}}',
+  payDepositNoAmount: 'Pay the initial payment',
+  remaining: {
+    pay: 'Pay the remaining {{remaining}}',
+    paying: 'Opening the payment gateway…',
+    toPayments: 'See the invoice in Payments'
+  },
   summary: {
     schedule: 'Schedule',
     services: 'Services',
-    deposit: 'Deposit',
-    depositEstimated: 'Estimated deposit',
+    deposit: 'Initial payment',
+    depositEstimated: 'Estimated initial payment ({{percent}}%)',
+    remaining: 'Remaining balance',
+    remainingDue: 'Due by {{time}}',
+    fullyPaid: 'Paid in full',
     total: 'Total'
   },
   next: {
-    PENDING: {
-      title: 'Waiting for the center to review',
-      body: 'The center reviews your request and assigns a caregiver. It must answer by {{acceptanceDue}}.'
+    PENDING_CENTER_CONFIRMATION: {
+      title: 'Waiting for the center to confirm',
+      body: 'The center reviews your request. It must answer by {{acceptanceDue}}.'
     },
-    AWAITING_DEPOSIT: {
-      title: 'Pay the deposit to confirm',
-      body: 'The center accepted. Pay the deposit of {{deposit}} by {{depositDue}}, or the booking expires.',
-      bodyNoAmount: 'The center accepted. Pay the deposit by {{depositDue}}, or the booking expires.'
+    PENDING_CAREGIVER_ASSIGNMENT: {
+      title: 'The center is assigning a caregiver',
+      body: 'The center confirmed and must assign a caregiver by {{assignmentDue}}. You pay only once a caregiver is assigned.'
+    },
+    AWAITING_INITIAL_PAYMENT: {
+      title: 'Pay to confirm',
+      body: 'The center accepted. Pay the initial payment of {{deposit}} by {{depositDue}}, or the booking expires.',
+      bodyNoAmount: 'The center accepted. Pay the initial payment by {{depositDue}}, or the booking expires.'
     },
     CONFIRMED: {
       title: 'Confirmed',
-      body: 'Your deposit is received and the caregiver will arrive for each visit below.'
+      body: 'Your payment is received and the caregiver will arrive for each visit below.',
+      bodyRemaining:
+        'Your initial payment is received. Pay the remaining {{remaining}} by {{remainingDue}}: care starts only once the booking is paid in full, and an unpaid booking expires.'
     },
     IN_PROGRESS: {
       title: 'Care is under way',
@@ -41,7 +55,7 @@ export const bookingDetailEn = {
     },
     COMPLETED: {
       title: 'All visits are done',
-      body: 'Thank you for using CareConnect. The remaining invoice is sent to you separately.'
+      body: 'Thank you for using CareConnect. Any open invoice is listed in Payments & refunds.'
     },
     REJECTED: {
       title: 'The center declined this request',
@@ -53,7 +67,7 @@ export const bookingDetailEn = {
     },
     EXPIRED: {
       title: 'Booking expired',
-      body: 'The center did not answer in time or the deposit was not paid by the due time.'
+      body: 'The center did not confirm or assign a caregiver in time, or the payment was not made by the due time.'
     }
   },
   cancel: {
@@ -88,28 +102,42 @@ export const bookingDetailVi = {
   occurrences: 'Các buổi chăm sóc',
   history: 'Lịch sử',
   refunded: 'Tiền hoàn: {{refund}}',
-  payDeposit: 'Đặt cọc {{deposit}}',
-  payDepositNoAmount: 'Đặt cọc',
+  payDeposit: 'Thanh toán {{deposit}}',
+  payDepositNoAmount: 'Thanh toán khoản đầu',
+  remaining: {
+    pay: 'Thanh toán phần còn lại {{remaining}}',
+    paying: 'Đang mở trang thanh toán…',
+    toPayments: 'Xem hóa đơn ở trang Thanh toán'
+  },
   summary: {
     schedule: 'Lịch chăm sóc',
     services: 'Dịch vụ',
-    deposit: 'Tiền cọc',
-    depositEstimated: 'Tiền cọc dự kiến',
+    deposit: 'Khoản thanh toán đầu',
+    depositEstimated: 'Thanh toán đầu dự kiến ({{percent}}%)',
+    remaining: 'Phần còn lại',
+    remainingDue: 'Trả trước {{time}}',
+    fullyPaid: 'Đã thanh toán đủ',
     total: 'Tổng cộng'
   },
   next: {
-    PENDING: {
-      title: 'Đang chờ trung tâm duyệt',
-      body: 'Trung tâm xem yêu cầu và phân công người chăm sóc. Hạn trả lời: {{acceptanceDue}}.'
+    PENDING_CENTER_CONFIRMATION: {
+      title: 'Đang chờ trung tâm xác nhận',
+      body: 'Trung tâm xem yêu cầu của bạn. Hạn trả lời: {{acceptanceDue}}.'
     },
-    AWAITING_DEPOSIT: {
-      title: 'Đặt cọc để xác nhận lịch',
-      body: 'Trung tâm đã duyệt. Hãy đặt cọc {{deposit}} trước {{depositDue}}, nếu không lịch sẽ hết hạn.',
-      bodyNoAmount: 'Trung tâm đã duyệt. Hãy đặt cọc trước {{depositDue}}, nếu không lịch sẽ hết hạn.'
+    PENDING_CAREGIVER_ASSIGNMENT: {
+      title: 'Trung tâm đang phân người chăm sóc',
+      body: 'Trung tâm đã xác nhận và cần phân người chăm sóc trước {{assignmentDue}}. Bạn chỉ thanh toán khi đã có người chăm sóc.'
+    },
+    AWAITING_INITIAL_PAYMENT: {
+      title: 'Thanh toán để xác nhận lịch',
+      body: 'Trung tâm đã duyệt. Hãy thanh toán khoản đầu {{deposit}} trước {{depositDue}}, nếu không lịch sẽ hết hạn.',
+      bodyNoAmount: 'Trung tâm đã duyệt. Hãy thanh toán khoản đầu trước {{depositDue}}, nếu không lịch sẽ hết hạn.'
     },
     CONFIRMED: {
       title: 'Đã xác nhận',
-      body: 'Đã nhận tiền cọc. Người chăm sóc sẽ đến theo từng buổi bên dưới.'
+      body: 'Đã nhận thanh toán. Người chăm sóc sẽ đến theo từng buổi bên dưới.',
+      bodyRemaining:
+        'Đã nhận khoản thanh toán đầu. Hãy thanh toán phần còn lại {{remaining}} trước {{remainingDue}}: chỉ bắt đầu chăm sóc khi đã trả đủ, chưa trả đủ thì lịch đặt sẽ hết hạn.'
     },
     IN_PROGRESS: {
       title: 'Đang trong thời gian chăm sóc',
@@ -117,7 +145,7 @@ export const bookingDetailVi = {
     },
     COMPLETED: {
       title: 'Đã hoàn tất mọi buổi',
-      body: 'Cảm ơn bạn đã dùng CareConnect. Hóa đơn phần còn lại sẽ được gửi riêng.'
+      body: 'Cảm ơn bạn đã dùng CareConnect. Hóa đơn còn mở (nếu có) nằm ở trang Thanh toán & hoàn tiền.'
     },
     REJECTED: {
       title: 'Trung tâm đã từ chối yêu cầu',
@@ -129,7 +157,7 @@ export const bookingDetailVi = {
     },
     EXPIRED: {
       title: 'Lịch đặt đã hết hạn',
-      body: 'Trung tâm không trả lời kịp hoặc chưa đặt cọc trước hạn.'
+      body: 'Trung tâm không xác nhận hoặc không phân người chăm sóc kịp, hoặc chưa thanh toán đúng hạn.'
     }
   },
   cancel: {

@@ -9,6 +9,7 @@ import { faker } from '@faker-js/faker'
 
 import type {
   BookingDetailResponse,
+  BookingHeldScheduleResponse,
   BookingHistoryPageResponse,
   BookingOccurrencePageResponse,
   BookingOccurrenceResponse,
@@ -19,6 +20,7 @@ import type {
 
 import {
   getBookingDetailRecordMock,
+  getBookingHeldScheduleRecordMock,
   getBookingHistoryPageMock,
   getBookingOccurrencePageMock,
   getBookingOccurrenceRecordMock,
@@ -51,6 +53,15 @@ export const getQuoteBookingResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getBookingQuoteRecordMock() },
+  ...overrideResponse
+})
+
+export const getListBookingHeldSchedulesResponseMock = (
+  overrideResponse: Partial<Extract<BookingHeldScheduleResponse, object>> = {}
+): BookingHeldScheduleResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingHeldScheduleRecordMock() },
   ...overrideResponse
 })
 

@@ -25,11 +25,13 @@ import type {
   CheckoutRequest,
   CheckoutResponse,
   GetPaymentByBookingParams,
+  GetPaymentRevenueParams,
   ListPaymentsParams,
   OutstandingDebtResponse,
   PaymentPageResponse,
   PaymentResponse,
   PaymentReturnResponse,
+  RevenueResponse,
   VerifyVnPayReturnParams
 } from '../../contracts'
 
@@ -619,6 +621,200 @@ export function useGetPaymentByBooking<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetPaymentByBookingQueryOptions(bookingId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getPaymentRevenueResponse200 = {
+  data: RevenueResponse
+  status: 200
+}
+
+export type getPaymentRevenueResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getPaymentRevenueResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getPaymentRevenueResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getPaymentRevenueResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getPaymentRevenueResponse409 = {
+  data: void
+  status: 409
+}
+
+export type getPaymentRevenueResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getPaymentRevenueResponseSuccess = getPaymentRevenueResponse200 & {
+  headers: Headers
+}
+export type getPaymentRevenueResponseError = (
+  | getPaymentRevenueResponse400
+  | getPaymentRevenueResponse401
+  | getPaymentRevenueResponse403
+  | getPaymentRevenueResponse404
+  | getPaymentRevenueResponse409
+  | getPaymentRevenueResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetPaymentRevenueUrl = (params: GetPaymentRevenueParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/payments/revenue?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/payments/revenue`
+}
+
+/**
+ * @summary Net revenue (collected minus refunded); ADMIN for the platform or one center, CENTER_MANAGER own center only
+ */
+export const getPaymentRevenue = async (
+  params: GetPaymentRevenueParams,
+  options?: RequestInit
+): Promise<getPaymentRevenueResponseSuccess> => {
+  const res = await fetch(getGetPaymentRevenueUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getPaymentRevenueResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getPaymentRevenueResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getPaymentRevenueResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getPaymentRevenueResponseSuccess
+}
+
+export const getGetPaymentRevenueQueryKey = (params?: GetPaymentRevenueParams) => {
+  return [`${env.API_BASE_URL}/v1/payments/revenue`, ...(params ? [params] : [])] as const
+}
+
+export const getGetPaymentRevenueQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPaymentRevenue>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetPaymentRevenueParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentRevenue>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPaymentRevenueQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaymentRevenue>>> = ({ signal }) =>
+    getPaymentRevenue(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPaymentRevenue>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPaymentRevenueQueryResult = NonNullable<Awaited<ReturnType<typeof getPaymentRevenue>>>
+export type GetPaymentRevenueQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetPaymentRevenue<
+  TData = Awaited<ReturnType<typeof getPaymentRevenue>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetPaymentRevenueParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentRevenue>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPaymentRevenue>>,
+          TError,
+          Awaited<ReturnType<typeof getPaymentRevenue>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPaymentRevenue<
+  TData = Awaited<ReturnType<typeof getPaymentRevenue>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetPaymentRevenueParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentRevenue>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPaymentRevenue>>,
+          TError,
+          Awaited<ReturnType<typeof getPaymentRevenue>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPaymentRevenue<
+  TData = Awaited<ReturnType<typeof getPaymentRevenue>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetPaymentRevenueParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentRevenue>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Net revenue (collected minus refunded); ADMIN for the platform or one center, CENTER_MANAGER own center only
+ */
+
+export function useGetPaymentRevenue<
+  TData = Awaited<ReturnType<typeof getPaymentRevenue>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetPaymentRevenueParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentRevenue>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPaymentRevenueQueryOptions(params, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

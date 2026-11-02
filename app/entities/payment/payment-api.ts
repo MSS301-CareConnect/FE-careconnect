@@ -1,13 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
-
 import {
   createBookingCheckout,
   getMyOutstandingDebt,
   getPayment,
+  getPaymentRevenue,
   listPayments,
   verifyVnPayReturn
 } from '~/shared/api/generated/api/payment/payment'
-import { getEffectivePaymentPolicy } from '~/shared/api/generated/api/payment-policy/payment-policy'
 import { listRefunds } from '~/shared/api/generated/api/refund/refund'
 import {
   listRemainingInvoices,
@@ -31,45 +29,33 @@ function result<T>(response: { data: { code: number; result: T } }): T {
 export const paymentKeys = {
   all: ['payment'] as const,
   detail: (id: string) => ['payment', 'detail', id] as const,
-  policy: (centerId: string) => ['payment', 'policy', centerId] as const,
   history: (page: number) => ['payment', 'history', page] as const,
   refunds: (page: number) => ['payment', 'refunds', page] as const,
   invoices: (page: number) => ['payment', 'invoices', page] as const,
+  bookingInvoice: (bookingId: string) => ['payment', 'invoices', 'booking', bookingId] as const,
+  revenue: (from: string, to: string) => ['payment', 'revenue', from, to] as const,
   outstanding: ['payment', 'outstanding'] as const,
   vnPayReturn: (query: string) => ['payment', 'vnpay-return', query] as const
 }
 
-/** Policy in effect for a center (C2.1); PaymentService owns the deposit percent. */
-export async function fetchEffectivePolicy(centerId: string) {
-  return result(await getEffectivePaymentPolicy({ centerId }, readOptions))
-}
-
-/** The deposit PaymentService charges: the booking total times the policy percent, in whole dong. */
+/** The initial payment PaymentService charges: the booking total times the percent, in whole dong. */
 export function estimateDeposit(totalAmount: number | undefined, depositPercent: number | undefined) {
   if (totalAmount === undefined || depositPercent === undefined) return undefined
   return Math.round((totalAmount * depositPercent) / 100)
 }
 
 /**
- * The booking's deposit. BookingService leaves `depositAmount` empty (PaymentService keeps the per-visit split),
- * so the amount is estimated from the center's policy and flagged as such; the checkout shows the exact figure.
+ * The booking's initial payment (spec §9.1): SHIFT pays 100%, RECURRING / CUSTOM the deposit percent BookingService
+ * took from the center policy when the booking was made. PaymentService rounds per visit, so the amount is flagged
+ * as an estimate and the checkout shows the exact figure; `remaining` is what is due before the first visit.
  */
-export function useDepositAmount(booking: BookingDetailRecord | undefined) {
+export function initialPaymentOf(booking: BookingDetailRecord | undefined) {
   const recorded = booking?.depositAmount ?? undefined
-  const centerId = booking?.centerId ?? ''
-  const policy = useQuery({
-    queryKey: paymentKeys.policy(centerId),
-    queryFn: () => fetchEffectivePolicy(centerId),
-    enabled: Boolean(centerId) && recorded === undefined,
-    retry: false,
-    staleTime: 5 * 60_000
-  })
-  if (recorded !== undefined) return { amount: recorded, estimated: false, isPending: false }
-  return {
-    amount: estimateDeposit(booking?.totalAmount, policy.data?.depositPercent),
-    estimated: true,
-    isPending: policy.isPending && Boolean(centerId)
-  }
+  const percent = booking?.initialPaymentPercent
+  const amount = recorded ?? estimateDeposit(booking?.totalAmount, percent)
+  const remaining =
+    amount !== undefined && booking?.totalAmount !== undefined ? Math.max(0, booking.totalAmount - amount) : undefined
+  return { amount, estimated: recorded === undefined, percent, remaining }
 }
 
 /** Opens a VNPay deposit checkout (PAY-05); PaymentService expires any earlier open session of the booking. */
@@ -98,6 +84,20 @@ export async function fetchRemainingInvoices(page: number) {
   return result(await listRemainingInvoices({ page, size: PAYMENT_PAGE_SIZE }, readOptions))
 }
 
+/**
+ * The pending remaining-balance invoice of one booking (spec §9.1). PaymentService lists invoices per customer only,
+ * so this reads the customer's pending ones; a customer has few at a time.
+ */
+export async function fetchOpenInvoiceOfBooking(bookingId: string) {
+  const page = result(await listRemainingInvoices({ status: 'PENDING', page: 0, size: 100 }, readOptions))
+  return page.items.find((invoice) => invoice.bookingId === bookingId) ?? null
+}
+
+/** Net revenue (collected minus refunded) of the period; a center manager always gets the own center (spec §9.3). */
+export async function fetchRevenue(from: string, to: string) {
+  return result(await getPaymentRevenue({ from, to }, readOptions))
+}
+
 export async function fetchOutstandingDebt() {
   return result(await getMyOutstandingDebt(readOptions))
 }
@@ -113,7 +113,7 @@ export function redirectToCheckout(checkoutUrl: string) {
   window.location.assign(checkoutUrl)
 }
 
-const KNOWN_ERROR_CODES = [6004, 6005, 6006, 6007, 6008, 6012, 6017, 6018, 6019, 6024, 6025] as const
+const KNOWN_ERROR_CODES = [6004, 6005, 6006, 6007, 6008, 6012, 6017, 6018, 6019, 6024, 6025, 6027] as const
 export type PaymentErrorKey =
   | `payment.errors.e${(typeof KNOWN_ERROR_CODES)[number]}`
   | 'payment.errors.unavailable'

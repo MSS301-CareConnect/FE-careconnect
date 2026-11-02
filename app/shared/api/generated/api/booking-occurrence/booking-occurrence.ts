@@ -782,7 +782,7 @@ export const getDecideBookingOccurrenceNoShowUrl = (id: string) => {
 }
 
 /**
- * @summary CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (MISSED) a no-show report
+ * @summary CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (CAREGIVER_MISSED) a no-show report
  */
 export const decideBookingOccurrenceNoShow = async (
   id: string,
@@ -852,7 +852,7 @@ export type DecideBookingOccurrenceNoShowMutationBody = NoShowDecisionRequest
 export type DecideBookingOccurrenceNoShowMutationError = globalThis.Error & { info?: void; status?: number }
 
 /**
- * @summary CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (MISSED) a no-show report
+ * @summary CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (CAREGIVER_MISSED) a no-show report
  */
 export const useDecideBookingOccurrenceNoShow = <
   TError = globalThis.Error & { info?: void; status?: number },

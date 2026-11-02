@@ -1,7 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { bookingErrorKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
+import {
+  bookingErrorKey,
+  bookingTypeKey,
+  formatDateTime,
+  formatDay,
+  formatMoney,
+  shortTime
+} from '~/entities/booking/booking-format'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -31,10 +38,10 @@ export function ManagerBookingManagementPage() {
               : t('centerManager.bookingManagement.subtitle')}
           </p>
         </div>
-        {list.pendingCount && list.status !== 'PENDING' ? (
+        {list.pendingCount && list.status !== 'PENDING_CENTER_CONFIRMATION' ? (
           <button
             className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
-            onClick={() => list.setStatus('PENDING')}
+            onClick={() => list.setStatus('PENDING_CENTER_CONFIRMATION')}
             type='button'
           >
             <Icon className='text-lg' name='pending_actions' />
@@ -110,8 +117,8 @@ export function ManagerBookingManagementPage() {
                         : ''}
                     </p>
                     <p className='text-xs text-on-surface-variant'>
-                      {t(`booking.scheduleType.${booking.scheduleType}`)} · {shortTime(booking.startTime)}–
-                      {shortTime(booking.endTime)}
+                      {t(bookingTypeKey(booking))}
+                      {booking.startTime ? ` · ${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''}
                     </p>
                   </td>
                   <td className='px-4 py-3.5 tabular-nums'>

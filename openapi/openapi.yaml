@@ -26,6 +26,8 @@ tags:
   - name: CareReport
   - name: Complaint
   - name: BookingOutbox
+  - name: CenterBookingPolicy
+    description: BookingService center booking policy (spec booking v1.0 §8) — advance notice, deadlines, deposit, refunds.
   - name: ProviderOutbox
   - name: Feedback
   - name: Notification
@@ -3998,6 +4000,79 @@ paths:
           description: CareRecipientService error
         '503':
           description: CareRecipientService error
+  /v1/center-booking-policies/{centerId}:
+    get:
+      tags:
+        - CenterBookingPolicy
+      summary: Effective booking policy of a center (CUSTOMER any center, CENTER_MANAGER own center, ADMIN all)
+      operationId: getCenterBookingPolicy
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterBookingPolicyResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+    put:
+      tags:
+        - CenterBookingPolicy
+      summary: CENTER_MANAGER replaces the policy of the own center; ADMIN any center
+      operationId: updateCenterBookingPolicy
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterBookingPolicyRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CenterBookingPolicyResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
   /v1/bookings:
     get:
       tags:
@@ -4149,6 +4224,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookingQuoteResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/bookings/held-schedules:
+    get:
+      tags:
+        - Booking
+      summary: Caregiver schedules already held by bookings and busy slots, to lock them in the SHIFT picker (max 31 days)
+      operationId: listBookingHeldSchedules
+      parameters:
+        - name: caregiverId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingHeldScheduleResponse'
         '400':
           description: BookingService error
         '401':
@@ -4379,7 +4500,7 @@ paths:
     post:
       tags:
         - Booking
-      summary: CENTER_MANAGER accepts a PENDING booking (AWAITING_DEPOSIT)
+      summary: CENTER_MANAGER confirms a PENDING_CENTER_CONFIRMATION booking (with caregiver → AWAITING_INITIAL_PAYMENT, without → PENDING_CAREGIVER_ASSIGNMENT)
       operationId: acceptBooking
       parameters:
         - name: id
@@ -4711,7 +4832,7 @@ paths:
     post:
       tags:
         - BookingOccurrence
-      summary: CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (MISSED) a no-show report
+      summary: CENTER_MANAGER approves (CUSTOMER_NO_SHOW) or rejects (CAREGIVER_MISSED) a no-show report
       operationId: decideBookingOccurrenceNoShow
       parameters:
         - name: id
@@ -6494,6 +6615,51 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
+  /v1/payments/revenue:
+    get:
+      tags:
+        - Payment
+      summary: Net revenue (collected minus refunded); ADMIN for the platform or one center, CENTER_MANAGER own center only
+      operationId: getPaymentRevenue
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: centerId
+          in: query
+          required: false
+          description: ADMIN only; a center manager always reads the center of the token
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevenueResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
   /v1/payments/me/outstanding:
     get:
       tags:
@@ -7199,6 +7365,52 @@ paths:
         '403':
           description: ProviderService error
         '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+  /v1/caregivers/{caregiverId}/schedules:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: SCHEDULED caregiver schedules a customer can book as SHIFT (from today, max 31 days)
+      operationId: listProviderBookableSchedules
+      parameters:
+        - name: caregiverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderBookableScheduleListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
           description: ProviderService error
         '500':
           description: ProviderService error
@@ -8308,6 +8520,52 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/ProviderTimeOffRecord'
+    ProviderBookableScheduleRecord:
+      type: object
+      required:
+        - id
+        - caregiverId
+        - centerId
+        - workDate
+        - startTime
+        - endTime
+      properties:
+        id:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        workShiftId:
+          type: string
+          format: uuid
+        workDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          description: Vietnam local time HH:mm:ss
+        endTime:
+          type: string
+          description: Vietnam local time HH:mm:ss
+    ProviderBookableScheduleListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderBookableScheduleRecord'
     ProviderAvailabilityWindowListResponse:
       type: object
       required:
@@ -10868,8 +11126,9 @@ components:
     BookingStatus:
       type: string
       enum:
-        - PENDING
-        - AWAITING_DEPOSIT
+        - PENDING_CENTER_CONFIRMATION
+        - PENDING_CAREGIVER_ASSIGNMENT
+        - AWAITING_INITIAL_PAYMENT
         - CONFIRMED
         - IN_PROGRESS
         - COMPLETED
@@ -10879,17 +11138,25 @@ components:
     OccurrenceStatus:
       type: string
       enum:
+        - PENDING_ASSIGNMENT
+        - RESERVED
         - SCHEDULED
         - ACKNOWLEDGED
         - IN_PROGRESS
         - COMPLETED
         - CANCELLED
-        - MISSED
+        - EXPIRED
         - CUSTOMER_NO_SHOW
-    BookingScheduleType:
+        - CAREGIVER_MISSED
+    BookingType:
       type: string
       enum:
-        - ONE_TIME
+        - SHIFT
+        - RECURRING
+        - CUSTOM
+    BookingRecurrenceFrequency:
+      type: string
+      enum:
         - DAILY
         - WEEKLY
     BookingUnitType:
@@ -11151,13 +11418,10 @@ components:
     BookingCreateRequest:
       type: object
       required:
+        - bookingType
         - centerId
-        - endTime
         - recipientId
-        - scheduleType
         - services
-        - startDate
-        - startTime
       properties:
         recipientId:
           type: string
@@ -11165,30 +11429,45 @@ components:
         centerId:
           type: string
           format: uuid
+        bookingType:
+          $ref: '#/components/schemas/BookingType'
         caregiverId:
           type: string
           format: uuid
-        scheduleType:
-          $ref: '#/components/schemas/BookingScheduleType'
+          description: Required for SHIFT; optional for RECURRING / CUSTOM
+        caregiverScheduleId:
+          type: string
+          format: uuid
+          description: SHIFT only — ProviderService caregiver schedule
+        frequency:
+          $ref: '#/components/schemas/BookingRecurrenceFrequency'
         startDate:
           type: string
           format: date
+          description: RECURRING only
         endDate:
           type: string
           format: date
+          description: RECURRING only
         startTime:
           type: string
-          description: Local time HH:mm
+          description: RECURRING only — local time HH:mm
         endTime:
           type: string
-          description: Local time HH:mm
+          description: RECURRING only — local time HH:mm
         daysOfWeek:
           type: array
           items:
             type: integer
             minimum: 1
             maximum: 7
-          description: 1 = Monday … 7 = Sunday (WEEKLY)
+          description: RECURRING WEEKLY only — 1 = Monday … 7 = Sunday
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotRequest'
+          maxItems: 366
+          description: CUSTOM only — each occurrence with its own start and end, must not overlap
         customerNote:
           type: string
           maxLength: 2000
@@ -11202,12 +11481,9 @@ components:
     BookingQuoteRequest:
       type: object
       required:
+        - bookingType
         - centerId
-        - endTime
-        - scheduleType
         - services
-        - startDate
-        - startTime
       properties:
         recipientId:
           type: string
@@ -11215,27 +11491,45 @@ components:
         centerId:
           type: string
           format: uuid
+        bookingType:
+          $ref: '#/components/schemas/BookingType'
         caregiverId:
           type: string
           format: uuid
-        scheduleType:
-          $ref: '#/components/schemas/BookingScheduleType'
+          description: Required for SHIFT; optional for RECURRING / CUSTOM
+        caregiverScheduleId:
+          type: string
+          format: uuid
+          description: SHIFT only — ProviderService caregiver schedule
+        frequency:
+          $ref: '#/components/schemas/BookingRecurrenceFrequency'
         startDate:
           type: string
           format: date
+          description: RECURRING only
         endDate:
           type: string
           format: date
+          description: RECURRING only
         startTime:
           type: string
+          description: RECURRING only — local time HH:mm
         endTime:
           type: string
+          description: RECURRING only — local time HH:mm
         daysOfWeek:
           type: array
           items:
             type: integer
             minimum: 1
             maximum: 7
+          description: RECURRING WEEKLY only — 1 = Monday … 7 = Sunday
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotRequest'
+          maxItems: 366
+          description: CUSTOM only — each occurrence with its own start and end, must not overlap
         customerNote:
           type: string
           maxLength: 2000
@@ -11634,6 +11928,9 @@ components:
         caregiverId:
           type: string
           format: uuid
+        caregiverScheduleId:
+          type: string
+          format: uuid
         status:
           $ref: '#/components/schemas/OccurrenceStatus'
         cancelReason:
@@ -11773,10 +12070,8 @@ components:
         - status
         - recipientId
         - centerId
-        - scheduleType
+        - bookingType
         - startDate
-        - startTime
-        - endTime
       properties:
         id:
           type: string
@@ -11802,8 +12097,10 @@ components:
         caregiverUserId:
           type: string
           format: uuid
-        scheduleType:
-          $ref: '#/components/schemas/BookingScheduleType'
+        bookingType:
+          $ref: '#/components/schemas/BookingType'
+        recurrenceFrequency:
+          $ref: '#/components/schemas/BookingRecurrenceFrequency'
         startDate:
           type: string
           format: date
@@ -11830,6 +12127,9 @@ components:
           type: number
         depositAmount:
           type: number
+        initialPaymentPercent:
+          type: number
+          description: SHIFT 100; RECURRING / CUSTOM deposit percent of the center policy at creation
         totalAmount:
           type: number
         acceptanceDueAt:
@@ -11838,9 +12138,21 @@ components:
         acceptedAt:
           type: string
           format: date-time
+        assignmentDueAt:
+          type: string
+          format: date-time
         depositDueAt:
           type: string
           format: date-time
+          description: Deadline of the initial payment (AWAITING_INITIAL_PAYMENT)
+        remainingPaymentDueAt:
+          type: string
+          format: date-time
+          description: RECURRING / CUSTOM — remaining balance due before the first occurrence
+        fullyPaidAt:
+          type: string
+          format: date-time
+          description: Set by PaymentService once the booking is paid in full (SHIFT initial payment or remaining balance)
         confirmedAt:
           type: string
           format: date-time
@@ -11887,10 +12199,8 @@ components:
         - id
         - bookingCode
         - status
-        - scheduleType
+        - bookingType
         - startDate
-        - startTime
-        - endTime
       properties:
         id:
           type: string
@@ -11915,8 +12225,10 @@ components:
         caregiverId:
           type: string
           format: uuid
-        scheduleType:
-          $ref: '#/components/schemas/BookingScheduleType'
+        bookingType:
+          $ref: '#/components/schemas/BookingType'
+        recurrenceFrequency:
+          $ref: '#/components/schemas/BookingRecurrenceFrequency'
         startDate:
           type: string
           format: date
@@ -12003,6 +12315,217 @@ components:
           format: date-time
         priceAmount:
           type: number
+    BookingHeldScheduleBusySlotRecord:
+      type: object
+      required:
+        - startAt
+        - endAt
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+    BookingHeldScheduleRecord:
+      type: object
+      required:
+        - caregiverId
+        - heldScheduleIds
+        - busySlots
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        heldScheduleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        busySlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingHeldScheduleBusySlotRecord'
+    BookingHeldScheduleResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/BookingHeldScheduleRecord'
+    CenterBookingPolicyRecord:
+      type: object
+      required:
+        - centerId
+        - customized
+        - shiftMinAdvanceMinutes
+        - recurringMinAdvanceMinutes
+        - customMinAdvanceMinutes
+        - confirmationTimeoutMinutes
+        - assignmentTimeoutMinutes
+        - initialPaymentTimeoutMinutes
+        - remainingPaymentDueBeforeMinutes
+        - remainingPaymentReminderMinutes
+        - depositPercent
+        - checkInEarlyMinutes
+        - checkInLateMinutes
+        - refundThresholdMinutes
+        - refundPercentBeforeThreshold
+        - refundPercentAfterThreshold
+        - overduePaymentForfeitPercent
+      properties:
+        centerId:
+          type: string
+          format: uuid
+        customized:
+          type: boolean
+          description: false — the center uses the platform default policy
+        shiftMinAdvanceMinutes:
+          type: integer
+        recurringMinAdvanceMinutes:
+          type: integer
+        customMinAdvanceMinutes:
+          type: integer
+        confirmationTimeoutMinutes:
+          type: integer
+        assignmentTimeoutMinutes:
+          type: integer
+        initialPaymentTimeoutMinutes:
+          type: integer
+        remainingPaymentDueBeforeMinutes:
+          type: integer
+        remainingPaymentReminderMinutes:
+          type: array
+          items:
+            type: integer
+        depositPercent:
+          type: number
+        checkInEarlyMinutes:
+          type: integer
+        checkInLateMinutes:
+          type: integer
+        refundThresholdMinutes:
+          type: integer
+        refundPercentBeforeThreshold:
+          type: number
+        refundPercentAfterThreshold:
+          type: number
+        overduePaymentForfeitPercent:
+          type: number
+        version:
+          type: integer
+          format: int64
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          format: uuid
+    CenterBookingPolicyResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CenterBookingPolicyRecord'
+    CenterBookingPolicyRequest:
+      type: object
+      required:
+        - shiftMinAdvanceMinutes
+        - recurringMinAdvanceMinutes
+        - customMinAdvanceMinutes
+        - confirmationTimeoutMinutes
+        - assignmentTimeoutMinutes
+        - initialPaymentTimeoutMinutes
+        - remainingPaymentDueBeforeMinutes
+        - remainingPaymentReminderMinutes
+        - depositPercent
+        - checkInEarlyMinutes
+        - checkInLateMinutes
+        - refundThresholdMinutes
+        - refundPercentBeforeThreshold
+        - refundPercentAfterThreshold
+        - overduePaymentForfeitPercent
+      properties:
+        shiftMinAdvanceMinutes:
+          type: integer
+          minimum: 0
+          maximum: 43200
+        recurringMinAdvanceMinutes:
+          type: integer
+          minimum: 0
+          maximum: 43200
+        customMinAdvanceMinutes:
+          type: integer
+          minimum: 0
+          maximum: 43200
+        confirmationTimeoutMinutes:
+          type: integer
+          minimum: 1
+          maximum: 43200
+        assignmentTimeoutMinutes:
+          type: integer
+          minimum: 1
+          maximum: 43200
+        initialPaymentTimeoutMinutes:
+          type: integer
+          minimum: 1
+          maximum: 43200
+        remainingPaymentDueBeforeMinutes:
+          type: integer
+          minimum: 0
+          maximum: 43200
+        remainingPaymentReminderMinutes:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 43200
+          maxItems: 5
+        depositPercent:
+          type: number
+          minimum: 1
+          maximum: 100
+        checkInEarlyMinutes:
+          type: integer
+          minimum: 0
+          maximum: 1440
+        checkInLateMinutes:
+          type: integer
+          minimum: 0
+          maximum: 1440
+        refundThresholdMinutes:
+          type: integer
+          minimum: 0
+          maximum: 43200
+        refundPercentBeforeThreshold:
+          type: number
+          minimum: 0
+          maximum: 100
+        refundPercentAfterThreshold:
+          type: number
+          minimum: 0
+          maximum: 100
+        overduePaymentForfeitPercent:
+          type: number
+          minimum: 0
+          maximum: 100
+        version:
+          type: integer
+          format: int64
+          description: null when the center has no own policy yet, otherwise the version that was read
     BookingQuoteRecord:
       type: object
       required:
@@ -13196,11 +13719,16 @@ components:
           type: string
     InvoiceStatus:
       type: string
+      description: >-
+        OVERDUE is a debt (post-completion invoice of a pre-v1 booking); a remaining balance due before the first visit
+        becomes EXPIRED when unpaid (the booking expires) and CANCELLED when nothing is left to pay
       enum:
         - PENDING
         - PAID
         - OVERDUE
         - WAIVED
+        - EXPIRED
+        - CANCELLED
     RemainingInvoiceRecord:
       type: object
       required:
@@ -13435,6 +13963,40 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/PaymentReturnRecord'
+    RevenueRecord:
+      type: object
+      required:
+        - successfulPaymentCount
+        - grossRevenue
+        - totalRefunded
+        - totalRevenue
+        - averagePayment
+      properties:
+        successfulPaymentCount:
+          type: integer
+          format: int64
+        grossRevenue:
+          type: number
+        totalRefunded:
+          type: number
+        totalRevenue:
+          type: number
+          description: grossRevenue minus totalRefunded
+        averagePayment:
+          type: number
+    RevenueResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RevenueRecord'
     OutstandingDebtResponse:
       type: object
       required:

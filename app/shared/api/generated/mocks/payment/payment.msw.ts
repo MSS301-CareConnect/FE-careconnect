@@ -13,7 +13,8 @@ import type {
   OutstandingDebtResponse,
   PaymentPageResponse,
   PaymentResponse,
-  PaymentReturnResponse
+  PaymentReturnResponse,
+  RevenueResponse
 } from '../../contracts'
 
 import {
@@ -21,6 +22,7 @@ import {
   getGetMyOutstandingDebtResponseMock,
   getGetPaymentByBookingResponseMock,
   getGetPaymentResponseMock,
+  getGetPaymentRevenueResponseMock,
   getListPaymentsResponseMock,
   getVerifyVnPayReturnResponseMock
 } from './payment.faker'
@@ -29,6 +31,7 @@ export {
   getListPaymentsResponseMock,
   getGetPaymentResponseMock,
   getGetPaymentByBookingResponseMock,
+  getGetPaymentRevenueResponseMock,
   getGetMyOutstandingDebtResponseMock,
   getVerifyVnPayReturnResponseMock,
   getCreateBookingCheckoutResponseMock
@@ -99,6 +102,30 @@ export const getGetPaymentByBookingMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getGetPaymentByBookingResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetPaymentRevenueMockHandler = (
+  overrideResponse?:
+    | RevenueResponse
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<RevenueResponse> | RevenueResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/payments/revenue',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetPaymentRevenueResponseMock(),
         { status: 200 }
       )
     },
@@ -183,6 +210,7 @@ export const getPaymentMock = () => [
   getListPaymentsMockHandler(),
   getGetPaymentMockHandler(),
   getGetPaymentByBookingMockHandler(),
+  getGetPaymentRevenueMockHandler(),
   getGetMyOutstandingDebtMockHandler(),
   getVerifyVnPayReturnMockHandler(),
   getCreateBookingCheckoutMockHandler()

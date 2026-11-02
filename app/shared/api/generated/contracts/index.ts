@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './timeSlotRequest'
 export * from './emptyActionResponse'
 export * from './providerScheduleRecordScheduleStatus'
 export * from './providerScheduleRecord'
@@ -43,6 +44,7 @@ export * from './care-recipient'
 export * from './care-report'
 export * from './care-session'
 export * from './catalog-item'
+export * from './center-booking-policy'
 export * from './center-offering'
 export * from './complaint'
 export * from './feedback'

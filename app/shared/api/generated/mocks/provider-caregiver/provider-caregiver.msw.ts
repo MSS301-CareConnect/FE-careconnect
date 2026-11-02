@@ -12,6 +12,7 @@ import type {
   EmptyActionResponse,
   ProviderAvailabilityCheckResponse,
   ProviderAvailabilityWindowListResponse,
+  ProviderBookableScheduleListResponse,
   ProviderCaregiverCardPageResponse,
   ProviderCaregiverPageResponse,
   ProviderCaregiverPublicResponse,
@@ -38,6 +39,7 @@ import {
   getListCenterCaregiversResponseMock,
   getListMyProviderCaregiverSchedulesResponseMock,
   getListPendingVerificationProviderCaregiversResponseMock,
+  getListProviderBookableSchedulesResponseMock,
   getListProviderCaregiverServicesResponseMock,
   getListProviderCaregiverTimeOffsResponseMock,
   getReplaceProviderCaregiverServicesResponseMock,
@@ -69,6 +71,7 @@ export {
   getReplaceProviderCaregiverServicesResponseMock,
   getUpdateProviderCaregiverRatingResponseMock,
   getSetProviderCaregiverStatusResponseMock,
+  getListProviderBookableSchedulesResponseMock,
   getGetProviderCaregiverAvailabilityResponseMock,
   getListProviderCaregiverTimeOffsResponseMock,
   getCreateProviderCaregiverTimeOffResponseMock,
@@ -565,6 +568,32 @@ export const getSetProviderCaregiverStatusMockHandler = (
   )
 }
 
+export const getListProviderBookableSchedulesMockHandler = (
+  overrideResponse?:
+    | ProviderBookableScheduleListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderBookableScheduleListResponse> | ProviderBookableScheduleListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/:caregiverId/schedules',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListProviderBookableSchedulesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getGetProviderCaregiverAvailabilityMockHandler = (
   overrideResponse?:
     | ProviderAvailabilityWindowListResponse
@@ -686,6 +715,7 @@ export const getProviderCaregiverMock = () => [
   getReplaceProviderCaregiverServicesMockHandler(),
   getUpdateProviderCaregiverRatingMockHandler(),
   getSetProviderCaregiverStatusMockHandler(),
+  getListProviderBookableSchedulesMockHandler(),
   getGetProviderCaregiverAvailabilityMockHandler(),
   getListProviderCaregiverTimeOffsMockHandler(),
   getCreateProviderCaregiverTimeOffMockHandler(),

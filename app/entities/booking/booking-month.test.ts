@@ -9,7 +9,7 @@ function booking(overrides: Partial<BookingSummaryRecord>): BookingSummaryRecord
     id: 'bk',
     bookingCode: 'BK-1',
     status: 'CONFIRMED',
-    scheduleType: 'ONE_TIME',
+    bookingType: 'CUSTOM',
     startDate: '2026-11-03',
     startTime: '08:00',
     endTime: '10:00',
@@ -27,15 +27,22 @@ describe('booking month', () => {
     expect(shiftMonth('2026-01', -1)).toBe('2025-12')
   })
 
-  it('places ONE_TIME, DAILY and WEEKLY visits like the backend generator', () => {
+  it('places single-day, DAILY and WEEKLY visits like the backend generator', () => {
     const visits = planVisits(
       [
         booking({ id: 'one', startDate: '2026-11-03' }),
-        booking({ id: 'daily', scheduleType: 'DAILY', startDate: '2026-10-30', endDate: '2026-11-02' }),
+        booking({
+          id: 'daily',
+          bookingType: 'RECURRING',
+          recurrenceFrequency: 'DAILY',
+          startDate: '2026-10-30',
+          endDate: '2026-11-02'
+        }),
         // Monday and Thursday.
         booking({
           id: 'weekly',
-          scheduleType: 'WEEKLY',
+          bookingType: 'RECURRING',
+          recurrenceFrequency: 'WEEKLY',
           startDate: '2026-11-01',
           endDate: '2026-11-15',
           daysOfWeek: [1, 4]

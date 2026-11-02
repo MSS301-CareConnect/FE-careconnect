@@ -6,11 +6,16 @@
  * OpenAPI spec version: 0.0.1
  */
 
+/**
+ * OVERDUE is a debt (post-completion invoice of a pre-v1 booking); a remaining balance due before the first visit becomes EXPIRED when unpaid (the booking expires) and CANCELLED when nothing is left to pay
+ */
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
 
 export const InvoiceStatus = {
   PENDING: 'PENDING',
   PAID: 'PAID',
   OVERDUE: 'OVERDUE',
-  WAIVED: 'WAIVED'
+  WAIVED: 'WAIVED',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED'
 } as const

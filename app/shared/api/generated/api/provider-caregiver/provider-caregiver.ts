@@ -35,9 +35,11 @@ import type {
   ListCenterCaregiversParams,
   ListMyProviderCaregiverSchedulesParams,
   ListPendingVerificationProviderCaregiversParams,
+  ListProviderBookableSchedulesParams,
   ListProviderCaregiverTimeOffsParams,
   ProviderAvailabilityCheckResponse,
   ProviderAvailabilityWindowListResponse,
+  ProviderBookableScheduleListResponse,
   ProviderCaregiverCardPageResponse,
   ProviderCaregiverPageResponse,
   ProviderCaregiverPublicResponse,
@@ -3293,6 +3295,223 @@ export const useSetProviderCaregiverStatus = <
 > => {
   return useMutation(getSetProviderCaregiverStatusMutationOptions(options), queryClient)
 }
+export type listProviderBookableSchedulesResponse200 = {
+  data: ProviderBookableScheduleListResponse
+  status: 200
+}
+
+export type listProviderBookableSchedulesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listProviderBookableSchedulesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listProviderBookableSchedulesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listProviderBookableSchedulesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listProviderBookableSchedulesResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listProviderBookableSchedulesResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listProviderBookableSchedulesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listProviderBookableSchedulesResponseSuccess = listProviderBookableSchedulesResponse200 & {
+  headers: Headers
+}
+export type listProviderBookableSchedulesResponseError = (
+  | listProviderBookableSchedulesResponse400
+  | listProviderBookableSchedulesResponse401
+  | listProviderBookableSchedulesResponse403
+  | listProviderBookableSchedulesResponse404
+  | listProviderBookableSchedulesResponse409
+  | listProviderBookableSchedulesResponse500
+  | listProviderBookableSchedulesResponse503
+) & {
+  headers: Headers
+}
+
+export const getListProviderBookableSchedulesUrl = (
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams
+) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/schedules?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/caregivers/${caregiverId}/schedules`
+}
+
+/**
+ * @summary SCHEDULED caregiver schedules a customer can book as SHIFT (from today, max 31 days)
+ */
+export const listProviderBookableSchedules = async (
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams,
+  options?: RequestInit
+): Promise<listProviderBookableSchedulesResponseSuccess> => {
+  const res = await fetch(getListProviderBookableSchedulesUrl(caregiverId, params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listProviderBookableSchedulesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listProviderBookableSchedulesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listProviderBookableSchedulesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProviderBookableSchedulesResponseSuccess
+}
+
+export const getListProviderBookableSchedulesQueryKey = (
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams
+) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/${caregiverId}/schedules`, ...(params ? [params] : [])] as const
+}
+
+export const getListProviderBookableSchedulesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderBookableSchedules>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListProviderBookableSchedulesQueryKey(caregiverId, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviderBookableSchedules>>> = ({ signal }) =>
+    listProviderBookableSchedules(caregiverId, params, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: caregiverId !== null && caregiverId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof listProviderBookableSchedules>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type ListProviderBookableSchedulesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProviderBookableSchedules>>
+>
+export type ListProviderBookableSchedulesQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListProviderBookableSchedules<
+  TData = Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params: undefined | ListProviderBookableSchedulesParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderBookableSchedules>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderBookableSchedules>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderBookableSchedules<
+  TData = Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderBookableSchedules>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderBookableSchedules>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderBookableSchedules<
+  TData = Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderBookableSchedules>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary SCHEDULED caregiver schedules a customer can book as SHIFT (from today, max 31 days)
+ */
+
+export function useListProviderBookableSchedules<
+  TData = Awaited<ReturnType<typeof listProviderBookableSchedules>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  caregiverId: string,
+  params?: ListProviderBookableSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderBookableSchedules>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProviderBookableSchedulesQueryOptions(caregiverId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
 export type getProviderCaregiverAvailabilityResponse200 = {
   data: ProviderAvailabilityWindowListResponse
   status: 200

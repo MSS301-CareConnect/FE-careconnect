@@ -11,6 +11,8 @@ export interface CaregiverAssignDialogProps {
   loading: boolean
   /** Accepting a booking that already has a caregiver may keep it, so the choice is optional there. */
   optional?: boolean
+  /** Label of the empty choice when `optional`; defaults to keeping the customer's caregiver. */
+  emptyLabel?: string
   currentId?: string
   pending: boolean
   error?: string
@@ -28,6 +30,7 @@ export function CaregiverAssignDialog({
   options,
   loading,
   optional = false,
+  emptyLabel,
   currentId,
   pending,
   error,
@@ -102,7 +105,7 @@ export function CaregiverAssignDialog({
             >
               <option value=''>
                 {optional
-                  ? t('centerManager.bookingDetail.assign.keep')
+                  ? (emptyLabel ?? t('centerManager.bookingDetail.assign.keep'))
                   : t('centerManager.bookingDetail.assign.choose')}
               </option>
               {sorted.map((option) => (

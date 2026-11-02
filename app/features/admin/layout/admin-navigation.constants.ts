@@ -1,6 +1,6 @@
 /**
- * Admin sidebar items grouped by area; every item opens a live screen (Đợt 5). Revenue, quality and policy previews
- * stay routable but are left out of the menu until their backend exists (D26).
+ * Admin sidebar items grouped by area; every item opens a live screen (Đợt 5). Revenue and quality previews stay
+ * routable but are left out of the menu until their backend exists (D26); booking policies are live (spec §8).
  */
 export const adminNavigation = [
   {
@@ -16,7 +16,8 @@ export const adminNavigation = [
       { key: 'services', to: '/admin/services', icon: 'medical_information' },
       { key: 'centers', to: '/admin/centers', icon: 'apartment' },
       { key: 'bookings', to: '/admin/bookings', icon: 'calendar_month' },
-      { key: 'caregivers', to: '/admin/caregivers', icon: 'medical_services' }
+      { key: 'caregivers', to: '/admin/caregivers', icon: 'medical_services' },
+      { key: 'policies', to: '/admin/policies', icon: 'rule' }
     ]
   },
   {

@@ -29,9 +29,10 @@ import { ManagerOccurrenceActions } from './components/manager-occurrence-action
 import { useCenterCaregivers } from './hooks/use-center-caregivers'
 import { useFreeCaregivers } from './hooks/use-free-caregivers'
 
-type Dialog = 'accept' | 'reject' | 'cancel' | 'reassign' | null
-// A PENDING booking is accepted or rejected; cancel and reassign apply once the center has accepted it.
-const ACCEPTED: readonly BookingStatus[] = ['AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS']
+type Dialog = 'accept' | 'reject' | 'cancel' | 'reassign' | 'assign' | null
+// Spec §5.2: the center confirms or rejects a new booking, assigns a caregiver to a confirmed RECURRING / CUSTOM booking
+// that has none (or rejects it), and cancels or reassigns once a caregiver holds the visits.
+const ACCEPTED: readonly BookingStatus[] = ['AWAITING_INITIAL_PAYMENT', 'CONFIRMED', 'IN_PROGRESS']
 const secondary =
   'inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-surface-container-low'
 
@@ -48,7 +49,7 @@ export function ManagerBookingDetailPage() {
     retry: false
   })
   useDocumentTitle(t('centerManager.bookingDetail.documentTitle', { code: booking.data?.bookingCode ?? '' }))
-  const free = useFreeCaregivers(booking.data, dialog === 'accept' || dialog === 'reassign')
+  const free = useFreeCaregivers(booking.data, dialog === 'accept' || dialog === 'reassign' || dialog === 'assign')
 
   function done(updated: BookingDetailRecord) {
     queryClient.setQueryData(bookingKeys.detail(id), updated)
@@ -111,15 +112,37 @@ export function ManagerBookingDetailPage() {
                 : t('centerManager.bookingDetail.noCaregiver')}
             </span>
           </p>
-          {data.status === 'PENDING' && data.acceptanceDueAt ? (
+          {data.status === 'PENDING_CENTER_CONFIRMATION' && data.acceptanceDueAt ? (
             <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-warning-container px-3 py-1.5 text-xs font-semibold text-on-warning-container tabular-nums'>
               <Icon className='text-base' name='schedule' />
               {t('centerManager.bookingDetail.acceptBy', { time: formatDateTime(data.acceptanceDueAt, i18n.language) })}
             </p>
           ) : null}
+          {data.status === 'PENDING_CAREGIVER_ASSIGNMENT' && data.assignmentDueAt ? (
+            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-warning-container px-3 py-1.5 text-xs font-semibold text-on-warning-container tabular-nums'>
+              <Icon className='text-base' name='schedule' />
+              {t('centerManager.bookingDetail.assignBy', { time: formatDateTime(data.assignmentDueAt, i18n.language) })}
+            </p>
+          ) : null}
         </div>
         <div className='flex flex-wrap gap-2'>
-          {data.status === 'PENDING' ? (
+          {data.status === 'PENDING_CAREGIVER_ASSIGNMENT' ? (
+            <>
+              <button
+                className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
+                onClick={() => setDialog('assign')}
+                type='button'
+              >
+                <Icon className='text-lg' name='person_add' />
+                {t('centerManager.bookingDetail.assignCaregiver')}
+              </button>
+              <button className={`${secondary} text-error`} onClick={() => setDialog('reject')} type='button'>
+                <Icon className='text-lg' name='block' />
+                {t('centerManager.bookingDetail.reject')}
+              </button>
+            </>
+          ) : null}
+          {data.status === 'PENDING_CENTER_CONFIRMATION' ? (
             <>
               <button
                 className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
@@ -163,7 +186,12 @@ export function ManagerBookingDetailPage() {
               caregiverName={caregivers.nameOf}
               occurrences={data.occurrences ?? []}
               renderActions={(occurrence) => (
-                <ManagerOccurrenceActions bookingId={data.id} caregivers={caregivers} occurrence={occurrence} />
+                <ManagerOccurrenceActions
+                  bookingId={data.id}
+                  bookingStatus={data.status}
+                  caregivers={caregivers}
+                  occurrence={occurrence}
+                />
               )}
             />
           </SectionCard>
@@ -186,18 +214,36 @@ export function ManagerBookingDetailPage() {
           description={
             data.caregiverId
               ? t('centerManager.bookingDetail.acceptKeepDescription', { name: caregiverName ?? '' })
-              : t('centerManager.bookingDetail.acceptDescription')
+              : data.bookingType === 'SHIFT'
+                ? t('centerManager.bookingDetail.acceptDescription')
+                : t('centerManager.bookingDetail.acceptAssignLaterDescription')
           }
+          emptyLabel={data.caregiverId ? undefined : t('centerManager.bookingDetail.assign.later')}
           error={accept.error ? t(bookingErrorKey(accept.error)) : undefined}
           loading={caregivers.caregivers.isPending}
           onClose={() => setDialog(null)}
           onConfirm={(caregiverId) => accept.mutate(caregiverId)}
-          optional={Boolean(data.caregiverId)}
+          optional={Boolean(data.caregiverId) || data.bookingType !== 'SHIFT'}
           checking={free.checking}
           freeIds={free.freeIds}
           options={caregivers.options}
           pending={accept.isPending}
           title={t('centerManager.bookingDetail.acceptTitle', { code: data.bookingCode })}
+        />
+      ) : null}
+      {dialog === 'assign' ? (
+        <CaregiverAssignDialog
+          confirmLabel={t('centerManager.bookingDetail.assignCaregiver')}
+          description={t('centerManager.bookingDetail.assign.assignDescription')}
+          error={reassign.error ? t(bookingErrorKey(reassign.error)) : undefined}
+          loading={caregivers.caregivers.isPending}
+          onClose={() => setDialog(null)}
+          onConfirm={(caregiverId) => caregiverId && reassign.mutate(caregiverId)}
+          checking={free.checking}
+          freeIds={free.freeIds}
+          options={caregivers.options}
+          pending={reassign.isPending}
+          title={t('centerManager.bookingDetail.assignTitle', { code: data.bookingCode })}
         />
       ) : null}
       {dialog === 'reassign' ? (

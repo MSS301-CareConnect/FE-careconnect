@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
+import { bookingTypeKey, formatDateTime, formatDay, formatMoney, shortTime } from '~/entities/booking/booking-format'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import type { BookingSummaryRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
@@ -48,8 +48,8 @@ export function BookingSummaryCard({ booking }: { booking: BookingSummaryRecord 
             <dt className='sr-only'>{t('customer.myBookings.card.schedule')}</dt>
             <dd className='font-semibold text-on-surface'>{range}</dd>
             <dd className='text-on-surface-variant'>
-              {t(`booking.scheduleType.${booking.scheduleType}`)} · {shortTime(booking.startTime)}–
-              {shortTime(booking.endTime)}
+              {t(bookingTypeKey(booking))}
+              {booking.startTime ? ` · ${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''}
             </dd>
           </div>
         </div>

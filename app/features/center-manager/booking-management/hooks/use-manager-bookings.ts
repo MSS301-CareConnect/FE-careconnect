@@ -9,7 +9,7 @@ const PAGE_SIZE = 20
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 export const MANAGER_SORTS = ['createdAt,desc', 'startDate,asc'] as const
 export type ManagerSort = (typeof MANAGER_SORTS)[number]
-const pendingRequest: ListBookingsParams = { status: 'PENDING', page: 0, size: 1 }
+const pendingRequest: ListBookingsParams = { status: 'PENDING_CENTER_CONFIRMATION', page: 0, size: 1 }
 
 /**
  * Filters live in the URL. BookingService scopes the list to the manager's center from the session,

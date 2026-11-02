@@ -10,8 +10,9 @@ import type { BookingStatus } from '../bookingStatus'
 import type { BookingCustomerRecord } from './bookingCustomerRecord'
 import type { BookingItemRecord } from './bookingItemRecord'
 import type { BookingOccurrenceRecord } from './bookingOccurrenceRecord'
+import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
 import type { BookingRefundRecord } from './bookingRefundRecord'
-import type { BookingScheduleType } from './bookingScheduleType'
+import type { BookingType } from './bookingType'
 
 export interface BookingDetailRecord {
   id: string
@@ -23,11 +24,12 @@ export interface BookingDetailRecord {
   centerId: string
   caregiverId?: string
   caregiverUserId?: string
-  scheduleType: BookingScheduleType
+  bookingType: BookingType
+  recurrenceFrequency?: BookingRecurrenceFrequency
   startDate: string
   endDate?: string
-  startTime: string
-  endTime: string
+  startTime?: string
+  endTime?: string
   daysOfWeek?: number[]
   timezone?: string
   recipientSnapshot?: BookingRecipientSnapshotRecord
@@ -35,10 +37,18 @@ export interface BookingDetailRecord {
   customerNote?: string
   subtotal?: number
   depositAmount?: number
+  /** SHIFT 100; RECURRING / CUSTOM deposit percent of the center policy at creation */
+  initialPaymentPercent?: number
   totalAmount?: number
   acceptanceDueAt?: string
   acceptedAt?: string
+  assignmentDueAt?: string
+  /** Deadline of the initial payment (AWAITING_INITIAL_PAYMENT) */
   depositDueAt?: string
+  /** RECURRING / CUSTOM — remaining balance due before the first occurrence */
+  remainingPaymentDueAt?: string
+  /** Set by PaymentService once the booking is paid in full (SHIFT initial payment or remaining balance) */
+  fullyPaidAt?: string
   confirmedAt?: string
   startedAt?: string
   completedAt?: string

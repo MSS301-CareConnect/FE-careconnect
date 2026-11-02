@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { bookingKeys, fetchBookingQuote, placeBooking } from '~/entities/booking/booking-api'
-import { bookingDay } from '~/entities/booking/booking-format'
+import { bookingKeys, fetchBookingQuote, fetchCenterBookingPolicy, placeBooking } from '~/entities/booking/booking-api'
+import { bookingDay, vietnamInstant } from '~/entities/booking/booking-format'
 import { careCatalogKeys, fetchCenterOfferings } from '~/entities/care-catalog/care-catalog-api'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import { careRecipientKeys, fetchCareRecipients } from '~/entities/care-recipient/care-recipient-api'
@@ -11,8 +11,9 @@ import { fetchOutstandingDebt, paymentKeys } from '~/entities/payment/payment-ap
 import { fetchPublicCaregiver, providerKeys } from '~/entities/provider/provider-api'
 import type {
   BookingCreateRequest,
-  BookingScheduleType,
+  BookingRecurrenceFrequency,
   BookingServiceRequest,
+  BookingType,
   ListCareRecipientsParams
 } from '~/shared/api/generated/contracts'
 
@@ -20,6 +21,8 @@ import { useBookingProviders } from './use-booking-providers'
 
 const recipientRequest: ListCareRecipientsParams = { status: 'ACTIVE', page: 0, size: 50 }
 const DAY_MS = 24 * 60 * 60 * 1000
+/** BookingService limit on the occurrences of one booking. */
+export const MAX_CUSTOM_SLOTS = 60
 
 /** A caregiver the customer can pick, from the center catalog or the profile the URL pointed at. */
 export interface BookingCaregiverOption {
@@ -29,43 +32,104 @@ export interface BookingCaregiverOption {
   ratingAverage?: number
 }
 
+/** One CUSTOM visit in Vietnam time; each visit has its own date and time range (spec §4). */
+export interface CustomSlot {
+  date: string
+  startTime: string
+  endTime: string
+}
+
 export interface BookingSchedule {
-  scheduleType: BookingScheduleType
+  bookingType: BookingType
+  /** SHIFT: the ProviderService caregiver schedule chosen. */
+  scheduleId: string
+  /** RECURRING. */
+  frequency: BookingRecurrenceFrequency
   startDate: string
   endDate: string
   startTime: string
   endTime: string
   daysOfWeek: number[]
-  oneTimeDates: string[]
+  /** CUSTOM. */
+  slots: CustomSlot[]
 }
 
 /** Selected services keyed by center offering ID, each with the chosen price plan. */
 export type SelectedServices = Record<string, BookingServiceRequest>
 
 function initialSchedule(): BookingSchedule {
-  // The backend requires the first visit to start at least 12 hours ahead, so tomorrow is the earliest default.
-  const tomorrow = bookingDay(new Date(Date.now() + DAY_MS))
+  // RECURRING / CUSTOM need 48 hours of notice by default, so the first default visit is three days ahead.
+  const firstDay = bookingDay(new Date(Date.now() + 3 * DAY_MS))
   return {
-    scheduleType: 'ONE_TIME',
-    startDate: tomorrow,
-    endDate: tomorrow,
+    bookingType: 'CUSTOM',
+    scheduleId: '',
+    frequency: 'DAILY',
+    startDate: firstDay,
+    endDate: firstDay,
     startTime: '08:00',
     endTime: '10:00',
     daysOfWeek: [],
-    oneTimeDates: [tomorrow]
+    slots: [{ date: firstDay, startTime: '08:00', endTime: '10:00' }]
   }
 }
 
-function scheduleComplete(schedule: BookingSchedule) {
-  if (!schedule.startTime || !schedule.endTime) return false
-  if (schedule.endTime <= schedule.startTime) return false
-  if (schedule.scheduleType === 'ONE_TIME') {
-    const dates = schedule.oneTimeDates
-    return dates.length > 0 && dates.length <= 4 && dates.every(Boolean) && new Set(dates).size === dates.length
+/** Index of the first CUSTOM visit that overlaps an earlier one (half-open ranges, as BookingService checks). */
+export function findOverlappingSlot(slots: readonly CustomSlot[]) {
+  const ranges = slots
+    .map((slot, index) => ({ index, start: `${slot.date}T${slot.startTime}`, end: `${slot.date}T${slot.endTime}` }))
+    .filter((range) => range.start < range.end)
+    .sort((a, b) => a.start.localeCompare(b.start))
+  for (let position = 1; position < ranges.length; position++) {
+    if (ranges[position].start < ranges[position - 1].end) return ranges[position].index
   }
-  if (!schedule.startDate) return false
-  if (!schedule.endDate || schedule.endDate < schedule.startDate) return false
-  return schedule.scheduleType === 'DAILY' || schedule.daysOfWeek.length > 0
+  return -1
+}
+
+function slotComplete(slot: CustomSlot) {
+  return Boolean(slot.date && slot.startTime && slot.endTime && slot.endTime > slot.startTime)
+}
+
+function scheduleComplete(schedule: BookingSchedule, caregiverId: string | undefined) {
+  if (schedule.bookingType === 'SHIFT') return Boolean(caregiverId && schedule.scheduleId)
+  if (schedule.bookingType === 'CUSTOM') {
+    const { slots } = schedule
+    return (
+      slots.length > 0 &&
+      slots.length <= MAX_CUSTOM_SLOTS &&
+      slots.every(slotComplete) &&
+      findOverlappingSlot(slots) < 0
+    )
+  }
+  if (!schedule.startTime || !schedule.endTime || schedule.endTime <= schedule.startTime) return false
+  if (!schedule.startDate || !schedule.endDate || schedule.endDate < schedule.startDate) return false
+  return schedule.frequency === 'DAILY' || schedule.daysOfWeek.length > 0
+}
+
+/** The booking body for the chosen type; fields of the other types are left out because BookingService rejects them. */
+function scheduleFields(schedule: BookingSchedule, caregiverId: string | undefined) {
+  if (schedule.bookingType === 'SHIFT') {
+    return { bookingType: schedule.bookingType, caregiverId, caregiverScheduleId: schedule.scheduleId }
+  }
+  if (schedule.bookingType === 'CUSTOM') {
+    return {
+      bookingType: schedule.bookingType,
+      caregiverId,
+      slots: schedule.slots.map((slot) => ({
+        startAt: vietnamInstant(slot.date, slot.startTime),
+        endAt: vietnamInstant(slot.date, slot.endTime)
+      }))
+    }
+  }
+  return {
+    bookingType: schedule.bookingType,
+    caregiverId,
+    frequency: schedule.frequency,
+    startDate: schedule.startDate,
+    endDate: schedule.endDate,
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
+    daysOfWeek: schedule.frequency === 'WEEKLY' ? [...schedule.daysOfWeek].sort() : undefined
+  }
 }
 
 export function useBookingForm() {
@@ -86,8 +150,7 @@ export function useBookingForm() {
   const [services, setServices] = useState<SelectedServices>({})
   const [schedule, setSchedule] = useState<BookingSchedule>(initialSchedule)
   const [customerNote, setCustomerNote] = useState('')
-  const [completedCount, setCompletedCount] = useState(0)
-  const idempotency = useRef(new Map<string, { key: string; bookingId?: string }>())
+  const idempotency = useRef(new Map<string, string>())
 
   // An overdue remaining-balance invoice blocks new bookings, so the form says so before the customer fills it in.
   const debt = useQuery({ queryKey: paymentKeys.outstanding, queryFn: fetchOutstandingDebt, retry: false })
@@ -98,10 +161,13 @@ export function useBookingForm() {
     retry: false
   })
   const centerId = centerChoice ?? caregiver.data?.centerId ?? centerParam
-  const providers = useBookingProviders(centerId)
+  const selected = Object.values(services)
+  // Q10: caregivers are filtered by the chosen services; BookingService checks the skills again on save.
+  const careServiceIds = selected.map((service) => service.careServiceId)
+  const providers = useBookingProviders(centerId, careServiceIds)
   const center = providers.centers.data?.find((item) => item.id === centerId)
   const urlCaregiverId = caregiver.data?.caregiverId
-  // Empty means the center assigns the caregiver when it accepts the booking.
+  // Empty means the center assigns the caregiver after confirming (RECURRING / CUSTOM only).
   const selectedCaregiverId =
     caregiverChoice ?? (caregiver.data && caregiver.data.centerId === centerId ? urlCaregiverId : '') ?? ''
   const recipients = useQuery({
@@ -116,66 +182,46 @@ export function useBookingForm() {
     retry: false,
     select: (items) => items.filter((item) => item.status === 'ACTIVE' && item.catalogItem.status === 'ACTIVE')
   })
+  const policy = useQuery({
+    queryKey: bookingKeys.centerPolicy(centerId),
+    queryFn: () => fetchCenterBookingPolicy(centerId),
+    enabled: Boolean(centerId),
+    retry: false
+  })
 
   const caregiverId = selectedCaregiverId || undefined
-  const selected = Object.values(services)
   const plansChosen = selected.every((service) => service.pricePlanId)
 
   // The note is not part of this request: it does not change the price, so typing it never re-runs the quote.
-  const requests = useMemo<BookingCreateRequest[]>(() => {
+  const request = useMemo<BookingCreateRequest | null>(() => {
     const chosen = Object.values(services)
     const complete = chosen.length > 0 && chosen.every((service) => service.pricePlanId)
-    if (!recipientId || !centerId || !complete || !scheduleComplete(schedule)) return []
-    const repeating = schedule.scheduleType !== 'ONE_TIME'
-    const base = {
-      recipientId,
-      centerId,
-      caregiverId,
-      scheduleType: schedule.scheduleType,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      daysOfWeek: schedule.scheduleType === 'WEEKLY' ? [...schedule.daysOfWeek].sort() : undefined,
-      services: chosen
-    }
-    return (repeating ? [schedule.startDate] : [...schedule.oneTimeDates].sort()).map((date) => ({
-      ...base,
-      startDate: date,
-      endDate: repeating ? schedule.endDate : date
-    }))
+    if (!recipientId || !centerId || !complete || !scheduleComplete(schedule, caregiverId)) return null
+    return { recipientId, centerId, ...scheduleFields(schedule, caregiverId), services: chosen }
   }, [recipientId, centerId, caregiverId, schedule, services])
-  const request = requests[0] ?? null
 
   const quote = useQuery({
-    queryKey: ['booking', 'quote-batch', requests],
-    queryFn: () => Promise.all(requests.map((body) => fetchBookingQuote(body))),
-    enabled: requests.length > 0,
+    queryKey: bookingKeys.quote(request),
+    queryFn: () => fetchBookingQuote(request!),
+    enabled: request !== null,
     retry: false,
     staleTime: 60_000
   })
 
   const create = useMutation({
-    mutationFn: async (bodies: BookingCreateRequest[]) => {
-      const ids: string[] = []
-      setCompletedCount(0)
-      for (const body of bodies) {
-        const fingerprint = JSON.stringify(body)
-        let entry = idempotency.current.get(fingerprint)
-        if (!entry) {
-          entry = { key: crypto.randomUUID() }
-          idempotency.current.set(fingerprint, entry)
-        }
-        if (!entry.bookingId) {
-          const booking = await placeBooking(body, entry.key)
-          entry.bookingId = booking.id
-        }
-        ids.push(entry.bookingId)
-        setCompletedCount(ids.length)
+    mutationFn: async (body: BookingCreateRequest) => {
+      // The same body keeps its Idempotency-Key, so a retried submit returns the booking already created.
+      const fingerprint = JSON.stringify(body)
+      let key = idempotency.current.get(fingerprint)
+      if (!key) {
+        key = crypto.randomUUID()
+        idempotency.current.set(fingerprint, key)
       }
-      return ids
+      return placeBooking(body, key)
     },
-    onSuccess: (ids) => {
+    onSuccess: (booking) => {
       void queryClient.invalidateQueries({ queryKey: bookingKeys.lists })
-      navigate(ids.length === 1 ? `/customer/bookings/${ids[0]}` : '/customer/bookings')
+      navigate(`/customer/bookings/${booking.id}`)
     }
   })
 
@@ -199,8 +245,15 @@ export function useBookingForm() {
     if (id === centerId) return
     setCenterChoice(id)
     setCaregiverChoice('')
-    // Offerings and price plans belong to one center, so a new center starts with no service selected.
+    // Offerings, price plans and caregiver schedules belong to one center, so a new center starts over.
     setServices({})
+    setSchedule((current) => ({ ...current, scheduleId: '' }))
+  }
+
+  function selectCaregiver(id: string) {
+    setCaregiverChoice(id)
+    // A SHIFT schedule belongs to one caregiver.
+    setSchedule((current) => ({ ...current, scheduleId: '' }))
   }
 
   // The URL caregiver stays selectable even when the catalog pages do not include them.
@@ -210,11 +263,18 @@ export function useBookingForm() {
     experienceYears: item.experienceYears,
     ratingAverage: item.ratingAverage
   }))
-  if (caregiver.data && caregiver.data.centerId === centerId) {
+  if (caregiver.data && caregiver.data.centerId === centerId && careServiceIds.length === 0) {
     if (!centerCaregivers.some((item) => item.id === urlCaregiverId)) {
       const { caregiverId, fullName, experienceYears, ratingAverage } = caregiver.data
       centerCaregivers.unshift({ id: caregiverId, fullName, experienceYears, ratingAverage })
     }
+  }
+
+  function updateSlot(index: number, patch: Partial<CustomSlot>) {
+    setSchedule((current) => ({
+      ...current,
+      slots: current.slots.map((slot, position) => (position === index ? { ...slot, ...patch } : slot))
+    }))
   }
 
   return {
@@ -224,12 +284,14 @@ export function useBookingForm() {
     centerId,
     centerName: center?.name ?? caregiver.data?.centerName,
     centerCaregivers,
+    caregiversFiltered: careServiceIds.length > 0,
     selectCenter,
     selectedCaregiverId,
-    selectCaregiver: (id: string) => setCaregiverChoice(id),
+    selectCaregiver,
     preselectedService,
     recipients,
     offerings,
+    policy,
     recipientId,
     setRecipientId,
     services,
@@ -237,35 +299,31 @@ export function useBookingForm() {
     choosePlan,
     schedule,
     updateSchedule: (patch: Partial<BookingSchedule>) => setSchedule((current) => ({ ...current, ...patch })),
-    updateOneTimeDate: (index: number, date: string) =>
-      setSchedule((current) => ({
-        ...current,
-        oneTimeDates: current.oneTimeDates.map((value, position) => (position === index ? date : value))
-      })),
-    addOneTimeDate: () =>
-      setSchedule((current) =>
-        current.oneTimeDates.length >= 4 ? current : { ...current, oneTimeDates: [...current.oneTimeDates, ''] }
-      ),
-    removeOneTimeDate: (index: number) =>
-      setSchedule((current) => ({
-        ...current,
-        oneTimeDates: current.oneTimeDates.filter((_, position) => position !== index)
-      })),
+    updateSlot,
+    addSlot: () =>
+      setSchedule((current) => {
+        if (current.slots.length >= MAX_CUSTOM_SLOTS) return current
+        const last = current.slots.at(-1)
+        return {
+          ...current,
+          slots: [
+            ...current.slots,
+            { date: '', startTime: last?.startTime ?? '08:00', endTime: last?.endTime ?? '10:00' }
+          ]
+        }
+      }),
+    removeSlot: (index: number) =>
+      setSchedule((current) => ({ ...current, slots: current.slots.filter((_, position) => position !== index) })),
     customerNote,
     setCustomerNote,
     // A service without a chosen plan cannot be priced yet.
     plansChosen,
     request,
-    requests,
     quote,
     create,
-    completedCount,
-    depositPolicyMismatch:
-      quote.data?.some((item) => item.depositPercent != null && item.depositPercent !== 30) ?? false,
     hasDebt: debt.data?.hasDebt === true,
     submit: () => {
-      if (requests.length)
-        create.mutate(requests.map((body) => ({ ...body, customerNote: customerNote.trim() || undefined })))
+      if (request) create.mutate({ ...request, customerNote: customerNote.trim() || undefined })
     }
   }
 }

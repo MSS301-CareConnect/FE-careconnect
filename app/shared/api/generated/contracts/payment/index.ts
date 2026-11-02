@@ -7,6 +7,7 @@
  */
 
 export * from './getPaymentByBookingParams'
+export * from './getPaymentRevenueParams'
 export * from './listPaymentsParams'
 export * from './outstandingDebtRecord'
 export * from './outstandingDebtResponse'
@@ -16,4 +17,6 @@ export * from './paymentRecord'
 export * from './paymentResponse'
 export * from './paymentReturnRecord'
 export * from './paymentReturnResponse'
+export * from './revenueRecord'
+export * from './revenueResponse'
 export * from './verifyVnPayReturnParams'

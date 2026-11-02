@@ -38,7 +38,8 @@ describe('CustomerBookingsPage', () => {
           bookingCode: 'BK0001',
           status: 'CONFIRMED',
           recipientName: 'Bà Lan',
-          scheduleType: 'DAILY',
+          bookingType: 'RECURRING',
+          recurrenceFrequency: 'DAILY',
           startDate: '2026-11-01',
           endDate: '2026-11-03',
           startTime: '08:00:00',
@@ -66,13 +67,13 @@ describe('CustomerBookingsPage', () => {
     vi.mocked(fetchBookings).mockResolvedValue({ items: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Chờ trung tâm duyệt' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Chờ trung tâm xác nhận' }))
     fireEvent.change(screen.getByRole('searchbox', { name: 'Tìm theo mã lịch đặt' }), { target: { value: 'A1B2C3' } })
     fireEvent.submit(screen.getByRole('search'))
 
     await waitFor(() =>
       expect(fetchBookings).toHaveBeenLastCalledWith({
-        status: 'PENDING',
+        status: 'PENDING_CENTER_CONFIRMATION',
         keyword: 'A1B2C3',
         sort: 'createdAt,desc',
         page: 0,

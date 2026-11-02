@@ -1,19 +1,32 @@
 import { useTranslation } from 'react-i18next'
 
-import { formatDay, formatMoney, shortTime, weekdayKey } from '~/entities/booking/booking-format'
-import { useDepositAmount } from '~/entities/payment/payment-api'
+import {
+  bookingTypeKey,
+  formatDateTime,
+  formatDay,
+  formatMoney,
+  shortTime,
+  weekdayKey
+} from '~/entities/booking/booking-format'
+import { initialPaymentOf } from '~/entities/payment/payment-api'
 import { AssignedCaregiverCard } from '~/entities/provider/assigned-caregiver-card'
-import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
+import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
 // A booking that ended before anyone was assigned has no caregiver to promise.
-const WAITS_FOR_ASSIGNMENT = new Set(['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS'])
+const WAITS_FOR_ASSIGNMENT: ReadonlySet<BookingStatus> = new Set([
+  'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_ASSIGNMENT',
+  'AWAITING_INITIAL_PAYMENT',
+  'CONFIRMED',
+  'IN_PROGRESS'
+])
 
 /** Schedule, caregiver, services and price of one booking as BookingService stored them. */
 export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
-  const deposit = useDepositAmount(booking)
+  const deposit = initialPaymentOf(booking)
   const weekdays = (booking.daysOfWeek ?? [])
     .flatMap((day) => {
       const key = weekdayKey(day)
@@ -39,8 +52,8 @@ export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord
               ? ` – ${formatDay(booking.endDate, language)}`
               : ''}
             <span className='block text-on-surface-variant'>
-              {t(`booking.scheduleType.${booking.scheduleType}`)} · {shortTime(booking.startTime)}–
-              {shortTime(booking.endTime)}
+              {t(bookingTypeKey(booking))}
+              {booking.startTime ? ` · ${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''}
               {weekdays ? ` · ${weekdays}` : ''}
             </span>
           </span>
@@ -81,11 +94,30 @@ export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord
           <div className='flex justify-between gap-3 text-on-surface-variant'>
             <dt>
               {deposit.estimated
-                ? t('customer.bookingDetail.summary.depositEstimated')
+                ? t('customer.bookingDetail.summary.depositEstimated', { percent: deposit.percent ?? '' })
                 : t('customer.bookingDetail.summary.deposit')}
             </dt>
             <dd className='tabular-nums'>{formatMoney(deposit.amount, language)}</dd>
           </div>
+        ) : null}
+        {booking.remainingPaymentDueAt && deposit.remaining ? (
+          <div className='flex justify-between gap-3 text-on-surface-variant'>
+            <dt>
+              {t('customer.bookingDetail.summary.remaining')}
+              <span className='block text-xs'>
+                {t('customer.bookingDetail.summary.remainingDue', {
+                  time: formatDateTime(booking.remainingPaymentDueAt, language)
+                })}
+              </span>
+            </dt>
+            <dd className='tabular-nums'>{formatMoney(deposit.remaining, language)}</dd>
+          </div>
+        ) : null}
+        {booking.fullyPaidAt ? (
+          <p className='flex items-center gap-1.5 font-semibold text-primary'>
+            <Icon className='text-lg' name='verified' />
+            {t('customer.bookingDetail.summary.fullyPaid')}
+          </p>
         ) : null}
         <div className='flex items-baseline justify-between gap-3'>
           <dt className='font-semibold text-on-surface'>{t('customer.bookingDetail.summary.total')}</dt>

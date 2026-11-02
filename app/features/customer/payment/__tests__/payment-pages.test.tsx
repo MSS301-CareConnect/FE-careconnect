@@ -3,11 +3,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchBooking } from '~/entities/booking/booking-api'
+import { fetchBooking, fetchCenterBookingPolicy } from '~/entities/booking/booking-api'
 import { fetchPayment, redirectToCheckout, startDepositCheckout, verifyReturn } from '~/entities/payment/payment-api'
 import { fetchPublicCaregiver } from '~/entities/provider/provider-api'
-import { getEffectivePaymentPolicy } from '~/shared/api/generated/api/payment-policy/payment-policy'
-import type { BookingDetailRecord, PaymentRecord } from '~/shared/api/generated/contracts'
+import type { BookingDetailRecord, CenterBookingPolicyRecord, PaymentRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { DepositPage } from '../deposit-page'
@@ -16,7 +15,8 @@ import { PaymentReturnPage } from '../payment-return-page'
 
 vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/booking/booking-api')>()),
-  fetchBooking: vi.fn()
+  fetchBooking: vi.fn(),
+  fetchCenterBookingPolicy: vi.fn()
 }))
 vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
@@ -29,9 +29,6 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
   fetchPublicCaregiver: vi.fn()
 }))
-vi.mock('~/shared/api/generated/api/payment-policy/payment-policy', () => ({
-  getEffectivePaymentPolicy: vi.fn()
-}))
 
 const BOOKING_ID = 'bk-1'
 const PAYMENT_ID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
@@ -39,17 +36,39 @@ const CHECKOUT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Txn
 const booking: BookingDetailRecord = {
   id: BOOKING_ID,
   bookingCode: 'BK0001',
-  status: 'AWAITING_DEPOSIT',
+  status: 'AWAITING_INITIAL_PAYMENT',
   recipientId: 'rec-1',
   centerId: 'center-1',
-  scheduleType: 'ONE_TIME',
+  bookingType: 'CUSTOM',
   startDate: '2026-11-01',
   startTime: '08:00',
   endTime: '10:00',
   totalAmount: 200000,
+  initialPaymentPercent: 30,
   depositDueAt: '2026-11-01T00:00:00Z',
+  remainingPaymentDueAt: '2026-11-02T00:00:00Z',
   recipientSnapshot: { fullName: 'Bà Lan' },
   occurrences: []
+}
+// Spec §8 defaults: refunds 100% from 24h before a visit, 70% after; an overdue remaining balance keeps 100%.
+const policy: CenterBookingPolicyRecord = {
+  centerId: 'center-1',
+  customized: false,
+  shiftMinAdvanceMinutes: 120,
+  recurringMinAdvanceMinutes: 2880,
+  customMinAdvanceMinutes: 2880,
+  confirmationTimeoutMinutes: 1440,
+  assignmentTimeoutMinutes: 1440,
+  initialPaymentTimeoutMinutes: 1440,
+  remainingPaymentDueBeforeMinutes: 1440,
+  remainingPaymentReminderMinutes: [4320, 2880],
+  depositPercent: 30,
+  checkInEarlyMinutes: 30,
+  checkInLateMinutes: 30,
+  refundThresholdMinutes: 1440,
+  refundPercentBeforeThreshold: 100,
+  refundPercentAfterThreshold: 70,
+  overduePaymentForfeitPercent: 100
 }
 const pending: PaymentRecord = {
   id: PAYMENT_ID,
@@ -87,25 +106,7 @@ beforeEach(async () => {
   vi.clearAllMocks()
   await setAppLanguage('vi', false)
   vi.mocked(fetchBooking).mockResolvedValue(booking)
-  vi.mocked(getEffectivePaymentPolicy).mockResolvedValue({
-    data: {
-      code: 200,
-      message: 'OK',
-      result: {
-        policyId: 'policy-1',
-        depositPercent: 30,
-        coolingOffMinutes: 60,
-        coolingOffMinLeadHours: 24,
-        refundTiers: [
-          { minLeadHours: 72, maxLeadHours: null, feePercent: 0 },
-          { minLeadHours: 0, maxLeadHours: 24, feePercent: 30 },
-          { minLeadHours: 24, maxLeadHours: 72, feePercent: 10 }
-        ]
-      }
-    },
-    status: 200,
-    headers: new Headers()
-  })
+  vi.mocked(fetchCenterBookingPolicy).mockResolvedValue(policy)
 })
 
 describe('Deposit payment flow', () => {
@@ -123,11 +124,13 @@ describe('Deposit payment flow', () => {
     })
     renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Đặt cọc giữ lịch' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Thanh toán khoản đầu' })).toBeInTheDocument()
     expect(await screen.findByText('Bà Lan')).toBeInTheDocument()
-    // BookingService sends no deposit amount, so the page shows 30% of the total from the center's policy.
-    expect(await screen.findByRole('heading', { name: 'Số tiền cọc dự kiến' })).toBeInTheDocument()
+    // The percent BookingService fixed from the center policy (30%); the rest is due before the first visit.
+    expect(await screen.findByRole('heading', { name: 'Số tiền thanh toán đầu dự kiến' })).toBeInTheDocument()
+    expect(screen.getByText('30% tổng giá trị lịch đặt')).toBeInTheDocument()
     expect(screen.getByText(/140\.000/)).toBeInTheDocument()
+    expect(screen.getByText(/^Trả trước /)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Thanh toán qua VNPay' })).toBeInTheDocument()
     const payButton = await screen.findByRole('button', { name: 'Tiếp tục thanh toán qua VNPay' })
     await waitFor(() => expect(payButton).toBeEnabled())
@@ -137,7 +140,7 @@ describe('Deposit payment flow', () => {
     await waitFor(() => expect(redirectToCheckout).toHaveBeenCalledWith(CHECKOUT_URL))
   })
 
-  it('shows who is coming and the refund tiers before the customer pays', async () => {
+  it('shows who is coming and the center refund policy before the customer pays', async () => {
     vi.mocked(fetchBooking).mockResolvedValue({ ...booking, caregiverId: 'cg-1' })
     vi.mocked(fetchPublicCaregiver).mockResolvedValue({
       caregiverId: 'cg-1',
@@ -155,13 +158,30 @@ describe('Deposit payment flow', () => {
       '/customer/caregivers/cg-1'
     )
     const rows = await screen.findAllByRole('row')
-    // Nearest visit first, with the fee each tier keeps.
+    const percent = new Intl.NumberFormat('vi', { style: 'percent' })
     expect(rows.slice(1).map((row) => row.textContent)).toEqual([
-      'Còn dưới 24 giờ trước buổi30% giá buổi',
-      'Còn 24–72 giờ trước buổi10% giá buổi',
-      'Còn từ 72 giờ trở lên trước buổiKhông giữ phí'
+      `Từ 24 giờ trở lên${percent.format(1)}`,
+      `Dưới 24 giờ${percent.format(0.7)}`
     ])
-    expect(screen.getByText(/Hủy trong 60 phút sau khi đặt cọc/)).toBeInTheDocument()
+    expect(fetchCenterBookingPolicy).toHaveBeenCalledWith('center-1')
+    expect(screen.getByText(/trung tâm giữ 100\s?% số tiền đã trả/)).toBeInTheDocument()
+    expect(screen.queryByText(/thời gian cân nhắc/)).not.toBeInTheDocument()
+  })
+
+  it('asks a SHIFT booking for the whole amount at once', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({
+      ...booking,
+      bookingType: 'SHIFT',
+      initialPaymentPercent: 100,
+      remainingPaymentDueAt: undefined
+    })
+    renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
+
+    expect(await screen.findByText('100% tổng giá trị lịch đặt')).toBeInTheDocument()
+    expect(
+      screen.getByText('Khoản này là toàn bộ giá trị lịch đặt, không phát sinh thanh toán thêm.')
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/^Trả trước /)).not.toBeInTheDocument()
   })
 
   it('says the caregiver is not assigned yet instead of leaving a blank', async () => {
@@ -187,7 +207,9 @@ describe('Deposit payment flow', () => {
     vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'CONFIRMED' })
     renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
 
-    expect(await screen.findByRole('heading', { name: 'Lịch đặt này không cần đặt cọc lúc này.' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Lịch đặt này không cần thanh toán khoản đầu lúc này.' })
+    ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Thanh toán/ })).not.toBeInTheDocument()
   })
 

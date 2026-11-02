@@ -18,9 +18,15 @@ import { BookingDetailSummary } from './components/booking-detail-summary'
 import { BookingAftercare } from './components/booking-aftercare'
 import { BookingStatusPanel } from './components/booking-status-panel'
 
-const CANCELLABLE: readonly BookingStatus[] = ['PENDING', 'AWAITING_DEPOSIT', 'CONFIRMED', 'IN_PROGRESS']
+const CANCELLABLE: readonly BookingStatus[] = [
+  'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_ASSIGNMENT',
+  'AWAITING_INITIAL_PAYMENT',
+  'CONFIRMED',
+  'IN_PROGRESS'
+]
 // Visits that have taken place: reports and complaints apply only after one of these.
-const VISITED: ReadonlySet<OccurrenceStatus> = new Set(['IN_PROGRESS', 'COMPLETED', 'MISSED'])
+const VISITED: ReadonlySet<OccurrenceStatus> = new Set(['IN_PROGRESS', 'COMPLETED', 'CAREGIVER_MISSED'])
 
 export function CustomerBookingDetailPage({ id }: { id: string }) {
   const { t } = useTranslation()

@@ -7,7 +7,7 @@ export const paymentSharedVi = {
     EXPIRED: 'Hết thời gian thanh toán'
   },
   type: {
-    DEPOSIT: 'Tiền cọc',
+    DEPOSIT: 'Khoản thanh toán đầu',
     REMAINING: 'Phần còn lại'
   },
   refundStatus: {
@@ -19,7 +19,9 @@ export const paymentSharedVi = {
     PENDING: 'Chờ thanh toán',
     PAID: 'Đã thanh toán',
     OVERDUE: 'Quá hạn',
-    WAIVED: 'Đã miễn'
+    WAIVED: 'Đã miễn',
+    EXPIRED: 'Hết hạn, lịch đặt đã kết thúc',
+    CANCELLED: 'Không còn phải trả'
   },
   refundReason: {
     CUSTOMER_CANCEL: 'Bạn hủy buổi chăm sóc',
@@ -32,33 +34,33 @@ export const paymentSharedVi = {
     LATE_PAYMENT: 'Thanh toán sau khi phiên đã hết hạn',
     BOOKING_NOT_CONFIRMABLE: 'Lịch đặt không còn xác nhận được',
     DUPLICATE: 'Thanh toán trùng',
+    PAYMENT_OVERDUE: 'Quá hạn thanh toán phần còn lại',
     OTHER: 'Lý do khác'
   },
   refundRule: {
     NOT_PAID: 'Chưa thanh toán nên hủy miễn phí',
     NOT_CANCELLABLE: 'Buổi đã bắt đầu, không hủy được',
-    COOLING_OFF: 'Trong thời gian cân nhắc, hoàn toàn bộ',
+    BEFORE_THRESHOLD: 'Hủy sớm, hoàn theo mức trước mốc của trung tâm',
+    AFTER_THRESHOLD: 'Hủy sát giờ, trung tâm giữ lại một phần',
     FULL_REFUND_CENTER: 'Trung tâm hủy, hoàn toàn bộ',
     FULL_REFUND_MISSED: 'Người chăm sóc vắng mặt, hoàn toàn bộ',
     FULL_REFUND_SYSTEM: 'Hệ thống hủy, hoàn toàn bộ',
-    tierRange: 'Còn {{min}}–{{max}} giờ trước buổi',
-    tierFrom: 'Còn từ {{min}} giờ trở lên trước buổi',
-    tierUnder: 'Còn dưới {{max}} giờ trước buổi',
-    other: 'Theo chính sách hoàn cọc'
+    PAYMENT_OVERDUE: 'Quá hạn thanh toán phần còn lại',
+    other: 'Theo chính sách hoàn tiền'
   },
   refundPolicy: {
-    title: 'Hoàn cọc khi bạn hủy',
+    title: 'Hoàn tiền khi bạn hủy',
     intro:
-      'Áp dụng cho từng buổi bị hủy, tính theo thời gian còn lại trước giờ bắt đầu buổi đó. Đây là chính sách chung của CareConnect.',
+      'Áp dụng cho từng buổi bị hủy, theo thời gian còn lại trước giờ bắt đầu buổi đó. Đây là chính sách của trung tâm bạn đặt.',
     lead: 'Thời gian còn lại',
-    keep: 'Phí giữ lại',
-    fee: '{{percent}} giá buổi',
-    noFee: 'Không giữ phí',
-    feeCap: 'Phí không bao giờ vượt quá tiền cọc của buổi đó.',
-    coolingOff: 'Hủy trong {{minutes}} phút sau khi đặt cọc, khi buổi đầu còn ít nhất {{hours}} giờ: hoàn toàn bộ cọc.',
+    refund: 'Được hoàn',
+    from: 'Từ {{hours}} giờ trở lên',
+    under: 'Dưới {{hours}} giờ',
+    paidBase: 'Phần trăm tính trên số tiền bạn đã trả cho buổi đó.',
     fullRefund: 'Trung tâm hủy hoặc người chăm sóc vắng mặt: hoàn toàn bộ số tiền đã trả.',
-    loading: 'Đang tải chính sách hoàn cọc…',
-    unavailable: 'Chưa tải được chính sách hoàn cọc. Bạn vẫn xem được số tiền hoàn trước khi xác nhận hủy.'
+    overdue: 'Không trả đủ phần còn lại trước hạn: lịch đặt hết hạn và trung tâm giữ {{percent}} số tiền đã trả.',
+    loading: 'Đang tải chính sách hoàn tiền…',
+    unavailable: 'Chưa tải được chính sách hoàn tiền. Bạn vẫn xem được số tiền hoàn trước khi xác nhận hủy.'
   },
   errors: {
     e6004: 'Không tìm thấy giao dịch thanh toán.',
@@ -71,7 +73,8 @@ export const paymentSharedVi = {
     e6018: 'Lịch đặt này còn buổi chưa có giá nên chưa tính được tiền cọc.',
     e6019: 'Chưa có chính sách thanh toán đang áp dụng.',
     e6024: 'Không tìm thấy hóa đơn.',
-    e6025: 'Hóa đơn này không còn chờ thanh toán.',
+    e6025: 'Hóa đơn này không còn chờ thanh toán hoặc đã quá hạn.',
+    e6027: 'Tài khoản quản lý chưa được gán trung tâm.',
     unavailable: 'Hệ thống thanh toán đang tạm gián đoạn, vui lòng thử lại sau ít phút.',
     generic: 'Không thực hiện được thanh toán, vui lòng thử lại.'
   }
@@ -86,7 +89,7 @@ export const paymentSharedEn = {
     EXPIRED: 'Payment time expired'
   },
   type: {
-    DEPOSIT: 'Deposit',
+    DEPOSIT: 'Initial payment',
     REMAINING: 'Remaining balance'
   },
   refundStatus: {
@@ -98,7 +101,9 @@ export const paymentSharedEn = {
     PENDING: 'Awaiting payment',
     PAID: 'Paid',
     OVERDUE: 'Overdue',
-    WAIVED: 'Waived'
+    WAIVED: 'Waived',
+    EXPIRED: 'Expired, the booking ended',
+    CANCELLED: 'Nothing left to pay'
   },
   refundReason: {
     CUSTOMER_CANCEL: 'You cancelled a visit',
@@ -111,32 +116,32 @@ export const paymentSharedEn = {
     LATE_PAYMENT: 'Paid after the session expired',
     BOOKING_NOT_CONFIRMABLE: 'The booking could no longer be confirmed',
     DUPLICATE: 'Duplicate payment',
+    PAYMENT_OVERDUE: 'Remaining balance not paid in time',
     OTHER: 'Other reason'
   },
   refundRule: {
     NOT_PAID: 'Not paid yet, so free to cancel',
     NOT_CANCELLABLE: 'The visit has started and cannot be cancelled',
-    COOLING_OFF: 'Within the cooling-off period, refunded in full',
+    BEFORE_THRESHOLD: 'Cancelled early, refunded at the center rate before the cut-off',
+    AFTER_THRESHOLD: 'Cancelled close to the visit, the center keeps a part',
     FULL_REFUND_CENTER: 'Cancelled by the center, refunded in full',
     FULL_REFUND_MISSED: 'The caregiver missed the visit, refunded in full',
     FULL_REFUND_SYSTEM: 'Cancelled by the system, refunded in full',
-    tierRange: '{{min}}–{{max}} hours before the visit',
-    tierFrom: '{{min}} hours or more before the visit',
-    tierUnder: 'Less than {{max}} hours before the visit',
-    other: 'Under the deposit refund policy'
+    PAYMENT_OVERDUE: 'Remaining balance not paid in time',
+    other: 'Under the refund policy'
   },
   refundPolicy: {
-    title: 'Deposit refunds when you cancel',
+    title: 'Refunds when you cancel',
     intro:
-      'Applies to each cancelled visit, by the time left before that visit starts. This is the CareConnect platform policy.',
+      'Applies to each cancelled visit, by the time left before that visit starts. This is the policy of the center you booked.',
     lead: 'Time left',
-    keep: 'Fee kept',
-    fee: '{{percent}} of the visit price',
-    noFee: 'No fee',
-    feeCap: 'The fee never exceeds the deposit paid for that visit.',
-    coolingOff:
-      'Cancel within {{minutes}} minutes of paying the deposit, while the first visit is at least {{hours}} hours away: full deposit refund.',
+    refund: 'Refunded',
+    from: '{{hours}} hours or more',
+    under: 'Less than {{hours}} hours',
+    paidBase: 'The percentage applies to what you paid for that visit.',
     fullRefund: 'If the center cancels or the caregiver misses a visit, everything paid is refunded.',
+    overdue:
+      'If the remaining balance is not paid in time, the booking expires and the center keeps {{percent}} of what was paid.',
     loading: 'Loading the refund policy…',
     unavailable:
       'The refund policy could not be loaded. You can still preview the refund before confirming a cancellation.'
@@ -152,7 +157,8 @@ export const paymentSharedEn = {
     e6018: 'This booking has visits without a price, so its deposit cannot be calculated.',
     e6019: 'No payment policy is in effect.',
     e6024: 'Invoice not found.',
-    e6025: 'This invoice is no longer awaiting payment.',
+    e6025: 'This invoice is no longer awaiting payment or is past its due time.',
+    e6027: 'This manager account is not assigned to a center.',
     unavailable: 'Payment is temporarily unavailable. Please try again in a few minutes.',
     generic: 'The payment could not be completed. Please try again.'
   }

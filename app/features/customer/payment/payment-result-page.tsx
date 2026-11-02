@@ -96,7 +96,7 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
     return <Navigate replace to={`/customer/payments/${paymentId}/success`} />
 
   const bookingLink = bookingId ? `/customer/bookings/${bookingId}` : '/customer/bookings'
-  const canRetry = remaining || booking.data?.status === 'AWAITING_DEPOSIT'
+  const canRetry = remaining || booking.data?.status === 'AWAITING_INITIAL_PAYMENT'
   const retryLink = remaining ? '/customer/payments' : `/customer/bookings/${bookingId}/deposit`
   function checkAgain() {
     setTimedOut(false)

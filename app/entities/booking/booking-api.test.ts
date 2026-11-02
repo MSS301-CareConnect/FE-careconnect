@@ -22,7 +22,7 @@ function reply(result: unknown, code = 200): Response {
 
 const csrf = { token: 'csrf-token', headerName: 'X-XSRF-TOKEN' }
 const page = { items: [], page: 0, size: 10, totalElements: 0, totalPages: 0 }
-const booking = { id: 'bk-1', bookingCode: 'BK1', status: 'PENDING' }
+const booking = { id: 'bk-1', bookingCode: 'BK1', status: 'PENDING_CENTER_CONFIRMATION' }
 
 function headersOf(options: RequestInit | undefined) {
   return new Headers(options?.headers)
@@ -35,11 +35,11 @@ describe('BookingService gateway API', () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(page))
     vi.stubGlobal('fetch', fetchMock)
 
-    await fetchBookings({ status: 'PENDING', sort: 'createdAt,desc', page: 0, size: 10 })
+    await fetchBookings({ status: 'PENDING_CENTER_CONFIRMATION', sort: 'createdAt,desc', page: 0, size: 10 })
     await fetchMyOccurrences({ from: '2026-11-01', to: '2026-11-01' })
 
     expect(String(fetchMock.mock.calls[0][0])).toBe(
-      '/api/v1/bookings?status=PENDING&sort=createdAt%2Cdesc&page=0&size=10'
+      '/api/v1/bookings?status=PENDING_CENTER_CONFIRMATION&sort=createdAt%2Cdesc&page=0&size=10'
     )
     expect(String(fetchMock.mock.calls[1][0])).toBe('/api/v1/booking-occurrences?from=2026-11-01&to=2026-11-01')
     for (const [, options] of fetchMock.mock.calls)
@@ -52,10 +52,8 @@ describe('BookingService gateway API', () => {
     const request = {
       recipientId: 'rec-1',
       centerId: 'center-1',
-      scheduleType: 'ONE_TIME' as const,
-      startDate: '2026-11-01',
-      startTime: '08:00',
-      endTime: '10:00',
+      bookingType: 'CUSTOM' as const,
+      slots: [{ startAt: '2026-11-01T01:00:00Z', endAt: '2026-11-01T03:00:00Z' }],
       services: [{ careServiceId: 'svc-1', pricePlanId: 'plan-1' }]
     }
 
