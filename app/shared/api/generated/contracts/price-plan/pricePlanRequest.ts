@@ -18,5 +18,11 @@ export interface PricePlanRequest {
   durationMinutes: number
   /** @minimum 0 */
   basePrice: number
+  /**
+   * Omitted on update keeps the stored discount; omitted on create means 0.
+   * @minimum 0
+   * @maximum 90
+   */
+  discountPercent?: number
   isActive?: boolean
 }

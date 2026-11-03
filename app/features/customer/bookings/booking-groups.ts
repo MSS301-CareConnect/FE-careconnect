@@ -9,7 +9,13 @@ export const BOOKING_GROUPS = ['all', 'action', 'upcoming', 'ongoing', 'done', '
 export type BookingGroup = (typeof BOOKING_GROUPS)[number]
 
 const GROUP_STATUSES: Record<Exclude<BookingGroup, 'all' | 'action'>, readonly BookingStatus[]> = {
-  upcoming: ['PENDING_CENTER_CONFIRMATION', 'PENDING_CAREGIVER_ASSIGNMENT', 'AWAITING_INITIAL_PAYMENT', 'CONFIRMED'],
+  upcoming: [
+    'PENDING_CENTER_CONFIRMATION',
+    'PENDING_CAREGIVER_CONFIRMATION',
+    'PENDING_CAREGIVER_ASSIGNMENT',
+    'AWAITING_INITIAL_PAYMENT',
+    'CONFIRMED'
+  ],
   ongoing: ['IN_PROGRESS'],
   done: ['COMPLETED'],
   closed: ['REJECTED', 'CANCELLED', 'EXPIRED']

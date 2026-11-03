@@ -73,6 +73,7 @@ export function CenterSelector() {
           role='region'
         >
           <CenterOptions
+            onLeave={() => setOpen(false)}
             onPick={(value) => {
               pickCenter(value)
               setOpen(false)

@@ -8,6 +8,7 @@ import {
   fetchPricePlans
 } from '~/entities/care-catalog/care-catalog-api'
 import { fetchPublicCenter, providerKeys, searchCaregiversByService } from '~/entities/provider/provider-api'
+import { planPrice } from '~/entities/care-catalog/price-plan-price'
 
 /** Caregiver cards shown under the service; the full team stays on the caregiver catalog. */
 export const SERVICE_CAREGIVERS_SIZE = 6
@@ -38,7 +39,8 @@ export function useServiceDetail() {
     },
     enabled: Boolean(offeringId),
     retry: false,
-    select: (items) => items.filter((plan) => plan.isActive !== false).sort((a, b) => a.basePrice - b.basePrice)
+    select: (items) =>
+      items.filter((plan) => plan.isActive !== false).sort((a, b) => planPrice(a).finalPrice - planPrice(b).finalPrice)
   })
 
   const centerId = offering.data?.centerId ?? ''

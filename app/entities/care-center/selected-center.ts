@@ -87,6 +87,11 @@ export function promptCenterPickerOnce() {
   openCenterPicker()
 }
 
+/** The chosen center outside React, e.g. to tell whether a pick changes anything. */
+export function getSelectedCenter() {
+  return current().center
+}
+
 export function useSelectedCenter() {
   return useSyncExternalStore(subscribe, current, () => serverState)
 }

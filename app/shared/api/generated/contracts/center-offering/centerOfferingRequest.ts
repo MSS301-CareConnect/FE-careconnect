@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { CenterOfferingRequestStatus } from './centerOfferingRequestStatus'
+import type { PricePlanDraft } from './pricePlanDraft'
 
 export interface CenterOfferingRequest {
   /** M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006). */
@@ -14,4 +15,9 @@ export interface CenterOfferingRequest {
   centerId?: string
   description?: string
   status: CenterOfferingRequestStatus
+  /**
+   * Create only — price plans created with the offering in one transaction.
+   * @maxItems 20
+   */
+  pricePlans?: PricePlanDraft[]
 }

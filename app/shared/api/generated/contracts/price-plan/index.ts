@@ -6,9 +6,9 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './pricePlanBatchItem'
+export * from './pricePlanBatchUpdateRequest'
 export * from './pricePlanListResponse'
-export * from './pricePlanRecord'
-export * from './pricePlanRecordPricingUnit'
 export * from './pricePlanRequest'
 export * from './pricePlanRequestPricingUnit'
 export * from './pricePlanResponse'

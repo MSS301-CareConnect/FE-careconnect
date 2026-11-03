@@ -8,6 +8,7 @@ import { bookingErrorKey, bookingTypeKey } from '~/entities/booking/booking-form
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import { ServiceAddressDialog, canChangeServiceAddress } from '~/entities/booking/service-address-dialog'
 import type { OccurrenceStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ActionMenu } from '~/shared/ui/action-menu'
@@ -46,6 +47,9 @@ function DetailSkeleton({ label }: { label: string }) {
 export function CustomerBookingDetailPage({ id }: { id: string }) {
   const { t } = useTranslation()
   const [cancelling, setCancelling] = useState(false)
+  const [editingAddress, setEditingAddress] = useState(false)
+  // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
+  const [now] = useState(() => Date.now())
   const booking = useQuery({ queryKey: bookingKeys.detail(id), queryFn: () => fetchBooking(id), retry: false })
   useDocumentTitle(t(`${key}.documentTitle`, { code: booking.data?.bookingCode ?? '' }))
 
@@ -77,25 +81,33 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
 
   const data = booking.data
   const occurrences = data.occurrences ?? []
+  const menuItems = [
+    ...(canChangeServiceAddress(data, now)
+      ? [
+          {
+            id: 'address',
+            label: t('booking.address.action'),
+            icon: 'home_pin',
+            onSelect: () => setEditingAddress(true)
+          }
+        ]
+      : []),
+    ...(CANCELLABLE.has(data.status)
+      ? [
+          {
+            id: 'cancel',
+            label: t(`${key}.cancel.open`),
+            icon: 'event_busy',
+            tone: 'danger' as const,
+            onSelect: () => setCancelling(true)
+          }
+        ]
+      : [])
+  ]
   return (
     <div className={`${pageContainer} pb-16`}>
       <PageHeader
-        actions={
-          CANCELLABLE.has(data.status) ? (
-            <ActionMenu
-              items={[
-                {
-                  id: 'cancel',
-                  label: t(`${key}.cancel.open`),
-                  icon: 'event_busy',
-                  tone: 'danger',
-                  onSelect: () => setCancelling(true)
-                }
-              ]}
-              label={t(`${key}.moreActions`)}
-            />
-          ) : undefined
-        }
+        actions={menuItems.length > 0 ? <ActionMenu items={menuItems} label={t(`${key}.moreActions`)} /> : undefined}
         breadcrumb={[
           { label: t('customer.nav.home'), to: '/customer' },
           { label: t('customer.nav.myBookings'), to: '/customer/bookings' },
@@ -142,6 +154,9 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
         </div>
       </div>
       {cancelling ? <BookingCancelDialog booking={data} onClose={() => setCancelling(false)} /> : null}
+      {editingAddress ? (
+        <ServiceAddressDialog booking={data} onClose={() => setEditingAddress(false)} open={editingAddress} />
+      ) : null}
     </div>
   )
 }

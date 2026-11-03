@@ -34,6 +34,12 @@ export function CaregiverCard({ person, showCenter }: { person: ProviderCaregive
               {person.fullName}
             </Link>
           </h2>
+          {showCenter && person.centerName ? (
+            <span className='mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-primary'>
+              <Icon aria-hidden='true' className='text-sm' name='home_health' />
+              <span className='truncate'>{person.centerName}</span>
+            </span>
+          ) : null}
           <div className='mt-1.5 flex flex-wrap items-center gap-2'>
             {person.verifiedCertificateCount > 0 ? <VerifiedBadge /> : null}
             <Rating average={person.ratingAverage} count={person.ratingCount} />
@@ -45,12 +51,6 @@ export function CaregiverCard({ person, showCenter }: { person: ProviderCaregive
           <li className='flex items-center gap-2'>
             <Icon className='text-lg text-primary' name='work_history' />
             {t(`${key}.list.years`, { count: person.experienceYears })}
-          </li>
-        ) : null}
-        {showCenter && person.centerName ? (
-          <li className='flex items-center gap-2'>
-            <Icon className='text-lg text-primary' name='home_health' />
-            <span className='truncate'>{person.centerName}</span>
           </li>
         ) : null}
       </ul>

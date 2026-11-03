@@ -14,6 +14,7 @@ export const BOOKING_TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 export const BOOKING_STATUSES = [
   'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_CONFIRMATION',
   'PENDING_CAREGIVER_ASSIGNMENT',
   'AWAITING_INITIAL_PAYMENT',
   'CONFIRMED',
@@ -37,9 +38,10 @@ export const OCCURRENCE_STATUSES = [
   'CAREGIVER_MISSED'
 ] as const satisfies readonly OccurrenceStatus[]
 
-/** Booking statuses before the initial payment: the center can still reject (spec §11.1). */
+/** Booking statuses before the initial payment: the center can still reject (spec §11.1, CR-3). */
 export const AWAITING_CENTER_STATUSES: ReadonlySet<BookingStatus> = new Set([
   'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_CONFIRMATION',
   'PENDING_CAREGIVER_ASSIGNMENT'
 ])
 
@@ -148,8 +150,9 @@ export function bookingDay(value: Date) {
 
 const KNOWN_ERROR_CODES = [
   5004, 5006, 5007, 5100, 5101, 5102, 5107, 5110, 5157, 5150, 5151, 5153, 5154, 5159, 5205, 5206, 5207, 5208, 5211,
-  5212, 5213, 5214, 5215, 5216, 5218, 5221, 5222, 5223, 5225, 5226, 5228, 5234, 5235, 5236, 5242, 5300, 5301, 5302,
-  5400, 5403, 5404, 5405, 5406, 5408, 5413, 5414, 5601, 5602, 5700, 5801, 5802, 5804, 5805, 5812, 5813, 5814, 5817, 5822
+  5212, 5213, 5214, 5215, 5216, 5218, 5221, 5222, 5223, 5225, 5226, 5228, 5234, 5235, 5236, 5242, 5243, 5113, 5114,
+  5115, 5300, 5301, 5302, 5400, 5403, 5404, 5405, 5406, 5408, 5413, 5414, 5601, 5602, 5700, 5801, 5802, 5804, 5805,
+  5812, 5813, 5814, 5817, 5822
 ] as const
 
 export type BookingErrorKey =

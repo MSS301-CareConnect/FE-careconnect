@@ -38,6 +38,7 @@ import {
   customerManagersVi
 } from './customer/managers-resources'
 import { centerPickerEn, centerPickerVi } from './customer/center-picker-resources'
+import { customerCentersEn, customerCentersVi } from './customer/centers-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
 import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
 import { caregiverProviderEn, caregiverProviderVi } from './caregiver/provider-resources'
@@ -47,6 +48,12 @@ import { caregiverUiEn, caregiverUiVi } from './caregiver/ui-resources'
 import { caregiverTodayEn, caregiverTodayVi } from './caregiver/today-resources'
 import { caregiverWorkEn, caregiverWorkVi } from './caregiver/work-resources'
 import { caregiverMeEn, caregiverMeVi } from './caregiver/me-resources'
+import {
+  caregiverEarningsEn,
+  caregiverEarningsVi,
+  caregiverRequestsEn,
+  caregiverRequestsVi
+} from './caregiver/requests-resources'
 import { managerLayoutEn, managerLayoutVi } from './center-manager/layout-resources'
 import { managerManagementEn, managerManagementVi } from './center-manager/management-resources'
 import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
@@ -104,7 +111,8 @@ export const resources = {
         payments: customerPaymentsEn,
         managers: customerManagersEn,
         invitations: customerInvitationsEn,
-        centerPicker: centerPickerEn
+        centerPicker: centerPickerEn,
+        centers: customerCentersEn
       },
       caregiver: {
         ...caregiverLayoutEn,
@@ -115,7 +123,9 @@ export const resources = {
         ui: caregiverUiEn,
         today: caregiverTodayEn,
         work: caregiverWorkEn,
-        me: caregiverMeEn
+        me: caregiverMeEn,
+        requests: caregiverRequestsEn,
+        earnings: caregiverEarningsEn
       },
       centerManager: {
         ...managerLayoutEn,
@@ -178,7 +188,8 @@ export const resources = {
         payments: customerPaymentsVi,
         managers: customerManagersVi,
         invitations: customerInvitationsVi,
-        centerPicker: centerPickerVi
+        centerPicker: centerPickerVi,
+        centers: customerCentersVi
       },
       caregiver: {
         ...caregiverLayoutVi,
@@ -189,7 +200,9 @@ export const resources = {
         ui: caregiverUiVi,
         today: caregiverTodayVi,
         work: caregiverWorkVi,
-        me: caregiverMeVi
+        me: caregiverMeVi,
+        requests: caregiverRequestsVi,
+        earnings: caregiverEarningsVi
       },
       centerManager: {
         ...managerLayoutVi,

@@ -72,7 +72,7 @@ export function CenterPickerDialog() {
             </p>
           </div>
           <div className='mx-6 mt-5 min-h-0 flex-1 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-3 sm:mx-7'>
-            <CenterOptions onPick={pickCenter} size='dialog' />
+            <CenterOptions onLeave={closeCenterPicker} onPick={pickCenter} size='dialog' />
           </div>
           <div className='flex justify-end px-6 py-5 sm:px-7'>
             <button

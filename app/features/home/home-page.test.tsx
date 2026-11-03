@@ -76,8 +76,16 @@ describe('HomePage', () => {
     expect(within(hero).getByRole('link', { name: 'Tạo tài khoản' })).toHaveAttribute('href', '/register')
     expect(screen.getAllByRole('img', { name: /Người chăm sóc hỗ trợ/i })).toHaveLength(1)
     expect(screen.getByRole('heading', { name: 'Từ lúc tìm kiếm đến khi chọn được người phù hợp' })).toBeInTheDocument()
+    // The second photo section: one lazy image, a headline and three short points.
+    const reasons = screen.getByRole('region', { name: 'Mỗi quyết định chăm sóc đều cần sự rõ ràng.' })
+    const photo = within(reasons).getByRole('img', { name: /nắm tay người thân lớn tuổi/i })
+    expect(photo).toHaveAttribute('src', '/images/care-for-families.jpg')
+    expect(photo).toHaveAttribute('loading', 'lazy')
+    expect(within(reasons).getAllByRole('listitem')).toHaveLength(3)
     expect(screen.getByRole('heading', { name: 'Vì sao các gia đình chọn CareConnect' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /1900 6868/ })).toHaveAttribute('href', 'tel:19006868')
+    expect(screen.getByText('Thanh toán & hoàn tiền minh bạch')).toBeInTheDocument()
+    // The hotline lives only in the footer, not in the page body.
+    expect(screen.queryByRole('link', { name: /1900 6868/ })).not.toBeInTheDocument()
     // Guests see no customer data and trigger no customer requests.
     expect(screen.queryByRole('heading', { name: 'Lịch sắp tới' })).not.toBeInTheDocument()
     expect(fetchBookings).not.toHaveBeenCalled()

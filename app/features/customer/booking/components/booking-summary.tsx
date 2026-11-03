@@ -45,7 +45,7 @@ function SummaryBody({ form, onNavigate }: { form: BookingForm; onNavigate?: () 
   const format = useFormat()
   const facts = quoteFacts(form)
   const services = form.offerings.data?.filter((offering) => form.services[offering.id]) ?? []
-  const visitCount = facts.occurrences.length || (form.schedule.bookingType === 'RECURRING' ? form.visitDays.length : 0)
+  const visitCount = facts.occurrences.length || (form.schedule.bookingType === 'RECURRING' ? form.visitCount : 0)
   const go = (step: WizardStep) => {
     form.goTo(step)
     onNavigate?.()

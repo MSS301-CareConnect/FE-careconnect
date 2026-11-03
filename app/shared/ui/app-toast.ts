@@ -10,6 +10,11 @@ export function toastSuccess(message: string) {
   toast.success(message, { duration: SUCCESS_MS })
 }
 
+/** A neutral notice that a choice took effect, such as the center the lists now follow. */
+export function toastInfo(message: string) {
+  toast.info(message, { duration: SUCCESS_MS })
+}
+
 /**
  * A system failure (5xx, unavailable service, lost connection) as a toast with an optional retry. Validation and
  * business failures stay in their form (U-10), so this returns false for them and shows nothing.

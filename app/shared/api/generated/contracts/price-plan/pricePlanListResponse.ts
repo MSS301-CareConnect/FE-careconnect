@@ -5,7 +5,7 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { PricePlanRecord } from './pricePlanRecord'
+import type { PricePlanRecord } from '../pricePlanRecord'
 
 export interface PricePlanListResponse {
   code: number

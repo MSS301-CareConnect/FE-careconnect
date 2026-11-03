@@ -6,13 +6,19 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { BookingUnitType } from '../bookingUnitType'
+import type { BookingQuoteUnitGroupRecord } from './bookingQuoteUnitGroupRecord'
 
 export interface BookingQuoteLineRecord {
   careServiceId?: string
   serviceName?: string
   pricingUnit?: BookingUnitType
   unitPrice?: number
+  /** Units of one visit; absent when the visits last differently (HOUR plans) */
   unitsPerOccurrence?: number
+  /** Units of every visit together (hours for HOUR plans) */
+  quantity?: number
+  /** Visits grouped by their units (e.g. 2 hours × 14 visits, 3 hours × 1 visit), shortest first, each with its amount */
+  unitGroups?: BookingQuoteUnitGroupRecord[]
   occurrenceCount?: number
   lineTotal?: number
 }

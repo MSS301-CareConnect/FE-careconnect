@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
-import { useServiceCenters } from '~/entities/care-center/care-center-api'
 import { CenterContextLine, CenterReminder } from '~/entities/care-center/center-scope'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import { fetchCaregiverCatalog, providerKeys } from '~/entities/provider/provider-api'
@@ -50,7 +49,6 @@ export function CustomerProviderCatalogPage() {
   const keyword = params.get('q') ?? ''
   const { center } = useSelectedCenter()
   const centerId = center?.id
-  const centers = useServiceCenters()
   const catalog = useQuery({
     queryKey: [...providerKeys.catalog, { page, keyword, centerId }],
     queryFn: () => fetchCaregiverCatalog({ page, size: 20, keyword: keyword.trim() || undefined, centerId }),
@@ -68,7 +66,8 @@ export function CustomerProviderCatalogPage() {
   )
   const filtered = gender !== 'ALL' || minimumExperience > 0
   const fullBar = (catalog.data?.totalElements ?? 0) > FEW_RESULTS || filtered
-  const showCenter = (centers.data?.length ?? 0) > 1
+  // In the all-centers mode each card names its center; a chosen center makes that the same on every card.
+  const showCenter = !center
 
   function update(name: string, value: string) {
     setParams((previous) => {

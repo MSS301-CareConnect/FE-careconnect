@@ -15,5 +15,9 @@ export interface BookingHistoryRecord {
   newCaregiverId?: string
   changedBy?: string
   reason?: string
+  /** SERVICE_ADDRESS_CHANGED — previous care address (CR-2) */
+  oldValue?: string
+  /** SERVICE_ADDRESS_CHANGED — new care address (CR-2) */
+  newValue?: string
   changedAt: string
 }

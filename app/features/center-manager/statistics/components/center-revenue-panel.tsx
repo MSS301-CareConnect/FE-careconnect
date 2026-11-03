@@ -48,7 +48,10 @@ export function CenterRevenuePanel() {
         ['net', formatMoney(revenue.data.totalRevenue, language)],
         ['gross', formatMoney(revenue.data.grossRevenue, language)],
         ['refunded', formatMoney(revenue.data.totalRefunded, language)],
-        ['payments', count.format(revenue.data.successfulPaymentCount)]
+        ['payments', count.format(revenue.data.successfulPaymentCount)],
+        // CR-4: kept deposits — the center keeps those of visits without a caregiver, the rest goes to the caregivers.
+        ['centerForfeit', formatMoney(revenue.data.centerForfeitAmount ?? 0, language)],
+        ['caregiverForfeit', formatMoney(revenue.data.caregiverForfeitAmount ?? 0, language)]
       ] as const)
     : []
 
@@ -86,7 +89,7 @@ export function CenterRevenuePanel() {
         <ErrorState message={t(paymentErrorKey(revenue.error))} onRetry={() => void revenue.refetch()} />
       ) : null}
       {revenue.data ? (
-        <dl className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+        <dl className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
           {metrics.map(([metric, value]) => (
             <div
               className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-xs'

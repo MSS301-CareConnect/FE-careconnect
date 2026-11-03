@@ -17,14 +17,23 @@ import type {
   ListCareRecipientsParams,
   PricePlanRecord
 } from '~/shared/api/generated/contracts'
-import { addDays, calendarDayOf, isoWeekday } from '~/shared/lib/format'
+import { addDays, calendarDayOf } from '~/shared/lib/format'
 
+import {
+  MAX_CUSTOM_SLOTS,
+  findOverlappingSlot,
+  mergeSlots,
+  ruleIssuesOf,
+  slotsFromRule,
+  type CustomSlot,
+  type RecurrenceRule
+} from './schedule-slots'
 import { useBookingProviders } from './use-booking-providers'
+
+export { MAX_CUSTOM_SLOTS, type CustomSlot } from './schedule-slots'
 
 export const recipientRequest: ListCareRecipientsParams = { status: 'ACTIVE', page: 0, size: 50 }
 const DAY_MS = 24 * 60 * 60 * 1000
-/** BookingService limit on the occurrences of one booking. */
-export const MAX_CUSTOM_SLOTS = 60
 export const MAX_SERVICES = 10
 /** Platform defaults (spec §8) used until the center policy has loaded. */
 const DEFAULT_NOTICE_MINUTES: Record<BookingType, number> = { SHIFT: 120, RECURRING: 2880, CUSTOM: 2880 }
@@ -46,13 +55,6 @@ export interface BookingCaregiverOption {
   centerName?: string
 }
 
-/** One CUSTOM visit in Vietnam time; each visit has its own date and time range (spec §4). */
-export interface CustomSlot {
-  date: string
-  startTime: string
-  endTime: string
-}
-
 export interface BookingSchedule {
   bookingType: BookingType
   /** SHIFT: the ProviderService caregiver schedule chosen. */
@@ -64,14 +66,22 @@ export interface BookingSchedule {
   startTime: string
   endTime: string
   daysOfWeek: number[]
+  /** RECURRING: the visits of the pattern, editable one by one (CR-1); sent only once edited. */
+  recurringSlots: CustomSlot[]
+  recurringEdited: boolean
   /** CUSTOM. */
   slots: CustomSlot[]
 }
 
+/** Which visit list an edit applies to. */
+export type SlotList = 'slots' | 'recurringSlots'
+
+const RULE_FIELDS = ['frequency', 'startDate', 'endDate', 'startTime', 'endTime', 'daysOfWeek'] as const
+
 /** Selected services keyed by center offering ID, each with the chosen price plan. */
 export type SelectedServices = Record<string, BookingServiceRequest>
 
-export type SlotIssue = 'missingDate' | 'invalidTime' | 'overlap' | 'tooEarly'
+export type SlotIssue = 'missingDate' | 'invalidTime' | 'overlap' | 'tooEarly' | 'outsideRange'
 export type MissingReason =
   | 'recipient'
   | 'center'
@@ -98,17 +108,28 @@ interface Draft {
 function initialSchedule(now: number): BookingSchedule {
   // RECURRING / CUSTOM need 48 hours of notice by default, so the first default visit is three days ahead.
   const firstDay = bookingDay(new Date(now + 3 * DAY_MS))
-  return {
-    bookingType: 'CUSTOM',
-    scheduleId: '',
+  const rule: RecurrenceRule = {
     frequency: 'DAILY',
     startDate: firstDay,
     endDate: addDays(firstDay, 6),
     startTime: '08:00',
     endTime: '10:00',
-    daysOfWeek: [],
+    daysOfWeek: []
+  }
+  return {
+    bookingType: 'CUSTOM',
+    scheduleId: '',
+    ...rule,
+    recurringSlots: slotsFromRule(rule),
+    recurringEdited: false,
     slots: [{ date: firstDay, startTime: '08:00', endTime: '10:00' }]
   }
+}
+
+/** A draft saved before the RECURRING visit list existed gets the visits of its pattern. */
+function normalizeSchedule(schedule: BookingSchedule): BookingSchedule {
+  if (Array.isArray(schedule.recurringSlots)) return schedule
+  return { ...schedule, recurringSlots: slotsFromRule(schedule), recurringEdited: false }
 }
 
 /** The draft is kept per tab so a reload does not lose the choices. The free-text note is never stored (health data). */
@@ -131,29 +152,11 @@ function writeDraft(draft: Draft | null) {
   }
 }
 
-/** Index of the first CUSTOM visit that overlaps an earlier one (half-open ranges, as BookingService checks). */
-export function findOverlappingSlot(slots: readonly CustomSlot[]) {
-  const ranges = slots
-    .map((slot, index) => ({ index, start: `${slot.date}T${slot.startTime}`, end: `${slot.date}T${slot.endTime}` }))
-    .filter((range) => range.start < range.end)
-    .sort((a, b) => a.start.localeCompare(b.start))
-  for (let position = 1; position < ranges.length; position++) {
-    if (ranges[position].start < ranges[position - 1].end) return ranges[position].index
-  }
-  return -1
-}
-
-/** Calendar days of a RECURRING schedule (Vietnam time), capped at a year to keep the preview cheap. */
-export function recurringDays(schedule: BookingSchedule) {
-  const days: string[] = []
-  if (!schedule.startDate || !schedule.endDate || schedule.endDate < schedule.startDate) return days
-  let day = schedule.startDate
-  for (let guard = 0; day <= schedule.endDate && guard < 370; guard++) {
-    if (schedule.frequency === 'DAILY' || schedule.daysOfWeek.includes(isoWeekday(day))) days.push(day)
-    day = addDays(day, 1)
-  }
-  return days
-}
+const toSlotRequests = (slots: CustomSlot[]) =>
+  slots.map((slot) => ({
+    startAt: vietnamInstant(slot.date, slot.startTime),
+    endAt: vietnamInstant(slot.date, slot.endTime)
+  }))
 
 /** The booking body for the chosen type; fields of the other types are left out because BookingService rejects them. */
 function scheduleFields(schedule: BookingSchedule, caregiverId: string | undefined) {
@@ -164,10 +167,7 @@ function scheduleFields(schedule: BookingSchedule, caregiverId: string | undefin
     return {
       bookingType: schedule.bookingType,
       caregiverId,
-      slots: schedule.slots.map((slot) => ({
-        startAt: vietnamInstant(slot.date, slot.startTime),
-        endAt: vietnamInstant(slot.date, slot.endTime)
-      }))
+      slots: toSlotRequests(schedule.slots)
     }
   }
   return {
@@ -178,7 +178,9 @@ function scheduleFields(schedule: BookingSchedule, caregiverId: string | undefin
     endDate: schedule.endDate,
     startTime: schedule.startTime,
     endTime: schedule.endTime,
-    daysOfWeek: schedule.frequency === 'WEEKLY' ? [...schedule.daysOfWeek].sort() : undefined
+    daysOfWeek: schedule.frequency === 'WEEKLY' ? [...schedule.daysOfWeek].sort() : undefined,
+    // CR-1: the edited list replaces the visits BookingService would generate from the pattern.
+    slots: schedule.recurringEdited ? toSlotRequests(schedule.recurringSlots) : undefined
   }
 }
 
@@ -202,7 +204,9 @@ export function useBookingForm() {
   const [centerChoice, setCenterChoice] = useState<string | null>(draft?.centerChoice ?? null)
   const [caregiverChoice, setCaregiverChoice] = useState<string | null>(draft?.caregiverChoice ?? null)
   const [rawServices, setServices] = useState<SelectedServices>(draft?.services ?? {})
-  const [schedule, setSchedule] = useState<BookingSchedule>(() => draft?.schedule ?? initialSchedule(now))
+  const [schedule, setSchedule] = useState<BookingSchedule>(() =>
+    draft?.schedule ? normalizeSchedule(draft.schedule) : initialSchedule(now)
+  )
   const [customerNote, setCustomerNote] = useState('')
   const [step, setStep] = useState<WizardStep>(draft?.step ?? 1)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
@@ -224,6 +228,19 @@ export function useBookingForm() {
     retry: false
   })
   const centerId = centerChoice ?? caregiver.data?.centerId ?? centerParam
+  // Switching the header center while the form is open moves the form to that center and starts its choices over,
+  // instead of keeping services and a caregiver of the previous center (CR-6).
+  const headerCenterId = headerCenter?.id ?? ''
+  const [seenHeaderCenter, setSeenHeaderCenter] = useState(headerCenterId)
+  if (headerCenterId !== seenHeaderCenter) {
+    setSeenHeaderCenter(headerCenterId)
+    if (headerCenterId && headerCenterId !== centerId) {
+      setCenterChoice(headerCenterId)
+      setCaregiverChoice('')
+      setServices({})
+      setSchedule((current) => ({ ...current, scheduleId: '' }))
+    }
+  }
   const recipients = useQuery({
     queryKey: careRecipientKeys.list(recipientRequest),
     queryFn: () => fetchCareRecipients(recipientRequest),
@@ -339,22 +356,21 @@ export function useBookingForm() {
   const earliestDay = calendarDayOf(new Date(earliest))
   const tooEarly = (day: string, time: string) => Date.parse(vietnamInstant(day, time)) < earliest
 
-  const overlapping = findOverlappingSlot(schedule.slots)
-  const slotIssues: (SlotIssue | null)[] = schedule.slots.map((slot, index) => {
-    if (!slot.date) return 'missingDate'
-    if (!slot.startTime || !slot.endTime || slot.endTime <= slot.startTime) return 'invalidTime'
-    if (tooEarly(slot.date, slot.startTime)) return 'tooEarly'
-    if (index === overlapping) return 'overlap'
-    return null
-  })
-  const visitDays = schedule.bookingType === 'RECURRING' ? recurringDays(schedule) : []
-  const recurringIssues = {
-    invalidRange: Boolean(schedule.endDate && schedule.startDate && schedule.endDate < schedule.startDate),
-    invalidTime: Boolean(schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime),
-    noWeekday: schedule.frequency === 'WEEKLY' && schedule.daysOfWeek.length === 0,
-    tooEarly: Boolean(visitDays[0] && tooEarly(visitDays[0], schedule.startTime)),
-    noVisits: visitDays.length === 0
+  // Errors show on the visit that has them; RECURRING visits must also stay within the dates of the pattern.
+  function issuesOf(slots: CustomSlot[], range?: { from: string; to: string }): (SlotIssue | null)[] {
+    const overlapping = findOverlappingSlot(slots)
+    return slots.map((slot, index) => {
+      if (!slot.date) return 'missingDate'
+      if (!slot.startTime || !slot.endTime || slot.endTime <= slot.startTime) return 'invalidTime'
+      if (range && (slot.date < range.from || slot.date > range.to)) return 'outsideRange'
+      if (tooEarly(slot.date, slot.startTime)) return 'tooEarly'
+      if (index === overlapping) return 'overlap'
+      return null
+    })
   }
+  const slotIssues = issuesOf(schedule.slots)
+  const recurringSlotIssues = issuesOf(schedule.recurringSlots, { from: schedule.startDate, to: schedule.endDate })
+  const recurringIssues = { ...ruleIssuesOf(schedule), noVisits: schedule.recurringSlots.length === 0 }
 
   function scheduleIssue(): MissingReason | null {
     if (schedule.bookingType === 'SHIFT') return caregiverId && schedule.scheduleId ? null : 'shift'
@@ -363,7 +379,7 @@ export function useBookingForm() {
       return slotIssues.some(Boolean) ? 'scheduleInvalid' : null
     }
     if (!schedule.startDate || !schedule.endDate) return 'schedule'
-    return Object.values(recurringIssues).some(Boolean) ? 'scheduleInvalid' : null
+    return Object.values(recurringIssues).some(Boolean) || recurringSlotIssues.some(Boolean) ? 'scheduleInvalid' : null
   }
 
   const plansChosen = selected.every((service) => service.pricePlanId)
@@ -497,11 +513,31 @@ export function useBookingForm() {
     }))
   }
 
-  function updateSlot(index: number, patch: Partial<CustomSlot>) {
+  /** A pattern change rebuilds the RECURRING visits until the customer edits them by hand (CR-1). */
+  function updateSchedule(patch: Partial<BookingSchedule>) {
+    setSchedule((current) => {
+      const next = { ...current, ...patch }
+      const ruleChanged = RULE_FIELDS.some((field) => field in patch)
+      return ruleChanged && !next.recurringEdited ? { ...next, recurringSlots: slotsFromRule(next) } : next
+    })
+  }
+
+  /** Edits one visit list; editing the RECURRING list stops the pattern from rebuilding it. */
+  function editSlots(list: SlotList, change: (slots: CustomSlot[]) => CustomSlot[]) {
     setSchedule((current) => ({
       ...current,
-      slots: current.slots.map((slot, position) => (position === index ? { ...slot, ...patch } : slot))
+      [list]: change(current[list]),
+      recurringEdited: list === 'recurringSlots' ? true : current.recurringEdited
     }))
+  }
+
+  function nextSlot(slots: CustomSlot[]): CustomSlot {
+    const last = slots.at(-1)
+    return {
+      date: last?.date ? addDays(last.date, 1) : '',
+      startTime: last?.startTime ?? schedule.startTime,
+      endTime: last?.endTime ?? schedule.endTime
+    }
   }
 
   return {
@@ -542,35 +578,44 @@ export function useBookingForm() {
     choosePlan,
     schedule,
     slotIssues,
-    visitDays,
+    recurringSlotIssues,
     recurringIssues,
-    updateSchedule: (patch: Partial<BookingSchedule>) => setSchedule((current) => ({ ...current, ...patch })),
-    updateSlot,
-    addSlot: () =>
-      setSchedule((current) => {
-        if (current.slots.length >= MAX_CUSTOM_SLOTS) return current
-        const last = current.slots.at(-1)
-        return {
-          ...current,
-          slots: [
-            ...current.slots,
-            {
-              date: last?.date ? addDays(last.date, 1) : '',
-              startTime: last?.startTime ?? '08:00',
-              endTime: last?.endTime ?? '10:00'
-            }
-          ]
-        }
-      }),
-    duplicateSlot: (index: number) =>
-      setSchedule((current) => {
-        if (current.slots.length >= MAX_CUSTOM_SLOTS) return current
-        const source = current.slots[index]
+    visitCount:
+      schedule.bookingType === 'RECURRING'
+        ? schedule.recurringSlots.length
+        : schedule.bookingType === 'CUSTOM'
+          ? schedule.slots.length
+          : 1,
+    updateSchedule,
+    updateSlot: (index: number, patch: Partial<CustomSlot>, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => slots.map((slot, position) => (position === index ? { ...slot, ...patch } : slot))),
+    addSlot: (list: SlotList = 'slots') =>
+      editSlots(list, (slots) => (slots.length >= MAX_CUSTOM_SLOTS ? slots : [...slots, nextSlot(slots)])),
+    duplicateSlot: (index: number, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => {
+        if (slots.length >= MAX_CUSTOM_SLOTS) return slots
+        const source = slots[index]
         const copy = { ...source, date: source.date ? addDays(source.date, 1) : '' }
-        return { ...current, slots: [...current.slots.slice(0, index + 1), copy, ...current.slots.slice(index + 1)] }
+        return [...slots.slice(0, index + 1), copy, ...slots.slice(index + 1)]
       }),
-    removeSlot: (index: number) =>
-      setSchedule((current) => ({ ...current, slots: current.slots.filter((_, position) => position !== index) })),
+    removeSlot: (index: number, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => slots.filter((_, position) => position !== index)),
+    /** Bulk edit: the same change on every chosen visit of a list. */
+    updateSlots: (indices: readonly number[], patch: Partial<CustomSlot>, list: SlotList = 'slots') =>
+      editSlots(list, (slots) =>
+        slots.map((slot, position) => (indices.includes(position) ? { ...slot, ...patch } : slot))
+      ),
+    removeSlots: (indices: readonly number[], list: SlotList = 'slots') =>
+      editSlots(list, (slots) => slots.filter((_, position) => !indices.includes(position))),
+    /** CUSTOM quick add (CR-1): appends the visits of a pattern that do not overlap the listed ones. */
+    appendSlots: (incoming: CustomSlot[]) => {
+      const result = mergeSlots(schedule.slots, incoming)
+      if (result.added > 0) setSchedule((current) => ({ ...current, slots: mergeSlots(current.slots, incoming).slots }))
+      return result
+    },
+    /** Drops the hand edits and rebuilds the RECURRING visits from the pattern. */
+    regenerateRecurring: () =>
+      setSchedule((current) => ({ ...current, recurringSlots: slotsFromRule(current), recurringEdited: false })),
     customerNote,
     setCustomerNote,
     agreed,

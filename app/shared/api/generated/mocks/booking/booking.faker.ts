@@ -15,7 +15,9 @@ import type {
   BookingOccurrenceResponse,
   BookingQuoteResponse,
   BookingSummaryPageResponse,
-  CancellationPreviewResponse
+  CancellationPreviewResponse,
+  CaregiverBookingRequestPageResponse,
+  CaregiverBookingRequestResponse
 } from '../../contracts'
 
 import {
@@ -26,7 +28,9 @@ import {
   getBookingOccurrenceRecordMock,
   getBookingQuoteRecordMock,
   getBookingSummaryPageMock,
-  getCancellationPreviewRecordMock
+  getCancellationPreviewRecordMock,
+  getCaregiverBookingRequestPageMock,
+  getCaregiverBookingRequestRecordMock
 } from '../../contracts/index.faker'
 
 export const getListBookingsResponseMock = (
@@ -102,6 +106,42 @@ export const getPreviewBookingCancellationResponseMock = (
 })
 
 export const getCancelBookingResponseMock = (
+  overrideResponse: Partial<Extract<BookingDetailResponse, object>> = {}
+): BookingDetailResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingDetailRecordMock() },
+  ...overrideResponse
+})
+
+export const getListCaregiverBookingRequestsResponseMock = (
+  overrideResponse: Partial<Extract<CaregiverBookingRequestPageResponse, object>> = {}
+): CaregiverBookingRequestPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverBookingRequestPageMock() },
+  ...overrideResponse
+})
+
+export const getAcceptBookingAsCaregiverResponseMock = (
+  overrideResponse: Partial<Extract<CaregiverBookingRequestResponse, object>> = {}
+): CaregiverBookingRequestResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverBookingRequestRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeclineBookingAsCaregiverResponseMock = (
+  overrideResponse: Partial<Extract<CaregiverBookingRequestResponse, object>> = {}
+): CaregiverBookingRequestResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverBookingRequestRecordMock() },
+  ...overrideResponse
+})
+
+export const getUpdateBookingServiceAddressResponseMock = (
   overrideResponse: Partial<Extract<BookingDetailResponse, object>> = {}
 ): BookingDetailResponse => ({
   code: faker.number.int(),

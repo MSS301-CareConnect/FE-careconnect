@@ -19,6 +19,7 @@ import { useActionToast } from '~/shared/ui/use-action-toast'
 // Statuses that still hold a schedule; BookingService rejects a cancel outside them.
 const CANCELLABLE: ReadonlySet<BookingStatus> = new Set([
   'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_CONFIRMATION',
   'PENDING_CAREGIVER_ASSIGNMENT',
   'AWAITING_INITIAL_PAYMENT',
   'CONFIRMED',

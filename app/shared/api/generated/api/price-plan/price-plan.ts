@@ -21,7 +21,13 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 
-import type { EmptyActionResponse, PricePlanListResponse, PricePlanRequest, PricePlanResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  PricePlanBatchUpdateRequest,
+  PricePlanListResponse,
+  PricePlanRequest,
+  PricePlanResponse
+} from '../../contracts'
 
 import { env } from '~/shared/config/env'
 
@@ -176,6 +182,157 @@ export const useCreatePricePlan = <TError = globalThis.Error & { info?: void; st
   queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof createPricePlan>>, TError, { data: PricePlanRequest }, TContext> => {
   return useMutation(getCreatePricePlanMutationOptions(options), queryClient)
+}
+export type updatePricePlansBatchResponse200 = {
+  data: PricePlanListResponse
+  status: 200
+}
+
+export type updatePricePlansBatchResponse400 = {
+  data: void
+  status: 400
+}
+
+export type updatePricePlansBatchResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updatePricePlansBatchResponse403 = {
+  data: void
+  status: 403
+}
+
+export type updatePricePlansBatchResponse404 = {
+  data: void
+  status: 404
+}
+
+export type updatePricePlansBatchResponse409 = {
+  data: void
+  status: 409
+}
+
+export type updatePricePlansBatchResponse500 = {
+  data: void
+  status: 500
+}
+
+export type updatePricePlansBatchResponse503 = {
+  data: void
+  status: 503
+}
+
+export type updatePricePlansBatchResponseSuccess = updatePricePlansBatchResponse200 & {
+  headers: Headers
+}
+export type updatePricePlansBatchResponseError = (
+  | updatePricePlansBatchResponse400
+  | updatePricePlansBatchResponse401
+  | updatePricePlansBatchResponse403
+  | updatePricePlansBatchResponse404
+  | updatePricePlansBatchResponse409
+  | updatePricePlansBatchResponse500
+  | updatePricePlansBatchResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdatePricePlansBatchUrl = () => {
+  return `${env.API_BASE_URL}/v1/price-plans/batch`
+}
+
+/**
+ * @summary CENTER_MANAGER sửa nhiều gói giá cùng lúc (tất cả hoặc không gói nào)
+ */
+export const updatePricePlansBatch = async (
+  pricePlanBatchUpdateRequest: PricePlanBatchUpdateRequest,
+  options?: RequestInit
+): Promise<updatePricePlansBatchResponseSuccess> => {
+  const res = await fetch(getUpdatePricePlansBatchUrl(), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pricePlanBatchUpdateRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updatePricePlansBatchResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updatePricePlansBatchResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updatePricePlansBatchResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updatePricePlansBatchResponseSuccess
+}
+
+export const getUpdatePricePlansBatchMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePricePlansBatch>>,
+    TError,
+    { data: PricePlanBatchUpdateRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePricePlansBatch>>,
+  TError,
+  { data: PricePlanBatchUpdateRequest },
+  TContext
+> => {
+  const mutationKey = ['updatePricePlansBatch']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePricePlansBatch>>,
+    { data: PricePlanBatchUpdateRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return updatePricePlansBatch(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdatePricePlansBatchMutationResult = NonNullable<Awaited<ReturnType<typeof updatePricePlansBatch>>>
+export type UpdatePricePlansBatchMutationBody = PricePlanBatchUpdateRequest
+export type UpdatePricePlansBatchMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CENTER_MANAGER sửa nhiều gói giá cùng lúc (tất cả hoặc không gói nào)
+ */
+export const useUpdatePricePlansBatch = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updatePricePlansBatch>>,
+      TError,
+      { data: PricePlanBatchUpdateRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updatePricePlansBatch>>,
+  TError,
+  { data: PricePlanBatchUpdateRequest },
+  TContext
+> => {
+  return useMutation(getUpdatePricePlansBatchMutationOptions(options), queryClient)
 }
 export type getPricePlanResponse200 = {
   data: PricePlanResponse

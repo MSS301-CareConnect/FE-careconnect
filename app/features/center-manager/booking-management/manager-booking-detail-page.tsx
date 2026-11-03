@@ -18,6 +18,7 @@ import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-lis
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import { BookingRecipientSnapshot } from '~/entities/booking/booking-recipient-snapshot'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import { ServiceAddressDialog, canChangeServiceAddress } from '~/entities/booking/service-address-dialog'
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
@@ -29,7 +30,7 @@ import { ManagerOccurrenceActions } from './components/manager-occurrence-action
 import { useCenterCaregivers } from './hooks/use-center-caregivers'
 import { useFreeCaregivers } from './hooks/use-free-caregivers'
 
-type Dialog = 'accept' | 'reject' | 'cancel' | 'reassign' | 'assign' | null
+type Dialog = 'accept' | 'reject' | 'cancel' | 'reassign' | 'assign' | 'address' | null
 // Spec §5.2: the center confirms or rejects a new booking, assigns a caregiver to a confirmed RECURRING / CUSTOM booking
 // that has none (or rejects it), and cancels or reassigns once a caregiver holds the visits.
 const ACCEPTED: readonly BookingStatus[] = ['AWAITING_INITIAL_PAYMENT', 'CONFIRMED', 'IN_PROGRESS']
@@ -41,6 +42,8 @@ export function ManagerBookingDetailPage() {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [dialog, setDialog] = useState<Dialog>(null)
+  // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
+  const [openedAt] = useState(() => Date.now())
   const caregivers = useCenterCaregivers()
   const booking = useQuery({
     queryKey: bookingKeys.detail(id),
@@ -118,6 +121,14 @@ export function ManagerBookingDetailPage() {
               {t('centerManager.bookingDetail.acceptBy', { time: formatDateTime(data.acceptanceDueAt, i18n.language) })}
             </p>
           ) : null}
+          {data.status === 'PENDING_CAREGIVER_CONFIRMATION' && data.acceptanceDueAt ? (
+            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-info-container px-3 py-1.5 text-xs font-semibold text-on-info-container tabular-nums'>
+              <Icon className='text-base' name='how_to_reg' />
+              {t('centerManager.bookingDetail.caregiverAnswersBy', {
+                time: formatDateTime(data.acceptanceDueAt, i18n.language)
+              })}
+            </p>
+          ) : null}
           {data.status === 'PENDING_CAREGIVER_ASSIGNMENT' && data.assignmentDueAt ? (
             <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-warning-container px-3 py-1.5 text-xs font-semibold text-on-warning-container tabular-nums'>
               <Icon className='text-base' name='schedule' />
@@ -141,6 +152,18 @@ export function ManagerBookingDetailPage() {
                 {t('centerManager.bookingDetail.reject')}
               </button>
             </>
+          ) : null}
+          {data.status === 'PENDING_CAREGIVER_CONFIRMATION' ? (
+            <button className={`${secondary} text-error`} onClick={() => setDialog('reject')} type='button'>
+              <Icon className='text-lg' name='block' />
+              {t('centerManager.bookingDetail.reject')}
+            </button>
+          ) : null}
+          {canChangeServiceAddress(data, openedAt) ? (
+            <button className={`${secondary} text-primary`} onClick={() => setDialog('address')} type='button'>
+              <Icon className='text-lg' name='home_pin' />
+              {t('booking.address.action')}
+            </button>
           ) : null}
           {data.status === 'PENDING_CENTER_CONFIRMATION' ? (
             <>
@@ -231,6 +254,7 @@ export function ManagerBookingDetailPage() {
           title={t('centerManager.bookingDetail.acceptTitle', { code: data.bookingCode })}
         />
       ) : null}
+      {dialog === 'address' ? <ServiceAddressDialog booking={data} onClose={() => setDialog(null)} open /> : null}
       {dialog === 'assign' ? (
         <CaregiverAssignDialog
           confirmLabel={t('centerManager.bookingDetail.assignCaregiver')}

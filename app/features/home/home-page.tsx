@@ -10,7 +10,12 @@ const steps = ['find', 'compare', 'book'] as const
 const trust = [
   { id: 'verified', icon: 'verified_user' },
   { id: 'prices', icon: 'receipt_long' },
-  { id: 'support', icon: 'support_agent' }
+  { id: 'refunds', icon: 'currency_exchange' }
+] as const
+const reasons = [
+  { id: 'profiles', icon: 'badge' },
+  { id: 'schedule', icon: 'event_available' },
+  { id: 'family', icon: 'assignment' }
 ] as const
 
 const container = 'mx-auto w-full max-w-[1200px] px-4 sm:px-6'
@@ -21,7 +26,8 @@ const secondaryAction =
 
 /**
  * Home (2026-11 redesign): the app's only hero, kept short, then — for a signed-in customer — the next visit,
- * shortcuts and what their center offers, followed by how it works and why families trust the service.
+ * shortcuts and what their center offers, followed by how it works, a photo with three short reasons (CR-5) and why
+ * families trust the service. The support hotline lives only in the footer.
  */
 export function HomePage({ audience = 'public' }: { audience?: 'public' | 'customer' }) {
   const { t } = useTranslation()
@@ -109,6 +115,51 @@ export function HomePage({ audience = 'public' }: { audience?: 'public' | 'custo
         </ol>
       </section>
 
+      <section
+        aria-labelledby='home-reasons-title'
+        className='border-t border-outline-variant bg-surface-container-lowest'
+      >
+        <div
+          className={`${container} grid items-center gap-8 py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14`}
+        >
+          <div className='overflow-hidden rounded-2xl bg-surface-container-high'>
+            <img
+              alt={t('home.reasonsPhotoAlt')}
+              className='aspect-[4/3] w-full object-cover object-[68%_center] sm:aspect-[16/10]'
+              decoding='async'
+              height={900}
+              loading='lazy'
+              src='/images/care-for-families.jpg'
+              width={1600}
+            />
+          </div>
+          <div>
+            <p className='text-sm font-semibold text-primary'>{t('home.reasonsEyebrow')}</p>
+            <h2 className='mt-2 max-w-[22ch] text-2xl font-bold text-balance text-on-surface' id='home-reasons-title'>
+              {t('home.reasonsTitle')}
+            </h2>
+            <ul className='mt-7 flex flex-col gap-5'>
+              {reasons.map((reason) => (
+                <li className='flex gap-4' key={reason.id}>
+                  <span
+                    aria-hidden='true'
+                    className='grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-primary'
+                  >
+                    <Icon className='text-[22px]' name={reason.icon} />
+                  </span>
+                  <span>
+                    <span className='block font-semibold text-on-surface'>{t(`home.reasons.${reason.id}.title`)}</span>
+                    <span className='mt-0.5 block text-sm leading-6 text-on-surface-variant'>
+                      {t(`home.reasons.${reason.id}.description`)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section aria-labelledby='home-trust-title' className='border-t border-outline-variant bg-brand-50/60'>
         <div className={`${container} py-12`}>
           <h2 className='text-2xl font-bold text-on-surface' id='home-trust-title'>
@@ -130,15 +181,6 @@ export function HomePage({ audience = 'public' }: { audience?: 'public' | 'custo
                   <span className='mt-1 block text-sm leading-6 text-on-surface-variant'>
                     {t(`customer.home.trust.${item.id}.description`)}
                   </span>
-                  {item.id === 'support' ? (
-                    <a
-                      className='mt-2 inline-flex items-center gap-1.5 font-semibold text-primary tabular-nums hover:underline'
-                      href={`tel:${t('customer.nav.hotlineNumber').replace(/\s/g, '')}`}
-                    >
-                      <Icon className='text-lg' name='call' />
-                      {t('customer.nav.hotlineNumber')}
-                    </a>
-                  ) : null}
                 </span>
               </li>
             ))}

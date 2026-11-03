@@ -6,12 +6,18 @@ import {
 } from '~/shared/api/generated/api/catalog-item/catalog-item'
 import { getCenterOffering, listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
 import { createCenterOffering, updateCenterOffering } from '~/shared/api/generated/api/center-offering/center-offering'
-import { createPricePlan, listPricePlans, updatePricePlan } from '~/shared/api/generated/api/price-plan/price-plan'
+import {
+  createPricePlan,
+  listPricePlans,
+  updatePricePlan,
+  updatePricePlansBatch
+} from '~/shared/api/generated/api/price-plan/price-plan'
 import type {
   CatalogItemRecord,
   CatalogItemRequest,
   CenterOfferingRecord,
   CenterOfferingRequest,
+  PricePlanBatchUpdateRequest,
   PricePlanRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
@@ -93,4 +99,8 @@ export async function createOfferingPricePlan(request: PricePlanRequest) {
 }
 export async function saveOfferingPricePlan(id: string, request: PricePlanRequest) {
   return result(await updatePricePlan(id, request, await writeOptions()))
+}
+/** All or nothing: one stale or invalid plan rejects the whole batch. */
+export async function saveOfferingPricePlans(request: PricePlanBatchUpdateRequest) {
+  return result(await updatePricePlansBatch(request, await writeOptions()))
 }

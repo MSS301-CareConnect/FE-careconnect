@@ -15,6 +15,7 @@ import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
 import { Rating } from '~/shared/ui/rating'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
+import { planPrice } from '~/entities/care-catalog/price-plan-price'
 
 const key = 'customer.home' as const
 const RECENT: ListBookingsParams = { page: 0, size: 20 }
@@ -246,7 +247,7 @@ function FeaturedServices() {
               const group = serviceCategoryGroup(offering.catalogItem.category)
               const cheapest = [...(plans[index]?.data ?? [])]
                 .filter((plan) => plan.isActive !== false)
-                .sort((a, b) => a.basePrice - b.basePrice)[0]
+                .sort((a, b) => planPrice(a).finalPrice - planPrice(b).finalPrice)[0]
               return (
                 <Link
                   className='cc-lift flex flex-col rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 hover:border-brand-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
@@ -261,7 +262,7 @@ function FeaturedServices() {
                   <span className='mt-auto pt-3 text-sm font-medium text-on-surface tabular-nums'>
                     {cheapest
                       ? t(`${key}.featuredServices.from`, {
-                          price: format.money(cheapest.basePrice),
+                          price: format.money(planPrice(cheapest).finalPrice),
                           unit: t(`${key}.priceUnit.${cheapest.pricingUnit}`)
                         })
                       : null}

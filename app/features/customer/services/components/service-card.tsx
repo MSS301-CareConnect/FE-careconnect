@@ -7,6 +7,7 @@ import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
 
 import type { CustomerService } from '../services-data'
+import { planPrice } from '~/entities/care-catalog/price-plan-price'
 
 const key = 'customer.services' as const
 const primaryLink =
@@ -21,7 +22,9 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
   const format = useFormat()
   const group = serviceCategoryGroup(service.category)
   const cheapest = service.plans[0]
-  const samePrice = service.plans.every((plan) => plan.basePrice === cheapest?.basePrice)
+  const samePrice = service.plans.every(
+    (plan) => cheapest && planPrice(plan).finalPrice === planPrice(cheapest).finalPrice
+  )
   const detailsTo = service.center ? `/customer/services/${service.id}` : undefined
 
   return (
@@ -57,10 +60,10 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
             <span className='text-base font-semibold text-on-surface tabular-nums'>
               {samePrice
                 ? t(`${key}.card.price`, {
-                    price: format.money(cheapest.basePrice),
+                    price: format.money(planPrice(cheapest).finalPrice),
                     unit: t(`${key}.priceUnit.${cheapest.pricingUnit}`)
                   })
-                : t(`${key}.card.fromPrice`, { price: format.money(cheapest.basePrice) })}
+                : t(`${key}.card.fromPrice`, { price: format.money(planPrice(cheapest).finalPrice) })}
             </span>
             {samePrice && cheapest.durationMinutes ? (
               <span className='block text-on-surface-variant'>
@@ -100,10 +103,20 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
               </Link>
             </>
           ) : (
-            <button className={`${primaryLink} w-full justify-center`} onClick={openCenterPicker} type='button'>
-              <Icon className='text-lg' name='home_health' />
-              {t(`${key}.card.chooseCenter`)}
-            </button>
+            <div className='flex w-full flex-col gap-2'>
+              <button className={`${primaryLink} justify-center`} onClick={openCenterPicker} type='button'>
+                <Icon className='text-lg' name='home_health' />
+                {t(`${key}.card.chooseCenter`)}
+              </button>
+              {/* All-centers mode has no prices: comparing the centers is the other way forward. */}
+              <Link
+                className='inline-flex min-h-10 items-center justify-center gap-1 rounded-lg text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+                to='/customer/centers'
+              >
+                {t('customer.centerPicker.compare')}
+                <Icon aria-hidden='true' className='text-base' name='arrow_forward' />
+              </Link>
+            </div>
           )}
         </div>
       </div>

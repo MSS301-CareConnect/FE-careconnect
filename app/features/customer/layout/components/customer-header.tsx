@@ -31,6 +31,7 @@ export function CustomerHeader() {
     { to: homePath, label: t('customer.nav.home'), end: true },
     { to: '/customer/caregivers', label: t('customer.nav.caregivers'), end: false },
     { to: '/customer/services', label: t('customer.nav.services'), end: false },
+    { to: '/customer/centers', label: t('customer.nav.centers'), end: false },
     ...(isCustomer ? [{ to: '/customer/bookings', label: t('customer.nav.bookings'), end: false }] : [])
   ]
   const [menuOpen, setMenuOpen] = useState(false)
@@ -186,6 +187,11 @@ export function CustomerHeader() {
             </>
           ) : (
             <>
+              {/* The center directory is public, so visitors see and switch the center scope too (phones use the
+                  Centers tab of the bottom navigation to keep the header to one row). */}
+              <div className='hidden sm:block'>
+                <CenterChip />
+              </div>
               <LanguageSwitch />
               <Link
                 className='inline-flex min-h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'

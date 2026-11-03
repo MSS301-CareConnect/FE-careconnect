@@ -3,6 +3,7 @@ import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/
 /** Statuses the customer can still cancel from (spec §11); the backend decides the refund. */
 export const CANCELLABLE: ReadonlySet<BookingStatus> = new Set([
   'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_CONFIRMATION',
   'PENDING_CAREGIVER_ASSIGNMENT',
   'AWAITING_INITIAL_PAYMENT',
   'CONFIRMED',
@@ -26,6 +27,7 @@ export function lifecyclePosition(
 ): { current: LifecycleStep | 'finished'; dueAt?: string } | null {
   switch (booking.status) {
     case 'PENDING_CENTER_CONFIRMATION':
+    case 'PENDING_CAREGIVER_CONFIRMATION':
       return { current: 'confirm', dueAt: booking.acceptanceDueAt }
     case 'PENDING_CAREGIVER_ASSIGNMENT':
       return { current: 'assign', dueAt: booking.assignmentDueAt }

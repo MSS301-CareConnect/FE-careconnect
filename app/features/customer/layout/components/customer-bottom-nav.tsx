@@ -4,7 +4,10 @@ import { NavLink } from 'react-router'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { Icon } from '~/shared/ui/icon'
 
-/** Phone navigation (below `lg`): Home · Search · Book · Bookings · Account, each ≥ 44 px tall. */
+/**
+ * Phone navigation (below `lg`), each item ≥ 44 px tall: Home · Search · Book · Bookings · Account for customers, and
+ * Home · Search · Services · Centers for visitors (customers reach centers from the header center menu).
+ */
 export function CustomerBottomNav() {
   const { t } = useTranslation()
   const authUser = useAuthUser()
@@ -20,7 +23,8 @@ export function CustomerBottomNav() {
     : [
         { to: '/', icon: 'home', label: t('customer.nav.home'), end: true },
         { to: '/customer/caregivers', icon: 'search', label: t('customer.nav.search'), end: false },
-        { to: '/customer/services', icon: 'medical_services', label: t('customer.nav.services'), end: false }
+        { to: '/customer/services', icon: 'medical_services', label: t('customer.nav.services'), end: false },
+        { to: '/customer/centers', icon: 'home_health', label: t('customer.nav.centers'), end: false }
       ]
 
   return (

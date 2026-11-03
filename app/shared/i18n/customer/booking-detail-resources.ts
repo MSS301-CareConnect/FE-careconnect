@@ -58,6 +58,10 @@ export const bookingDetailEn = {
       title: 'Waiting for the center to confirm',
       body: 'The center reviews your request. It must answer by {{acceptanceDue}}.'
     },
+    PENDING_CAREGIVER_CONFIRMATION: {
+      title: 'Waiting for your caregiver',
+      body: 'The caregiver you chose answers your request directly, by {{acceptanceDue}}. If they cannot take it, the center assigns someone else.'
+    },
     PENDING_CAREGIVER_ASSIGNMENT: {
       title: 'The center is assigning a caregiver',
       body: 'The center confirmed and must assign a caregiver by {{assignmentDue}}. You pay only once a caregiver is assigned.'
@@ -171,6 +175,10 @@ export const bookingDetailVi = {
     PENDING_CENTER_CONFIRMATION: {
       title: 'Đang chờ trung tâm xác nhận',
       body: 'Trung tâm xem yêu cầu của bạn. Hạn trả lời: {{acceptanceDue}}.'
+    },
+    PENDING_CAREGIVER_CONFIRMATION: {
+      title: 'Đang chờ người chăm sóc nhận lịch',
+      body: 'Người chăm sóc bạn chọn sẽ trả lời trực tiếp trước {{acceptanceDue}}. Nếu họ không nhận được, trung tâm sẽ phân người khác.'
     },
     PENDING_CAREGIVER_ASSIGNMENT: {
       title: 'Trung tâm đang phân công người chăm sóc',

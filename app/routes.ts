@@ -54,6 +54,8 @@ export default [
       route('time-off', 'routes/caregiver/time-off.tsx'),
       route('visits', 'routes/caregiver/visits.tsx'),
       route('visits/:id', 'routes/caregiver/visit-detail.tsx'),
+      route('requests', 'routes/caregiver/requests.tsx'),
+      route('earnings', 'routes/caregiver/earnings.tsx'),
       route('profile', 'routes/caregiver/profile.tsx'),
       route('security', 'routes/caregiver/security.tsx')
     ])
@@ -63,7 +65,9 @@ export default [
       route('caregivers', 'routes/customer/caregivers.tsx'),
       route('services', 'routes/customer/services.tsx'),
       route('services/:offeringId', 'routes/customer/service-detail.tsx'),
-      route('caregivers/:caregiverId', 'routes/customer/caregiver-profile.tsx')
+      route('caregivers/:caregiverId', 'routes/customer/caregiver-profile.tsx'),
+      route('centers', 'routes/customer/centers.tsx'),
+      route('centers/:centerId', 'routes/customer/center-detail.tsx')
     ]),
     layout('routes/customer/layout.tsx', [
       index('routes/customer/index.tsx'),

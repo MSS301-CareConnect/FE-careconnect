@@ -75,14 +75,15 @@ The Customer portal has its own guarded index at `/customer`. It renders the sam
 landing-page content as the public `/` route, with a bookings action in place of
 account registration. The Customer header shares the public landing page's visual
 style while retaining portal links, language selection, account access, and sign-out.
-The shared site footer adapts its account links to the signed-in Customer portal.
+The shared site footer (a deep brand band since CR-5, 2026-11-03, the only place with the support hotline) adapts its
+account links to the signed-in Customer portal.
 The Customer header and in-portal home breadcrumbs point to `/customer`; the account
 menu contains personal info, family profiles, payments, invitations, the language switch and
 sign-out. Family profiles are reached from that menu rather than the header navigation.
 The customer portal was redesigned on 2026-11-03 (`docs/2026-11-03-CUSTOMER_UI_REDESIGN_PROGRESS.md`): its theme is
 scoped by `.theme-customer` in `app.css` (Be Vietnam Pro, brand scale `--color-brand-50…900`, two shadows, `cc-*`
 motion classes that keep only fades under reduced motion), pages use `PageHeader` + `pageContainer` (1200 px), and the
-header is 64 px sticky with Home · Caregivers · Services · Bookings (badge of bookings awaiting payment), "Book care", the
+header is 64 px sticky with Home · Caregivers · Services · Centers · Bookings (badge of bookings awaiting payment), "Book care", the
 center chip, the notification bell (which also pins pending profile invitations) and the account menu; phones get a
 bottom navigation. `/customer/my-profile`, `/customer/patient-profiles`, `/customer/patient-profiles/:id`,
 `/customer/payments` and `/customer/invitations` share an account shell (`routes/customer/account-layout.tsx` →
@@ -102,11 +103,28 @@ page uses the same Customer layout so the selector appears from the first visit.
 `entities/care-center` lists ACTIVE centers through ProviderService's customer endpoint
 `GET /v1/care-centers/public` (up to five pages of 100) and reads the chosen center's current
 name through `GET /v1/care-centers/public/{centerId}`; a 404 there clears the choice. Both
-endpoints still require a signed-in session. The chosen
+endpoints are public since CR-6 (2026-11-03: `@SecurityRequirements({})`, ProviderService `PUBLIC_GET_ENDPOINTS`, gateway
+`PUBLIC_GET_ENDPOINTS`, GET only, no token read). The chosen
 center is a per-browser preference in `localStorage` (only its ID and name) shared through
 a small external store; a dialog opens once per browser session while no center is chosen,
-and any "choose a center" action reopens it. A 401 on the center list shows a sign-in step
-instead of an error. Null means the platform-wide configuration.
+and any "choose a center" action reopens it. Until the BE change is deployed a visitor's 401 on the center list shows a
+sign-in step instead of an error (a signed-in customer's 401 keeps the retry). Null means "All centers", the
+platform-wide configuration; otherwise the chip shows the chosen center. The chip renders for visitors too (from `sm`).
+Only an explicit choice changes the selection: the chip, the dialog and "Choose this center" on the center pages go
+through `entities/care-center/use-choose-center.ts`, which rescopes the lists in place and shows an info toast
+("Now viewing X"); opening a caregiver, service or center of another center never changes it. The picker links to the
+center directory ("See all centers").
+
+`/customer/centers` and `/customer/centers/:centerId` (browse layout, no guard; `features/customer/centers`) are the
+public center directory: the list searches name and address without diacritics (`?q=`) and shows photo, address, hours,
+phone, starting price and service count with "View center" and "Choose this center"; the detail page has "Choose this
+center" / "Selected", "Book care" (`/customer/booking?center=<id>`), the center's services with prices
+(`entities/care-catalog/center-services.ts`, shared with the services page), up to six caregivers from the provider
+catalog filtered by `centerId`, and a deposit and refund summary from `GET /center-booking-policies/{centerId}`. The
+services, caregivers and policy requests still need a session, so each section shows a sign-in hint on 401. Header
+navigation has "Centers"; the visitor phone navigation adds it as a fourth tab (the customer bar is full and reaches
+centers through the header menu). In "All centers" mode caregiver cards carry a center badge, and service cards (catalog
+items without prices) offer "Choose a center" and "Compare centers".
 
 Customer `/customer/services` follows that choice. With a center it reads the center's
 offerings and price plans through `entities/care-catalog`, showing only active offerings
@@ -754,6 +772,16 @@ Contract update workflow:
   overlapping ones before BookingService checks again. The retried submit keeps its Idempotency-Key. The sidebar shows
   the quote's initial-payment percent and amount from the center booking policy (`GET /center-booking-policies/{id}`);
   no rate is fixed in the browser.
+- Booking change request v2 (2026-11-03, `BE/docs/2026-11-03-BOOKING_CHANGE_REQUEST_V2.md`): RECURRING builds an
+  editable visit list from its pattern (`features/customer/booking/hooks/schedule-slots.ts`, `schedule-rule-fields`,
+  `schedule-slot-list`); once edited it sends `slots` with the pattern and a pattern change no longer rebuilds it.
+  CUSTOM has a collapsible quick add that appends a daily / weekly pattern, skipping overlapping visits. Switching the
+  header center while the form is open moves the form to that center and clears its choices. A booking with a chosen
+  caregiver waits in `PENDING_CAREGIVER_CONFIRMATION`: the caregiver answers on `/caregiver/requests` (accept, or decline
+  with a reason — RECURRING / CUSTOM then go to the center); the manager only sees the deadline and can reject.
+  `entities/booking/service-address-dialog.tsx` (customer "⋯" menu and manager detail) changes the care address of the
+  upcoming visits (`PATCH /bookings/{id}/service-address`). Kept deposits belong to the visit caregiver
+  (`/caregiver/earnings`, `GET /deposit-forfeitures`); the manager revenue panel splits them from center revenue.
 - The Center Manager booking detail confirms a RECURRING / CUSTOM booking without a caregiver
   (PENDING_CAREGIVER_ASSIGNMENT) and assigns one later before the policy deadline; the customer pays only after that.
   Once paid (CONFIRMED / IN_PROGRESS) the manager also cancels a single upcoming visit (`occurrenceIds`, full refund of

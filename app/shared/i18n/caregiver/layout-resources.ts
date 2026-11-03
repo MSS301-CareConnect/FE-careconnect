@@ -15,7 +15,10 @@ export const caregiverLayoutEn = {
     close: 'Close menu',
     collapse: 'Collapse sidebar',
     expand: 'Expand sidebar',
-    toAccept: '{{count}} visits to accept'
+    toAccept: '{{count}} visits to accept',
+    requests: 'Requests',
+    requestsWaiting: '{{count}} booking requests waiting',
+    earnings: 'Kept deposits'
   },
   identity: {
     role: 'Caregiver'
@@ -44,7 +47,10 @@ export const caregiverLayoutVi = {
     close: 'Đóng menu',
     collapse: 'Thu gọn thanh bên',
     expand: 'Mở rộng thanh bên',
-    toAccept: '{{count}} buổi cần nhận'
+    toAccept: '{{count}} buổi cần nhận',
+    requests: 'Yêu cầu',
+    requestsWaiting: '{{count}} yêu cầu đặt lịch đang chờ',
+    earnings: 'Tiền cọc được hưởng'
   },
   identity: {
     role: 'Điều dưỡng viên'

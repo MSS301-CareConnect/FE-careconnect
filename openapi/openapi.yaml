@@ -38,6 +38,8 @@ tags:
     description: PaymentService platform policy in effect for a center (C2.1).
   - name: Refund
     description: PaymentService refunds; customers read their own refund history.
+  - name: DepositForfeiture
+    description: PaymentService ledger of deposits kept from customers (late cancellation, overdue balance) — the occurrence caregiver gets it, the center when none is assigned (CR-4).
   - name: RemainingInvoice
     description: PaymentService remaining-balance invoices issued after a booking completes.
 paths:
@@ -2706,6 +2708,39 @@ paths:
           description: CareCatalogService error
         '503':
           description: CareCatalogService error
+  /v1/price-plans/batch:
+    put:
+      tags:
+        - PricePlan
+      summary: CENTER_MANAGER sửa nhiều gói giá cùng lúc (tất cả hoặc không gói nào)
+      operationId: updatePricePlansBatch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricePlanBatchUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePlanListResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
   /v1/price-plans/{id}:
     get:
       tags:
@@ -4511,6 +4546,160 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BookingCancelRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetailResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/bookings/caregiver-requests:
+    get:
+      tags:
+        - Booking
+      summary: CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area only, no care profile)
+      operationId: listCaregiverBookingRequests
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverBookingRequestPageResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/bookings/{id}/caregiver-accept:
+    post:
+      tags:
+        - Booking
+      summary: CAREGIVER chosen by the customer accepts a PENDING_CAREGIVER_CONFIRMATION booking → AWAITING_INITIAL_PAYMENT (CR-3)
+      operationId: acceptBookingAsCaregiver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverBookingRequestResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/bookings/{id}/caregiver-decline:
+    post:
+      tags:
+        - Booking
+      summary: CAREGIVER declines — SHIFT → REJECTED, RECURRING / CUSTOM → PENDING_CAREGIVER_ASSIGNMENT for the center (CR-3)
+      operationId: declineBookingAsCaregiver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverBookingRequestResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/bookings/{id}/service-address:
+    patch:
+      tags:
+        - Booking
+      summary: CUSTOMER (own booking) or CENTER_MANAGER (own center) changes the care address of every upcoming occurrence (CR-2; 409 5115 while a visit is in progress or nothing is upcoming)
+      operationId: updateBookingServiceAddress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAddressRequest'
         required: true
       responses:
         '200':
@@ -6889,6 +7078,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefundPageResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/deposit-forfeitures:
+    get:
+      tags:
+        - DepositForfeiture
+      summary: Deposit money kept from customers per occurrence (CR-4) — CAREGIVER own share, CENTER_MANAGER own center, ADMIN all
+      operationId: listDepositForfeitures
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: centerId
+          in: query
+          required: false
+          description: ADMIN only; a center manager reads the center of the token, a caregiver only their own share
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositForfeiturePageResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/deposit-forfeitures/summary:
+    get:
+      tags:
+        - DepositForfeiture
+      summary: Totals of kept deposits by beneficiary (CR-4); a caregiver gets only their own amount
+      operationId: getDepositForfeitureSummary
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: centerId
+          in: query
+          required: false
+          description: ADMIN only; a center manager reads the center of the token, a caregiver only their own share
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositForfeitureSummaryResponse'
         '400':
           description: PaymentService error
         '401':
@@ -9758,6 +10049,11 @@ components:
           enum:
             - ACTIVE
             - INACTIVE
+        pricePlans:
+          type: array
+          description: Present when browsing a center's offerings (managers see every plan, customers active ones).
+          items:
+            $ref: '#/components/schemas/PricePlanRecord'
     PricePlanRecord:
       type: object
       required:
@@ -9791,6 +10087,14 @@ components:
           format: int32
         basePrice:
           type: number
+          description: Original (list) price before the plan discount.
+        discountPercent:
+          type: integer
+          format: int32
+          description: CAT-03 — whole percent 0–90 taken off basePrice.
+        finalPrice:
+          type: number
+          description: Price the customer pays — basePrice × (100 − discountPercent) / 100, rounded to the dong.
         isActive:
           type: boolean
     ServiceQuoteRecord:
@@ -9820,6 +10124,11 @@ components:
           type: integer
           format: int32
         basePrice:
+          type: number
+        discountPercent:
+          type: integer
+          format: int32
+        finalPrice:
           type: number
         active:
           type: boolean
@@ -9996,9 +10305,68 @@ components:
           enum:
             - ACTIVE
             - INACTIVE
+        pricePlans:
+          type: array
+          maxItems: 20
+          description: Create only — price plans created with the offering in one transaction.
+          items:
+            $ref: '#/components/schemas/PricePlanDraft'
       required:
         - catalogItemId
         - status
+    PricePlanDraft:
+      type: object
+      properties:
+        planName:
+          type: string
+          minLength: 1
+        pricingUnit:
+          type: string
+          enum:
+            - HOUR
+            - DAY
+            - SHIFT
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 1
+        basePrice:
+          type: number
+          minimum: 0
+        discountPercent:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 90
+        isActive:
+          type: boolean
+      required:
+        - basePrice
+        - durationMinutes
+        - planName
+        - pricingUnit
+    PricePlanBatchUpdateRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/PricePlanBatchItem'
+      required:
+        - items
+    PricePlanBatchItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        plan:
+          $ref: '#/components/schemas/PricePlanRequest'
+      required:
+        - id
+        - plan
     PricePlanRequest:
       type: object
       properties:
@@ -10025,6 +10393,12 @@ components:
         basePrice:
           type: number
           minimum: 0
+        discountPercent:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 90
+          description: Omitted on update keeps the stored discount; omitted on create means 0.
         isActive:
           type: boolean
       required:
@@ -11177,6 +11551,7 @@ components:
       type: string
       enum:
         - PENDING_CENTER_CONFIRMATION
+        - PENDING_CAREGIVER_CONFIRMATION
         - PENDING_CAREGIVER_ASSIGNMENT
         - AWAITING_INITIAL_PAYMENT
         - CONFIRMED
@@ -11288,6 +11663,9 @@ components:
         - OUTBOX_FAILED
         - NO_SHOW_AUTO_ACCEPTED
         - SESSION_AUTO_CLOSED
+        - CAREGIVER_REQUEST
+        - BOOKING_HANDED_OVER
+        - BOOKING_ADDRESS_CHANGED
     OutboxStatus:
       type: string
       enum:
@@ -12331,6 +12709,12 @@ components:
           format: uuid
         reason:
           type: string
+        oldValue:
+          type: string
+          description: SERVICE_ADDRESS_CHANGED — previous care address (CR-2)
+        newValue:
+          type: string
+          description: SERVICE_ADDRESS_CHANGED — new care address (CR-2)
         changedAt:
           type: string
           format: date-time
@@ -12348,9 +12732,27 @@ components:
           type: number
         unitsPerOccurrence:
           type: number
+          description: Units of one visit; absent when the visits last differently (HOUR plans)
+        quantity:
+          type: number
+          description: Units of every visit together (hours for HOUR plans)
+        unitGroups:
+          type: array
+          description: Visits grouped by their units (e.g. 2 hours × 14 visits, 3 hours × 1 visit), shortest first, each with its amount
+          items:
+            $ref: '#/components/schemas/BookingQuoteUnitGroupRecord'
         occurrenceCount:
           type: integer
         lineTotal:
+          type: number
+    BookingQuoteUnitGroupRecord:
+      type: object
+      properties:
+        unitsPerOccurrence:
+          type: number
+        occurrenceCount:
+          type: integer
+        amount:
           type: number
     BookingQuoteOccurrenceRecord:
       type: object
@@ -14035,11 +14437,264 @@ components:
           type: number
         totalRefunded:
           type: number
+        caregiverForfeitAmount:
+          type: number
+          description: Kept deposits that belong to the occurrence caregivers (CR-4), not center revenue
+        centerForfeitAmount:
+          type: number
+          description: Kept deposits of occurrences without a caregiver — part of center revenue (CR-4)
         totalRevenue:
           type: number
-          description: grossRevenue minus totalRefunded
+          description: grossRevenue minus totalRefunded minus caregiverForfeitAmount
         averagePayment:
           type: number
+    ServiceAddressRequest:
+      type: object
+      required:
+        - addressLine
+        - province
+      properties:
+        addressLine:
+          type: string
+          maxLength: 255
+        ward:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        province:
+          type: string
+          maxLength: 100
+        note:
+          type: string
+          maxLength: 500
+          description: Optional note for the center and caregiver
+    CaregiverBookingRequestRecord:
+      type: object
+      required:
+        - id
+        - bookingCode
+        - status
+        - bookingType
+        - centerId
+        - startDate
+        - endDate
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingCode:
+          type: string
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        bookingType:
+          $ref: '#/components/schemas/BookingType'
+        recurrenceFrequency:
+          $ref: '#/components/schemas/BookingRecurrenceFrequency'
+        centerId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          example: '08:00:00'
+        endTime:
+          type: string
+          example: '10:00:00'
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+        recipientAge:
+          type: integer
+        recipientGender:
+          type: string
+        ward:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        customerNote:
+          type: string
+        totalAmount:
+          type: number
+        acceptanceDueAt:
+          type: string
+          format: date-time
+          description: Answer before this time; afterwards RECURRING / CUSTOM go to the center, SHIFT expires
+        createdAt:
+          type: string
+          format: date-time
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingItemRecord'
+        occurrences:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingOccurrenceRecord'
+    CaregiverBookingRequestPage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaregiverBookingRequestRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    CaregiverBookingRequestResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CaregiverBookingRequestRecord'
+    CaregiverBookingRequestPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CaregiverBookingRequestPage'
+    ForfeitureBeneficiary:
+      type: string
+      enum:
+        - CENTER
+        - CAREGIVER
+    DepositForfeitureRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - centerId
+        - occurrenceId
+        - occurrenceStartAt
+        - amount
+        - beneficiary
+        - reason
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        occurrenceId:
+          type: string
+          format: uuid
+        occurrenceStartAt:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        beneficiary:
+          $ref: '#/components/schemas/ForfeitureBeneficiary'
+        caregiverId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          description: RefundReason — CUSTOMER_CANCEL (late cancellation) or PAYMENT_OVERDUE
+        rule:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    DepositForfeiturePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepositForfeitureRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    DepositForfeiturePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/DepositForfeiturePage'
+    DepositForfeitureSummaryRecord:
+      type: object
+      required:
+        - centerAmount
+        - caregiverAmount
+        - totalAmount
+      properties:
+        centerAmount:
+          type: number
+        caregiverAmount:
+          type: number
+        totalAmount:
+          type: number
+    DepositForfeitureSummaryResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/DepositForfeitureSummaryRecord'
     RevenueResponse:
       type: object
       required:

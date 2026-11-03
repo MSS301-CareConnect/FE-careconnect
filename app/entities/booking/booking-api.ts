@@ -1,5 +1,9 @@
 import {
   acceptBooking,
+  acceptBookingAsCaregiver,
+  declineBookingAsCaregiver,
+  listCaregiverBookingRequests,
+  updateBookingServiceAddress,
   cancelBooking,
   createBooking,
   getBooking,
@@ -42,7 +46,8 @@ import type {
   ListBookingHeldSchedulesParams,
   ListBookingsParams,
   ListMyBookingOccurrencesParams,
-  NoShowDecisionRequest
+  NoShowDecisionRequest,
+  ServiceAddressRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 
@@ -84,7 +89,8 @@ export const bookingKeys = {
   occurrence: (id: string) => ['booking', 'occurrence', id] as const,
   session: (id: string) => ['booking', 'session', id] as const,
   heldSchedules: (params: ListBookingHeldSchedulesParams) => ['booking', 'held-schedules', params] as const,
-  centerPolicy: (centerId: string) => ['booking', 'center-policy', centerId] as const
+  centerPolicy: (centerId: string) => ['booking', 'center-policy', centerId] as const,
+  caregiverRequests: (page: number) => ['booking', 'caregiver-requests', page] as const
 }
 
 export async function fetchBookings(params: ListBookingsParams = {}) {
@@ -152,6 +158,21 @@ export async function assignBookingCaregiver(id: string, caregiverId: string) {
 }
 export async function assignOccurrenceCaregiver(id: string, occurrenceId: string, caregiverId: string) {
   return result(await updateBookingOccurrenceCaregiver(id, occurrenceId, { caregiverId }, await writeOptions()))
+}
+
+/** CR-2: the customer (own booking) or the center moves every upcoming visit to a new care address. */
+export async function updateServiceAddressRequest(id: string, request: ServiceAddressRequest) {
+  return result(await updateBookingServiceAddress(id, request, await writeOptions()))
+}
+/** CR-3: bookings a customer sent straight to this caregiver, waiting for an answer (area only, no care profile). */
+export async function fetchCaregiverBookingRequests(page = 0) {
+  return result(await listCaregiverBookingRequests({ page, size: 50 }, readOptions))
+}
+export async function acceptAsCaregiverRequest(id: string) {
+  return result(await acceptBookingAsCaregiver(id, await writeOptions()))
+}
+export async function declineAsCaregiverRequest(id: string, reason: string) {
+  return result(await declineBookingAsCaregiver(id, { reason }, await writeOptions()))
 }
 
 export async function fetchMyOccurrences(params: ListMyBookingOccurrencesParams = {}) {

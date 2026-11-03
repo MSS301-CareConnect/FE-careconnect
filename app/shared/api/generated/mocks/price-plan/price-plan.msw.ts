@@ -15,11 +15,13 @@ import {
   getDeletePricePlanResponseMock,
   getGetPricePlanResponseMock,
   getListPricePlansResponseMock,
-  getUpdatePricePlanResponseMock
+  getUpdatePricePlanResponseMock,
+  getUpdatePricePlansBatchResponseMock
 } from './price-plan.faker'
 
 export {
   getCreatePricePlanResponseMock,
+  getUpdatePricePlansBatchResponseMock,
   getGetPricePlanResponseMock,
   getUpdatePricePlanResponseMock,
   getDeletePricePlanResponseMock,
@@ -43,6 +45,30 @@ export const getCreatePricePlanMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getCreatePricePlanResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdatePricePlansBatchMockHandler = (
+  overrideResponse?:
+    | PricePlanListResponse
+    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<PricePlanListResponse> | PricePlanListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/v1/price-plans/batch',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdatePricePlansBatchResponseMock(),
         { status: 200 }
       )
     },
@@ -147,6 +173,7 @@ export const getListPricePlansMockHandler = (
 }
 export const getPricePlanMock = () => [
   getCreatePricePlanMockHandler(),
+  getUpdatePricePlansBatchMockHandler(),
   getGetPricePlanMockHandler(),
   getUpdatePricePlanMockHandler(),
   getDeletePricePlanMockHandler(),

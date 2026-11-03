@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { CatalogItemRecord } from '../catalogItemRecord'
+import type { PricePlanRecord } from '../pricePlanRecord'
 import type { CenterOfferingRecordStatus } from './centerOfferingRecordStatus'
 
 export interface CenterOfferingRecord {
@@ -16,4 +17,6 @@ export interface CenterOfferingRecord {
   centerId: string
   description?: string
   status: CenterOfferingRecordStatus
+  /** Present when browsing a center's offerings (managers see every plan, customers active ones). */
+  pricePlans?: PricePlanRecord[]
 }

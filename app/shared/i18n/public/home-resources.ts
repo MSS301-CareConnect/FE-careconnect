@@ -25,17 +25,10 @@ export const publicHomeEn = {
   reasonsEyebrow: 'Built for families',
   reasonsPhotoAlt: 'A woman gently holds her older family member’s hands at home',
   reasonsTitle: 'Make each care decision with more clarity.',
-  reasonsDescription: 'CareConnect brings the details you need into one place, so you can focus on finding a good fit.',
   reasons: {
-    profiles: {
-      title: 'Caregiver profiles',
-      description: 'Read about experience, qualifications, certifications, and reviews.'
-    },
-    schedule: {
-      title: 'Flexible booking',
-      description: 'Plan a care session around your schedule, by the hour or by the day.'
-    },
-    family: { title: 'Care information', description: 'Keep care sessions and reports in view from your account.' }
+    profiles: { title: 'Profiles you can check', description: 'Experience, certificates and reviews in one place.' },
+    schedule: { title: 'Flexible booking', description: 'By the hour, by the day or by the shift.' },
+    family: { title: 'Care you can follow', description: 'Visits and care reports stay in your account.' }
   },
   footer: 'Care that stays close to home.',
   footerExplore: 'Explore',
@@ -67,20 +60,10 @@ export const publicHomeVi = {
   reasonsEyebrow: 'Dành cho gia đình',
   reasonsPhotoAlt: 'Một người phụ nữ nắm tay người thân lớn tuổi tại nhà',
   reasonsTitle: 'Mỗi quyết định chăm sóc đều cần sự rõ ràng.',
-  reasonsDescription: 'CareConnect tập hợp những thông tin cần thiết để gia đình dễ chọn người phù hợp.',
   reasons: {
-    profiles: {
-      title: 'Hồ sơ người chăm sóc',
-      description: 'Xem kinh nghiệm, trình độ, chứng chỉ và đánh giá trong một nơi.'
-    },
-    schedule: {
-      title: 'Lịch chăm sóc linh hoạt',
-      description: 'Sắp xếp buổi chăm sóc theo giờ hoặc theo ngày phù hợp với gia đình.'
-    },
-    family: {
-      title: 'Thông tin chăm sóc',
-      description: 'Theo dõi lịch đã đặt và báo cáo chăm sóc trong tài khoản của bạn.'
-    }
+    profiles: { title: 'Hồ sơ rõ ràng', description: 'Kinh nghiệm, chứng chỉ và đánh giá ở cùng một nơi.' },
+    schedule: { title: 'Đặt lịch linh hoạt', description: 'Theo giờ, theo ngày hoặc theo ca.' },
+    family: { title: 'Theo dõi dễ dàng', description: 'Lịch chăm sóc và báo cáo luôn trong tài khoản của bạn.' }
   },
   footer: 'Chăm sóc gần hơn với mỗi gia đình.',
   footerExplore: 'Khám phá',

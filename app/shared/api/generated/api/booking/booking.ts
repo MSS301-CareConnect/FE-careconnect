@@ -36,11 +36,15 @@ import type {
   CancellationPreviewRequest,
   CancellationPreviewResponse,
   CaregiverAssignRequest,
+  CaregiverBookingRequestPageResponse,
+  CaregiverBookingRequestResponse,
   ListBookingHeldSchedulesParams,
   ListBookingHistoryParams,
   ListBookingOccurrencesParams,
   ListBookingsParams,
-  ReasonRequest
+  ListCaregiverBookingRequestsParams,
+  ReasonRequest,
+  ServiceAddressRequest
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -1612,6 +1616,647 @@ export const useCancelBooking = <TError = globalThis.Error & { info?: void; stat
   TContext
 > => {
   return useMutation(getCancelBookingMutationOptions(options), queryClient)
+}
+export type listCaregiverBookingRequestsResponse200 = {
+  data: CaregiverBookingRequestPageResponse
+  status: 200
+}
+
+export type listCaregiverBookingRequestsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listCaregiverBookingRequestsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listCaregiverBookingRequestsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listCaregiverBookingRequestsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listCaregiverBookingRequestsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listCaregiverBookingRequestsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listCaregiverBookingRequestsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listCaregiverBookingRequestsResponseSuccess = listCaregiverBookingRequestsResponse200 & {
+  headers: Headers
+}
+export type listCaregiverBookingRequestsResponseError = (
+  | listCaregiverBookingRequestsResponse400
+  | listCaregiverBookingRequestsResponse401
+  | listCaregiverBookingRequestsResponse403
+  | listCaregiverBookingRequestsResponse404
+  | listCaregiverBookingRequestsResponse409
+  | listCaregiverBookingRequestsResponse500
+  | listCaregiverBookingRequestsResponse503
+) & {
+  headers: Headers
+}
+
+export const getListCaregiverBookingRequestsUrl = (params?: ListCaregiverBookingRequestsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/bookings/caregiver-requests?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/bookings/caregiver-requests`
+}
+
+/**
+ * @summary CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area only, no care profile)
+ */
+export const listCaregiverBookingRequests = async (
+  params?: ListCaregiverBookingRequestsParams,
+  options?: RequestInit
+): Promise<listCaregiverBookingRequestsResponseSuccess> => {
+  const res = await fetch(getListCaregiverBookingRequestsUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listCaregiverBookingRequestsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listCaregiverBookingRequestsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listCaregiverBookingRequestsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listCaregiverBookingRequestsResponseSuccess
+}
+
+export const getListCaregiverBookingRequestsQueryKey = (params?: ListCaregiverBookingRequestsParams) => {
+  return [`${env.API_BASE_URL}/v1/bookings/caregiver-requests`, ...(params ? [params] : [])] as const
+}
+
+export const getListCaregiverBookingRequestsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCaregiverBookingRequestsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCaregiverBookingRequests>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListCaregiverBookingRequestsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listCaregiverBookingRequests>>> = ({ signal }) =>
+    listCaregiverBookingRequests(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListCaregiverBookingRequestsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCaregiverBookingRequests>>
+>
+export type ListCaregiverBookingRequestsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListCaregiverBookingRequests<
+  TData = Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListCaregiverBookingRequestsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCaregiverBookingRequests>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+          TError,
+          Awaited<ReturnType<typeof listCaregiverBookingRequests>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCaregiverBookingRequests<
+  TData = Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCaregiverBookingRequestsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCaregiverBookingRequests>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+          TError,
+          Awaited<ReturnType<typeof listCaregiverBookingRequests>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCaregiverBookingRequests<
+  TData = Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCaregiverBookingRequestsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCaregiverBookingRequests>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area only, no care profile)
+ */
+
+export function useListCaregiverBookingRequests<
+  TData = Awaited<ReturnType<typeof listCaregiverBookingRequests>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCaregiverBookingRequestsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCaregiverBookingRequests>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListCaregiverBookingRequestsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type acceptBookingAsCaregiverResponse200 = {
+  data: CaregiverBookingRequestResponse
+  status: 200
+}
+
+export type acceptBookingAsCaregiverResponse400 = {
+  data: void
+  status: 400
+}
+
+export type acceptBookingAsCaregiverResponse401 = {
+  data: void
+  status: 401
+}
+
+export type acceptBookingAsCaregiverResponse403 = {
+  data: void
+  status: 403
+}
+
+export type acceptBookingAsCaregiverResponse404 = {
+  data: void
+  status: 404
+}
+
+export type acceptBookingAsCaregiverResponse409 = {
+  data: void
+  status: 409
+}
+
+export type acceptBookingAsCaregiverResponse500 = {
+  data: void
+  status: 500
+}
+
+export type acceptBookingAsCaregiverResponse503 = {
+  data: void
+  status: 503
+}
+
+export type acceptBookingAsCaregiverResponseSuccess = acceptBookingAsCaregiverResponse200 & {
+  headers: Headers
+}
+export type acceptBookingAsCaregiverResponseError = (
+  | acceptBookingAsCaregiverResponse400
+  | acceptBookingAsCaregiverResponse401
+  | acceptBookingAsCaregiverResponse403
+  | acceptBookingAsCaregiverResponse404
+  | acceptBookingAsCaregiverResponse409
+  | acceptBookingAsCaregiverResponse500
+  | acceptBookingAsCaregiverResponse503
+) & {
+  headers: Headers
+}
+
+export const getAcceptBookingAsCaregiverUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/bookings/${id}/caregiver-accept`
+}
+
+/**
+ * @summary CAREGIVER chosen by the customer accepts a PENDING_CAREGIVER_CONFIRMATION booking → AWAITING_INITIAL_PAYMENT (CR-3)
+ */
+export const acceptBookingAsCaregiver = async (
+  id: string,
+  options?: RequestInit
+): Promise<acceptBookingAsCaregiverResponseSuccess> => {
+  const res = await fetch(getAcceptBookingAsCaregiverUrl(id), {
+    ...options,
+    method: 'POST'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: acceptBookingAsCaregiverResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: acceptBookingAsCaregiverResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: acceptBookingAsCaregiverResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as acceptBookingAsCaregiverResponseSuccess
+}
+
+export const getAcceptBookingAsCaregiverMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof acceptBookingAsCaregiver>>, TError, { id: string }, TContext>
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof acceptBookingAsCaregiver>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['acceptBookingAsCaregiver']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof acceptBookingAsCaregiver>>, { id: string }> = (
+    props
+  ) => {
+    const { id } = props ?? {}
+
+    return acceptBookingAsCaregiver(id, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type AcceptBookingAsCaregiverMutationResult = NonNullable<Awaited<ReturnType<typeof acceptBookingAsCaregiver>>>
+
+export type AcceptBookingAsCaregiverMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CAREGIVER chosen by the customer accepts a PENDING_CAREGIVER_CONFIRMATION booking → AWAITING_INITIAL_PAYMENT (CR-3)
+ */
+export const useAcceptBookingAsCaregiver = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof acceptBookingAsCaregiver>>,
+      TError,
+      { id: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof acceptBookingAsCaregiver>>, TError, { id: string }, TContext> => {
+  return useMutation(getAcceptBookingAsCaregiverMutationOptions(options), queryClient)
+}
+export type declineBookingAsCaregiverResponse200 = {
+  data: CaregiverBookingRequestResponse
+  status: 200
+}
+
+export type declineBookingAsCaregiverResponse400 = {
+  data: void
+  status: 400
+}
+
+export type declineBookingAsCaregiverResponse401 = {
+  data: void
+  status: 401
+}
+
+export type declineBookingAsCaregiverResponse403 = {
+  data: void
+  status: 403
+}
+
+export type declineBookingAsCaregiverResponse404 = {
+  data: void
+  status: 404
+}
+
+export type declineBookingAsCaregiverResponse409 = {
+  data: void
+  status: 409
+}
+
+export type declineBookingAsCaregiverResponse500 = {
+  data: void
+  status: 500
+}
+
+export type declineBookingAsCaregiverResponse503 = {
+  data: void
+  status: 503
+}
+
+export type declineBookingAsCaregiverResponseSuccess = declineBookingAsCaregiverResponse200 & {
+  headers: Headers
+}
+export type declineBookingAsCaregiverResponseError = (
+  | declineBookingAsCaregiverResponse400
+  | declineBookingAsCaregiverResponse401
+  | declineBookingAsCaregiverResponse403
+  | declineBookingAsCaregiverResponse404
+  | declineBookingAsCaregiverResponse409
+  | declineBookingAsCaregiverResponse500
+  | declineBookingAsCaregiverResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeclineBookingAsCaregiverUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/bookings/${id}/caregiver-decline`
+}
+
+/**
+ * @summary CAREGIVER declines — SHIFT → REJECTED, RECURRING / CUSTOM → PENDING_CAREGIVER_ASSIGNMENT for the center (CR-3)
+ */
+export const declineBookingAsCaregiver = async (
+  id: string,
+  reasonRequest: ReasonRequest,
+  options?: RequestInit
+): Promise<declineBookingAsCaregiverResponseSuccess> => {
+  const res = await fetch(getDeclineBookingAsCaregiverUrl(id), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(reasonRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: declineBookingAsCaregiverResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: declineBookingAsCaregiverResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: declineBookingAsCaregiverResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as declineBookingAsCaregiverResponseSuccess
+}
+
+export const getDeclineBookingAsCaregiverMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof declineBookingAsCaregiver>>,
+    TError,
+    { id: string; data: ReasonRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof declineBookingAsCaregiver>>,
+  TError,
+  { id: string; data: ReasonRequest },
+  TContext
+> => {
+  const mutationKey = ['declineBookingAsCaregiver']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof declineBookingAsCaregiver>>,
+    { id: string; data: ReasonRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return declineBookingAsCaregiver(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeclineBookingAsCaregiverMutationResult = NonNullable<Awaited<ReturnType<typeof declineBookingAsCaregiver>>>
+export type DeclineBookingAsCaregiverMutationBody = ReasonRequest
+export type DeclineBookingAsCaregiverMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CAREGIVER declines — SHIFT → REJECTED, RECURRING / CUSTOM → PENDING_CAREGIVER_ASSIGNMENT for the center (CR-3)
+ */
+export const useDeclineBookingAsCaregiver = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof declineBookingAsCaregiver>>,
+      TError,
+      { id: string; data: ReasonRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof declineBookingAsCaregiver>>,
+  TError,
+  { id: string; data: ReasonRequest },
+  TContext
+> => {
+  return useMutation(getDeclineBookingAsCaregiverMutationOptions(options), queryClient)
+}
+export type updateBookingServiceAddressResponse200 = {
+  data: BookingDetailResponse
+  status: 200
+}
+
+export type updateBookingServiceAddressResponse400 = {
+  data: void
+  status: 400
+}
+
+export type updateBookingServiceAddressResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updateBookingServiceAddressResponse403 = {
+  data: void
+  status: 403
+}
+
+export type updateBookingServiceAddressResponse404 = {
+  data: void
+  status: 404
+}
+
+export type updateBookingServiceAddressResponse409 = {
+  data: void
+  status: 409
+}
+
+export type updateBookingServiceAddressResponse500 = {
+  data: void
+  status: 500
+}
+
+export type updateBookingServiceAddressResponse503 = {
+  data: void
+  status: 503
+}
+
+export type updateBookingServiceAddressResponseSuccess = updateBookingServiceAddressResponse200 & {
+  headers: Headers
+}
+export type updateBookingServiceAddressResponseError = (
+  | updateBookingServiceAddressResponse400
+  | updateBookingServiceAddressResponse401
+  | updateBookingServiceAddressResponse403
+  | updateBookingServiceAddressResponse404
+  | updateBookingServiceAddressResponse409
+  | updateBookingServiceAddressResponse500
+  | updateBookingServiceAddressResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateBookingServiceAddressUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/bookings/${id}/service-address`
+}
+
+/**
+ * @summary CUSTOMER (own booking) or CENTER_MANAGER (own center) changes the care address of every upcoming occurrence (CR-2; 409 5115 while a visit is in progress or nothing is upcoming)
+ */
+export const updateBookingServiceAddress = async (
+  id: string,
+  serviceAddressRequest: ServiceAddressRequest,
+  options?: RequestInit
+): Promise<updateBookingServiceAddressResponseSuccess> => {
+  const res = await fetch(getUpdateBookingServiceAddressUrl(id), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(serviceAddressRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateBookingServiceAddressResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateBookingServiceAddressResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateBookingServiceAddressResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateBookingServiceAddressResponseSuccess
+}
+
+export const getUpdateBookingServiceAddressMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateBookingServiceAddress>>,
+    TError,
+    { id: string; data: ServiceAddressRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateBookingServiceAddress>>,
+  TError,
+  { id: string; data: ServiceAddressRequest },
+  TContext
+> => {
+  const mutationKey = ['updateBookingServiceAddress']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateBookingServiceAddress>>,
+    { id: string; data: ServiceAddressRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return updateBookingServiceAddress(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateBookingServiceAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateBookingServiceAddress>>
+>
+export type UpdateBookingServiceAddressMutationBody = ServiceAddressRequest
+export type UpdateBookingServiceAddressMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CUSTOMER (own booking) or CENTER_MANAGER (own center) changes the care address of every upcoming occurrence (CR-2; 409 5115 while a visit is in progress or nothing is upcoming)
+ */
+export const useUpdateBookingServiceAddress = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateBookingServiceAddress>>,
+      TError,
+      { id: string; data: ServiceAddressRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateBookingServiceAddress>>,
+  TError,
+  { id: string; data: ServiceAddressRequest },
+  TContext
+> => {
+  return useMutation(getUpdateBookingServiceAddressMutationOptions(options), queryClient)
 }
 export type acceptBookingResponse200 = {
   data: BookingDetailResponse

@@ -17,6 +17,8 @@ export type ServiceCenterOption = ServiceCenter & {
   phoneNumber?: string
   minPrice?: number
   serviceCount?: number
+  /** First center photo (presigned, short-lived), when the center has one. */
+  imageUrl?: string
 }
 
 function toOption(center: PublicCenterRecord): ServiceCenterOption {
@@ -27,11 +29,12 @@ function toOption(center: PublicCenterRecord): ServiceCenterOption {
     operatingHours: center.operatingHours || undefined,
     phoneNumber: center.phoneNumber || undefined,
     minPrice: center.minPrice ?? undefined,
-    serviceCount: center.serviceCount ?? undefined
+    serviceCount: center.serviceCount ?? undefined,
+    imageUrl: center.imageUrls?.[0] || undefined
   }
 }
 
-/** Every ACTIVE center from ProviderService's customer endpoint, sorted by name. */
+/** Every ACTIVE center from ProviderService's public directory (no sign-in needed since CR-6), sorted by name. */
 export async function fetchServiceCenters(): Promise<ServiceCenterOption[]> {
   const centers: ServiceCenterOption[] = []
   for (let page = 0; page < MAX_PUBLIC_PAGES; page += 1) {

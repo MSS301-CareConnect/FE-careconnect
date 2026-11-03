@@ -79,6 +79,10 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
               <Icon className='text-lg text-primary' name='person' />
               {t('caregiver.nav.profile')}
             </Link>
+            <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/earnings'>
+              <Icon className='text-lg text-primary' name='savings' />
+              {t('caregiver.nav.earnings')}
+            </Link>
             <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/profile?tab=security'>
               <Icon className='text-lg text-primary' name='shield_lock' />
               {t('caregiver.nav.security')}

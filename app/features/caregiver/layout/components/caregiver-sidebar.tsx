@@ -11,11 +11,13 @@ export const CAREGIVER_SIDEBAR_ID = 'caregiver-sidebar'
 export function CaregiverSidebar({
   collapsed,
   onToggle,
-  toAccept
+  toAccept,
+  requests
 }: {
   collapsed: boolean
   onToggle: () => void
   toAccept: number
+  requests: number
 }) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
@@ -47,7 +49,11 @@ export function CaregiverSidebar({
         <ul className='space-y-1'>
           {caregiverNavigation.map((item) => {
             const current = active.key === item.key
-            const badge = item.key === 'visits' && toAccept > 0 ? toAccept : 0
+            const badge = item.key === 'visits' ? toAccept : item.key === 'requests' ? requests : 0
+            const badgeLabel =
+              item.key === 'requests'
+                ? t('caregiver.nav.requestsWaiting', { count: badge })
+                : t('caregiver.nav.toAccept', { count: badge })
             const label = t(`caregiver.nav.${item.key}`)
             return (
               <li key={item.key}>
@@ -63,9 +69,9 @@ export function CaregiverSidebar({
                   ) : null}
                   <Icon className='text-[22px]' filled={current} name={item.icon} />
                   {collapsed ? null : <span className='flex-1 truncate'>{label}</span>}
-                  {badge ? (
+                  {badge > 0 ? (
                     <span
-                      aria-label={t('caregiver.nav.toAccept', { count: badge })}
+                      aria-label={badgeLabel}
                       className={`grid min-w-5 place-items-center rounded-full bg-warning px-1.5 text-[11px] leading-5 font-bold text-white tabular-nums ${collapsed ? 'absolute top-1 right-2' : ''}`}
                     >
                       {badge > 99 ? '99+' : badge}

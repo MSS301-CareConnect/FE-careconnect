@@ -8,6 +8,10 @@ export const commonEn = {
       minutes_other: '{{count}} min',
       hoursMinutes: '{{hours}} h {{minutes}} min'
     },
+    price: {
+      discount: '−{{percent}}%',
+      original: 'Original price {{price}}'
+    },
     kit: {
       ratingNew: 'New',
       ratingLabel: 'Rated {{rating}} out of 5 from {{count}} reviews',
@@ -198,6 +202,10 @@ export const commonVi = {
       minutes_one: '{{count}} phút',
       minutes_other: '{{count}} phút',
       hoursMinutes: '{{hours}} giờ {{minutes}} phút'
+    },
+    price: {
+      discount: '−{{percent}}%',
+      original: 'Giá gốc {{price}}'
     },
     kit: {
       ratingNew: 'Mới',

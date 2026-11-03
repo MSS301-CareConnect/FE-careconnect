@@ -5,16 +5,20 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { PricePlanRecordPricingUnit } from './pricePlanRecordPricingUnit'
+import type { PricePlanDraftPricingUnit } from './pricePlanDraftPricingUnit'
 
-export interface PricePlanRecord {
-  /** M-04 — optimistic lock; send the value you loaded, a stale one returns 409 (code 3006). */
-  version?: number
-  id: string
-  centerOfferingId: string
+export interface PricePlanDraft {
+  /** @minLength 1 */
   planName: string
-  pricingUnit: PricePlanRecordPricingUnit
+  pricingUnit: PricePlanDraftPricingUnit
+  /** @minimum 1 */
   durationMinutes: number
+  /** @minimum 0 */
   basePrice: number
+  /**
+   * @minimum 0
+   * @maximum 90
+   */
+  discountPercent?: number
   isActive?: boolean
 }

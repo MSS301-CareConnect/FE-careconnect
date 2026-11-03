@@ -6,6 +6,10 @@ import {
   listPayments,
   verifyVnPayReturn
 } from '~/shared/api/generated/api/payment/payment'
+import {
+  getDepositForfeitureSummary,
+  listDepositForfeitures
+} from '~/shared/api/generated/api/deposit-forfeiture/deposit-forfeiture'
 import { listRefunds } from '~/shared/api/generated/api/refund/refund'
 import {
   listRemainingInvoices,
@@ -34,6 +38,8 @@ export const paymentKeys = {
   invoices: (page: number) => ['payment', 'invoices', page] as const,
   bookingInvoice: (bookingId: string) => ['payment', 'invoices', 'booking', bookingId] as const,
   revenue: (from: string, to: string) => ['payment', 'revenue', from, to] as const,
+  forfeitures: (from: string, to: string, page: number) => ['payment', 'forfeitures', from, to, page] as const,
+  forfeitureSummary: (from: string, to: string) => ['payment', 'forfeitures', 'summary', from, to] as const,
   outstanding: ['payment', 'outstanding'] as const,
   vnPayReturn: (query: string) => ['payment', 'vnpay-return', query] as const
 }
@@ -96,6 +102,14 @@ export async function fetchOpenInvoiceOfBooking(bookingId: string) {
 /** Net revenue (collected minus refunded) of the period; a center manager always gets the own center (spec §9.3). */
 export async function fetchRevenue(from: string, to: string) {
   return result(await getPaymentRevenue({ from, to }, readOptions))
+}
+
+/** CR-4: deposits kept from customers — a caregiver reads their own share, a center its own center. */
+export async function fetchDepositForfeitures(from: string, to: string, page = 0) {
+  return result(await listDepositForfeitures({ from, to, page, size: 20 }, readOptions))
+}
+export async function fetchDepositForfeitureSummary(from: string, to: string) {
+  return result(await getDepositForfeitureSummary({ from, to }, readOptions))
 }
 
 export async function fetchOutstandingDebt() {

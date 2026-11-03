@@ -13,7 +13,7 @@ export const centerPickerVi = {
     services: '{{count, number}} dịch vụ'
   },
   general: {
-    name: 'Xem tất cả trung tâm',
+    name: 'Tất cả trung tâm',
     description: 'Xem dịch vụ và người chăm sóc của mọi trung tâm, chọn sau cũng được'
   },
   dialog: {
@@ -34,7 +34,11 @@ export const centerPickerVi = {
     signIn: 'Đăng nhập'
   },
   scope: { showing: 'Đang hiển thị theo' },
-  context: { at: 'Tại {{name}}', none: 'Đang xem tất cả trung tâm', change: 'Đổi', choose: 'Chọn trung tâm' }
+  context: { at: 'Tại {{name}}', none: 'Đang xem tất cả trung tâm', change: 'Đổi', choose: 'Chọn trung tâm' },
+  viewing: 'Đang xem: {{name}}',
+  browseAll: 'Xem tất cả trung tâm',
+  compare: 'So sánh các trung tâm',
+  toast: { center: 'Đang xem trung tâm {{name}}', all: 'Đang xem tất cả trung tâm' }
 } as const
 
 export const centerPickerEn = {
@@ -52,7 +56,7 @@ export const centerPickerEn = {
     services: '{{count, number}} services'
   },
   general: {
-    name: 'See all centers',
+    name: 'All centers',
     description: 'Browse services and caregivers from every center, and choose one later'
   },
   dialog: {
@@ -73,5 +77,9 @@ export const centerPickerEn = {
     signIn: 'Sign in'
   },
   scope: { showing: 'Showing' },
-  context: { at: 'At {{name}}', none: 'Showing every center', change: 'Change', choose: 'Choose a center' }
+  context: { at: 'At {{name}}', none: 'Showing every center', change: 'Change', choose: 'Choose a center' },
+  viewing: 'Viewing: {{name}}',
+  browseAll: 'See all centers',
+  compare: 'Compare centers',
+  toast: { center: 'Now viewing {{name}}', all: 'Now viewing every center' }
 } as const

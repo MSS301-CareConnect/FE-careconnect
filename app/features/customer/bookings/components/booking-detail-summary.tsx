@@ -13,6 +13,7 @@ const key = 'customer.bookingDetail.summary' as const
 // A booking that ended before anyone was assigned has no caregiver to promise.
 const WAITS_FOR_ASSIGNMENT: ReadonlySet<BookingStatus> = new Set([
   'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_CONFIRMATION',
   'PENDING_CAREGIVER_ASSIGNMENT',
   'AWAITING_INITIAL_PAYMENT',
   'CONFIRMED',

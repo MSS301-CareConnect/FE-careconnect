@@ -162,11 +162,12 @@ export const bookingEn = {
       startTime: 'Start',
       endTime: 'End',
       weekdays: 'On these days',
-      preview: '{{count}} visits · {{days}} · {{from}} → {{to}} · {{duration}} each',
-      previewDaily: '{{count}} visits · every day · {{from}} → {{to}} · {{duration}} each',
-      showAll: 'Show all {{count}} visits',
-      showLess: 'Show less',
-      noVisits: 'No visit falls in this range. Widen the dates or pick other days.'
+      noVisits: 'No visit falls in this range. Widen the dates or pick other days.',
+      listLegend: 'Visits from this pattern',
+      listHint: 'Change the time of a visit, remove a day off or add a visit within the dates above.',
+      edited: 'You edited the list, so changing the pattern no longer rebuilds it.',
+      regenerate: 'Rebuild from the pattern',
+      outsideRange: 'Outside the dates of the pattern.'
     },
     custom: {
       legend: 'Visits',
@@ -179,7 +180,40 @@ export const bookingEn = {
       remove: 'Remove visit {{number}}',
       add: 'Add a visit',
       overlap: 'Overlaps another visit.',
-      missingDate: 'Choose a date.'
+      missingDate: 'Choose a date.',
+      empty: 'No visit yet. Add one or use quick add.',
+      quickAdd: {
+        title: 'Quick add',
+        description: 'Add many visits at once from a daily or weekly pattern.',
+        submit_one: 'Add {{count}} visit',
+        submit_other: 'Add {{count}} visits',
+        nothing: 'No new visit: the pattern is empty or every visit is already in the list.',
+        limit: 'Only the first {{count}} fit within {{max}} visits.',
+        added_one: 'Added {{count}} visit.',
+        added_other: 'Added {{count}} visits.'
+      }
+    },
+    bulk: {
+      label: 'Edit the chosen visits',
+      chooseAll: 'Choose all visits',
+      choose: 'Choose visit {{number}}',
+      selected_one: '{{count}} visit chosen',
+      selected_other: '{{count}} visits chosen',
+      start: 'Start',
+      end: 'End',
+      apply_one: 'Set time for {{count}} visit',
+      apply_other: 'Set time for {{count}} visits',
+      remove_one: 'Remove {{count}} visit',
+      remove_other: 'Remove {{count}} visits',
+      clear: 'Clear choice'
+    },
+    duration: {
+      mismatch_one:
+        'Most visits last {{usual}}, but {{count}} visit lasts differently. Check it if that was not on purpose.',
+      mismatch_other:
+        'Most visits last {{usual}}, but {{count}} visits last differently. Check them if that was not on purpose.',
+      rowDiffers: 'Lasts {{duration}}, the others {{usual}}.',
+      fix: 'Set to {{usual}}'
     },
     invalidTime: 'The end must be after the start.',
     invalidRange: 'The last day must be on or after the first day.',
@@ -193,7 +227,10 @@ export const bookingEn = {
     quantity: 'Quantity',
     amount: 'Amount',
     unitPriceValue: '{{price}} / {{unit}}',
-    quantityValue: '{{units}} {{unit}} × {{count}} visits'
+    quantityValue: '{{units}} {{unit}} × {{count}} visits',
+    quantityTotal: '{{units}} {{unit}} in total · {{count}} visits of different lengths',
+    groupsCaption: '{{name}} by visit length',
+    lineTotal: 'Total {{units}} {{unit}} · {{count}} visits'
   },
   summary: {
     title: 'Summary & price',
@@ -443,11 +480,12 @@ export const bookingVi = {
       startTime: 'Bắt đầu',
       endTime: 'Kết thúc',
       weekdays: 'Vào các thứ',
-      preview: 'Tổng {{count}} buổi · {{days}} · {{from}} → {{to}} · mỗi buổi {{duration}}',
-      previewDaily: 'Tổng {{count}} buổi · mỗi ngày · {{from}} → {{to}} · mỗi buổi {{duration}}',
-      showAll: 'Xem cả {{count}} buổi',
-      showLess: 'Thu gọn',
-      noVisits: 'Không có buổi nào trong khoảng này. Hãy mở rộng ngày hoặc chọn thứ khác.'
+      noVisits: 'Không có buổi nào trong khoảng này. Hãy mở rộng ngày hoặc chọn thứ khác.',
+      listLegend: 'Các buổi theo lịch lặp',
+      listHint: 'Có thể đổi giờ từng buổi, xóa ngày nghỉ hoặc thêm buổi trong khoảng ngày ở trên.',
+      edited: 'Bạn đã chỉnh danh sách nên đổi lịch lặp sẽ không tạo lại các buổi.',
+      regenerate: 'Tạo lại theo lịch lặp',
+      outsideRange: 'Nằm ngoài khoảng ngày của lịch lặp.'
     },
     custom: {
       legend: 'Các buổi chăm sóc',
@@ -460,7 +498,40 @@ export const bookingVi = {
       remove: 'Xóa buổi {{number}}',
       add: 'Thêm buổi',
       overlap: 'Trùng giờ với buổi khác.',
-      missingDate: 'Hãy chọn ngày.'
+      missingDate: 'Hãy chọn ngày.',
+      empty: 'Chưa có buổi nào. Thêm từng buổi hoặc dùng thêm nhanh.',
+      quickAdd: {
+        title: 'Thêm nhanh',
+        description: 'Thêm nhiều buổi một lần theo lịch hằng ngày hoặc hằng tuần.',
+        submit_one: 'Thêm {{count}} buổi',
+        submit_other: 'Thêm {{count}} buổi',
+        nothing: 'Không có buổi mới: lịch trống hoặc các buổi đã có trong danh sách.',
+        limit: 'Chỉ thêm được {{count}} buổi đầu vì tối đa {{max}} buổi.',
+        added_one: 'Đã thêm {{count}} buổi.',
+        added_other: 'Đã thêm {{count}} buổi.'
+      }
+    },
+    bulk: {
+      label: 'Sửa các buổi đã chọn',
+      chooseAll: 'Chọn tất cả các buổi',
+      choose: 'Chọn buổi {{number}}',
+      selected_one: 'Đã chọn {{count}} buổi',
+      selected_other: 'Đã chọn {{count}} buổi',
+      start: 'Bắt đầu',
+      end: 'Kết thúc',
+      apply_one: 'Đặt giờ cho {{count}} buổi',
+      apply_other: 'Đặt giờ cho {{count}} buổi',
+      remove_one: 'Xóa {{count}} buổi',
+      remove_other: 'Xóa {{count}} buổi',
+      clear: 'Bỏ chọn'
+    },
+    duration: {
+      mismatch_one:
+        'Phần lớn các buổi dài {{usual}}, nhưng có {{count}} buổi dài khác. Hãy kiểm tra lại nếu không cố ý.',
+      mismatch_other:
+        'Phần lớn các buổi dài {{usual}}, nhưng có {{count}} buổi dài khác. Hãy kiểm tra lại nếu không cố ý.',
+      rowDiffers: 'Dài {{duration}}, các buổi khác {{usual}}.',
+      fix: 'Đưa về {{usual}}'
     },
     invalidTime: 'Giờ kết thúc phải sau giờ bắt đầu.',
     invalidRange: 'Ngày cuối phải bằng hoặc sau ngày đầu.',
@@ -474,7 +545,10 @@ export const bookingVi = {
     quantity: 'Thời lượng',
     amount: 'Thành tiền',
     unitPriceValue: '{{price}} / {{unit}}',
-    quantityValue: '{{units}} {{unit}} × {{count}} buổi'
+    quantityValue: '{{units}} {{unit}} × {{count}} buổi',
+    quantityTotal: 'Tổng {{units}} {{unit}} · {{count}} buổi dài khác nhau',
+    groupsCaption: '{{name}} theo thời lượng buổi',
+    lineTotal: 'Cộng {{units}} {{unit}} · {{count}} buổi'
   },
   summary: {
     title: 'Tóm tắt & báo giá',

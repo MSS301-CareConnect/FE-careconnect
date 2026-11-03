@@ -4,6 +4,8 @@ import type { PricePlanRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
 import { useMoney } from '../service-detail-format'
+import { planPrice } from '~/entities/care-catalog/price-plan-price'
+import { PlanDiscount } from '~/entities/care-catalog/plan-discount'
 
 const key = 'customer.serviceDetail' as const
 
@@ -51,9 +53,12 @@ export function ServicePlans({ plans, isPending, isError }: Props) {
                 <Icon className='text-base text-primary' name='schedule' />
                 {t(`${key}.plans.duration`, { minutes: plan.durationMinutes })}
               </span>
-              <strong className='mt-4 border-t border-outline-variant/40 pt-3 text-xl font-bold text-primary tabular-nums'>
-                {money.format(plan.basePrice)}
-              </strong>
+              <span className='mt-4 flex flex-wrap items-baseline gap-x-2 border-t border-outline-variant/40 pt-3'>
+                <strong className='text-xl font-bold text-primary tabular-nums'>
+                  {money.format(planPrice(plan).finalPrice)}
+                </strong>
+                <PlanDiscount plan={plan} />
+              </span>
             </li>
           ))}
         </ul>

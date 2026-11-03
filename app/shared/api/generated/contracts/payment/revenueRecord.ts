@@ -10,7 +10,11 @@ export interface RevenueRecord {
   successfulPaymentCount: number
   grossRevenue: number
   totalRefunded: number
-  /** grossRevenue minus totalRefunded */
+  /** Kept deposits that belong to the occurrence caregivers (CR-4), not center revenue */
+  caregiverForfeitAmount?: number
+  /** Kept deposits of occurrences without a caregiver — part of center revenue (CR-4) */
+  centerForfeitAmount?: number
+  /** grossRevenue minus totalRefunded minus caregiverForfeitAmount */
   totalRevenue: number
   averagePayment: number
 }

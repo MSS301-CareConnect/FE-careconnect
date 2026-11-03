@@ -9,6 +9,7 @@ import { ServiceBookingCard } from './components/service-booking-card'
 import { ServiceCaregivers } from './components/service-caregivers'
 import { ServicePlans } from './components/service-plans'
 import { useServiceDetail } from './hooks/use-service-detail'
+import { planPrice } from '~/entities/care-catalog/price-plan-price'
 
 const key = 'customer.serviceDetail' as const
 
@@ -110,7 +111,7 @@ export function CustomerServiceDetailPage() {
               center={center.data}
               centerId={service.centerId}
               centerPending={center.isPending}
-              fromPrice={plans.data?.[0]?.basePrice}
+              fromPrice={plans.data?.[0] ? planPrice(plans.data[0]).finalPrice : undefined}
             />
           </div>
         ) : null}

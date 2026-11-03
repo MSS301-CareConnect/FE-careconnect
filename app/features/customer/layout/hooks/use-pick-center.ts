@@ -1,13 +1,14 @@
 import { useSearchParams } from 'react-router'
 
 import type { ServiceCenter } from '~/entities/care-center/care-center-api'
-import { selectCenter } from '~/entities/care-center/selected-center'
+import { useChooseCenter } from '~/entities/care-center/use-choose-center'
 
 /** A new center changes every list, so a page number from the previous one no longer applies. */
 export function usePickCenter() {
   const [params, setParams] = useSearchParams()
+  const chooseCenter = useChooseCenter()
   return (center: ServiceCenter | null) => {
-    selectCenter(center)
+    chooseCenter(center)
     if (params.has('page'))
       setParams(
         (previous) => {

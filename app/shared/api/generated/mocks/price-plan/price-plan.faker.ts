@@ -20,6 +20,17 @@ export const getCreatePricePlanResponseMock = (
   ...overrideResponse
 })
 
+export const getUpdatePricePlansBatchResponseMock = (
+  overrideResponse: Partial<Extract<PricePlanListResponse, object>> = {}
+): PricePlanListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getPricePlanRecordMock()
+  })),
+  ...overrideResponse
+})
+
 export const getGetPricePlanResponseMock = (
   overrideResponse: Partial<Extract<PricePlanResponse, object>> = {}
 ): PricePlanResponse => ({

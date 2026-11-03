@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -326,8 +326,7 @@ describe('CustomerBookingPage', () => {
     expect(request).not.toHaveProperty('startTime')
     expect(await screen.findByText('Đặt cọc (30%) sau khi có người chăm sóc')).toBeInTheDocument()
     // Unit price, quantity and amount of each service, in the review and in the summary column.
-    expect(screen.getAllByText('Đơn giá').length).toBe(2)
-    expect(screen.getAllByText('100.000 ₫ / giờ').length).toBe(2)
+    expect(screen.getAllByText('Đơn giá: 100.000 ₫ / giờ').length).toBe(2)
     expect(screen.getAllByText('2 giờ × 1 buổi').length).toBe(2)
     expect(screen.getAllByText('Thành tiền').length).toBe(2)
     const quotes = vi.mocked(fetchBookingQuote).mock.calls.length
@@ -387,7 +386,9 @@ describe('CustomerBookingPage', () => {
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '31/01/2030' } })
 
-    expect(await screen.findByText(/Tổng 8 buổi · T2, T6/)).toBeInTheDocument()
+    // CR-1: the pattern builds an editable visit list instead of a one-line summary.
+    expect(await screen.findByText('8/60 buổi')).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Các buổi theo lịch lặp' })).toBeInTheDocument()
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toEqual({
         recipientId: 'rec-1',
@@ -403,6 +404,79 @@ describe('CustomerBookingPage', () => {
         services: SERVICES
       })
     )
+  })
+
+  it('lets the customer edit one recurring visit and sends the edited list (CR-1)', async () => {
+    renderPage('/customer/booking')
+    await toSchedule()
+
+    fireEvent.click(screen.getByRole('radio', { name: /Định kỳ/ }))
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '02/01/2030' } })
+    expect(await screen.findByText('2/60 buổi')).toBeInTheDocument()
+
+    // Pattern fields come first (start, end), then one start / end pair per visit.
+    fireEvent.change(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[2], { target: { value: '14:00' } })
+    fireEvent.change(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], { target: { value: '16:00' } })
+    expect(await screen.findByRole('button', { name: 'Tạo lại theo lịch lặp' })).toBeInTheDocument()
+    await waitFor(() =>
+      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toMatchObject({
+        bookingType: 'RECURRING',
+        frequency: 'DAILY',
+        slots: [
+          { startAt: '2030-01-01T01:00:00.000Z', endAt: '2030-01-01T03:00:00.000Z' },
+          { startAt: '2030-01-02T07:00:00.000Z', endAt: '2030-01-02T09:00:00.000Z' }
+        ]
+      })
+    )
+  })
+
+  it('flags a visit longer than the others and sets the time of the chosen visits at once', async () => {
+    renderPage('/customer/booking')
+    await toSchedule()
+
+    fireEvent.click(screen.getByRole('radio', { name: /Định kỳ/ }))
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '03/01/2030' } })
+    expect(await screen.findByText('3/60 buổi')).toBeInTheDocument()
+
+    // Visit 2 ends an hour later than the others: the list says so and offers to bring it back to 2 hours.
+    fireEvent.change(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], { target: { value: '11:00' } })
+    expect(await screen.findByText(/Phần lớn các buổi dài 2 giờ, nhưng có 1 buổi dài khác/)).toBeInTheDocument()
+    expect(screen.getByText('Dài 3 giờ, các buổi khác 2 giờ.')).toBeInTheDocument()
+
+    // Choose visits 1 and 3 and move both to the afternoon in one go.
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn buổi 1' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn buổi 3' }))
+    const bulk = screen.getByRole('group', { name: 'Sửa các buổi đã chọn' })
+    fireEvent.change(within(bulk).getByRole('combobox', { name: 'Bắt đầu' }), { target: { value: '13:00' } })
+    fireEvent.change(within(bulk).getByRole('combobox', { name: 'Kết thúc' }), { target: { value: '16:00' } })
+    fireEvent.click(within(bulk).getByRole('button', { name: 'Đặt giờ cho 2 buổi' }))
+
+    await waitFor(() =>
+      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toEqual([
+        { startAt: '2030-01-01T06:00:00.000Z', endAt: '2030-01-01T09:00:00.000Z' },
+        { startAt: '2030-01-02T01:00:00.000Z', endAt: '2030-01-02T04:00:00.000Z' },
+        { startAt: '2030-01-03T06:00:00.000Z', endAt: '2030-01-03T09:00:00.000Z' }
+      ])
+    )
+    // Every visit now lasts 3 hours: no more warning.
+    expect(screen.queryByText(/buổi dài khác/)).not.toBeInTheDocument()
+  })
+
+  it('quick-adds the visits of a weekly pattern to a custom booking (CR-1)', async () => {
+    renderPage('/customer/booking')
+    await toSchedule()
+
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '02/01/2030' } })
+    fireEvent.click(screen.getByRole('button', { name: /Thêm nhanh/ }))
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '14/01/2030' } })
+    fireEvent.click(screen.getByRole('checkbox', { name: 'T2' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm 2 buổi' }))
+
+    expect(await screen.findByText('Đã thêm 2 buổi.')).toBeInTheDocument()
+    expect(screen.getByText('3/60 buổi')).toBeInTheDocument()
   })
 
   it('disables SHIFT while the center assigns, and books a free shift of the chosen caregiver', async () => {

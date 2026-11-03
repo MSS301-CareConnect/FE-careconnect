@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 
@@ -67,6 +68,13 @@ export function CenterReminder({ title, text }: { title: string; text: string })
         <Icon aria-hidden='true' className='text-lg' name='home_health' />
         {t(`${key}.choose`)}
       </button>
+      <Link
+        className='mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+        to='/customer/centers'
+      >
+        {t(`${key}.browseAll`)}
+        <Icon aria-hidden='true' className='text-lg' name='arrow_forward' />
+      </Link>
     </div>
   )
 }

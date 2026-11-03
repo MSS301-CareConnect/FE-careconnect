@@ -14,6 +14,8 @@ import { ErrorState } from '~/shared/ui/state-panels'
 import { MAX_SERVICES, type BookingCaregiverOption, type BookingForm } from '../hooks/use-booking-form'
 import { CaregiverProfileDrawer } from './caregiver-profile-drawer'
 import { WizardSection } from './wizard-parts'
+import { planPrice } from '~/entities/care-catalog/price-plan-price'
+import { PlanDiscount } from '~/entities/care-catalog/plan-discount'
 
 export function StepCare({ form }: { form: BookingForm }) {
   const { t } = useTranslation()
@@ -129,10 +131,11 @@ function PlanText({ plan }: { plan: PricePlanRecord }) {
     <>
       <span className='font-semibold text-on-surface tabular-nums'>
         {t('customer.booking.services.price', {
-          price: format.money(plan.basePrice),
+          price: format.money(planPrice(plan).finalPrice),
           unit: t(`customer.booking.priceUnit.${plan.pricingUnit}`)
         })}
       </span>
+      <PlanDiscount className='ml-1.5' plan={plan} />
       {plan.durationMinutes ? (
         <span className='text-on-surface-variant'>
           {' · '}
@@ -229,7 +232,7 @@ function ServiceCard({
           <span className='text-on-surface-variant'>{t('customer.booking.services.plansEmpty')}</span>
         ) : many ? (
           <span className='text-on-surface-variant'>
-            <PlanText plan={[...list].sort((a, b) => a.basePrice - b.basePrice)[0]} />
+            <PlanText plan={[...list].sort((a, b) => planPrice(a).finalPrice - planPrice(b).finalPrice)[0]} />
           </span>
         ) : (
           <PlanText plan={list[0]} />

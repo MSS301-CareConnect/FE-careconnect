@@ -1,9 +1,12 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { useServiceCenters, type ServiceCenterOption } from '~/entities/care-center/care-center-api'
 import { formatMoney } from '~/entities/booking/booking-format'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { apiErrorStatus } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'customer.centerPicker' as const
@@ -17,12 +20,15 @@ function searchable(value: string) {
 type CenterOptionsProps = {
   /** Null chooses the platform-wide configuration. */
   onPick: (center: ServiceCenterOption | null) => void
+  /** Leaving for the centers page or sign-in closes the menu or dialog. */
+  onLeave: () => void
   size: 'menu' | 'dialog'
 }
 
 /** The selectable centers with the platform-wide option, shared by the header menu and the first-visit dialog. */
-export function CenterOptions({ onPick, size }: CenterOptionsProps) {
+export function CenterOptions({ onPick, onLeave, size }: CenterOptionsProps) {
   const { t, i18n } = useTranslation()
+  const signedIn = Boolean(useAuthUser())
   const searchId = useId()
   const { center: selected } = useSelectedCenter()
   const centers = useServiceCenters()
@@ -94,6 +100,23 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
       </p>
     )
 
+  // Until the public directory is deployed, a visitor without a session gets 401: the next step is signing in.
+  if (centers.isError && !signedIn && apiErrorStatus(centers.error) === 401)
+    return (
+      <div className='flex flex-col items-start gap-2 px-3 py-5 text-sm'>
+        <p className='font-bold text-on-surface'>{t(`${key}.states.signInTitle`)}</p>
+        <p className='leading-6 text-on-surface-variant'>{t(`${key}.states.signInText`)}</p>
+        <Link
+          className='mt-1 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 font-bold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          onClick={onLeave}
+          to='/login'
+        >
+          <Icon aria-hidden='true' className='text-lg' name='login' />
+          {t(`${key}.states.signIn`)}
+        </Link>
+      </div>
+    )
+
   if (centers.isError)
     return (
       <div className='flex flex-wrap items-center justify-between gap-3 px-3 py-5 text-sm' role='alert'>
@@ -147,6 +170,14 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
         ) : null}
       </ul>
       <ul className={`mt-2 bg-surface-container-low ${isDialog ? 'rounded-xl' : 'rounded-lg'}`}>{option(null)}</ul>
+      <Link
+        className={`mt-2 inline-flex min-h-11 items-center gap-1.5 self-start rounded-lg text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary ${isDialog ? '' : 'px-3'}`}
+        onClick={onLeave}
+        to='/customer/centers'
+      >
+        {t(`${key}.browseAll`)}
+        <Icon aria-hidden='true' className='text-lg' name='arrow_forward' />
+      </Link>
     </div>
   )
 }

@@ -10,7 +10,8 @@ const EVENT_TYPES = [
   'OCCURRENCE_ACKNOWLEDGED',
   'OCCURRENCE_STATUS_CHANGED',
   'CAREGIVER_CHANGED',
-  'NO_SHOW_REPORTED'
+  'NO_SHOW_REPORTED',
+  'SERVICE_ADDRESS_CHANGED'
 ] as const
 type EventType = (typeof EVENT_TYPES)[number]
 
@@ -83,6 +84,11 @@ export function BookingHistoryList({ bookingId }: { bookingId: string }) {
                 ) : null}
               </p>
               <p className='text-xs text-on-surface-variant'>{formatDateTime(entry.changedAt, i18n.language)}</p>
+              {entry.newValue ? (
+                <p className='mt-1 text-sm text-on-surface'>
+                  {t('booking.address.changedEvent', { from: entry.oldValue ?? '', to: entry.newValue })}
+                </p>
+              ) : null}
               <HistoryReasonText reason={entry.reason} />
             </div>
           </li>

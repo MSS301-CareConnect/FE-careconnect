@@ -105,6 +105,43 @@ describe('CustomerLayout', () => {
     expect(header.queryByRole('button', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
     const bottom = within(screen.getByRole('navigation', { name: 'Điều hướng nhanh' }))
     expect(bottom.queryByRole('link', { name: 'Lịch đặt' })).not.toBeInTheDocument()
+    // CR-6: the public center directory is reachable from the header, the phone navigation and the footer.
+    expect(header.getByRole('link', { name: 'Trung tâm' })).toHaveAttribute('href', '/customer/centers')
+    expect(bottom.getByRole('link', { name: 'Trung tâm' })).toHaveAttribute('href', '/customer/centers')
+    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Trung tâm' })).toHaveAttribute(
+      'href',
+      '/customer/centers'
+    )
+  })
+
+  it('shows visitors the center selector and asks them to sign in while the directory answers 401', async () => {
+    vi.mocked(fetchPublicCenters).mockRejectedValue(Object.assign(new Error('unauthorized'), { status: 401 }))
+    render(
+      <MemoryRouter initialEntries={['/customer/services']}>
+        <Routes>
+          <Route element={<CustomerLayout audience='public' />}>
+            <Route path='/customer/services' element={<div />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    )
+
+    fireEvent.click(await within(screen.getByRole('banner')).findByRole('button', { name: /Tất cả trung tâm/ }))
+    const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
+    expect(await within(menu).findByText('Đăng nhập để chọn trung tâm')).toBeInTheDocument()
+    expect(within(menu).getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login')
+    expect(within(menu).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('links the center menu to the center directory', async () => {
+    renderPortal()
+
+    fireEvent.click(await within(screen.getByRole('banner')).findByRole('button', { name: /Tất cả trung tâm/ }))
+    const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
+    expect(await within(menu).findByRole('link', { name: 'Xem tất cả trung tâm' })).toHaveAttribute(
+      'href',
+      '/customer/centers'
+    )
   })
 
   it('renders the header with the main navigation, the booking action and the footer', () => {

@@ -5,6 +5,7 @@ import { StatusBadge, type StatusTone } from '~/shared/ui/status-badge'
 
 export const BOOKING_STATUS_TONES: Record<BookingStatus, StatusTone> = {
   PENDING_CENTER_CONFIRMATION: 'warning',
+  PENDING_CAREGIVER_CONFIRMATION: 'warning',
   PENDING_CAREGIVER_ASSIGNMENT: 'warning',
   AWAITING_INITIAL_PAYMENT: 'caution',
   CONFIRMED: 'info',

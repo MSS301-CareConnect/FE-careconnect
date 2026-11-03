@@ -16,23 +16,29 @@ import type {
   BookingOccurrenceResponse,
   BookingQuoteResponse,
   BookingSummaryPageResponse,
-  CancellationPreviewResponse
+  CancellationPreviewResponse,
+  CaregiverBookingRequestPageResponse,
+  CaregiverBookingRequestResponse
 } from '../../contracts'
 
 import {
+  getAcceptBookingAsCaregiverResponseMock,
   getAcceptBookingResponseMock,
   getCancelBookingResponseMock,
   getCreateBookingResponseMock,
+  getDeclineBookingAsCaregiverResponseMock,
   getGetBookingResponseMock,
   getListBookingHeldSchedulesResponseMock,
   getListBookingHistoryResponseMock,
   getListBookingOccurrencesResponseMock,
   getListBookingsResponseMock,
+  getListCaregiverBookingRequestsResponseMock,
   getPreviewBookingCancellationResponseMock,
   getQuoteBookingResponseMock,
   getRejectBookingResponseMock,
   getUpdateBookingCaregiverResponseMock,
-  getUpdateBookingOccurrenceCaregiverResponseMock
+  getUpdateBookingOccurrenceCaregiverResponseMock,
+  getUpdateBookingServiceAddressResponseMock
 } from './booking.faker'
 
 export {
@@ -45,6 +51,10 @@ export {
   getListBookingOccurrencesResponseMock,
   getPreviewBookingCancellationResponseMock,
   getCancelBookingResponseMock,
+  getListCaregiverBookingRequestsResponseMock,
+  getAcceptBookingAsCaregiverResponseMock,
+  getDeclineBookingAsCaregiverResponseMock,
+  getUpdateBookingServiceAddressResponseMock,
   getAcceptBookingResponseMock,
   getRejectBookingResponseMock,
   getUpdateBookingCaregiverResponseMock,
@@ -281,6 +291,110 @@ export const getCancelBookingMockHandler = (
   )
 }
 
+export const getListCaregiverBookingRequestsMockHandler = (
+  overrideResponse?:
+    | CaregiverBookingRequestPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<CaregiverBookingRequestPageResponse> | CaregiverBookingRequestPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/bookings/caregiver-requests',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListCaregiverBookingRequestsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getAcceptBookingAsCaregiverMockHandler = (
+  overrideResponse?:
+    | CaregiverBookingRequestResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<CaregiverBookingRequestResponse> | CaregiverBookingRequestResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/bookings/:id/caregiver-accept',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAcceptBookingAsCaregiverResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeclineBookingAsCaregiverMockHandler = (
+  overrideResponse?:
+    | CaregiverBookingRequestResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<CaregiverBookingRequestResponse> | CaregiverBookingRequestResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/bookings/:id/caregiver-decline',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeclineBookingAsCaregiverResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdateBookingServiceAddressMockHandler = (
+  overrideResponse?:
+    | BookingDetailResponse
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<BookingDetailResponse> | BookingDetailResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/bookings/:id/service-address',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateBookingServiceAddressResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getAcceptBookingMockHandler = (
   overrideResponse?:
     | BookingDetailResponse
@@ -394,6 +508,10 @@ export const getBookingMock = () => [
   getListBookingOccurrencesMockHandler(),
   getPreviewBookingCancellationMockHandler(),
   getCancelBookingMockHandler(),
+  getListCaregiverBookingRequestsMockHandler(),
+  getAcceptBookingAsCaregiverMockHandler(),
+  getDeclineBookingAsCaregiverMockHandler(),
+  getUpdateBookingServiceAddressMockHandler(),
   getAcceptBookingMockHandler(),
   getRejectBookingMockHandler(),
   getUpdateBookingCaregiverMockHandler(),

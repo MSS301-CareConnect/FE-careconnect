@@ -15,5 +15,7 @@ export interface ServiceQuoteRecord {
   pricingUnit?: ServiceQuoteRecordPricingUnit
   durationMinutes?: number
   basePrice?: number
+  discountPercent?: number
+  finalPrice?: number
   active: boolean
 }

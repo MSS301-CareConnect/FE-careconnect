@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { bookingKeys, fetchMyOccurrences } from '~/entities/booking/booking-api'
+import { bookingKeys, fetchCaregiverBookingRequests, fetchMyOccurrences } from '~/entities/booking/booking-api'
 import {
   fetchMyCaregiverProfile,
   fetchMyShiftRegistrations,
@@ -10,6 +10,7 @@ import {
   providerKeys
 } from '~/entities/provider/provider-api'
 import { pickAvatar } from '~/entities/provider/provider-avatar'
+import { fetchDepositForfeitureSummary, fetchDepositForfeitures, paymentKeys } from '~/entities/payment/payment-api'
 import type { ListMyBookingOccurrencesParams, OccurrenceStatus } from '~/shared/api/generated/contracts'
 import { calendarDayOf } from '~/shared/lib/format'
 
@@ -74,6 +75,33 @@ export function useVisitPages(params: Omit<ListMyBookingOccurrencesParams, 'page
 /** Visits from today the center assigned but the caregiver has not accepted yet. */
 export function useVisitsToAccept(today: string) {
   return useVisitPage({ from: today, status: 'SCHEDULED', page: 0, size: VISIT_PAGE_SIZE })
+}
+
+/** CR-3: bookings customers sent straight to this caregiver, still waiting for an answer (newest 50). */
+export function useBookingRequests() {
+  return useQuery({
+    queryKey: bookingKeys.caregiverRequests(0),
+    queryFn: () => fetchCaregiverBookingRequests(0),
+    retry: false,
+    refetchInterval: 60_000
+  })
+}
+
+/** CR-4: the caregiver's share of deposits kept from customers in a period, with the rows page by page. */
+export function useKeptDeposits(from: string, to: string) {
+  const summary = useQuery({
+    queryKey: paymentKeys.forfeitureSummary(from, to),
+    queryFn: () => fetchDepositForfeitureSummary(from, to),
+    retry: false
+  })
+  const rows = useInfiniteQuery({
+    queryKey: [...paymentKeys.forfeitures(from, to, 0), 'pages'],
+    queryFn: ({ pageParam }) => fetchDepositForfeitures(from, to, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (last) => (last.page + 1 < last.totalPages ? last.page + 1 : undefined),
+    retry: false
+  })
+  return { summary, rows }
 }
 
 /** Open shifts of the caregiver's center and the caregiver's latest registrations (first 100 of each). */

@@ -1,6 +1,7 @@
 export const bookingSharedVi = {
   status: {
     PENDING_CENTER_CONFIRMATION: 'Chờ trung tâm xác nhận',
+    PENDING_CAREGIVER_CONFIRMATION: 'Chờ người chăm sóc nhận lịch',
     PENDING_CAREGIVER_ASSIGNMENT: 'Chờ phân công người chăm sóc',
     AWAITING_INITIAL_PAYMENT: 'Chờ thanh toán',
     CONFIRMED: 'Đã xác nhận',
@@ -53,6 +54,22 @@ export const bookingSharedVi = {
   },
   dialog: {
     minLength: 'Tối thiểu {{count}} ký tự.'
+  },
+  address: {
+    action: 'Đổi địa chỉ chăm sóc',
+    title: 'Đổi địa chỉ chăm sóc',
+    description: 'Áp dụng cho mọi buổi chưa bắt đầu, khi người được chăm sóc đang ở nơi khác.',
+    addressLine: 'Số nhà, tên đường',
+    ward: 'Phường / xã',
+    district: 'Quận / huyện',
+    province: 'Tỉnh / thành phố',
+    note: 'Ghi chú',
+    noteHint: 'VD: Bà đang ở nhà con gái, bấm chuông cổng sau.',
+    notice: 'Trung tâm và người chăm sóc được giao sẽ nhận thông báo về địa chỉ mới.',
+    cancel: 'Hủy',
+    save: 'Lưu địa chỉ',
+    saved: 'Đã cập nhật địa chỉ chăm sóc.',
+    changedEvent: 'Đổi địa chỉ: {{from}} → {{to}}'
   },
   caregiver: {
     title: 'Người chăm sóc được phân công',
@@ -122,6 +139,7 @@ export const bookingSharedVi = {
       OCCURRENCE_ACKNOWLEDGED: 'Người chăm sóc đã nhận buổi',
       OCCURRENCE_STATUS_CHANGED: 'Buổi chăm sóc đổi trạng thái',
       CAREGIVER_CHANGED: 'Đổi người chăm sóc',
+      SERVICE_ADDRESS_CHANGED: 'Đổi địa chỉ chăm sóc',
       NO_SHOW_REPORTED: 'Báo khách vắng mặt',
       other: 'Cập nhật lịch đặt'
     },
@@ -238,6 +256,10 @@ export const bookingSharedVi = {
     e5222: 'Ngoài khung giờ check-in của trung tâm cho buổi này.',
     e5223: 'Lịch đặt chưa được xác nhận (chưa đặt cọc) hoặc đã kết thúc.',
     e5242: 'Khách chưa thanh toán đủ lịch đặt nên chưa bắt đầu chăm sóc được.',
+    e5243: 'Mọi buổi của lịch định kỳ phải nằm trong khoảng ngày đã chọn.',
+    e5113: 'Hãy nhập số nhà, tên đường.',
+    e5114: 'Hãy nhập tỉnh / thành phố.',
+    e5115: 'Chỉ đổi được địa chỉ khi lịch còn buổi sắp tới và không có buổi nào đang diễn ra.',
     e5413: 'Chính sách có giá trị không hợp lệ hoặc mâu thuẫn nhau.',
     e5414: 'Cần nhập đủ mọi giá trị của chính sách.',
     e5225: 'Thời lượng mỗi buổi vượt quá thời lượng của gói giá theo ca.',
@@ -273,6 +295,7 @@ export const bookingSharedVi = {
 export const bookingSharedEn = {
   status: {
     PENDING_CENTER_CONFIRMATION: 'Awaiting center confirmation',
+    PENDING_CAREGIVER_CONFIRMATION: 'Awaiting the caregiver',
     PENDING_CAREGIVER_ASSIGNMENT: 'Awaiting caregiver assignment',
     AWAITING_INITIAL_PAYMENT: 'Awaiting payment',
     CONFIRMED: 'Confirmed',
@@ -325,6 +348,22 @@ export const bookingSharedEn = {
   },
   dialog: {
     minLength: 'At least {{count}} characters.'
+  },
+  address: {
+    action: 'Change care address',
+    title: 'Change care address',
+    description: 'Applies to every visit that has not started, when the person cared for is staying somewhere else.',
+    addressLine: 'Street address',
+    ward: 'Ward',
+    district: 'District',
+    province: 'Province / city',
+    note: 'Note',
+    noteHint: 'e.g. She is staying at her daughter’s; ring the back gate.',
+    notice: 'The center and the assigned caregivers are told about the new address.',
+    cancel: 'Cancel',
+    save: 'Save address',
+    saved: 'Care address updated.',
+    changedEvent: 'Address changed: {{from}} → {{to}}'
   },
   caregiver: {
     title: 'Assigned caregiver',
@@ -394,6 +433,7 @@ export const bookingSharedEn = {
       OCCURRENCE_ACKNOWLEDGED: 'Caregiver acknowledged the visit',
       OCCURRENCE_STATUS_CHANGED: 'Visit status changed',
       CAREGIVER_CHANGED: 'Caregiver changed',
+      SERVICE_ADDRESS_CHANGED: 'Care address changed',
       NO_SHOW_REPORTED: 'No-show reported',
       other: 'Booking updated'
     },
@@ -514,6 +554,10 @@ export const bookingSharedEn = {
     e5222: 'This visit is outside the center’s check-in window.',
     e5223: 'The booking is not confirmed (no deposit yet) or has ended.',
     e5242: 'The customer has not paid the booking in full, so care cannot start yet.',
+    e5243: 'Every visit of a recurring booking must fall within its dates.',
+    e5113: 'Enter the street address.',
+    e5114: 'Enter the province or city.',
+    e5115: 'The address can only change while the booking has upcoming visits and none is in progress.',
     e5413: 'Some policy values are invalid or contradict each other.',
     e5414: 'Every policy value is required.',
     e5225: 'Each visit is longer than the selected per-shift price plan allows.',

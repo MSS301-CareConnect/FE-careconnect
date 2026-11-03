@@ -29,6 +29,7 @@ const TONES: Partial<Record<BookingStatus, string>> = {
 
 const ICONS: Record<BookingStatus, string> = {
   PENDING_CENTER_CONFIRMATION: 'hourglass_top',
+  PENDING_CAREGIVER_CONFIRMATION: 'how_to_reg',
   PENDING_CAREGIVER_ASSIGNMENT: 'person_search',
   AWAITING_INITIAL_PAYMENT: 'account_balance_wallet',
   CONFIRMED: 'event_available',

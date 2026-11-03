@@ -1,13 +1,20 @@
 export const caregiverNavigation = [
   { key: 'today', to: '/caregiver/today', icon: 'today', paths: ['/caregiver/today'] },
   { key: 'visits', to: '/caregiver/visits', icon: 'assignment_ind', paths: ['/caregiver/visits'] },
+  // CR-3: bookings customers sent straight to this caregiver.
+  { key: 'requests', to: '/caregiver/requests', icon: 'pending_actions', paths: ['/caregiver/requests'] },
   {
     key: 'work',
     to: '/caregiver/schedule',
     icon: 'calendar_month',
     paths: ['/caregiver/schedule', '/caregiver/work-shifts', '/caregiver/time-off']
   },
-  { key: 'profile', to: '/caregiver/profile', icon: 'person', paths: ['/caregiver/profile', '/caregiver/security'] }
+  {
+    key: 'profile',
+    to: '/caregiver/profile',
+    icon: 'person',
+    paths: ['/caregiver/profile', '/caregiver/security', '/caregiver/earnings']
+  }
 ] as const
 
 export type CaregiverNavigationItem = (typeof caregiverNavigation)[number]

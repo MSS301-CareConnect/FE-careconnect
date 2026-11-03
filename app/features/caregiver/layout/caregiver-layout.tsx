@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 
 import { CaregiverToaster } from '../ui/caregiver-toaster'
-import { useMyAvatar, useMyCaregiverProfile, useToday, useVisitsToAccept } from '../data/caregiver-queries'
+import {
+  useBookingRequests,
+  useMyAvatar,
+  useMyCaregiverProfile,
+  useToday,
+  useVisitsToAccept
+} from '../data/caregiver-queries'
 import { caregiverPageKey } from './caregiver-navigation.constants'
 import { CaregiverBottomNav } from './components/caregiver-bottom-nav'
 import { CaregiverRouteProgress } from './components/caregiver-route-progress'
@@ -29,6 +35,7 @@ export function CaregiverLayout() {
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const today = useToday()
   const toAccept = useVisitsToAccept(today).data?.totalElements ?? 0
+  const requests = useBookingRequests().data?.totalElements ?? 0
   const profile = useMyCaregiverProfile()
   const avatar = useMyAvatar(profile.data?.id)
   const pageKey = caregiverPageKey(pathname)
@@ -51,7 +58,7 @@ export function CaregiverLayout() {
   return (
     <div className='theme-caregiver min-h-dvh bg-surface text-on-surface'>
       <CaregiverRouteProgress />
-      <CaregiverSidebar collapsed={collapsed} onToggle={toggle} toAccept={toAccept} />
+      <CaregiverSidebar collapsed={collapsed} onToggle={toggle} requests={requests} toAccept={toAccept} />
       <div
         className={`flex min-h-dvh min-w-0 flex-col transition-[padding] duration-200 ease-[var(--cg-ease)] print:pl-0 ${collapsed ? 'lg:pl-[72px]' : 'lg:pl-60'}`}
       >
@@ -62,7 +69,7 @@ export function CaregiverLayout() {
           </div>
         </main>
       </div>
-      <CaregiverBottomNav toAccept={toAccept} />
+      <CaregiverBottomNav requests={requests} toAccept={toAccept} />
       <CaregiverToaster />
     </div>
   )

@@ -32,7 +32,10 @@ export const customerHomeEn = {
       description: 'Every caregiver and certificate is checked by the center.'
     },
     prices: { title: 'Clear prices', description: 'See the full quote before you send a request.' },
-    support: { title: 'Help when you need it', description: 'Call our support line every day, 7:00–22:00.' }
+    refunds: {
+      title: 'Clear payments and refunds',
+      description: 'Deposit and refund rules are shown before you pay.'
+    }
   },
   priceUnit: { HOUR: 'hour', DAY: 'day', SHIFT: 'shift' }
 } as const
@@ -71,7 +74,10 @@ export const customerHomeVi = {
       description: 'Mọi người chăm sóc và chứng chỉ đều được trung tâm kiểm tra.'
     },
     prices: { title: 'Giá rõ ràng', description: 'Xem báo giá đầy đủ trước khi gửi yêu cầu.' },
-    support: { title: 'Luôn có người hỗ trợ', description: 'Gọi tổng đài mỗi ngày, 07:00–22:00.' }
+    refunds: {
+      title: 'Thanh toán & hoàn tiền minh bạch',
+      description: 'Quy định đặt cọc và hoàn tiền hiển thị trước khi bạn thanh toán.'
+    }
   },
   priceUnit: { HOUR: 'giờ', DAY: 'ngày', SHIFT: 'ca' }
 } as const
