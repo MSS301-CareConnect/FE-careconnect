@@ -6,7 +6,9 @@ import { useFormat } from '~/shared/lib/format'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
 
 import {
-  durationPresets,
+  cleanHoursInput,
+  draftMinutes,
+  durationPresetHours,
   MAX_DISCOUNT,
   pricingUnits,
   withUnit,
@@ -16,7 +18,7 @@ import {
 } from '../plan-draft'
 
 const key = 'centerManager.services' as const
-const quickDiscounts = [0, 5, 10, 15, 20, 30]
+const quickDiscounts = [0, 5, 10, 15, 20]
 const chipClass =
   'min-h-9 rounded-full border px-3 text-xs font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-primary'
 
@@ -33,7 +35,8 @@ function PriceInput({
   'aria-describedby'?: string
 }) {
   const { i18n } = useTranslation()
-  const grouped = value === '' ? '' : new Intl.NumberFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN').format(Number(value))
+  const grouped =
+    value === '' ? '' : new Intl.NumberFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN').format(Number(value))
   return (
     <div className='relative'>
       <Input
@@ -41,7 +44,14 @@ function PriceInput({
         autoComplete='off'
         className='pr-10 tabular-nums'
         inputMode='numeric'
-        onChange={(event) => onChange(event.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 12))}
+        onChange={(event) =>
+          onChange(
+            event.target.value
+              .replace(/\D/g, '')
+              .replace(/^0+(?=\d)/, '')
+              .slice(0, 12)
+          )
+        }
         value={grouped}
       />
       <span className='pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-on-surface-variant'>
@@ -73,6 +83,7 @@ export function PlanFields({
   const base = Number(draft.basePrice || 0)
   const discount = Math.min(MAX_DISCOUNT, Math.max(0, Number(draft.discountPercent) || 0))
   const finalPrice = discountedPrice(base, discount)
+  const minutes = draftMinutes(draft)
   const errorText = (field: keyof PlanErrors) => (errors[field] ? t(`${key}.planForm.errors.${field}`) : undefined)
 
   return (
@@ -103,46 +114,56 @@ export function PlanFields({
         </div>
         {draft.pricingUnit === 'HOUR' ? (
           <div className='space-y-1.5'>
-            <p className='text-sm font-semibold text-on-surface'>{t(`${key}.planForm.duration`)}</p>
-            <p className='flex min-h-11 items-center rounded-xl bg-surface-container-low px-3.5 text-sm font-semibold text-on-surface-variant'>
+            <p className='text-sm font-semibold text-on-surface'>{t(`${key}.planForm.durationLabels.HOUR`)}</p>
+            <p className='flex min-h-11 items-center gap-2 rounded-xl bg-surface-container-low px-3.5 text-sm font-semibold text-on-surface-variant'>
               {t(`${key}.planForm.hourFixed`)}
             </p>
             <p className='text-xs leading-5 text-on-surface-variant'>{t(`${key}.planForm.unitHints.HOUR`)}</p>
           </div>
         ) : (
           <FormField
-            error={errorText('durationMinutes')}
+            error={errorText('duration')}
             hint={t(`${key}.planForm.unitHints.${draft.pricingUnit}`)}
             id={`${idPrefix}-duration`}
-            label={t(`${key}.planForm.duration`)}
+            label={t(`${key}.planForm.durationLabels.${draft.pricingUnit}`)}
           >
             {(controlProps) => (
               <div className='space-y-2'>
                 <div className='flex items-center gap-3'>
-                  <Input
-                    {...controlProps}
-                    className='max-w-32 tabular-nums'
-                    inputMode='numeric'
-                    min={1}
-                    onChange={(event) => onChange({ ...draft, durationMinutes: event.target.value.replace(/\D/g, '') })}
-                    value={draft.durationMinutes}
-                  />
-                  {Number(draft.durationMinutes) > 0 ? (
-                    <span className='text-sm text-on-surface-variant'>= {duration(Number(draft.durationMinutes))}</span>
+                  <div className='relative max-w-36'>
+                    <Input
+                      {...controlProps}
+                      className='pr-12 tabular-nums'
+                      inputMode='decimal'
+                      onChange={(event) => onChange({ ...draft, durationHours: cleanHoursInput(event.target.value) })}
+                      value={draft.durationHours}
+                    />
+                    <span className='pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-on-surface-variant'>
+                      {t(`${key}.planForm.hoursSuffix`)}
+                    </span>
+                  </div>
+                  {Number.isInteger(minutes) && minutes > 0 ? (
+                    <span className='text-sm text-on-surface-variant tabular-nums'>
+                      {t(`${key}.planForm.equalsMinutes`, { minutes })}
+                    </span>
                   ) : null}
                 </div>
-                <div aria-label={t(`${key}.planForm.durationSuggestions`)} className='flex flex-wrap gap-2' role='group'>
-                  {durationPresets[draft.pricingUnit].map((minutes) => {
-                    const active = Number(draft.durationMinutes) === minutes
+                <div
+                  aria-label={t(`${key}.planForm.durationSuggestions`)}
+                  className='flex flex-wrap gap-2'
+                  role='group'
+                >
+                  {durationPresetHours[draft.pricingUnit].map((hours) => {
+                    const active = minutes === hours * 60
                     return (
                       <button
                         aria-pressed={active}
                         className={`${chipClass} ${active ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary/60'}`}
-                        key={minutes}
-                        onClick={() => onChange({ ...draft, durationMinutes: String(minutes) })}
+                        key={hours}
+                        onClick={() => onChange({ ...draft, durationHours: String(hours) })}
                         type='button'
                       >
-                        {duration(minutes)}
+                        {duration(hours * 60)}
                       </button>
                     )
                   })}

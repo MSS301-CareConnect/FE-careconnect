@@ -44,6 +44,26 @@ export const managerServicesVi = {
   editOffering: 'Sửa dịch vụ',
   editPlan: 'Sửa gói giá',
   editPlanNamed: 'Sửa gói {{name}}',
+  deleteOffering: 'Xóa dịch vụ',
+  deletePlanNamed: 'Xóa gói {{name}}',
+  deleting: 'Đang xóa…',
+  deleteOfferingDialog: {
+    title: 'Xóa dịch vụ {{name}}?',
+    description:
+      'Dịch vụ và các gói giá đã tạm ngừng của nó sẽ bị gỡ khỏi trung tâm. Lịch đã đặt giữ nguyên giá. Bạn có thể thêm lại dịch vụ này từ danh mục chuẩn sau.',
+    blocked_one:
+      'Dịch vụ còn {{count}} gói giá đang áp dụng nên chưa xóa được. Hãy tạm ngừng hoặc xóa gói đó trước — hoặc chuyển dịch vụ sang Tạm ngừng nếu chỉ muốn ẩn khỏi khách.',
+    blocked_other:
+      'Dịch vụ còn {{count}} gói giá đang áp dụng nên chưa xóa được. Hãy tạm ngừng hoặc xóa các gói đó trước — hoặc chuyển dịch vụ sang Tạm ngừng nếu chỉ muốn ẩn khỏi khách.',
+    confirm: 'Xóa dịch vụ'
+  },
+  deletePlanDialog: {
+    title: 'Xóa gói {{name}}?',
+    description: 'Khách sẽ không chọn được gói này nữa. Lịch đã đặt bằng gói này vẫn giữ nguyên giá.',
+    lastActive:
+      'Đây là gói đang áp dụng cuối cùng: sau khi xóa, khách sẽ không thấy dịch vụ này cho tới khi bạn thêm gói mới.',
+    confirm: 'Xóa gói'
+  },
   table: {
     plan: 'Gói giá',
     unit: 'Đơn vị · thời lượng',
@@ -69,6 +89,8 @@ export const managerServicesVi = {
     deactivate: 'Tạm ngừng',
     changed: 'Đã sửa',
     invalid: 'Kiểm tra các ô được đánh dấu đỏ.',
+    serverInvalid:
+      'Hệ thống chưa nhận được các thay đổi. Vui lòng thử lại; nếu vẫn lỗi, báo quản trị viên kiểm tra máy chủ.',
     duplicate: 'Gói giá bị trùng.',
     stale: 'Có gói vừa được người khác cập nhật. Hủy sửa rồi mở lại để xem bản mới.',
     unauthenticated: 'Bạn đã hết thời gian đăng nhập. Vui lòng đăng nhập lại.',
@@ -102,6 +124,8 @@ export const managerServicesVi = {
     noPlans: 'Chưa có gói giá. Chọn một loại gói ở trên để thêm.',
     planCountSummary: '{{count}} gói giá sẽ được tạo cùng dịch vụ',
     invalid: 'Vui lòng chọn dịch vụ chuẩn và kiểm tra các ô được đánh dấu đỏ.',
+    serverInvalid:
+      'Hệ thống chưa nhận được dịch vụ này. Vui lòng thử lại; nếu vẫn lỗi, báo quản trị viên kiểm tra máy chủ.',
     duplicate: 'Dịch vụ này đã được thêm vào trung tâm.',
     stale: 'Dịch vụ vừa được người khác cập nhật. Hãy đóng và mở lại để xem bản mới.',
     unauthenticated: 'Bạn đã hết thời gian đăng nhập. Vui lòng đăng nhập lại.',
@@ -117,13 +141,22 @@ export const managerServicesVi = {
     name: 'Tên gói',
     namePlaceholder: 'Ví dụ: Chăm sóc 4 giờ',
     unit: 'Đơn vị tính',
-    duration: 'Thời lượng (phút)',
-    durationSuggestions: 'Gợi ý thời lượng',
-    hourFixed: '60 phút — cố định',
+    durationLabels: {
+      HOUR: 'Thời lượng tính giá',
+      DAY: 'Số giờ làm trong một ngày',
+      SHIFT: 'Độ dài một ca (giờ)'
+    },
+    durationShort: 'Số giờ',
+    hoursSuffix: 'giờ',
+    equalsMinutes: '= {{minutes}} phút',
+    durationSuggestions: 'Gợi ý số giờ',
+    hourFixed: '1 giờ = 60 phút (cố định)',
+    hourFixedShort: '1 giờ',
     unitHints: {
-      HOUR: 'Giá cho 1 giờ. Buổi 90 phút được tính 1,5 giờ.',
-      DAY: 'Mỗi buổi tính 1 ngày, bất kể dài bao lâu. Thời lượng giúp khách biết một ngày chăm sóc kéo dài bao lâu.',
-      SHIFT: 'Độ dài tối đa của một ca. Buổi dài hơn thời lượng này không đặt được bằng gói này.'
+      HOUR: 'Giá nhập là giá cho 1 giờ. Khách đặt bao nhiêu giờ thì nhân bấy nhiêu, ví dụ buổi 3 giờ 30 phút tính 3,5 giờ.',
+      DAY: 'Ví dụ 8 giờ = ca ngày 8 tiếng. Mỗi buổi tính tiền 1 ngày, số giờ để khách biết caregiver làm bao lâu.',
+      SHIFT:
+        'Ví dụ 4 giờ. Mỗi ca tính tiền 1 lần; khách không đặt được buổi dài hơn độ dài ca này. Có thể nhập 4,5 giờ.'
     },
     price: 'Giá gốc (VND)',
     discount: 'Giảm giá (%)',
@@ -134,11 +167,13 @@ export const managerServicesVi = {
     active: 'Đang áp dụng',
     errors: {
       planName: 'Nhập tên gói (tối đa 255 ký tự).',
-      durationMinutes: 'Thời lượng là số phút nguyên lớn hơn 0.',
+      duration: 'Nhập số giờ lớn hơn 0 và không quá 24 giờ.',
       basePrice: 'Nhập giá gốc không âm.',
       discountPercent: 'Giảm giá là số nguyên từ 0 đến 90.'
     },
     invalid: 'Kiểm tra các ô được đánh dấu đỏ.',
+    serverInvalid:
+      'Hệ thống chưa nhận được gói giá này. Vui lòng thử lại; nếu vẫn lỗi, báo quản trị viên kiểm tra máy chủ.',
     duplicate: 'Gói giá này đã tồn tại.',
     stale: 'Gói giá vừa được người khác cập nhật. Hãy đóng và mở lại để xem bản mới.',
     unauthenticated: 'Bạn đã hết thời gian đăng nhập. Vui lòng đăng nhập lại.',
@@ -194,6 +229,26 @@ export const managerServicesEn = {
   editOffering: 'Edit service',
   editPlan: 'Edit price plan',
   editPlanNamed: 'Edit plan {{name}}',
+  deleteOffering: 'Delete service',
+  deletePlanNamed: 'Delete plan {{name}}',
+  deleting: 'Deleting…',
+  deleteOfferingDialog: {
+    title: 'Delete {{name}}?',
+    description:
+      'The service and its paused price plans are removed from your center. Existing bookings keep their price. You can add the service again from the master catalog later.',
+    blocked_one:
+      'This service still has {{count}} active price plan, so it cannot be deleted. Pause or delete that plan first — or set the service to Paused if you only want to hide it from customers.',
+    blocked_other:
+      'This service still has {{count}} active price plans, so it cannot be deleted. Pause or delete those plans first — or set the service to Paused if you only want to hide it from customers.',
+    confirm: 'Delete service'
+  },
+  deletePlanDialog: {
+    title: 'Delete plan {{name}}?',
+    description: 'Customers can no longer choose this plan. Bookings already made with it keep their price.',
+    lastActive:
+      'This is the last active plan: once deleted, customers will not see this service until you add a new plan.',
+    confirm: 'Delete plan'
+  },
   table: {
     plan: 'Price plan',
     unit: 'Unit · duration',
@@ -219,6 +274,8 @@ export const managerServicesEn = {
     deactivate: 'Pause',
     changed: 'Edited',
     invalid: 'Check the fields marked in red.',
+    serverInvalid:
+      'The system did not accept the changes. Try again; if it keeps failing, ask an administrator to check the server.',
     duplicate: 'A price plan is duplicated.',
     stale: 'Someone else just updated a plan. Stop editing and reopen to see the latest version.',
     unauthenticated: 'You have been signed out. Please sign in again.',
@@ -252,6 +309,8 @@ export const managerServicesEn = {
     noPlans: 'No price plans yet. Pick a plan type above to add one.',
     planCountSummary: '{{count}} price plans will be created with the service',
     invalid: 'Choose a catalog service and check the fields marked in red.',
+    serverInvalid:
+      'The system did not accept this service. Try again; if it keeps failing, ask an administrator to check the server.',
     duplicate: 'This service is already offered by your center.',
     stale: 'Someone else just updated this service. Close and reopen it to see the latest version.',
     unauthenticated: 'You have been signed out. Please sign in again.',
@@ -267,13 +326,22 @@ export const managerServicesEn = {
     name: 'Plan name',
     namePlaceholder: 'For example: 4-hour care',
     unit: 'Pricing unit',
-    duration: 'Duration (minutes)',
-    durationSuggestions: 'Suggested durations',
-    hourFixed: '60 minutes — fixed',
+    durationLabels: {
+      HOUR: 'Billing length',
+      DAY: 'Working hours in the day',
+      SHIFT: 'Shift length (hours)'
+    },
+    durationShort: 'Hours',
+    hoursSuffix: 'h',
+    equalsMinutes: '= {{minutes}} minutes',
+    durationSuggestions: 'Suggested hours',
+    hourFixed: '1 hour = 60 minutes (fixed)',
+    hourFixedShort: '1 hour',
     unitHints: {
-      HOUR: 'Price for one hour. A 90-minute visit is billed as 1.5 hours.',
-      DAY: 'Each visit is billed as one day however long it runs. The duration tells customers how long a care day is.',
-      SHIFT: 'The longest a shift may run. Visits longer than this cannot be booked with this plan.'
+      HOUR: 'The price is for one hour. A booking is charged per hour booked, e.g. a 3 h 30 min visit counts as 3.5 hours.',
+      DAY: 'For example 8 hours for an 8-hour day. Each visit is charged as one day; the hours tell customers how long the caregiver works.',
+      SHIFT:
+        'For example 4 hours. Each shift is charged once; customers cannot book a visit longer than the shift. 4.5 hours is allowed.'
     },
     price: 'Base price (VND)',
     discount: 'Discount (%)',
@@ -284,11 +352,13 @@ export const managerServicesEn = {
     active: 'Currently offered',
     errors: {
       planName: 'Enter a plan name (up to 255 characters).',
-      durationMinutes: 'Duration must be a whole number of minutes above 0.',
+      duration: 'Enter hours above 0 and at most 24.',
       basePrice: 'Enter a non-negative base price.',
       discountPercent: 'Discount must be a whole number from 0 to 90.'
     },
     invalid: 'Check the fields marked in red.',
+    serverInvalid:
+      'The system did not accept this price plan. Try again; if it keeps failing, ask an administrator to check the server.',
     duplicate: 'This price plan already exists.',
     stale: 'Someone else just updated this price plan. Close and reopen it to see the latest version.',
     unauthenticated: 'You have been signed out. Please sign in again.',

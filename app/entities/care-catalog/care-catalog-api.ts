@@ -5,9 +5,14 @@ import {
   updateCatalogItem
 } from '~/shared/api/generated/api/catalog-item/catalog-item'
 import { getCenterOffering, listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
-import { createCenterOffering, updateCenterOffering } from '~/shared/api/generated/api/center-offering/center-offering'
+import {
+  createCenterOffering,
+  deleteCenterOffering,
+  updateCenterOffering
+} from '~/shared/api/generated/api/center-offering/center-offering'
 import {
   createPricePlan,
+  deletePricePlan,
   listPricePlans,
   updatePricePlan,
   updatePricePlansBatch
@@ -91,6 +96,10 @@ export async function createOffering(request: CenterOfferingRequest) {
 export async function saveOffering(id: string, request: CenterOfferingRequest) {
   return result(await updateCenterOffering(id, request, await writeOptions()))
 }
+/** Soft delete; refused with 409 (3206) while the service still has an active price plan. Its plans go with it. */
+export async function removeOffering(id: string) {
+  success(await deleteCenterOffering(id, await writeOptions()))
+}
 export async function fetchPricePlans(centerOfferingId: string) {
   return result(await listPricePlans(centerOfferingId, readOptions))
 }
@@ -99,6 +108,10 @@ export async function createOfferingPricePlan(request: PricePlanRequest) {
 }
 export async function saveOfferingPricePlan(id: string, request: PricePlanRequest) {
   return result(await updatePricePlan(id, request, await writeOptions()))
+}
+/** Soft delete; bookings already made keep the price they were quoted. */
+export async function removePricePlan(id: string) {
+  success(await deletePricePlan(id, await writeOptions()))
 }
 /** All or nothing: one stale or invalid plan rejects the whole batch. */
 export async function saveOfferingPricePlans(request: PricePlanBatchUpdateRequest) {

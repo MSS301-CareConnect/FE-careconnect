@@ -434,7 +434,15 @@ price plans through `entities/care-catalog`. The route takes its center ID only
 from `/users/me`, reads that center's offerings, and uses active master catalog
 items for new offerings. Offering and price plan forms send only contract fields;
 mutations use Identity CSRF headers and invalidate the related TanStack Query
-cache. The backend enforces center ownership and pricing permissions. Admin's
+cache. Since CAT-03 (2026-11-03) the new-service dialog (two columns: service details, then plan cards) creates the
+offering and its plans in one `POST /center-services` with `pricePlans`; durations are typed in hours and sent as minutes —
+an hourly plan is fixed at 1 hour, a daily plan asks for the working hours of the day and a shift plan for the shift
+length (decimals such as 4,5 allowed, at most 24 hours), each with suggested values and what the unit means for billing; each plan has a 0–90 % discount with a
+live "customer pays" preview. The plan table shows list price, discount and customer price, and "edit several plans"
+edits them inline (select several to apply one discount or pause/offer them) and saves through the all-or-nothing
+`PUT /price-plans/batch`. Plans and services are deleted (soft delete) behind a confirmation; a service with an
+active plan explains that it must be paused or emptied first, matching CareCatalogService's 409 `3206`. Customer screens price, sort and filter by `finalPrice` (`entities/care-catalog/price-plan-price.ts`)
+and show the struck-through list price with a discount badge (`plan-discount.tsx`). The backend enforces center ownership and pricing permissions. Admin's
 center pricing view remains read-only.
 
 The Center Manager booking list `/center-manager/bookings` and detail `/center-manager/bookings/:id` read

@@ -17,8 +17,9 @@ import type { CenterOfferingRecord, PricePlanRecord } from '~/shared/api/generat
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
+import { DeleteOfferingDialog, DeletePlanDialog } from './components/delete-dialogs'
 import { OfferingList } from './components/offering-list'
-import { PricePlanTable } from './components/price-plan-table'
+import { PlansHeading, PricePlanTable } from './components/price-plan-table'
 import { OfferingCreateDialog, OfferingEditDialog, PricePlanEditor } from './service-editors'
 
 const key = 'centerManager.services' as const
@@ -66,6 +67,7 @@ export function ManagerServicesPage() {
   const [search, setSearch] = useState('')
   const [offeringEditor, setOfferingEditor] = useState<'create' | 'edit' | null>(null)
   const [planEditor, setPlanEditor] = useState<PlanEditorState>(null)
+  const [deleting, setDeleting] = useState<{ kind: 'offering' } | { kind: 'plan'; plan: PricePlanRecord } | null>(null)
   useDocumentTitle(t(`${key}.documentTitle`))
 
   const offerings = useQuery({
@@ -94,6 +96,16 @@ export function ManagerServicesPage() {
     `${offering.catalogItem.name} ${offering.catalogItem.category}`.toLocaleLowerCase(locale).includes(normalized)
   )
   const hasActivePlan = plans.data?.some((plan) => plan.isActive !== false)
+  const addPlanButton = (
+    <button
+      className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary/10 px-4 text-sm font-bold text-primary hover:bg-primary/15'
+      disabled={plans.isError && careCatalogErrorStatus(plans.error) === 403}
+      onClick={() => setPlanEditor({ mode: 'create' })}
+      type='button'
+    >
+      <Icon name='add' /> {t(`${key}.addPlan`)}
+    </button>
+  )
 
   function selectOffering(id: string) {
     setPlanEditor(null)
@@ -155,7 +167,7 @@ export function ManagerServicesPage() {
       ) : (
         <>
           {all.length ? <CenterStats offerings={all} /> : null}
-          <div className='grid gap-6 lg:grid-cols-[minmax(280px,0.75fr)_minmax(0,1.6fr)] lg:items-start'>
+          <div className='grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(260px,0.62fr)_minmax(0,1.6fr)] lg:items-start'>
             <section className='overflow-hidden rounded-2xl border border-outline-variant/50 bg-white lg:sticky lg:top-6'>
               <div className='border-b border-outline-variant/40 p-5'>
                 <div className='mb-4 flex items-baseline justify-between gap-3'>
@@ -200,13 +212,24 @@ export function ManagerServicesPage() {
                         <ProviderStatusBadge label={t(`${key}.statuses.${selected.status}`)} status={selected.status} />
                       </div>
                     </div>
-                    <button
-                      className='inline-flex min-h-11 items-center gap-2 rounded-xl border border-outline-variant/70 px-4 text-sm font-bold hover:bg-surface-container-low'
-                      onClick={() => setOfferingEditor('edit')}
-                      type='button'
-                    >
-                      <Icon name='edit' /> {t(`${key}.editOffering`)}
-                    </button>
+                    <div className='flex gap-2'>
+                      <button
+                        className='inline-flex min-h-11 items-center gap-2 rounded-xl border border-outline-variant/70 px-4 text-sm font-bold hover:bg-surface-container-low'
+                        onClick={() => setOfferingEditor('edit')}
+                        type='button'
+                      >
+                        <Icon name='edit' /> {t(`${key}.editOffering`)}
+                      </button>
+                      <button
+                        aria-label={t(`${key}.deleteOffering`)}
+                        className='inline-flex size-11 items-center justify-center rounded-xl border border-outline-variant/70 text-on-surface-variant hover:border-error/40 hover:bg-error/10 hover:text-error'
+                        onClick={() => setDeleting({ kind: 'offering' })}
+                        title={t(`${key}.deleteOffering`)}
+                        type='button'
+                      >
+                        <Icon name='delete' />
+                      </button>
+                    </div>
                   </div>
                   <p className='mt-4 max-w-3xl text-sm leading-6 text-on-surface-variant'>
                     {selected.description || selected.catalogItem.description || t(`${key}.descriptionFallback`)}
@@ -220,44 +243,41 @@ export function ManagerServicesPage() {
                   ) : null}
                 </div>
                 <div className='p-5 sm:p-7'>
-                  <div className='mb-5 flex flex-wrap items-start justify-between gap-4'>
-                    <div>
-                      <h3 className='text-lg font-bold'>{t(`${key}.plans`)}</h3>
-                      <p className='mt-1 text-sm text-on-surface-variant'>{t(`${key}.plansHint`)}</p>
-                    </div>
-                    <button
-                      className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary/10 px-4 text-sm font-bold text-primary hover:bg-primary/15'
-                      disabled={plans.isError && careCatalogErrorStatus(plans.error) === 403}
-                      onClick={() => setPlanEditor({ mode: 'create' })}
-                      type='button'
-                    >
-                      <Icon name='add' /> {t(`${key}.addPlan`)}
-                    </button>
-                  </div>
-                  {plans.isPending ? (
-                    <p className='text-sm text-on-surface-variant' role='status'>
-                      {t(`${key}.plansLoading`)}
-                    </p>
-                  ) : plans.isError ? (
-                    <div className='text-sm text-error' role='alert'>
-                      {t(careCatalogErrorStatus(plans.error) === 403 ? `${key}.forbidden` : `${key}.plansError`)}{' '}
-                      {careCatalogErrorStatus(plans.error) !== 403 ? (
-                        <button className='font-semibold underline' onClick={() => void plans.refetch()} type='button'>
-                          {t(`${key}.retry`)}
-                        </button>
-                      ) : null}
-                    </div>
-                  ) : plans.data.length === 0 ? (
-                    <p className='rounded-xl bg-surface-container-low p-5 text-sm text-on-surface-variant'>
-                      {t(`${key}.plansEmpty`)}
-                    </p>
-                  ) : (
+                  {plans.isSuccess && plans.data.length > 0 ? (
                     <PricePlanTable
+                      addPlanButton={addPlanButton}
                       key={selected.id}
                       offeringId={selected.id}
+                      onDeletePlan={(plan) => setDeleting({ kind: 'plan', plan })}
                       onEditPlan={(plan) => setPlanEditor({ mode: 'edit', plan })}
                       plans={plans.data}
                     />
+                  ) : (
+                    <>
+                      <PlansHeading actions={addPlanButton} />
+                      {plans.isPending ? (
+                        <p className='text-sm text-on-surface-variant' role='status'>
+                          {t(`${key}.plansLoading`)}
+                        </p>
+                      ) : plans.isError ? (
+                        <div className='text-sm text-error' role='alert'>
+                          {t(careCatalogErrorStatus(plans.error) === 403 ? `${key}.forbidden` : `${key}.plansError`)}{' '}
+                          {careCatalogErrorStatus(plans.error) !== 403 ? (
+                            <button
+                              className='font-semibold underline'
+                              onClick={() => void plans.refetch()}
+                              type='button'
+                            >
+                              {t(`${key}.retry`)}
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className='rounded-xl bg-surface-container-low p-5 text-sm text-on-surface-variant'>
+                          {t(`${key}.plansEmpty`)}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </section>
@@ -287,6 +307,31 @@ export function ManagerServicesPage() {
       ) : null}
       {offeringEditor === 'edit' && centerId && selected ? (
         <OfferingEditDialog centerId={centerId} offering={selected} onClose={() => setOfferingEditor(null)} />
+      ) : null}
+      {deleting?.kind === 'offering' && selected ? (
+        <DeleteOfferingDialog
+          activePlanCount={(plans.data ?? selected.pricePlans ?? []).filter((plan) => plan.isActive !== false).length}
+          offering={selected}
+          onClose={() => setDeleting(null)}
+          onDeleted={() => {
+            setDeleting(null)
+            setParams((previous) => {
+              const next = new URLSearchParams(previous)
+              next.delete('offering')
+              return next
+            })
+          }}
+        />
+      ) : null}
+      {deleting?.kind === 'plan' ? (
+        <DeletePlanDialog
+          lastActive={
+            deleting.plan.isActive !== false &&
+            (plans.data ?? []).filter((plan) => plan.isActive !== false).length === 1
+          }
+          onClose={() => setDeleting(null)}
+          plan={deleting.plan}
+        />
       ) : null}
       {planEditor && selected ? (
         <PricePlanEditor

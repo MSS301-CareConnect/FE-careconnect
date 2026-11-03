@@ -31,6 +31,7 @@ import {
   planFields,
   pricingUnits,
   type PlanDraft,
+  type PlanField,
   type PricingUnit
 } from './plan-draft'
 
@@ -45,9 +46,9 @@ const ghostButton = 'min-h-11 rounded-xl px-4 text-sm font-semibold hover:bg-sur
 
 function errorKind(
   error: unknown
-): 'invalid' | 'duplicate' | 'stale' | 'unauthenticated' | 'forbidden' | 'notFound' | 'failed' {
+): 'serverInvalid' | 'duplicate' | 'stale' | 'unauthenticated' | 'forbidden' | 'notFound' | 'failed' {
   const status = careCatalogErrorStatus(error)
-  if (status === 400 || status === 422) return 'invalid'
+  if (status === 400 || status === 422) return 'serverInvalid'
   // M-04: someone else saved this record after the form opened.
   if (careCatalogErrorCode(error) === 3006) return 'stale'
   if (status === 409) return 'duplicate'
@@ -57,7 +58,17 @@ function errorKind(
   return 'failed'
 }
 
+/** CareCatalogService 400 codes that name one price plan field (3301 name, 3303 duration, 3304 price, 3307 discount). */
+const planFieldByCode: Record<number, PlanField> = {
+  3301: 'planName',
+  3303: 'duration',
+  3304: 'basePrice',
+  3307: 'discountPercent'
+}
+
 export function editorErrorKey(error: unknown, form: 'offeringForm' | 'planForm' | 'bulk') {
+  const field = planFieldByCode[careCatalogErrorCode(error) ?? 0]
+  if (careCatalogErrorStatus(error) === 400 && field) return `${key}.planForm.errors.${field}` as const
   const kind = errorKind(error)
   return kind === 'failed'
     ? apiRequestErrorKey(error, `${key}.${form}.failed` as const)
@@ -71,7 +82,7 @@ function useFocusFirstInvalid() {
   useEffect(() => {
     if (!attempt) return
     const invalid = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')
-    invalid?.scrollIntoView({ block: 'center' })
+    invalid?.scrollIntoView?.({ block: 'center' })
     invalid?.focus()
   }, [attempt])
   return { formRef, focusFirstInvalid: () => setAttempt((value) => value + 1) }
@@ -245,7 +256,7 @@ export function OfferingCreateDialog({
           ) : save.isError ? (
             <FormError>{t(editorErrorKey(save.error, 'offeringForm'))}</FormError>
           ) : plans.length ? (
-            <p className='mr-auto text-sm text-on-surface-variant'>
+            <p className='mr-auto hidden text-sm text-on-surface-variant sm:block'>
               {t(`${key}.offeringForm.planCountSummary`, { count: plans.length })}
             </p>
           ) : null}
@@ -324,7 +335,10 @@ export function OfferingCreateDialog({
                   className='inline-flex min-h-10 items-center gap-1 rounded-xl bg-primary/10 px-3 text-sm font-bold text-primary hover:bg-primary/15'
                   key={unit}
                   onClick={() =>
-                    setPlans((current) => [...current, newPlanDraft(unit, t(`${key}.offeringForm.templateNames.${unit}`))])
+                    setPlans((current) => [
+                      ...current,
+                      newPlanDraft(unit, t(`${key}.offeringForm.templateNames.${unit}`))
+                    ])
                   }
                   type='button'
                 >
