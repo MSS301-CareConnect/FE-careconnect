@@ -15,11 +15,14 @@ import type { CareTaskRecord, CareTaskUpdateRequest } from '~/shared/api/generat
 import { Icon } from '~/shared/ui/icon'
 import { SectionCard } from '~/shared/ui/section-card'
 
-import { currentPosition } from '../current-position'
+import { currentPosition } from '../../data/use-visit-actions'
+import { StickyActionBar, SuccessCheck } from '../../ui/action-bits'
+import { Button } from '~/shared/ui/button'
+import { toast } from 'sonner'
 
 const TASK_TONE: Record<CareTaskRecord['status'], string> = {
   PENDING: 'bg-surface-container-low',
-  DONE: 'bg-secondary-container/60',
+  DONE: 'bg-brand-50',
   SKIPPED: 'bg-neutral-container/70'
 }
 const TASK_ICON: Record<CareTaskRecord['status'], string> = {
@@ -58,6 +61,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
   const finish = useMutation({
     mutationFn: async () => checkOut(sessionId, await currentPosition()),
     onSuccess: (updated) => {
+      toast.success(t('caregiver.visitDetail.actions.finished'))
       queryClient.setQueryData(bookingKeys.session(sessionId), updated)
       void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
     }
@@ -119,7 +123,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                 {task.status === 'PENDING' ? (
                   <>
                     <button
-                      className='min-h-11 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:opacity-50'
+                      className='cg-press min-h-11 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:bg-primary-container disabled:opacity-50'
                       disabled={update.isPending}
                       onClick={() => update.mutate({ task, request: { status: 'DONE' } })}
                       type='button'
@@ -127,7 +131,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                       {t('caregiver.visitDetail.session.done')}
                     </button>
                     <button
-                      className='min-h-11 rounded-xl border border-outline-variant/30 bg-white px-3.5 py-2 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container'
+                      className='cg-press min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-low'
                       onClick={() => setSkipping(task)}
                       type='button'
                     >
@@ -136,7 +140,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
                   </>
                 ) : (
                   <button
-                    className='min-h-11 rounded-xl border border-outline-variant/30 bg-white px-3.5 py-2 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-50'
+                    className='cg-press min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50'
                     disabled={update.isPending}
                     onClick={() => update.mutate({ task, request: { status: 'PENDING' } })}
                     type='button'
@@ -150,6 +154,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
         ))}
       </ul>
 
+      {finish.isSuccess ? <SuccessCheck label={t('caregiver.visitDetail.actions.finished')} /> : null}
       {active ? (
         <div className='mt-5 flex flex-col gap-4'>
           <form
@@ -183,22 +188,22 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
               {t(bookingErrorKey(error))}
             </p>
           ) : null}
-          <div className='flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-container-low p-4'>
-            <p className='text-sm text-on-surface-variant'>
-              {pending > 0
-                ? t('caregiver.visitDetail.session.pendingLeft', { count: pending })
-                : t('caregiver.visitDetail.session.readyToFinish')}
-            </p>
-            <button
-              className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:opacity-50'
-              disabled={pending > 0 || finish.isPending}
+          <p className='rounded-xl bg-surface-container-low p-3.5 text-sm text-on-surface-variant'>
+            {pending > 0
+              ? t('caregiver.visitDetail.session.pendingLeft', { count: pending })
+              : t('caregiver.visitDetail.session.readyToFinish')}
+          </p>
+          <StickyActionBar>
+            <Button
+              disabled={pending > 0}
+              leftIcon={<Icon className='text-lg' name='logout' />}
+              loading={finish.isPending}
               onClick={() => finish.mutate()}
-              type='button'
+              size='lg'
             >
-              <Icon className='text-lg' name='logout' />
-              {finish.isPending ? t('booking.actions.working') : t('caregiver.visitDetail.session.checkOut')}
-            </button>
-          </div>
+              {t('caregiver.visitDetail.session.checkOut')}
+            </Button>
+          </StickyActionBar>
         </div>
       ) : null}
 

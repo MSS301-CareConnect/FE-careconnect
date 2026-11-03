@@ -58,7 +58,8 @@ describe('Customer caregiver profile', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Lan Nguyen' })).toBeInTheDocument()
     expect(fetchPublicCaregiver).toHaveBeenCalledWith('cg-1')
-    expect(screen.getByRole('img', { name: 'Profile photo of Lan Nguyen' })).toHaveAttribute('src', '/avatars/lan.png')
+    const photo = screen.getByRole('button', { name: 'View image Profile photo of Lan Nguyen' })
+    expect(photo.querySelector('img')).toHaveAttribute('src', '/avatars/lan.png')
     expect(screen.getByText('Twelve years of hospital nursing.')).toBeInTheDocument()
     expect(screen.getByText('12 years of experience')).toBeInTheDocument()
     expect(screen.getByText('Elderly care at home')).toBeInTheDocument()
@@ -167,7 +168,8 @@ describe('Customer caregiver profile', () => {
     expect(screen.queryByRole('heading', { name: 'About' })).not.toBeInTheDocument()
     expect(screen.getByText('This caregiver has not registered any services yet.')).toBeInTheDocument()
     expect(screen.getByText('No verified certificates yet.')).toBeInTheDocument()
-    expect(screen.getByText('No reviews yet')).toBeInTheDocument()
+    // No review yet reads as a 'New' badge, never as a zero rating.
+    expect(screen.getByText('New')).toBeInTheDocument()
   })
 
   it('reports a profile that cannot be loaded and retries', async () => {

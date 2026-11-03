@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
@@ -15,8 +15,17 @@ import { useNotificationStream } from './use-notification-stream'
 
 const MAX_BADGE = 99
 
-/** Notification center shared by the four portals (H-06): unread badge, latest notifications, mark as read. */
-export function NotificationBell() {
+/**
+ * Notification center shared by the four portals (H-06): unread badge, latest notifications, mark as read. A portal
+ * may pin its own items above the list (`pinned`, e.g. the customer's pending invitations) and add them to the badge.
+ */
+export function NotificationBell({
+  pinned,
+  pinnedCount = 0
+}: {
+  pinned?: (close: () => void) => ReactNode
+  pinnedCount?: number
+} = {}) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -27,7 +36,7 @@ export function NotificationBell() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: notificationKeys.all })
   const readOne = useMutation({ mutationFn: readNotification, onSuccess: refresh })
   const readAll = useMutation({ mutationFn: readAllNotifications, onSuccess: refresh })
-  const count = unread.data ?? 0
+  const count = (unread.data ?? 0) + pinnedCount
 
   useEffect(() => {
     if (!open) return undefined
@@ -79,6 +88,7 @@ export function NotificationBell() {
               {t('notifications.readAll')}
             </button>
           </div>
+          {pinned ? pinned(() => setOpen(false)) : null}
           {list.isPending ? (
             <p className='px-2 py-3 text-sm text-on-surface-variant' role='status'>
               {t('notifications.loading')}

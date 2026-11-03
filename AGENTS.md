@@ -1,7 +1,7 @@
 # CareConnect Web agent guide
 
 This file is the operational source of truth for humans and coding agents working
-in this repository. Read `ARCHITECTURE.md` before changing structure or data flow.
+in this repository. Read `docs/ARCHITECTURE.md` before changing structure or data flow.
 
 ## Product scope
 
@@ -150,12 +150,12 @@ providers --------------------------+
   inputs are never locked or auto-corrected; a wrong value gets a note under the input.
 - Do not manually edit `pnpm-lock.yaml`; change dependencies through pnpm.
 - Do not commit `.env`, build output, coverage, or generated React Router types.
-- Update `ARCHITECTURE.md` when changing a boundary, public interface, rendering
+- Update `docs/ARCHITECTURE.md` when changing a boundary, public interface, rendering
   model, API generation policy, or deployment assumption.
 
 ## AI workflow
 
-1. Read this file and `ARCHITECTURE.md`.
+1. Read this file and `docs/ARCHITECTURE.md`.
 2. Inspect the nearest feature and tests before editing.
 3. State any assumption that changes product behavior or access control.
 4. Make one coherent slice; generate rather than hand-edit API code.

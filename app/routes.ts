@@ -48,11 +48,14 @@ export default [
   ...prefix('caregiver', [
     layout('routes/caregiver/layout.tsx', [
       index('routes/caregiver/index.tsx'),
+      route('today', 'routes/caregiver/today.tsx'),
       route('schedule', 'routes/caregiver/schedule.tsx'),
       route('work-shifts', 'routes/caregiver/work-shifts.tsx'),
+      route('time-off', 'routes/caregiver/time-off.tsx'),
       route('visits', 'routes/caregiver/visits.tsx'),
       route('visits/:id', 'routes/caregiver/visit-detail.tsx'),
-      route('profile', 'routes/caregiver/profile.tsx')
+      route('profile', 'routes/caregiver/profile.tsx'),
+      route('security', 'routes/caregiver/security.tsx')
     ])
   ]),
   ...prefix('customer', [
@@ -68,15 +71,18 @@ export default [
       route('bookings', 'routes/customer/bookings.tsx'),
       route('bookings/:id', 'routes/customer/booking-detail.tsx'),
       route('bookings/:id/deposit', 'routes/customer/booking-payment.tsx'),
-      route('payments', 'routes/customer/payments.tsx'),
-      route('invitations', 'routes/customer/invitations.tsx'),
       route('payments/vnpay-return', 'routes/customer/payment-return.tsx'),
       route('payments/:paymentId/success', 'routes/customer/payment-success.tsx'),
       route('payments/:paymentId/failure', 'routes/customer/payment-failure.tsx'),
-      route('my-profile', 'routes/customer/my-profile.tsx'),
-      route('patient-profiles', 'routes/customer/patient-profiles.tsx'),
       route('patient-profiles/new', 'routes/customer/patient-create.tsx'),
-      route('patient-profiles/:id', 'routes/customer/patient-detail.tsx')
+      // Account area: one shell (sidebar on desktop, tabs on phones) around the pages of the account menu.
+      layout('routes/customer/account-layout.tsx', [
+        route('my-profile', 'routes/customer/my-profile.tsx'),
+        route('patient-profiles', 'routes/customer/patient-profiles.tsx'),
+        route('patient-profiles/:id', 'routes/customer/patient-detail.tsx'),
+        route('payments', 'routes/customer/payments.tsx'),
+        route('invitations', 'routes/customer/invitations.tsx')
+      ])
     ])
   ]),
   route('*', 'routes/not-found.tsx')

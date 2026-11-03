@@ -206,6 +206,8 @@ export function useBookingForm() {
   const [customerNote, setCustomerNote] = useState('')
   const [step, setStep] = useState<WizardStep>(draft?.step ?? 1)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
+  // The furthest step the customer has opened: a valid default schedule only counts once they have seen it.
+  const [reached, setReached] = useState<WizardStep>(draft?.step ?? 1)
   const [agreed, setAgreed] = useState(false)
   const [prefillDone, setPrefillDone] = useState(!preselectedService || Boolean(draft))
   const [stepResolved, setStepResolved] = useState(!hasPrefill)
@@ -378,7 +380,8 @@ export function useBookingForm() {
             : null,
     3: scheduleIssue()
   }
-  const readyForQuote = !issues[1] && !issues[2] && !issues[3]
+  // The default schedule is valid on its own, so the price waits until the customer has opened the schedule step.
+  const readyForQuote = reached >= 3 && !issues[1] && !issues[2] && !issues[3]
 
   // The note is not part of this request: it does not change the price, so typing it never re-runs the quote.
   const scheduleKey = JSON.stringify(schedule)
@@ -440,6 +443,7 @@ export function useBookingForm() {
     setStepResolved(true)
     const target: WizardStep = !urlRecipient || issues[1] ? 1 : issues[2] ? 2 : 3
     if (target !== step) setStep(target)
+    if (target > reached) setReached(target)
   }
 
   const dirty = Boolean(recipientChoice) || Object.keys(rawServices).length > 0 || customerNote.trim() !== ''
@@ -454,6 +458,7 @@ export function useBookingForm() {
     if (target > furthest) return
     setDirection(target >= step ? 'forward' : 'back')
     setStep(target)
+    setReached((current) => (target > current ? target : current))
   }
 
   function toggleService(offeringId: string, careServiceId: string) {
@@ -502,6 +507,7 @@ export function useBookingForm() {
   return {
     now,
     step,
+    reached,
     direction,
     goTo,
     next: () => goTo(Math.min(4, step + 1) as WizardStep),

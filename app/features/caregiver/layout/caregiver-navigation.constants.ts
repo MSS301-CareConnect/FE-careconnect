@@ -1,13 +1,30 @@
 export const caregiverNavigation = [
-  { key: 'visits', to: '/caregiver/visits', icon: 'assignment_ind' },
-  { key: 'schedule', to: '/caregiver/schedule', icon: 'calendar_month' },
-  { key: 'shifts', to: '/caregiver/work-shifts', icon: 'event_available' },
-  { key: 'profile', to: '/caregiver/profile', icon: 'person' }
+  { key: 'today', to: '/caregiver/today', icon: 'today', paths: ['/caregiver/today'] },
+  { key: 'visits', to: '/caregiver/visits', icon: 'assignment_ind', paths: ['/caregiver/visits'] },
+  {
+    key: 'work',
+    to: '/caregiver/schedule',
+    icon: 'calendar_month',
+    paths: ['/caregiver/schedule', '/caregiver/work-shifts', '/caregiver/time-off']
+  },
+  { key: 'profile', to: '/caregiver/profile', icon: 'person', paths: ['/caregiver/profile', '/caregiver/security'] }
 ] as const
 
-export function activeCaregiverNavigation(pathname: string) {
+export type CaregiverNavigationItem = (typeof caregiverNavigation)[number]
+
+export function activeCaregiverNavigation(pathname: string): CaregiverNavigationItem {
   return (
-    caregiverNavigation.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ??
-    caregiverNavigation[0]
+    caregiverNavigation.find((item) =>
+      item.paths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+    ) ?? caregiverNavigation[0]
   )
+}
+
+/**
+ * Key that decides when the page content re-animates: the three work-schedule routes are tabs of one page, so moving
+ * between them keeps the page in place; anything else animates per path.
+ */
+export function caregiverPageKey(pathname: string) {
+  const active = activeCaregiverNavigation(pathname)
+  return active.key === 'work' ? 'work' : pathname
 }

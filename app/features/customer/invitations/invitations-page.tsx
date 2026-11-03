@@ -1,8 +1,8 @@
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { formatDateTime } from '~/entities/booking/booking-format'
 import {
   acceptInvitation,
   declineInvitation,
@@ -10,78 +10,161 @@ import {
   managerErrorKey,
   managerKeys
 } from '~/entities/care-recipient/care-recipient-managers-api'
+import type { MyInvitationRecord } from '~/shared/api/generated/contracts'
+import { useFormat } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { Avatar } from '~/shared/ui/avatar'
+import { Button } from '~/shared/ui/button'
+import { Icon } from '~/shared/ui/icon'
+import { ConfirmDialog } from '~/shared/ui/modal'
+import { PageHeader } from '~/shared/ui/page-header'
+import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
+import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
+
+const key = 'customer.invitations' as const
 
 /** Invitations addressed to the signed-in customer; accepting is the only way to become a co-manager (C-04). */
 export function InvitationsPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const format = useFormat()
   const queryClient = useQueryClient()
-  useDocumentTitle(t('customer.invitations.documentTitle'))
+  useDocumentTitle(t(`${key}.documentTitle`))
+  const [declining, setDeclining] = useState<MyInvitationRecord | null>(null)
   const invitations = useQuery({ queryKey: managerKeys.myInvitations, queryFn: fetchMyInvitations, retry: false })
   const refresh = () => queryClient.invalidateQueries({ queryKey: managerKeys.myInvitations })
-  const accept = useMutation({ mutationFn: acceptInvitation, onSuccess: refresh })
-  const decline = useMutation({ mutationFn: declineInvitation, onSuccess: refresh })
-  const failure = accept.error ?? decline.error
+  const accept = useMutation({
+    mutationFn: acceptInvitation,
+    onSuccess: refresh
+  })
+  const decline = useMutation({
+    mutationFn: declineInvitation,
+    onSuccess: async () => {
+      setDeclining(null)
+      await refresh()
+    }
+  })
   const items = invitations.data ?? []
+  const busy = accept.isPending || decline.isPending
 
   return (
-    <div className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-10'>
-      <div>
-        <h1 className='text-3xl font-extrabold tracking-[-0.045em]'>{t('customer.invitations.title')}</h1>
-        <p className='mt-2 text-sm text-on-surface-variant'>{t('customer.invitations.subtitle')}</p>
-      </div>
+    <div>
+      <PageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
+
       {invitations.isPending ? (
-        <p className='text-sm text-on-surface-variant' role='status'>
-          {t('customer.invitations.loading')}
-        </p>
+        <SkeletonGroup className='flex flex-col gap-4' label={t(`${key}.loading`)}>
+          {[0, 1].map((index) => (
+            <Skeleton className='h-36 w-full rounded-2xl' key={index} />
+          ))}
+        </SkeletonGroup>
       ) : null}
-      {invitations.isError || failure ? (
-        <p className='rounded-xl bg-error/10 p-3 text-sm text-error' role='alert'>
-          {t(managerErrorKey(failure ?? invitations.error))}
-        </p>
+      {invitations.isError ? (
+        <ErrorState message={t(managerErrorKey(invitations.error))} onRetry={() => void invitations.refetch()} />
       ) : null}
-      {invitations.isSuccess && items.length === 0 ? (
-        <p className='text-sm text-on-surface-variant'>{t('customer.invitations.empty')}</p>
+      {accept.isError ? (
+        <p className='mb-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container' role='alert'>
+          {t(managerErrorKey(accept.error))}
+        </p>
       ) : null}
       {accept.isSuccess ? (
-        <p className='text-sm' role='status'>
-          {t('customer.invitations.accepted')}{' '}
-          <Link className='font-semibold text-primary underline' to='/customer/patient-profiles'>
-            {t('customer.invitations.openProfiles')}
+        <p
+          className='cc-fade-up mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-success-container px-4 py-3 text-sm text-on-success-container'
+          role='status'
+        >
+          <Icon className='text-lg' name='check_circle' />
+          {t(`${key}.accepted`)}
+          <Link className='font-semibold underline-offset-2 hover:underline' to='/customer/patient-profiles'>
+            {t(`${key}.openProfiles`)}
           </Link>
         </p>
       ) : null}
-      <ul className='flex flex-col gap-3'>
-        {items.map((invitation) => (
-          <li className='rounded-xl border border-outline-variant bg-white p-4' key={invitation.id}>
-            <p className='font-semibold'>
-              {t('customer.invitations.profile', { name: invitation.recipientFullName ?? '—' })}
-            </p>
-            <p className='mt-1 text-sm text-on-surface-variant'>
-              {t(`customer.managers.levels.${invitation.accessLevel}`)} ·{' '}
-              {t('customer.invitations.expires', { time: formatDateTime(invitation.expiresAt, i18n.language) })}
-            </p>
-            <div className='mt-3 flex gap-2'>
-              <button
-                className='rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-50'
-                disabled={accept.isPending || decline.isPending}
-                onClick={() => accept.mutate(invitation.id)}
-                type='button'
-              >
-                {t('customer.invitations.accept')}
-              </button>
-              <button
-                className='rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold disabled:opacity-50'
-                disabled={accept.isPending || decline.isPending}
-                onClick={() => decline.mutate(invitation.id)}
-                type='button'
-              >
-                {t('customer.invitations.decline')}
-              </button>
-            </div>
-          </li>
-        ))}
+
+      {invitations.isSuccess && items.length === 0 ? (
+        <EmptyState
+          action={
+            <Link
+              className='inline-flex min-h-11 items-center rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm font-semibold text-on-surface hover:bg-surface-container-low'
+              to='/customer/patient-profiles'
+            >
+              {t(`${key}.openProfiles`)}
+            </Link>
+          }
+          description={t(`${key}.emptyHint`)}
+          icon='mail'
+          title={t(`${key}.empty`)}
+        />
+      ) : null}
+
+      <ul className='cc-stagger flex flex-col gap-4'>
+        {items.map((invitation) => {
+          const name = invitation.recipientFullName ?? t(`${key}.unknownProfile`)
+          return (
+            <li
+              className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'
+              key={invitation.id}
+            >
+              <div className='flex items-start gap-4'>
+                <Avatar className='h-12 w-12 shrink-0 rounded-full' decorative name={name} />
+                <div className='min-w-0 flex-1'>
+                  <h2 className='text-base font-semibold text-on-surface'>{t(`${key}.profile`, { name })}</h2>
+                  <dl className='mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-3'>
+                    <div>
+                      <dt className='text-xs text-on-surface-variant'>{t(`${key}.access`)}</dt>
+                      <dd className='font-medium text-on-surface'>
+                        {t(`customer.managers.levels.${invitation.accessLevel}`)}
+                      </dd>
+                    </div>
+                    {invitation.relationshipType ? (
+                      <div>
+                        <dt className='text-xs text-on-surface-variant'>{t(`${key}.relationship`)}</dt>
+                        <dd className='font-medium text-on-surface'>
+                          {t(`customer.managers.relationships.${invitation.relationshipType}`)}
+                        </dd>
+                      </div>
+                    ) : null}
+                    <div>
+                      <dt className='text-xs text-on-surface-variant'>{t(`${key}.expiresLabel`)}</dt>
+                      <dd className='font-medium text-on-surface tabular-nums'>
+                        {format.dateTime(invitation.expiresAt)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+              <div className='mt-4 flex flex-wrap justify-end gap-2 border-t border-outline-variant/70 pt-4'>
+                <Button
+                  disabled={busy}
+                  onClick={() => {
+                    decline.reset()
+                    setDeclining(invitation)
+                  }}
+                  variant='outline'
+                >
+                  {t(`${key}.decline`)}
+                </Button>
+                <Button
+                  disabled={busy}
+                  loading={accept.isPending && accept.variables === invitation.id}
+                  onClick={() => accept.mutate(invitation.id)}
+                >
+                  {t(`${key}.accept`)}
+                </Button>
+              </div>
+            </li>
+          )
+        })}
       </ul>
+
+      <ConfirmDialog
+        confirmLabel={t(`${key}.decline`)}
+        danger
+        description={t(`${key}.declineHint`)}
+        error={decline.isError ? t(managerErrorKey(decline.error)) : undefined}
+        loading={decline.isPending}
+        onClose={() => setDeclining(null)}
+        onConfirm={() => declining && decline.mutate(declining.id)}
+        open={declining !== null}
+        title={t(`${key}.declineTitle`, { name: declining?.recipientFullName ?? '' })}
+      />
     </div>
   )
 }

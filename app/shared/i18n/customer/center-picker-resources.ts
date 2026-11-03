@@ -33,7 +33,8 @@ export const centerPickerVi = {
     signInText: 'Danh sách trung tâm, bảng giá và đội ngũ chăm sóc hiển thị sau khi bạn đăng nhập.',
     signIn: 'Đăng nhập'
   },
-  scope: { showing: 'Đang hiển thị theo' }
+  scope: { showing: 'Đang hiển thị theo' },
+  context: { at: 'Tại {{name}}', none: 'Đang xem tất cả trung tâm', change: 'Đổi', choose: 'Chọn trung tâm' }
 } as const
 
 export const centerPickerEn = {
@@ -71,5 +72,6 @@ export const centerPickerEn = {
     signInText: 'Centers, their prices and their care teams appear once you sign in.',
     signIn: 'Sign in'
   },
-  scope: { showing: 'Showing' }
+  scope: { showing: 'Showing' },
+  context: { at: 'At {{name}}', none: 'Showing every center', change: 'Change', choose: 'Choose a center' }
 } as const

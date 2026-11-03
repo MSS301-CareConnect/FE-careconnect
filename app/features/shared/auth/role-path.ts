@@ -5,7 +5,7 @@ export type PortalRole = 'ADMIN' | 'CENTER_MANAGER' | 'CAREGIVER' | 'CUSTOMER'
 const portalPaths: Record<PortalRole, string> = {
   ADMIN: '/admin/dashboard',
   CENTER_MANAGER: '/center-manager/caregivers',
-  CAREGIVER: '/caregiver/visits',
+  CAREGIVER: '/caregiver/today',
   CUSTOMER: '/customer'
 }
 

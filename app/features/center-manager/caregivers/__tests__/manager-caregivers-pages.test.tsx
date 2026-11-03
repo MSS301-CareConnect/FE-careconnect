@@ -303,7 +303,8 @@ describe('Center Manager Provider caregivers', () => {
     )
     renderManager('/center-manager/caregivers/caregiver-1')
 
-    expect(await screen.findByRole('img', { name: 'Lan Nguyen' })).toHaveAttribute('src', '/avatar.jpg')
+    const photo = await screen.findByRole('button', { name: 'View image Lan Nguyen' })
+    expect(photo.querySelector('img')).toHaveAttribute('src', '/avatar.jpg')
     await waitFor(() => expect(fetchProviderMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1'))
     expect(await screen.findByRole('link', { name: /first-aid.pdf/ })).toHaveAttribute('href', '/first-aid.pdf')
     expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()

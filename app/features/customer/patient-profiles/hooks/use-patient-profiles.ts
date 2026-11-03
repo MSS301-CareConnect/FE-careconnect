@@ -11,7 +11,6 @@ import type { ListCareRecipientsParams } from '~/shared/api/generated/contracts'
 import { STATUS_OPTIONS, type StatusFilter } from '../types'
 
 const PAGE_SIZE = 10
-const overviewRequest: ListCareRecipientsParams = { page: 0, size: PAGE_SIZE }
 
 function parseStatus(value: string | null): StatusFilter {
   return STATUS_OPTIONS.find((status) => status === value) ?? 'ALL'
@@ -35,30 +34,26 @@ export function usePatientProfiles() {
     queryFn: () => fetchCareRecipients(request),
     retry: false
   })
-  // The unfiltered first page shares its cache entry with the default list view.
-  const overview = useQuery({
-    queryKey: careRecipientKeys.list(overviewRequest),
-    queryFn: () => fetchCareRecipients(overviewRequest),
-    retry: false
-  })
   const remove = useMutation({
     mutationFn: archiveCareRecipient,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: careRecipientKeys.all })
   })
 
   function update(name: 'q' | 'status' | 'page', value: string) {
-    setParams((previous) => {
-      const next = new URLSearchParams(previous)
-      if (value) next.set(name, value)
-      else next.delete(name)
-      if (name !== 'page') next.delete('page')
-      return next
-    })
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous)
+        if (value) next.set(name, value)
+        else next.delete(name)
+        if (name !== 'page') next.delete('page')
+        return next
+      },
+      { replace: true }
+    )
   }
 
   return {
     profiles,
-    familyCount: overview.data?.totalElements,
     keyword,
     status,
     page,
@@ -66,6 +61,7 @@ export function usePatientProfiles() {
     setKeyword: (value: string) => update('q', value.trim()),
     setStatus: (value: StatusFilter) => update('status', value === 'ALL' ? '' : value),
     setPage: (value: number) => update('page', value > 0 ? String(value) : ''),
+    clearFilters: () => setParams({}, { replace: true }),
     remove
   }
 }

@@ -149,6 +149,7 @@ export function CenterDetailPage({ id }: { id: string }) {
               name={center.data.centerName}
               onExpired={() => void media.refetch()}
               src={pickAvatar(media.data)?.downloadUrl}
+              viewable
             />
             <div className='min-w-0 flex-1'>
               <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{center.data.centerName}</h1>

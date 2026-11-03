@@ -46,10 +46,14 @@ export function BookingSuccess({ form }: { form: BookingForm }) {
       </h1>
       <p className='mt-2 text-on-surface-variant'>{t('customer.booking.success.description')}</p>
 
-      <div className='mt-6 flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2'>
-        <span className='text-sm text-on-surface-variant'>{t('customer.booking.success.code')}</span>
-        <span className='font-mono text-lg font-semibold text-on-surface'>{booking.bookingCode}</span>
-        <CopyButton value={booking.bookingCode} />
+      <div className='mt-6 flex w-full max-w-sm items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest py-2 pr-2 pl-4 text-left'>
+        <span className='min-w-0'>
+          <span className='block text-xs text-on-surface-variant'>{t('customer.booking.success.code')}</span>
+          <span className='block font-mono text-base font-semibold whitespace-nowrap text-on-surface sm:text-lg'>
+            {booking.bookingCode}
+          </span>
+        </span>
+        <CopyButton compact value={booking.bookingCode} />
       </div>
 
       <dl className='mt-6 w-full divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container-lowest text-left text-sm'>
@@ -63,7 +67,7 @@ export function BookingSuccess({ form }: { form: BookingForm }) {
             {t(`customer.booking.schedule.types.${form.schedule.bookingType}.title`)}
             {facts.occurrences[0] ? (
               <span className='block font-normal text-on-surface-variant'>
-                {format.dateTime(facts.occurrences[0].startAt)}
+                {format.visitRange(facts.occurrences[0].startAt, facts.occurrences[0].endAt)}
               </span>
             ) : null}
           </dd>

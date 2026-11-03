@@ -123,6 +123,11 @@ export function useFormat() {
     dateTime: (value: string | undefined) =>
       value ? `${formatClock24(value, language)} · ${weekday(calendarDayOf(value))}, ${formatCalendarDate(value)}` : '',
     duration,
+    /** "T6, 06/11/2026 · 08:00–10:00" from two instants of the same visit. */
+    visitRange: (startAt: string | undefined, endAt: string | undefined) =>
+      startAt
+        ? `${weekday(calendarDayOf(startAt))}, ${formatCalendarDate(startAt)} · ${formatClock24(startAt, language)}–${formatClock24(endAt, language)}`
+        : '',
     /** "08:00–10:00 (2 giờ)" from HH:mm values. */
     timeRange: (start: string, end: string) => {
       const length = duration(minutesBetween(start, end))

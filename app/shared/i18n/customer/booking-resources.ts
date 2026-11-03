@@ -187,6 +187,14 @@ export const bookingEn = {
     note: 'Note for the caregiver',
     notePlaceholder: 'e.g. Remind her to take blood-pressure pills at 9:00; she walks with a cane; ring the side door.'
   },
+  quote: {
+    caption: 'Price of each service',
+    unitPrice: 'Unit price',
+    quantity: 'Quantity',
+    amount: 'Amount',
+    unitPriceValue: '{{price}} / {{unit}}',
+    quantityValue: '{{units}} {{unit}} × {{count}} visits'
+  },
   summary: {
     title: 'Summary & price',
     open: 'View details',
@@ -220,7 +228,6 @@ export const bookingEn = {
     address: 'Address',
     noNote: 'No note.',
     priceTitle: 'Price details',
-    line: '{{price}} × {{units}} {{unit}} × {{count}} visits',
     total: 'Total',
     depositNow: 'Deposit ({{percent}}%) after a caregiver is assigned',
     remainingDue: 'Remaining, due by {{time}}',
@@ -461,6 +468,14 @@ export const bookingVi = {
     note: 'Ghi chú cho người chăm sóc',
     notePlaceholder: 'VD: Nhắc bà uống thuốc huyết áp lúc 9:00; bà đi lại bằng gậy; bấm chuông cửa bên hông.'
   },
+  quote: {
+    caption: 'Giá từng dịch vụ',
+    unitPrice: 'Đơn giá',
+    quantity: 'Thời lượng',
+    amount: 'Thành tiền',
+    unitPriceValue: '{{price}} / {{unit}}',
+    quantityValue: '{{units}} {{unit}} × {{count}} buổi'
+  },
   summary: {
     title: 'Tóm tắt & báo giá',
     open: 'Xem chi tiết',
@@ -494,7 +509,6 @@ export const bookingVi = {
     address: 'Địa chỉ',
     noNote: 'Không có ghi chú.',
     priceTitle: 'Chi tiết báo giá',
-    line: '{{price}} × {{units}} {{unit}} × {{count}} buổi',
     total: 'Tổng cộng',
     depositNow: 'Đặt cọc ({{percent}}%) sau khi có người chăm sóc',
     remainingDue: 'Phần còn lại, hạn {{time}}',

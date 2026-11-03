@@ -117,7 +117,8 @@ describe('Customer service detail', () => {
       page: 0,
       size: 6
     })
-    expect(screen.getByRole('link', { name: 'View profile' })).toHaveAttribute('href', '/customer/caregivers/cg-1')
+    // The whole caregiver row opens the profile through the name link.
+    expect(screen.getByRole('link', { name: 'Lan Nguyen' })).toHaveAttribute('href', '/customer/caregivers/cg-1')
 
     const aside = screen.getByRole('complementary')
     expect(await within(aside).findByText('Care One')).toBeInTheDocument()

@@ -1,140 +1,148 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { Icon } from '~/shared/ui/icon'
 
-import './home-page.css'
+import { CustomerDashboard } from './components/customer-dashboard'
 
 const steps = ['find', 'compare', 'book'] as const
-const reasons = ['profiles', 'schedule', 'family'] as const
+const trust = [
+  { id: 'verified', icon: 'verified_user' },
+  { id: 'prices', icon: 'receipt_long' },
+  { id: 'support', icon: 'support_agent' }
+] as const
 
+const container = 'mx-auto w-full max-w-[1200px] px-4 sm:px-6'
+const primaryAction =
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-base font-semibold text-on-primary shadow-[var(--shadow-card)] transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+const secondaryAction =
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-6 text-base font-semibold text-on-surface transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+
+/**
+ * Home (2026-11 redesign): the app's only hero, kept short, then — for a signed-in customer — the next visit,
+ * shortcuts and what their center offers, followed by how it works and why families trust the service.
+ */
 export function HomePage({ audience = 'public' }: { audience?: 'public' | 'customer' }) {
   const { t } = useTranslation()
+  const user = useAuthUser()
   const isCustomer = audience === 'customer'
+  const firstName = user?.fullName?.trim().split(/\s+/).at(-1)
 
   return (
-    <div className='home-page bg-surface text-on-surface'>
-      <section
-        aria-labelledby='home-title'
-        className='mx-auto grid max-w-[1440px] gap-10 px-5 pb-14 pt-10 sm:px-8 lg:min-h-[610px] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-14 lg:px-12 lg:pb-20 lg:pt-16'
-      >
-        <div className='home-enter max-w-[620px]'>
-          <p className='mb-5 text-xs font-extrabold uppercase tracking-[0.18em] text-primary'>{t('home.eyebrow')}</p>
-          <h1
-            id='home-title'
-            className='max-w-[12ch] text-[clamp(2.8rem,5.5vw,5.5rem)] font-extrabold leading-[1.04] tracking-[-0.065em] text-balance text-on-surface'
-          >
-            {t('home.title')}
-          </h1>
-          <p className='mt-6 max-w-[51ch] text-base leading-7 text-on-surface-variant sm:text-lg sm:leading-8'>
-            {t('home.description')}
-          </p>
-          <div className='mt-8 flex flex-wrap items-center gap-x-6 gap-y-4'>
-            <Link
-              className='group inline-flex min-h-13 items-center justify-center gap-4 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-sm transition-[transform,background-color] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] hover:bg-primary-container active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-              to='/customer/caregivers'
+    <div className='text-on-surface'>
+      <section aria-labelledby='home-title' className='border-b border-outline-variant bg-surface-container-lowest'>
+        <div
+          className={`${container} grid items-center gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-12 lg:py-14`}
+        >
+          <div className='cc-fade-up max-w-xl'>
+            <p className='text-sm font-semibold text-primary'>
+              {isCustomer && firstName ? t('customer.home.greeting', { name: firstName }) : t('home.eyebrow')}
+            </p>
+            <h1
+              className='mt-3 text-[clamp(2rem,4vw,2.75rem)] leading-tight font-bold text-balance text-on-surface'
+              id='home-title'
             >
-              {t('home.primaryAction')}
-              <Icon
-                className='text-lg transition-transform duration-300 group-hover:translate-x-1'
-                name='arrow_forward'
-              />
-            </Link>
-            <Link
-              className='inline-flex min-h-11 items-center border-b-2 border-primary text-sm font-bold text-primary transition-colors hover:text-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-              to={isCustomer ? '/customer/booking' : '/register'}
-            >
-              {isCustomer ? t('customer.home.book') : t('home.createAccount')}
-            </Link>
+              {t('home.title')}
+            </h1>
+            <p className='mt-4 text-base leading-7 text-on-surface-variant sm:text-lg'>{t('home.description')}</p>
+            <div className='mt-7 flex flex-wrap gap-3'>
+              {isCustomer ? (
+                <>
+                  <Link className={primaryAction} to='/customer/booking'>
+                    <Icon className='text-xl' name='event_available' />
+                    {t('customer.home.book')}
+                  </Link>
+                  <Link className={secondaryAction} to='/customer/caregivers'>
+                    {t('home.primaryAction')}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link className={primaryAction} to='/customer/caregivers'>
+                    {t('home.primaryAction')}
+                    <Icon className='text-xl' name='arrow_forward' />
+                  </Link>
+                  <Link className={secondaryAction} to='/register'>
+                    {t('home.createAccount')}
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-        <div className='home-enter home-enter-late overflow-hidden rounded-2xl bg-surface-container-high shadow-md'>
-          <img
-            alt={t('home.heroAlt')}
-            className='aspect-[4/3] h-full w-full object-cover object-[66%_center] lg:aspect-auto lg:min-h-[510px]'
-            decoding='async'
-            fetchPriority='high'
-            src='/images/care-at-home-hero.jpg'
-          />
+          <div className='cc-fade-up overflow-hidden rounded-2xl bg-surface-container-high [animation-delay:80ms]'>
+            <img
+              alt={t('home.heroAlt')}
+              className='aspect-[16/10] w-full object-cover object-[66%_center]'
+              decoding='async'
+              fetchPriority='high'
+              src='/images/care-at-home-hero.jpg'
+            />
+          </div>
         </div>
       </section>
 
-      <section
-        aria-labelledby='home-process-title'
-        className='border-y border-outline-variant/60 bg-surface-container-lowest'
-        id='how-it-works'
-      >
-        <div className='mx-auto max-w-[1440px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20'>
-          <div className='max-w-[650px]'>
-            <p className='text-xs font-extrabold uppercase tracking-[0.18em] text-primary'>
-              {t('home.processEyebrow')}
-            </p>
-            <h2
-              id='home-process-title'
-              className='mt-4 text-3xl font-extrabold leading-tight tracking-[-0.045em] text-on-surface sm:text-4xl'
-            >
-              {t('home.processTitle')}
-            </h2>
-          </div>
-          <ol className='mt-10 grid border-t border-outline-variant/60 md:grid-cols-3'>
-            {steps.map((step, index) => (
-              <li
-                className='border-b border-outline-variant/60 px-0 py-7 md:border-b-0 md:border-r md:px-7 md:last:border-r-0 md:first:pl-0'
-                key={step}
+      {isCustomer ? (
+        <div className={`${container} py-10`}>
+          <CustomerDashboard />
+        </div>
+      ) : null}
+
+      <section aria-labelledby='home-process-title' className={`${container} py-12`} id='how-it-works'>
+        <p className='text-sm font-semibold text-primary'>{t('home.processEyebrow')}</p>
+        <h2 className='mt-2 text-2xl font-bold text-on-surface' id='home-process-title'>
+          {t('home.processTitle')}
+        </h2>
+        <ol className='mt-8 grid gap-4 md:grid-cols-3'>
+          {steps.map((step, index) => (
+            <li className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-5' key={step}>
+              <span
+                aria-hidden='true'
+                className='grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-semibold text-on-primary'
               >
-                <span className='font-mono text-xs font-bold tracking-[0.16em] text-primary tabular-nums'>
-                  {String(index + 1).padStart(2, '0')}
+                {index + 1}
+              </span>
+              <h3 className='mt-4 text-lg font-semibold text-on-surface'>{t(`home.steps.${step}.title`)}</h3>
+              <p className='mt-1.5 text-sm leading-6 text-on-surface-variant'>{t(`home.steps.${step}.description`)}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section aria-labelledby='home-trust-title' className='border-t border-outline-variant bg-brand-50/60'>
+        <div className={`${container} py-12`}>
+          <h2 className='text-2xl font-bold text-on-surface' id='home-trust-title'>
+            {t('customer.home.trust.title')}
+          </h2>
+          <ul className='mt-8 grid gap-6 md:grid-cols-3'>
+            {trust.map((item) => (
+              <li className='flex gap-4' key={item.id}>
+                <span
+                  aria-hidden='true'
+                  className='grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface-container-lowest text-primary shadow-[var(--shadow-card)]'
+                >
+                  <Icon name={item.icon} />
                 </span>
-                <h3 className='mt-5 text-xl font-bold tracking-[-0.035em] text-on-surface'>
-                  {t(`home.steps.${step}.title`)}
-                </h3>
-                <p className='mt-3 max-w-[36ch] text-sm leading-6 text-on-surface-variant'>
-                  {t(`home.steps.${step}.description`)}
-                </p>
+                <span>
+                  <span className='block font-semibold text-on-surface'>
+                    {t(`customer.home.trust.${item.id}.title`)}
+                  </span>
+                  <span className='mt-1 block text-sm leading-6 text-on-surface-variant'>
+                    {t(`customer.home.trust.${item.id}.description`)}
+                  </span>
+                  {item.id === 'support' ? (
+                    <a
+                      className='mt-2 inline-flex items-center gap-1.5 font-semibold text-primary tabular-nums hover:underline'
+                      href={`tel:${t('customer.nav.hotlineNumber').replace(/\s/g, '')}`}
+                    >
+                      <Icon className='text-lg' name='call' />
+                      {t('customer.nav.hotlineNumber')}
+                    </a>
+                  ) : null}
+                </span>
               </li>
             ))}
-          </ol>
-        </div>
-      </section>
-
-      <section aria-labelledby='home-reasons-title' className='home-reasons'>
-        <div className='home-reasons-visual mx-auto max-w-[1440px]'>
-          <img
-            alt={t('home.reasonsPhotoAlt')}
-            className='home-reasons-photo'
-            decoding='async'
-            loading='lazy'
-            src='/images/care-for-families-background.png'
-          />
-          <div className='home-reasons-copy relative z-10 mx-auto w-full px-5 py-16 text-inverse-on-surface sm:px-8 lg:px-12'>
-            <p className='text-xs font-extrabold uppercase tracking-[0.18em] text-inverse-accent'>
-              {t('home.reasonsEyebrow')}
-            </p>
-            <h2
-              id='home-reasons-title'
-              className='mt-4 max-w-[15ch] text-3xl font-extrabold leading-tight tracking-[-0.045em] sm:text-4xl'
-            >
-              {t('home.reasonsTitle')}
-            </h2>
-            <p className='mt-5 max-w-[45ch] text-sm leading-7 text-inverse-muted'>{t('home.reasonsDescription')}</p>
-          </div>
-        </div>
-        <div className='home-reasons-details'>
-          <div className='mx-auto grid max-w-[1440px] px-5 py-8 sm:px-8 lg:grid-cols-3 lg:px-12 lg:py-12'>
-            {reasons.map((reason) => (
-              <article
-                className='border-b border-outline-variant/60 py-6 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0'
-                key={reason}
-              >
-                <h3 className='text-lg font-bold tracking-[-0.025em] text-on-surface'>
-                  {t(`home.reasons.${reason}.title`)}
-                </h3>
-                <p className='mt-3 text-sm leading-6 text-on-surface-variant'>
-                  {t(`home.reasons.${reason}.description`)}
-                </p>
-              </article>
-            ))}
-          </div>
+          </ul>
         </div>
       </section>
     </div>

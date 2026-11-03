@@ -5,20 +5,25 @@ import { Link } from 'react-router'
 
 import { fetchProviderMedia, providerKeys } from '~/entities/provider/provider-api'
 import type { ProviderCaregiverPublicRecord, ProviderCertificateRecord } from '~/shared/api/generated/contracts'
+import { formatCalendarDate } from '~/shared/lib/format'
+import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
+import { ViewableImage } from '~/shared/ui/image-viewer'
+import { Rating, VerifiedBadge } from '~/shared/ui/rating'
 
 const key = 'customer.provider' as const
 
 type Profile = ProviderCaregiverPublicRecord
 
-function formatDate(value: string, language: string) {
-  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(new Date(`${value}T00:00:00`))
+/** dd/mm/yyyy, the same everywhere in the customer portal; the language does not change the order. */
+function formatDate(value: string) {
+  return formatCalendarDate(value)
 }
 
 export function DetailSection({ icon, title, children }: { icon: string; title: string; children: ReactNode }) {
   return (
-    <section className='rounded-[1.75rem] border border-outline-variant/60 bg-surface-container-lowest p-6 sm:p-8'>
-      <h2 className='flex items-center gap-3 text-xl font-bold tracking-[-0.03em] text-on-surface'>
+    <section className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-[var(--shadow-card)] sm:p-7'>
+      <h2 className='flex items-center gap-3 text-lg font-semibold text-on-surface'>
         <span className='grid size-10 place-items-center rounded-xl bg-primary-fixed text-primary'>
           <Icon className='text-xl' name={icon} />
         </span>
@@ -29,82 +34,57 @@ export function DetailSection({ icon, title, children }: { icon: string; title: 
   )
 }
 
-function Stat({ icon, label, value }: { icon: string; label: string; value: string }) {
-  return (
-    <div className='min-w-0 flex-1 border-outline-variant/50 py-4 sm:py-0 sm:pl-5 sm:not-first:border-l'>
-      <dt className='flex items-center gap-2 text-sm font-medium text-on-surface-variant'>
-        <Icon aria-hidden='true' className='text-xl text-primary' name={icon} />
-        {label}
-      </dt>
-      <dd className='mt-2 text-lg font-bold tracking-[-0.02em] text-on-surface tabular-nums'>{value}</dd>
-    </div>
-  )
-}
-
-/** Photo, name, center and the headline numbers a family compares first. */
+/** Photo (or coloured initials), name, badges and the headline facts a family compares first. */
 export function CaregiverDetailHero({ profile }: { profile: Profile }) {
   const { t, i18n } = useTranslation()
   const number = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
-  const rating =
-    profile.ratingAverage === undefined || !profile.ratingCount
-      ? t(`${key}.detail.noRating`)
-      : `${number.format(profile.ratingAverage)}${t(`${key}.reviews`, { count: profile.ratingCount })}`
 
   return (
-    <section className='overflow-hidden rounded-[2rem] border border-outline-variant/60 bg-surface-container-lowest'>
-      <div className='grid md:grid-cols-[minmax(14rem,38%)_minmax(0,1fr)]'>
-        <div className='relative min-h-72 overflow-hidden bg-primary-fixed md:min-h-[21rem]'>
-          {profile.avatarUrl ? (
-            <img
-              alt={t(`${key}.detail.avatar`, { name: profile.fullName })}
-              className='absolute inset-0 h-full w-full object-cover object-center'
-              src={profile.avatarUrl}
-            />
-          ) : (
-            <div aria-hidden='true' className='absolute inset-0 grid place-items-center overflow-hidden text-primary'>
-              <div className='absolute -bottom-28 -left-20 size-64 rounded-full border-[3rem] border-primary/10' />
-              <div className='absolute -right-20 -top-24 size-64 rounded-full border-[3rem] border-primary/10' />
-              <span className='relative text-[clamp(6rem,14vw,11rem)] font-semibold leading-none tracking-[-0.1em]'>
-                {profile.fullName.trim().charAt(0).toLocaleUpperCase(i18n.language)}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className='flex min-w-0 flex-col justify-center px-6 py-8 sm:px-9 md:py-10'>
-          <p className='text-xs font-bold uppercase tracking-[0.16em] text-primary'>{t(`${key}.detail.badge`)}</p>
-          <h1 className='mt-3 text-[clamp(2.4rem,4vw,4rem)] font-bold leading-[1.05] tracking-[-0.055em] text-on-surface'>
-            {profile.fullName}
-          </h1>
-          <span className='mt-5 inline-flex w-fit items-center gap-2 rounded-lg bg-primary-fixed px-3 py-2 text-sm font-bold text-primary'>
-            <Icon aria-hidden='true' className='text-lg' name='verified' />
-            {t(`${key}.verified`)}
-          </span>
-          {profile.centerName ? (
-            <p className='mt-6 flex items-center gap-2 text-base font-medium text-on-surface-variant'>
-              <Icon aria-hidden='true' className='text-xl text-primary' name='home_health' />
-              {profile.centerName}
-            </p>
-          ) : null}
-          {profile.bio?.trim() ? (
-            <p className='mt-5 max-w-[56ch] text-sm leading-7 text-on-surface-variant sm:text-base'>
-              {profile.bio.trim()}
-            </p>
-          ) : null}
+    <section className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-[var(--shadow-card)] sm:p-7'>
+      <div className='flex flex-col gap-5 sm:flex-row sm:items-center'>
+        <Avatar
+          alt={t(`${key}.detail.avatar`, { name: profile.fullName })}
+          className='h-24 w-24 rounded-full text-2xl ring-4 ring-brand-50 sm:h-28 sm:w-28'
+          name={profile.fullName}
+          src={profile.avatarUrl}
+          viewable
+        />
+        <div className='min-w-0'>
+          <h1 className='text-2xl font-bold text-on-surface sm:text-[30px]'>{profile.fullName}</h1>
+          <div className='mt-2 flex flex-wrap items-center gap-2'>
+            <VerifiedBadge />
+            <Rating average={profile.ratingAverage} count={profile.ratingCount} />
+          </div>
+          <ul className='mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-on-surface-variant'>
+            {profile.experienceYears !== undefined ? (
+              <li className='flex items-center gap-1.5'>
+                <Icon aria-hidden='true' className='text-lg text-primary' name='work_history' />
+                {t(`${key}.experienceValue`, { years: number.format(profile.experienceYears) })}
+              </li>
+            ) : null}
+            {profile.gender ? (
+              <li className='flex items-center gap-1.5'>
+                <Icon aria-hidden='true' className='text-lg text-primary' name='person' />
+                {t(`${key}.genders.${profile.gender}`)}
+              </li>
+            ) : null}
+            {profile.centerName ? (
+              <li className='flex items-center gap-1.5'>
+                <Icon aria-hidden='true' className='text-lg text-primary' name='home_health' />
+                {profile.centerName}
+              </li>
+            ) : null}
+          </ul>
         </div>
       </div>
-      <dl className='flex flex-col divide-y divide-outline-variant/50 border-t border-outline-variant/50 px-6 sm:flex-row sm:divide-y-0 sm:px-4 sm:py-6'>
-        {profile.experienceYears !== undefined ? (
-          <Stat
-            icon='workspace_premium'
-            label={t(`${key}.detail.experience`)}
-            value={t(`${key}.experienceValue`, { years: number.format(profile.experienceYears) })}
-          />
-        ) : null}
-        <Stat icon='star' label={t(`${key}.detail.rating`)} value={rating} />
-        {profile.gender ? (
-          <Stat icon='person' label={t(`${key}.detail.gender`)} value={t(`${key}.genders.${profile.gender}`)} />
-        ) : null}
-      </dl>
+      {profile.bio?.trim() ? (
+        <div className='mt-6 border-t border-outline-variant pt-5'>
+          <h2 className='text-sm font-semibold text-on-surface'>{t(`${key}.detail.about`)}</h2>
+          <p className='mt-1.5 max-w-[65ch] text-sm leading-7 whitespace-pre-line text-on-surface-variant'>
+            {profile.bio.trim()}
+          </p>
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -139,7 +119,7 @@ function CertificateCard({
   certificateId?: string
   mediaState: CertificateMediaState
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const media = useQuery({
     queryKey: providerKeys.media('CERTIFICATE', certificateId ?? ''),
     queryFn: () => fetchProviderMedia('CERTIFICATE', certificateId ?? ''),
@@ -154,6 +134,11 @@ function CertificateCard({
           file.contentType?.startsWith('image/') ||
           file.contentType === 'application/pdf')
     ) ?? []
+  const gallery = previews.flatMap((file) =>
+    file.downloadUrl && file.contentType !== 'application/pdf'
+      ? [{ src: file.downloadUrl, alt: item.certificateName ?? t(`${key}.certificates`) }]
+      : []
+  )
   const previewStatus =
     mediaState === 'error' || media.isError
       ? t(`${key}.detail.certificateMediaError`)
@@ -182,11 +167,13 @@ function CertificateCard({
                   })}
                 />
               ) : (
-                <img
+                <ViewableImage
                   alt={item.certificateName ?? t(`${key}.certificates`)}
-                  className='h-full w-full object-contain'
-                  loading='lazy'
-                  src={file.downloadUrl}
+                  className='h-full w-full'
+                  gallery={gallery}
+                  imgClassName='h-full w-full object-contain'
+                  index={gallery.findIndex((image) => image.src === file.downloadUrl)}
+                  src={file.downloadUrl ?? ''}
                 />
               )}
             </div>
@@ -206,10 +193,10 @@ function CertificateCard({
             </p>
           ) : null}
           <p className='mt-2 text-xs leading-5 text-on-surface-variant tabular-nums'>
-            {item.issuedDate ? t(`${key}.detail.issued`, { date: formatDate(item.issuedDate, i18n.language) }) : null}
+            {item.issuedDate ? t(`${key}.detail.issued`, { date: formatDate(item.issuedDate) }) : null}
             {item.issuedDate ? ' · ' : null}
             {item.expiryDate
-              ? t(`${key}.detail.expires`, { date: formatDate(item.expiryDate, i18n.language) })
+              ? t(`${key}.detail.expires`, { date: formatDate(item.expiryDate) })
               : t(`${key}.detail.noExpiry`)}
           </p>
         </div>

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Toaster as SonnerToaster } from 'sonner'
 
@@ -7,7 +8,12 @@ import { Icon } from './icon'
  * Sonner styled with the project tokens instead of its defaults. Bottom right: the admin topbar (notifications, account
  * menu) and each page's primary buttons live at the top right, so toasts there would cover them.
  */
-export function Toaster() {
+export function Toaster({
+  mobileOffset
+}: {
+  /** Space kept free on phones, e.g. above a bottom navigation bar. */
+  mobileOffset?: ComponentProps<typeof SonnerToaster>['mobileOffset']
+} = {}) {
   const { t } = useTranslation()
   return (
     <SonnerToaster
@@ -19,6 +25,7 @@ export function Toaster() {
         warning: <Icon className='text-xl' name='warning' />,
         info: <Icon className='text-xl' name='info' />
       }}
+      mobileOffset={mobileOffset}
       position='bottom-right'
       toastOptions={{
         unstyled: true,

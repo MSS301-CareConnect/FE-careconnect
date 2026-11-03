@@ -269,8 +269,9 @@ describe('CustomerBookingPage', () => {
 
     expect(await screen.findByRole('radio', { name: /Tự chọn buổi/ })).toBeChecked()
     fireEvent.click(screen.getAllByRole('button', { name: 'Quay lại' })[0])
-    expect(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ })).toBeChecked()
-    expect(screen.getByText('100.000 ₫ / giờ')).toBeInTheDocument()
+    const service = await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ })
+    expect(service).toBeChecked()
+    expect(service.closest('label')).toHaveTextContent('100.000 ₫ / giờ')
     expect(screen.queryByText('ELDERLY_CARE')).not.toBeInTheDocument()
     expect(screen.getByText('Người cao tuổi')).toBeInTheDocument()
   })
@@ -324,6 +325,11 @@ describe('CustomerBookingPage', () => {
     expect(request.slots).toHaveLength(1)
     expect(request).not.toHaveProperty('startTime')
     expect(await screen.findByText('Đặt cọc (30%) sau khi có người chăm sóc')).toBeInTheDocument()
+    // Unit price, quantity and amount of each service, in the review and in the summary column.
+    expect(screen.getAllByText('Đơn giá').length).toBe(2)
+    expect(screen.getAllByText('100.000 ₫ / giờ').length).toBe(2)
+    expect(screen.getAllByText('2 giờ × 1 buổi').length).toBe(2)
+    expect(screen.getAllByText('Thành tiền').length).toBe(2)
     const quotes = vi.mocked(fetchBookingQuote).mock.calls.length
 
     const submit = screen.getAllByRole('button', { name: 'Gửi yêu cầu đặt lịch' })[0]

@@ -45,7 +45,7 @@ export function BookingAftercare({
   visited: boolean
 }) {
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-4 empty:hidden'>
       {visited ? <CareReportList bookingId={bookingId} /> : null}
       {completed ? <ReviewForm bookingId={bookingId} /> : null}
       <Complaints bookingId={bookingId} canOpen={visited} />

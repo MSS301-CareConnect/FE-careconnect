@@ -176,78 +176,90 @@ export const customerPaymentEn = {
 
 export const customerPaymentsVi = {
   documentTitle: 'Thanh toán & hoàn tiền | CareConnect',
-  breadcrumb: 'Đường dẫn',
-  home: 'Trang chủ',
   title: 'Thanh toán & hoàn tiền',
-  subtitle: 'Hóa đơn phần còn lại cần thanh toán, lịch sử giao dịch và các khoản hoàn tiền của bạn.',
+  subtitle: 'Các khoản cần thanh toán, lịch sử giao dịch và tiền hoàn của bạn.',
   loading: 'Đang tải…',
-  previous: 'Trang trước',
-  next: 'Trang sau',
-  page: 'Trang {{page}} / {{total}}',
   viewBooking: 'Xem lịch đặt',
-  columns: {
-    booking: 'Lịch đặt',
-    amount: 'Số tiền',
-    dueAt: 'Hạn thanh toán',
-    status: 'Trạng thái',
-    action: 'Thao tác',
-    createdAt: 'Thời gian',
-    type: 'Loại',
-    refunded: 'Đã hoàn',
-    reason: 'Lý do',
-    fee: 'Phí giữ lại'
+  method: 'Qua VNPay',
+  tabs: {
+    label: 'Thanh toán và hoàn tiền',
+    due: 'Cần thanh toán',
+    history: 'Lịch sử',
+    refunds: 'Hoàn tiền'
+  },
+  due: {
+    title: 'Khoản cần thanh toán',
+    description: 'Thanh toán qua VNPay bằng QR, thẻ ATM hoặc thẻ quốc tế.',
+    emptyTitle: 'Bạn đã thanh toán đủ',
+    empty: 'Hiện không có khoản cọc hay hóa đơn nào cần thanh toán.',
+    toBookings: 'Xem lịch đặt',
+    payDeposit: 'Thanh toán cọc',
+    ofTotal: 'Tổng {{amount}}',
+    dueAt: 'Hạn {{time}}',
+    bookingsError: 'Không tải được các lịch đặt chờ thanh toán cọc.'
   },
   invoices: {
     title: 'Hóa đơn phần còn lại',
-    empty: 'Bạn không có hóa đơn nào.',
+    description: 'Mọi hóa đơn phần còn lại của bạn, kể cả đã thanh toán hoặc đã đóng.',
+    empty: 'Bạn không có hóa đơn nào',
     pay: 'Thanh toán',
+    paidAt: 'Đã trả {{time}}',
     debt: 'Bạn có hóa đơn quá hạn. Vui lòng thanh toán để tiếp tục đặt lịch mới.'
   },
   history: {
     title: 'Lịch sử thanh toán',
-    empty: 'Chưa có giao dịch thanh toán nào.'
+    empty: 'Chưa có giao dịch thanh toán nào',
+    refunded: 'Đã hoàn {{amount}}'
   },
   refunds: {
     title: 'Hoàn tiền',
-    empty: 'Chưa có khoản hoàn tiền nào.'
+    description: 'Tiền hoàn về tài khoản bạn đã dùng để thanh toán.',
+    empty: 'Chưa có khoản hoàn tiền nào',
+    fee: 'Phí giữ lại {{amount}}'
   }
 }
 
 export const customerPaymentsEn = {
   documentTitle: 'Payments & refunds | CareConnect',
-  breadcrumb: 'Breadcrumb',
-  home: 'Home',
   title: 'Payments & refunds',
-  subtitle: 'Remaining-balance invoices to pay, your payment history and your refunds.',
+  subtitle: 'What you still have to pay, your payment history and your refunds.',
   loading: 'Loading…',
-  previous: 'Previous page',
-  next: 'Next page',
-  page: 'Page {{page}} of {{total}}',
   viewBooking: 'View booking',
-  columns: {
-    booking: 'Booking',
-    amount: 'Amount',
-    dueAt: 'Due',
-    status: 'Status',
-    action: 'Action',
-    createdAt: 'Time',
-    type: 'Type',
-    refunded: 'Refunded',
-    reason: 'Reason',
-    fee: 'Fee kept'
+  method: 'Via VNPay',
+  tabs: {
+    label: 'Payments and refunds',
+    due: 'To pay',
+    history: 'History',
+    refunds: 'Refunds'
+  },
+  due: {
+    title: 'To pay',
+    description: 'Pay through VNPay with a QR code, an ATM card or an international card.',
+    emptyTitle: 'You are all paid up',
+    empty: 'No deposit or invoice is waiting for payment.',
+    toBookings: 'View bookings',
+    payDeposit: 'Pay deposit',
+    ofTotal: 'Total {{amount}}',
+    dueAt: 'Due {{time}}',
+    bookingsError: 'Could not load the bookings waiting for a deposit.'
   },
   invoices: {
     title: 'Remaining-balance invoices',
-    empty: 'You have no invoices.',
+    description: 'All your remaining-balance invoices, including paid and closed ones.',
+    empty: 'You have no invoices',
     pay: 'Pay',
+    paidAt: 'Paid {{time}}',
     debt: 'You have an overdue invoice. Please pay it to make new bookings.'
   },
   history: {
     title: 'Payment history',
-    empty: 'No payments yet.'
+    empty: 'No payments yet',
+    refunded: 'Refunded {{amount}}'
   },
   refunds: {
     title: 'Refunds',
-    empty: 'No refunds yet.'
+    description: 'Refunds go back to the account you paid with.',
+    empty: 'No refunds yet',
+    fee: 'Fee kept {{amount}}'
   }
 }

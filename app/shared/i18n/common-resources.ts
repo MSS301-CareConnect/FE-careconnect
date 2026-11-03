@@ -13,6 +13,27 @@ export const commonEn = {
       ratingLabel: 'Rated {{rating}} out of 5 from {{count}} reviews',
       verified: 'Verified',
       clearSearch: 'Clear search',
+      viewer: {
+        label: 'Image viewer: {{name}}',
+        view: 'View image {{name}}',
+        zoomIn: 'Zoom in',
+        zoomOut: 'Zoom out',
+        reset: 'Reset zoom',
+        open: 'Open the original in a new tab',
+        close: 'Close the viewer',
+        previous: 'Previous image',
+        next: 'Next image',
+        counter: '{{current}} / {{total}}',
+        hint: 'Scroll or press + / − to zoom, drag to move, Esc to close'
+      },
+      fileDrop: {
+        choose: 'Choose files',
+        chooseOne: 'Choose a file',
+        drop: 'Click to choose, or drop files here',
+        dropActive: 'Drop to add',
+        remove: 'Remove {{name}}',
+        selected: '{{count}} file(s) selected'
+      },
       stepOf: 'Step {{current}} of {{total}}',
       stepDone: '(done)',
       stepCurrent: '(current step)',
@@ -47,6 +68,8 @@ export const commonEn = {
       loading: 'Loading files…',
       error: 'Unable to load files.',
       upload: 'Upload files',
+      uploadCount_one: 'Upload {{count}} file',
+      uploadCount_other: 'Upload {{count}} files',
       remove: 'Remove file',
       open: 'Open file',
       image: 'Uploaded image',
@@ -55,7 +78,9 @@ export const commonEn = {
       validation: {
         count: 'Select up to 10 files at a time.',
         type: 'This file type is not supported.',
-        size: 'Files cannot be empty and must be no larger than {{maxSize}} MB.'
+        size: 'Files cannot be empty and must be no larger than {{maxSize}} MB.',
+        hintImage: 'JPG, PNG or WEBP, up to 5 MB each, 10 files at a time',
+        hintCertificate: 'PDF, JPG or PNG, up to 10 MB each, 10 files at a time'
       }
     },
     language: {
@@ -179,6 +204,27 @@ export const commonVi = {
       ratingLabel: 'Đánh giá {{rating}}/5 từ {{count}} lượt',
       verified: 'Đã xác minh',
       clearSearch: 'Xóa tìm kiếm',
+      viewer: {
+        label: 'Xem ảnh: {{name}}',
+        view: 'Xem ảnh {{name}}',
+        zoomIn: 'Phóng to',
+        zoomOut: 'Thu nhỏ',
+        reset: 'Về kích thước gốc',
+        open: 'Mở ảnh gốc ở thẻ mới',
+        close: 'Đóng trình xem ảnh',
+        previous: 'Ảnh trước',
+        next: 'Ảnh sau',
+        counter: '{{current}} / {{total}}',
+        hint: 'Lăn chuột hoặc bấm + / − để phóng to, kéo để di chuyển, Esc để đóng'
+      },
+      fileDrop: {
+        choose: 'Chọn tệp',
+        chooseOne: 'Chọn một tệp',
+        drop: 'Bấm để chọn tệp hoặc kéo thả vào đây',
+        dropActive: 'Thả để thêm',
+        remove: 'Bỏ {{name}}',
+        selected: 'Đã chọn {{count}} tệp'
+      },
       stepOf: 'Bước {{current}}/{{total}}',
       stepDone: '(đã xong)',
       stepCurrent: '(bước hiện tại)',
@@ -212,6 +258,8 @@ export const commonVi = {
       loading: 'Đang tải tệp…',
       error: 'Không thể tải tệp.',
       upload: 'Tải tệp lên',
+      uploadCount_one: 'Tải {{count}} tệp lên',
+      uploadCount_other: 'Tải {{count}} tệp lên',
       remove: 'Xóa tệp',
       open: 'Mở tệp',
       image: 'Hình ảnh đã tải lên',
@@ -220,7 +268,9 @@ export const commonVi = {
       validation: {
         count: 'Mỗi lần chỉ được chọn tối đa 10 tệp.',
         type: 'Loại tệp này không được hỗ trợ.',
-        size: 'Tệp không được để trống và không vượt quá {{maxSize}} MB.'
+        size: 'Tệp không được để trống và không vượt quá {{maxSize}} MB.',
+        hintImage: 'JPG, PNG hoặc WEBP, mỗi tệp tối đa 5 MB, tối đa 10 tệp mỗi lần',
+        hintCertificate: 'PDF, JPG hoặc PNG, mỗi tệp tối đa 10 MB, tối đa 10 tệp mỗi lần'
       }
     },
     language: {

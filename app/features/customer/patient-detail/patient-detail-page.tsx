@@ -1,129 +1,237 @@
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 
-import { careRecipientErrorStatus as errorStatus } from '~/entities/care-recipient/care-recipient-api'
+import {
+  archiveCareRecipient,
+  careRecipientErrorStatus as errorStatus,
+  careRecipientKeys,
+  fetchCareRecipient
+} from '~/entities/care-recipient/care-recipient-api'
+import { canEditCareRecipient } from '~/entities/care-recipient/care-recipient-format'
+import { calendarDayOf } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { Icon } from '~/shared/ui/icon'
+import type { ActionMenuItem } from '~/shared/ui/action-menu'
+import { toastSuccess } from '~/shared/ui/app-toast'
+import { ConfirmDialog } from '~/shared/ui/modal'
+import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
+import { ErrorState } from '~/shared/ui/state-panels'
+import { Tabs, tabId, tabPanelId } from '~/shared/ui/tabs'
 
-import { CarePlanSection } from './components/care-plan-section'
 import { EmergencyContactsCard } from './components/emergency-contacts-card'
 import { ManagersCard } from './components/managers-card'
-import { MedicalBackgroundSection } from './components/medical-background-section'
+import { MedicationsSection } from './components/medications-section'
 import { PatientDetailHeader } from './components/patient-detail-header'
-import { PatientSnapshotCard } from './components/patient-snapshot-card'
-import { PrescriptionsSection } from './components/prescriptions-section'
-import { usePatientDetail } from './hooks/use-patient-detail'
+import { ProfileEditDialog } from './components/profile-edit-dialog'
+import { AllergyCallout, DailyLifeTab, MedicalBackground, OverviewTab } from './components/profile-tabs'
+import { useProfileEditor, type EditSection } from './hooks/use-profile-editor'
+import { profileCompleteness, type DetailTab } from './profile-completeness'
 
-const LOAD_ERROR_KEYS = {
-  403: 'customer.patientDetail.states.forbidden',
-  404: 'customer.patientDetail.states.notFound'
-} as const
+const key = 'customer.patientDetail' as const
+const TABS: DetailTab[] = ['overview', 'medical', 'daily', 'contacts', 'managers']
+const EDIT_SECTIONS: EditSection[] = ['basic', 'address', 'medical', 'daily']
+const TABS_ID = 'patient-detail'
+const LOAD_ERROR_KEYS = { 403: `${key}.states.forbidden`, 404: `${key}.states.notFound` } as const
 
+/**
+ * One family profile in five tabs (`?tab=`): overview, health and medications, daily life, emergency contacts and
+ * co-managers. Each section has its own "Edit" that opens a centred dialog; `?edit=basic` (or the older `?mode=edit`) opens
+ * the basic information drawer on arrival.
+ */
 export function PatientDetailPage() {
   const { t } = useTranslation()
-  useDocumentTitle(t('customer.patientDetail.documentTitle'))
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { id = '' } = useParams()
+  const [params, setParams] = useSearchParams()
+  const tab = TABS.find((item) => item === params.get('tab')) ?? 'overview'
+  const [today] = useState(() => calendarDayOf(new Date()))
+  const [deleting, setDeleting] = useState(false)
+  const [initialEdit, setInitialEdit] = useState<EditSection | null>(
+    () =>
+      EDIT_SECTIONS.find((section) => section === params.get('edit')) ??
+      (params.get('mode') === 'edit' ? 'basic' : null)
+  )
 
-  const {
-    detail,
-    draft,
-    updateDraft,
-    canEdit,
-    isEditMode,
-    toggleEditMode,
-    handleSave,
-    isSaving,
-    saveError,
-    showToast
-  } = usePatientDetail(id)
+  const detail = useQuery({
+    queryKey: careRecipientKeys.detail(id),
+    queryFn: () => fetchCareRecipient(id),
+    retry: false
+  })
+  const editor = useProfileEditor(id, () => toastSuccess(t(`${key}.banner.toastSuccess`)))
+  const archive = useMutation({
+    mutationFn: () => archiveCareRecipient(id),
+    onSuccess: async () => {
+      toastSuccess(t(`${key}.deleted`))
+      await queryClient.invalidateQueries({ queryKey: careRecipientKeys.all })
+      navigate('/customer/patient-profiles', { replace: true })
+    }
+  })
+  useDocumentTitle(detail.data ? `${detail.data.profile.fullName} | CareConnect` : t(`${key}.documentTitle`))
+
+  const data = detail.data
+  const canEdit = Boolean(data && canEditCareRecipient(data.myAccessLevel) && data.profile.status !== 'ARCHIVED')
+  // Open the drawer a link asked for once the profile is here (state set during render, guarded to run once).
+  if (initialEdit && data) {
+    setInitialEdit(null)
+    if (canEdit) editor.open(initialEdit, data.profile)
+  }
+
+  function selectTab(value: DetailTab) {
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous)
+        if (value === 'overview') next.delete('tab')
+        else next.set('tab', value)
+        next.delete('edit')
+        next.delete('mode')
+        return next
+      },
+      { replace: true }
+    )
+  }
 
   if (detail.isPending)
     return (
-      <div className='mx-auto max-w-7xl px-6 py-8'>
-        <p
-          role='status'
-          className='rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant shadow-sm'
-        >
-          {t('customer.patientDetail.states.loading')}
-        </p>
-      </div>
-    )
-
-  if (detail.isError || !draft) {
-    const status = errorStatus(detail.error)
-    return (
-      <div className='mx-auto max-w-7xl px-6 py-8'>
-        <div
-          role='alert'
-          className='flex flex-col items-start gap-3 rounded-xl bg-surface-container-lowest p-6 shadow-sm'
-        >
-          <p className='text-sm text-error'>
-            {t(status === 403 || status === 404 ? LOAD_ERROR_KEYS[status] : 'customer.patientDetail.states.error')}
-          </p>
-          <div className='flex gap-4 text-xs font-semibold'>
-            <button type='button' onClick={() => void detail.refetch()} className='text-primary underline'>
-              {t('customer.patientDetail.states.retry')}
-            </button>
-            <Link to='/customer/patient-profiles' className='text-primary underline'>
-              {t('customer.patientDetail.banner.back')}
-            </Link>
+      <SkeletonGroup className='pt-8' label={t(`${key}.states.loading`)}>
+        <Skeleton className='h-4 w-40 rounded' />
+        <div className='mt-5 flex items-center gap-4'>
+          <Skeleton className='h-20 w-20 rounded-full' />
+          <div className='flex-1 space-y-2'>
+            <Skeleton className='h-8 w-1/2 rounded-lg' />
+            <Skeleton className='h-4 w-1/3 rounded' />
           </div>
         </div>
+        <Skeleton className='mt-6 h-11 w-full rounded-lg' />
+        <Skeleton className='mt-6 h-56 w-full rounded-2xl' />
+      </SkeletonGroup>
+    )
+
+  if (detail.isError || !data) {
+    const status = errorStatus(detail.error)
+    return (
+      <div className='flex flex-col gap-3 pt-8'>
+        <ErrorState
+          message={t(status === 403 || status === 404 ? LOAD_ERROR_KEYS[status] : `${key}.states.error`)}
+          onRetry={status === 404 ? undefined : () => void detail.refetch()}
+          retryLabel={t(`${key}.states.retry`)}
+        />
+        <Link className='self-start text-sm font-semibold text-primary hover:underline' to='/customer/patient-profiles'>
+          {t(`${key}.banner.back`)}
+        </Link>
       </div>
     )
   }
 
-  const { profile } = detail.data
-  const sectionProps = { profile, draft, isEditMode, onUpdate: updateDraft }
+  const { profile } = data
+  const completeness = profileCompleteness(data)
+  const onEdit = canEdit ? (section: EditSection) => editor.open(section, profile) : undefined
+  const menu: ActionMenuItem[] = [
+    ...(canEdit
+      ? [
+          {
+            id: 'edit',
+            label: t(`${key}.drawer.basic.title`),
+            icon: 'edit',
+            onSelect: () => editor.open('basic', profile)
+          }
+        ]
+      : []),
+    ...(data.myAccessLevel === 'OWNER' && profile.status !== 'ARCHIVED'
+      ? [
+          {
+            id: 'delete',
+            label: t('customer.patientProfiles.card.delete'),
+            icon: 'delete',
+            tone: 'danger' as const,
+            onSelect: () => {
+              archive.reset()
+              setDeleting(true)
+            }
+          }
+        ]
+      : [])
+  ]
 
   return (
-    <div className='mx-auto max-w-7xl px-6 py-8'>
-      <div className='flex flex-col gap-6'>
-        <PatientDetailHeader
-          detail={detail.data}
-          canEdit={canEdit}
-          isEditMode={isEditMode}
-          isSaving={isSaving}
-          saveError={saveError}
-          onToggleEditMode={toggleEditMode}
-          onSave={handleSave}
-        />
+    <div>
+      <PatientDetailHeader
+        completeness={completeness}
+        detail={data}
+        menu={menu}
+        onCompleteItem={
+          canEdit
+            ? (item) => {
+                selectTab(item.tab)
+                if (item.section) editor.open(item.section, profile)
+              }
+            : undefined
+        }
+      />
 
-        <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-12'>
-          {/* Left Column (4 cols) */}
-          <div className='flex flex-col gap-6 lg:col-span-4'>
-            <PatientSnapshotCard {...sectionProps} />
-            <EmergencyContactsCard
-              recipientId={profile.id}
-              contacts={detail.data.emergencyContacts ?? []}
-              isEditMode={isEditMode}
-            />
-            <ManagersCard recipientId={profile.id} />
-          </div>
+      <Tabs
+        className='mt-6'
+        idBase={TABS_ID}
+        items={TABS.map((value) => ({
+          value,
+          label: t(`${key}.tabs.${value}`),
+          badge:
+            value === 'medical'
+              ? (data.medications ?? []).filter((medication) => medication.active).length || undefined
+              : value === 'contacts'
+                ? (data.emergencyContacts ?? []).length || undefined
+                : undefined
+        }))}
+        label={t(`${key}.tabs.label`)}
+        onChange={selectTab}
+        value={tab}
+      />
 
-          {/* Right Column (8 cols) */}
-          <div className='flex flex-col gap-6 lg:col-span-8'>
-            <MedicalBackgroundSection {...sectionProps} />
-            <PrescriptionsSection
-              recipientId={profile.id}
-              medications={detail.data.medications ?? []}
-              isEditMode={isEditMode}
-            />
-            <CarePlanSection {...sectionProps} />
-          </div>
-        </div>
+      <div
+        aria-labelledby={tabId(TABS_ID, tab)}
+        className='cc-fade-up mt-6 flex flex-col gap-5'
+        id={tabPanelId(TABS_ID)}
+        key={tab}
+        role='tabpanel'
+      >
+        {tab === 'overview' ? <OverviewTab detail={data} onEdit={onEdit} onOpenTab={selectTab} /> : null}
+        {tab === 'medical' ? (
+          <>
+            <AllergyCallout allergies={profile.allergies} />
+            <MedicalBackground detail={data} onEdit={onEdit} />
+            <MedicationsSection canEdit={canEdit} medications={data.medications ?? []} recipientId={profile.id} />
+          </>
+        ) : null}
+        {tab === 'daily' ? <DailyLifeTab detail={data} onEdit={onEdit} /> : null}
+        {tab === 'contacts' ? (
+          <EmergencyContactsCard canEdit={canEdit} contacts={data.emergencyContacts ?? []} recipientId={profile.id} />
+        ) : null}
+        {tab === 'managers' ? <ManagersCard recipientId={profile.id} /> : null}
       </div>
 
-      {/* Floating Save Toast Notification */}
-      {showToast && (
-        <div
-          role='status'
-          className='fixed right-6 bottom-6 z-50 flex items-center gap-3 rounded-xl bg-primary px-4 py-3 text-on-primary shadow-lg transition-all'
-        >
-          <Icon name='check_circle' className='text-xl' />
-          <span className='text-xs font-semibold'>{t('customer.patientDetail.banner.toastSuccess')}</span>
-        </div>
-      )}
+      <ProfileEditDialog
+        draft={editor.draft}
+        error={editor.error}
+        onChange={editor.update}
+        onClose={editor.close}
+        onSubmit={() => editor.submit(profile)}
+        saving={editor.saving}
+        section={editor.section}
+        today={today}
+      />
+
+      <ConfirmDialog
+        confirmLabel={t('customer.patientProfiles.card.confirmDeleteButton')}
+        danger
+        description={t('customer.patientProfiles.card.confirmDelete')}
+        error={archive.isError ? t('customer.patientProfiles.card.deleteError') : undefined}
+        loading={archive.isPending}
+        onClose={() => setDeleting(false)}
+        onConfirm={() => archive.mutate()}
+        open={deleting}
+        title={t('customer.patientProfiles.card.deleteTitle', { name: profile.fullName })}
+      />
     </div>
   )
 }

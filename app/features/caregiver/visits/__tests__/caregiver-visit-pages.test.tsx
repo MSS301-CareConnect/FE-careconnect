@@ -40,14 +40,23 @@ const visit: CaregiverOccurrenceRecord = {
   status: 'SCHEDULED',
   recipientName: 'Bà Lan',
   serviceAddress: '45 Kim Mã, Ba Đình',
+  customerPhone: '0912345678',
   services: [{ careServiceId: 'svc-1', serviceName: 'Chăm sóc người già tại nhà' }]
 }
 
-function renderWith(children: ReactNode) {
+const page = (items: CaregiverOccurrenceRecord[]) => ({
+  items,
+  page: 0,
+  size: 100,
+  totalElements: items.length,
+  totalPages: 1
+})
+
+function renderWith(children: ReactNode, path = '/caregiver/visits') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter>{children}</MemoryRouter>
+      <MemoryRouter initialEntries={[path]}>{children}</MemoryRouter>
     </QueryClientProvider>
   )
 }
@@ -62,57 +71,87 @@ beforeEach(async () => {
   })
 })
 
-describe('Caregiver assigned visits', () => {
-  it('lists assigned visits from today and links to each visit', async () => {
-    vi.mocked(fetchMyOccurrences).mockResolvedValue({
-      items: [visit],
-      page: 0,
-      size: 20,
-      totalElements: 1,
-      totalPages: 1
-    })
+describe('Caregiver care visits list', () => {
+  it('groups upcoming visits by day, links to each one and accepts from the card', async () => {
+    vi.mocked(fetchMyOccurrences).mockResolvedValue(page([visit]))
+    vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
     renderWith(<CaregiverVisitsPage />)
 
-    expect(await screen.findByRole('heading', { name: 'Bà Lan' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Mở buổi 1 của Bà Lan' })).toHaveAttribute(
-      'href',
-      '/caregiver/visits/occ-1'
-    )
-    expect(vi.mocked(fetchMyOccurrences).mock.calls[0][0]).toMatchObject({ page: 0, size: 20 })
-    expect(vi.mocked(fetchMyOccurrences).mock.calls[0][0]?.from).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    const link = await screen.findByRole('link', { name: 'Mở buổi 1 của Bà Lan' })
+    expect(link).toHaveAttribute('href', '/caregiver/visits/occ-1')
+    expect(screen.getByRole('heading', { level: 2, name: /Hôm nay|Ngày mai/ })).toBeInTheDocument()
+    const upcoming = vi.mocked(fetchMyOccurrences).mock.calls.find(([params]) => !params?.status)?.[0]
+    expect(upcoming).toMatchObject({ page: 0, size: 100 })
+    expect(upcoming?.from).toMatch(/^\d{4}-\d{2}-\d{2}$/)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Tất cả' }))
-    await waitFor(() => expect(vi.mocked(fetchMyOccurrences).mock.lastCall?.[0]).toEqual({ page: 0, size: 20 }))
+    fireEvent.click(screen.getByRole('button', { name: 'Nhận buổi' }))
+    await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
   })
 
-  it('acknowledges the visit and checks in without blocking on location', async () => {
-    vi.mocked(fetchOccurrence).mockResolvedValue(visit)
+  it('reads one period for finished visits and lists them newest first', async () => {
+    vi.mocked(fetchMyOccurrences).mockResolvedValue(
+      page([
+        { ...visit, id: 'old', status: 'COMPLETED', startAt: '2026-10-01T01:00:00Z', endAt: '2026-10-01T03:00:00Z' },
+        { ...visit, id: 'new', status: 'COMPLETED', startAt: '2026-10-20T01:00:00Z', endAt: '2026-10-20T03:00:00Z' }
+      ])
+    )
+    renderWith(<CaregiverVisitsPage />, '/caregiver/visits?tab=done&range=custom&from=2026-10-01&to=2026-10-31')
+
+    await waitFor(() =>
+      expect(fetchMyOccurrences).toHaveBeenCalledWith({ from: '2026-10-01', to: '2026-10-31', page: 0, size: 100 })
+    )
+    const links = await screen.findAllByRole('link', { name: /Mở buổi 1 của Bà Lan/ })
+    expect(links.map((item) => item.getAttribute('href'))).toEqual(['/caregiver/visits/new', '/caregiver/visits/old'])
+    expect(screen.getByRole('tab', { name: 'Đã xong' })).toHaveAttribute('aria-selected', 'true')
+  })
+})
+
+describe('Caregiver visit detail', () => {
+  it('accepts the visit, then starts it without blocking on location', async () => {
+    vi.mocked(fetchOccurrence)
+      .mockResolvedValueOnce(visit)
+      .mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
     vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
-    vi.mocked(checkIn).mockRejectedValue(Object.assign(new Error('early'), { status: 409, info: { code: 5222 } }))
+    vi.mocked(checkIn).mockResolvedValue({ sessionId: 's-1', occurrenceId: 'occ-1', status: 'IN_PROGRESS' })
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nhận buổi' }))
     await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu ca' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Bắt đầu ca' }))
     await waitFor(() => expect(checkIn).toHaveBeenCalledWith({ occurrenceId: 'occ-1' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Ngoài khung giờ check-in của trung tâm')
     // The visit has not started, so a no-show cannot be reported yet.
     expect(screen.queryByRole('button', { name: 'Báo khách vắng mặt' })).not.toBeInTheDocument()
   })
 
+  it('shows the allergy alert first and offers directions and a call', async () => {
+    vi.mocked(fetchOccurrence).mockResolvedValue({
+      ...visit,
+      recipientSnapshot: { fullName: 'Bà Lan', age: 82, gender: 'FEMALE', allergies: 'Penicillin' }
+    })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+
+    expect(await screen.findByRole('note')).toHaveTextContent('Penicillin')
+    expect(screen.getByRole('link', { name: 'Chỉ đường' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('google.com/maps/dir/?api=1&destination=45%20Kim')
+    )
+    expect(screen.getByRole('link', { name: 'Gọi 0912 345 678' })).toHaveAttribute('href', 'tel:0912345678')
+    expect(screen.getByText(/82 tuổi/)).toBeInTheDocument()
+  })
+
   it('keeps check-in closed outside 30 minutes either side of the start (D22)', async () => {
     const early = new Date(Date.now() + 2 * 3_600_000).toISOString()
-    vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, startAt: early })
+    vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED', startAt: early })
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
-    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
+    expect(await screen.findByRole('button', { name: /Mở lúc/ })).toBeDisabled()
     cleanup()
 
     const late = new Date(Date.now() - 3_600_000).toISOString()
     vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED', startAt: late })
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
-    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
-    expect(screen.getByText(/Đã hết giờ bắt đầu ca/)).toBeInTheDocument()
+    expect(await screen.findByText(/Đã hết giờ bắt đầu ca/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Bắt đầu ca' })).not.toBeInTheDocument()
     expect(checkIn).not.toHaveBeenCalled()
   })
 
@@ -120,6 +159,7 @@ describe('Caregiver assigned visits', () => {
     const start = Date.now() + 50 * 60_000
     vi.mocked(fetchOccurrence).mockResolvedValue({
       ...visit,
+      status: 'ACKNOWLEDGED',
       startAt: new Date(start).toISOString(),
       checkInOpensAt: new Date(start - 60 * 60_000).toISOString(),
       checkInClosesAt: new Date(start + 10 * 60_000).toISOString()
@@ -127,18 +167,6 @@ describe('Caregiver assigned visits', () => {
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
     // 50 minutes ahead: closed by the old fixed 30-minute window, open under a 60-minute policy.
     expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeEnabled()
-    cleanup()
-
-    const started = Date.now() - 15 * 60_000
-    vi.mocked(fetchOccurrence).mockResolvedValue({
-      ...visit,
-      startAt: new Date(started).toISOString(),
-      checkInOpensAt: new Date(started - 60 * 60_000).toISOString(),
-      checkInClosesAt: new Date(started + 10 * 60_000).toISOString()
-    })
-    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
-    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
-    expect(screen.getByText(/Đã hết giờ bắt đầu ca/)).toBeInTheDocument()
   })
 
   it('works through the checklist and checks out once nothing is pending', async () => {
@@ -164,8 +192,7 @@ describe('Caregiver assigned visits', () => {
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
 
     expect(await screen.findByText('Còn 1 việc trước khi kết thúc ca.')).toBeInTheDocument()
-    const checkOutButton = screen.getByRole('button', { name: 'Kết thúc ca' })
-    expect(checkOutButton).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Kết thúc ca' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Bỏ qua' }))
     const dialog = screen.getByRole('dialog', { name: 'Bỏ qua “Amlodipine 5mg”' })

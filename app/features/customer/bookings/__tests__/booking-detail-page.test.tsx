@@ -122,7 +122,8 @@ describe('CustomerBookingDetailPage', () => {
     vi.mocked(cancelBookingRequest).mockResolvedValue(cancelled)
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Hủy lịch đặt' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Thao tác khác' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Hủy lịch đặt' }))
     const dialog = screen.getByRole('dialog', { name: 'Hủy lịch đặt #BK0001' })
     fireEvent.change(within(dialog).getByRole('textbox', { name: 'Lý do hủy' }), { target: { value: 'Đổi kế hoạch' } })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Hủy lịch đặt' }))
@@ -156,7 +157,8 @@ describe('CustomerBookingDetailPage', () => {
     vi.mocked(cancelBookingRequest).mockResolvedValue({ ...booking, status: 'CONFIRMED' })
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Hủy lịch đặt' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Thao tác khác' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Hủy lịch đặt' }))
     const dialog = screen.getByRole('dialog')
     fireEvent.change(within(dialog).getByRole('textbox', { name: 'Lý do hủy' }), { target: { value: 'Ốm' } })
     const confirm = within(dialog).getByRole('button', { name: 'Hủy lịch đặt' })

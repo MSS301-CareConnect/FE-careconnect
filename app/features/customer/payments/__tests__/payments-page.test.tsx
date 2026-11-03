@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { fetchBookingCollection } from '~/entities/booking/booking-api'
 import {
   fetchOutstandingDebt,
   fetchPaymentHistory,
@@ -16,6 +17,10 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { PaymentsPage } from '../payments-page'
 
+vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/booking/booking-api')>()),
+  fetchBookingCollection: vi.fn()
+}))
 vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
   fetchOutstandingDebt: vi.fn(),
@@ -35,11 +40,11 @@ const overdue: RemainingInvoiceRecord = {
 }
 const page = { page: 0, size: 10, totalElements: 1, totalPages: 1 }
 
-function renderPage() {
+function renderPage(path = '/customer/payments') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[path]}>
         <PaymentsPage />
       </MemoryRouter>
     </QueryClientProvider>
@@ -49,6 +54,30 @@ function renderPage() {
 beforeEach(async () => {
   vi.clearAllMocks()
   await setAppLanguage('vi', false)
+  vi.mocked(fetchBookingCollection).mockResolvedValue({
+    items: [
+      {
+        id: 'bk-1',
+        bookingCode: 'BK0001',
+        status: 'CONFIRMED',
+        recipientName: 'Bà Lan',
+        bookingType: 'RECURRING',
+        startDate: '2026-11-05',
+        totalAmount: 2000000
+      },
+      {
+        id: 'bk-2',
+        bookingCode: 'BK0002',
+        status: 'AWAITING_INITIAL_PAYMENT',
+        recipientName: 'Ông Minh',
+        bookingType: 'SHIFT',
+        startDate: '2026-11-06',
+        totalAmount: 500000
+      }
+    ],
+    totalElements: 2,
+    truncated: false
+  })
   vi.mocked(fetchOutstandingDebt).mockResolvedValue({
     hasDebt: true,
     overdueInvoices: [overdue],
@@ -88,7 +117,7 @@ beforeEach(async () => {
 })
 
 describe('Customer payments page', () => {
-  it('warns about overdue debt and pays the invoice through VNPay', async () => {
+  it('lists what is due, warns about overdue debt and pays the invoice through VNPay', async () => {
     vi.mocked(startInvoiceCheckout).mockResolvedValue({
       paymentId: 'pay-2',
       bookingId: 'bk-1',
@@ -104,33 +133,46 @@ describe('Customer payments page', () => {
     renderPage()
 
     expect(await screen.findByText(/Bạn có hóa đơn quá hạn/)).toBeInTheDocument()
-    const invoices = screen.getByRole('region', { name: 'Hóa đơn phần còn lại' })
-    expect(await within(invoices).findByText('Quá hạn')).toBeInTheDocument()
-    fireEvent.click(within(invoices).getByRole('button', { name: 'Thanh toán' }))
+    const dueTab = screen.getByRole('tab', { name: /Cần thanh toán/ })
+    await waitFor(() => expect(dueTab).toHaveTextContent('2'))
+    const due = screen.getByRole('region', { name: 'Khoản cần thanh toán' })
+    expect(within(due).getByRole('link', { name: /Thanh toán cọc/ })).toHaveAttribute(
+      'href',
+      '/customer/bookings/bk-2/deposit'
+    )
+    expect(within(due).getByText('Quá hạn')).toBeInTheDocument()
+    expect(within(due).getByRole('link', { name: 'BK0001' })).toHaveAttribute('href', '/customer/bookings/bk-1')
+    fireEvent.click(within(due).getByRole('button', { name: 'Thanh toán' }))
 
     await waitFor(() => expect(startInvoiceCheckout).toHaveBeenCalledWith('inv-1', expect.anything()))
     await waitFor(() => expect(redirectToCheckout).toHaveBeenCalledWith('https://sandbox.vnpayment.vn/pay?ref=2'))
   })
 
-  it('lists payment and refund history with translated statuses and reasons', async () => {
+  it('lists payment history, invoices and refunds in their own tabs with translated statuses', async () => {
     renderPage()
 
+    fireEvent.click(await screen.findByRole('tab', { name: 'Lịch sử' }))
     const history = await screen.findByRole('region', { name: 'Lịch sử thanh toán' })
     expect(await within(history).findByText('Khoản thanh toán đầu')).toBeInTheDocument()
-    expect(within(history).getByText(/300\.000/)).toBeInTheDocument()
-    const refunds = screen.getByRole('region', { name: 'Hoàn tiền' })
+    expect(within(history).getByText(/Đã hoàn 300\.000/)).toBeInTheDocument()
+    const invoices = screen.getByRole('region', { name: 'Hóa đơn phần còn lại' })
+    expect(await within(invoices).findByText('Quá hạn')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Hoàn tiền' }))
+    const refunds = await screen.findByRole('region', { name: 'Hoàn tiền' })
     expect(await within(refunds).findByText('Bạn hủy buổi chăm sóc')).toBeInTheDocument()
     expect(within(refunds).getByText('Đã hoàn tiền')).toBeInTheDocument()
   })
 
   it('shows empty states without debt', async () => {
     vi.mocked(fetchOutstandingDebt).mockResolvedValue({ hasDebt: false, overdueInvoices: [], pendingInvoices: [] })
-    vi.mocked(fetchRemainingInvoices).mockResolvedValue({ ...page, totalElements: 0, totalPages: 0, items: [] })
+    vi.mocked(fetchBookingCollection).mockResolvedValue({ items: [], totalElements: 0, truncated: false })
     vi.mocked(fetchRefundHistory).mockResolvedValue({ ...page, totalElements: 0, totalPages: 0, items: [] })
     renderPage()
 
-    expect(await screen.findByText('Bạn không có hóa đơn nào.')).toBeInTheDocument()
-    expect(await screen.findByText('Chưa có khoản hoàn tiền nào.')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Bạn đã thanh toán đủ' })).toBeInTheDocument()
     expect(screen.queryByText(/Bạn có hóa đơn quá hạn/)).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Hoàn tiền' }))
+    expect(await screen.findByRole('heading', { name: 'Chưa có khoản hoàn tiền nào' })).toBeInTheDocument()
   })
 })

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import type { EmergencyContactRecord, EmergencyContactRequest } from '~/shared/api/generated/contracts'
 
 import { PHONE_PATTERN } from '../profile-draft'
+import { Button } from '~/shared/ui/button'
+
 import { FormField, inputClassName } from './form-field'
 
 export interface EmergencyContactFormProps {
@@ -38,7 +40,7 @@ export function EmergencyContactForm({ contact, isSaving, onSubmit, onCancel }: 
   }
 
   return (
-    <form onSubmit={submit} className='grid grid-cols-2 gap-3 rounded-lg bg-surface-container-low p-3' noValidate>
+    <form onSubmit={submit} className='grid grid-cols-2 gap-4' noValidate>
       <FormField label={t('customer.patientDetail.emergencySection.fullNameLabel')} className='col-span-2'>
         <input
           type='text'
@@ -76,30 +78,27 @@ export function EmergencyContactForm({ contact, isSaving, onSubmit, onCancel }: 
           className={inputClassName}
         />
       </FormField>
-      <label className='flex items-center gap-2 self-end pb-2 text-xs text-on-surface'>
-        <input type='checkbox' checked={primary} onChange={(e) => setPrimary(e.target.checked)} />
+      <label className='flex min-h-11 items-center gap-2 self-end text-sm text-on-surface'>
+        <input
+          type='checkbox'
+          checked={primary}
+          onChange={(e) => setPrimary(e.target.checked)}
+          className='h-5 w-5 accent-primary'
+        />
         <span>{t('customer.patientDetail.emergencySection.primaryLabel')}</span>
       </label>
       {error ? (
-        <p role='alert' className='col-span-2 text-xs text-error'>
+        <p role='alert' className='col-span-2 text-sm text-error'>
           {t(`customer.patientDetail.emergencySection.${error}`)}
         </p>
       ) : null}
-      <div className='col-span-2 flex gap-2'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className='rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-on-primary disabled:opacity-60'
-        >
-          {t('customer.patientDetail.emergencySection.save')}
-        </button>
-        <button
-          type='button'
-          onClick={onCancel}
-          className='rounded-lg bg-surface-container-lowest px-3 py-2 text-xs font-medium text-on-surface'
-        >
+      <div className='col-span-2 flex justify-end gap-2 border-t border-outline-variant pt-4'>
+        <Button onClick={onCancel} variant='outline'>
           {t('customer.patientDetail.emergencySection.cancel')}
-        </button>
+        </Button>
+        <Button loading={isSaving} type='submit'>
+          {t('customer.patientDetail.emergencySection.save')}
+        </Button>
       </div>
     </form>
   )

@@ -55,7 +55,8 @@ export function useServiceCenters({ enabled = true }: { enabled?: boolean } = {}
 /** The current customer-facing details of one center; a 404 means it no longer takes bookings. */
 export function useServiceCenter(id: string | undefined) {
   return useQuery({
-    queryKey: providerKeys.publicCenter(id ?? ''),
+    // Its own key: the raw PublicCenterRecord under providerKeys.publicCenter has another shape (centerName, not name).
+    queryKey: [...providerKeys.publicCenter(id ?? ''), 'option'],
     queryFn: async () => toOption(await fetchPublicCenter(id ?? '')),
     enabled: Boolean(id),
     retry: false,

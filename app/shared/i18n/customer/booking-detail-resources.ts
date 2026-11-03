@@ -9,6 +9,27 @@ export const bookingDetailEn = {
     title: 'Booking not found',
     description: 'This booking does not exist or belongs to another account.'
   },
+  moreActions: 'More actions',
+  code: 'Booking code',
+  lifecycle: {
+    label: 'Booking progress',
+    steps: {
+      request: 'Request sent',
+      confirm: 'Center confirms',
+      assign: 'Caregiver assigned',
+      pay: 'Payment',
+      care: 'In care',
+      done: 'Completed'
+    },
+    due: 'Due {{time}}\n{{left}}',
+    firstVisit: 'First visit {{time}}',
+    visitsDone: '{{done}} of {{total}} visits done',
+    completedAt: 'On {{time}}',
+    leftDays: '{{days}} d {{hours}} h left',
+    leftHours: '{{hours}} h {{minutes}} min left',
+    leftMinutes: '{{minutes}} min left',
+    overdue: 'past due'
+  },
   occurrences: 'Care visits',
   history: 'History',
   refunded: 'Refund: {{refund}}',
@@ -20,8 +41,11 @@ export const bookingDetailEn = {
     toPayments: 'See the invoice in Payments'
   },
   summary: {
-    schedule: 'Schedule',
+    label: 'Booking summary',
+    schedule: 'Schedule & address',
     services: 'Services',
+    payment: 'Payment',
+    unitLine: '{{price}} · {{unit}} × {{quantity}}',
     deposit: 'Initial payment',
     depositEstimated: 'Estimated initial payment ({{percent}}%)',
     remaining: 'Remaining balance',
@@ -99,6 +123,27 @@ export const bookingDetailVi = {
     title: 'Không tìm thấy lịch đặt',
     description: 'Lịch đặt không tồn tại hoặc thuộc tài khoản khác.'
   },
+  moreActions: 'Thao tác khác',
+  code: 'Mã lịch đặt',
+  lifecycle: {
+    label: 'Tiến trình lịch đặt',
+    steps: {
+      request: 'Gửi yêu cầu',
+      confirm: 'Trung tâm xác nhận',
+      assign: 'Phân công',
+      pay: 'Thanh toán',
+      care: 'Đang chăm sóc',
+      done: 'Hoàn tất'
+    },
+    due: 'Hạn {{time}}\n{{left}}',
+    firstVisit: 'Buổi đầu {{time}}',
+    visitsDone: 'Đã xong {{done}}/{{total}} buổi',
+    completedAt: 'Lúc {{time}}',
+    leftDays: 'còn {{days}} ngày {{hours}} giờ',
+    leftHours: 'còn {{hours}} giờ {{minutes}} phút',
+    leftMinutes: 'còn {{minutes}} phút',
+    overdue: 'đã quá hạn'
+  },
   occurrences: 'Các buổi chăm sóc',
   history: 'Lịch sử',
   refunded: 'Tiền hoàn: {{refund}}',
@@ -110,8 +155,11 @@ export const bookingDetailVi = {
     toPayments: 'Xem hóa đơn ở trang Thanh toán'
   },
   summary: {
-    schedule: 'Lịch chăm sóc',
+    label: 'Tóm tắt lịch đặt',
+    schedule: 'Lịch & địa chỉ',
     services: 'Dịch vụ',
+    payment: 'Thanh toán',
+    unitLine: '{{price}} · {{unit}} × {{quantity}}',
     deposit: 'Khoản thanh toán đầu',
     depositEstimated: 'Thanh toán đầu dự kiến ({{percent}}%)',
     remaining: 'Phần còn lại',
@@ -125,7 +173,7 @@ export const bookingDetailVi = {
       body: 'Trung tâm xem yêu cầu của bạn. Hạn trả lời: {{acceptanceDue}}.'
     },
     PENDING_CAREGIVER_ASSIGNMENT: {
-      title: 'Trung tâm đang phân người chăm sóc',
+      title: 'Trung tâm đang phân công người chăm sóc',
       body: 'Trung tâm đã xác nhận và cần phân người chăm sóc trước {{assignmentDue}}. Bạn chỉ thanh toán khi đã có người chăm sóc.'
     },
     AWAITING_INITIAL_PAYMENT: {

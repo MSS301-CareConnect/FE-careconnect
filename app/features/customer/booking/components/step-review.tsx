@@ -11,6 +11,7 @@ import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import type { BookingForm, WizardStep } from '../hooks/use-booking-form'
 import { quoteFacts } from './booking-quote'
 import { NextSteps } from './next-steps'
+import { QuoteLines } from './quote-lines'
 
 const VISIBLE_VISITS = 5
 
@@ -68,9 +69,7 @@ export function StepReview({ form }: { form: BookingForm }) {
           {visits.length > 0 ? (
             <ul className='mt-2 flex flex-col gap-1 text-sm text-on-surface-variant tabular-nums'>
               {visits.map((visit, index) => (
-                <li key={`${visit.startAt}-${index}`}>
-                  {format.dateTime(visit.startAt)}–{format.clock(visit.endAt)}
-                </li>
+                <li key={`${visit.startAt}-${index}`}>{format.visitRange(visit.startAt, visit.endAt)}</li>
               ))}
             </ul>
           ) : null}
@@ -116,24 +115,9 @@ export function StepReview({ form }: { form: BookingForm }) {
           </div>
         ) : (
           <>
-            <ul className='mt-3 flex flex-col gap-3 text-sm'>
-              {facts.lines.map((line) => (
-                <li className='flex items-start justify-between gap-4' key={line.careServiceId}>
-                  <span>
-                    <span className='block font-medium text-on-surface'>{line.serviceName}</span>
-                    <span className='text-on-surface-variant tabular-nums'>
-                      {t('customer.booking.review.line', {
-                        price: format.money(line.unitPrice),
-                        units: line.unitsPerOccurrence,
-                        unit: line.pricingUnit ? t(`customer.booking.priceUnit.${line.pricingUnit}`) : '',
-                        count: line.occurrenceCount
-                      })}
-                    </span>
-                  </span>
-                  <span className='shrink-0 font-medium tabular-nums'>{format.money(line.lineTotal)}</span>
-                </li>
-              ))}
-            </ul>
+            <div className='mt-3'>
+              <QuoteLines lines={facts.lines} />
+            </div>
             <dl className='mt-4 flex flex-col gap-2 border-t border-outline-variant pt-4 text-sm'>
               <div className='flex justify-between gap-4 text-base font-semibold text-on-surface'>
                 <dt>{t('customer.booking.review.total')}</dt>

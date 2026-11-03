@@ -30,6 +30,18 @@ export const customerLayoutEn = {
     emergency: 'Medical emergency: call 115',
     loading: 'Loading…'
   },
+  accountArea: {
+    label: 'Account sections',
+    title: 'Your account',
+    personal: 'Personal info',
+    security: 'Security',
+    relatives: 'Family profiles',
+    payments: 'Payments & refunds',
+    invitations: 'Invitations',
+    pendingInvitations: '{{count}} pending invitations',
+    invitationsNotice: 'You have {{count}} invitation(s) to manage a family profile',
+    invitationsOpen: 'View invitations'
+  },
   footer: {
     tagline: 'Verified home caregivers for the people you love.',
     explore: 'Explore',
@@ -70,6 +82,18 @@ export const customerLayoutVi = {
     hotlineNumber: '1900 6868',
     emergency: 'Cấp cứu y tế: gọi 115',
     loading: 'Đang tải…'
+  },
+  accountArea: {
+    label: 'Các mục tài khoản',
+    title: 'Tài khoản của bạn',
+    personal: 'Thông tin cá nhân',
+    security: 'Bảo mật',
+    relatives: 'Hồ sơ người thân',
+    payments: 'Thanh toán & hoàn tiền',
+    invitations: 'Lời mời',
+    pendingInvitations: '{{count}} lời mời đang chờ',
+    invitationsNotice: 'Bạn có {{count}} lời mời quản lý hồ sơ người thân',
+    invitationsOpen: 'Xem lời mời'
   },
   footer: {
     tagline: 'Người chăm sóc tại nhà đã xác minh, cho người thân của bạn.',

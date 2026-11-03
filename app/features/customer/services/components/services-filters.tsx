@@ -1,67 +1,62 @@
 import { useTranslation } from 'react-i18next'
 
-import { Icon } from '~/shared/ui/icon'
-import type { ServiceCategoryGroup } from '~/entities/care-catalog/service-category'
+import { SERVICE_CATEGORY_ICONS } from '~/entities/care-catalog/service-category'
+import { FilterChips } from '~/shared/ui/filter-chips'
+import { Select } from '~/shared/ui/form-field'
+import { SearchInput } from '~/shared/ui/search-input'
+
+import type { CustomerServicesList } from '../hooks/use-customer-services'
+import { SERVICE_SORTS } from '../services-data'
 
 const key = 'customer.services' as const
-const control =
-  'mt-2 min-h-12 py-2.5 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15'
+/** With this many services or fewer, the search box alone is enough. */
+const FEW_RESULTS = 6
 
-type ServicesFiltersProps = {
-  keyword: string
-  category: string
-  categories: readonly ServiceCategoryGroup[]
-  onChange: (name: 'q' | 'category', value: string) => void
-  onReset: () => void
-}
-
-export function ServicesFilters({ keyword, category, categories, onChange, onReset }: ServicesFiltersProps) {
+/** One filter row: search + category chips + sort. A short list keeps only the search box. */
+export function ServicesFilters({ list }: { list: CustomerServicesList }) {
   const { t } = useTranslation()
+  const full = list.total > FEW_RESULTS || Boolean(list.category)
+
   return (
-    <section className='mt-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-xs sm:p-5'>
-      <div className='mb-4 flex items-center justify-between gap-4'>
-        <h2 className='flex items-center gap-2 text-sm font-bold text-on-surface'>
-          <Icon aria-hidden='true' className='text-xl text-primary' name='tune' />
-          {t(`${key}.filters.title`)}
-        </h2>
-        <button
-          className='text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-primary'
-          onClick={onReset}
-          type='button'
-        >
-          {t(`${key}.filters.reset`)}
-        </button>
-      </div>
-      <div className='grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(220px,1fr)] lg:gap-5'>
-        <label className='block text-sm font-semibold text-on-surface'>
-          {t(`${key}.filters.search`)}
-          <span className='relative block'>
-            <Icon
-              aria-hidden='true'
-              className='pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-xl text-on-surface-variant'
-              name='search'
-            />
-            <input
-              className={`${control} pl-11`}
-              onChange={(event) => onChange('q', event.target.value)}
-              placeholder={t(`${key}.filters.searchPlaceholder`)}
-              type='search'
-              value={keyword}
-            />
-          </span>
-        </label>
-        <label className='block text-sm font-semibold text-on-surface'>
-          {t(`${key}.filters.category`)}
-          <select className={control} onChange={(event) => onChange('category', event.target.value)} value={category}>
-            <option value=''>{t(`${key}.filters.allCategories`)}</option>
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {t(`common.serviceCategories.${item}`)}
+    <div className='mb-6 flex flex-col gap-3'>
+      <div className='flex flex-wrap items-center gap-3'>
+        <SearchInput
+          className='min-w-0 flex-1 basis-64'
+          label={t(`${key}.filters.search`)}
+          onChange={(value) => list.update('q', value)}
+          placeholder={t(`${key}.filters.searchPlaceholder`)}
+          value={list.keyword}
+        />
+        {full ? (
+          <Select
+            aria-label={t(`${key}.sort.label`)}
+            className='w-auto min-w-44'
+            onChange={(event) => list.update('sort', event.target.value)}
+            value={list.sort}
+          >
+            {SERVICE_SORTS.map((option) => (
+              <option key={option} value={option}>
+                {t(`${key}.sort.${option}`)}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        ) : null}
       </div>
-    </section>
+      {full && list.categories.length > 1 ? (
+        <FilterChips
+          label={t(`${key}.filters.category`)}
+          onChange={(value) => list.update('category', value)}
+          options={[
+            { value: '', label: t(`${key}.filters.allCategories`) },
+            ...list.categories.map((item) => ({
+              value: item,
+              label: t(`common.serviceCategories.${item}`),
+              icon: SERVICE_CATEGORY_ICONS[item]
+            }))
+          ]}
+          value={list.category}
+        />
+      ) : null}
+    </div>
   )
 }

@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Button } from '~/shared/ui/button'
+import { FileDropZone } from '~/shared/ui/file-drop-zone'
 import { Icon } from '~/shared/ui/icon'
+import { ViewableImage } from '~/shared/ui/image-viewer'
 import { ConfirmDialog } from '~/shared/ui/modal'
 import { useActionToast } from '~/shared/ui/use-action-toast'
 
@@ -39,7 +41,6 @@ export function ProviderMediaPanel({
   const notify = useActionToast()
   const [files, setFiles] = useState<File[]>([])
   const [fileError, setFileError] = useState<'count' | 'type' | 'size' | null>(null)
-  const [inputKey, setInputKey] = useState(0)
   const [removingMediaId, setRemovingMediaId] = useState<string | null>(null)
   const titleKey = {
     CARE_CENTER: 'common.providerMedia.centerTitle',
@@ -48,11 +49,16 @@ export function ProviderMediaPanel({
   } as const
   const queryKey = providerKeys.media(ownerType, ownerId)
   const media = useQuery({ queryKey, queryFn: () => fetchProviderMedia(ownerType, ownerId), retry: false })
+  // Every uploaded image of this owner, so the viewer can step through them.
+  const gallery = (media.data ?? []).flatMap((item) =>
+    item.downloadUrl && item.contentType?.startsWith('image/')
+      ? [{ src: item.downloadUrl, alt: item.originalFileName || t('common.providerMedia.image') }]
+      : []
+  )
   const upload = useMutation({
     mutationFn: () => uploadMedia(ownerType, ownerId, files),
     onSuccess: async () => {
       setFiles([])
-      setInputKey((current) => current + 1)
       notify.success(t('common.toast.mediaUploaded'))
       await invalidateOwnerMedia(queryClient, ownerType, ownerId)
     },
@@ -113,9 +119,11 @@ export function ProviderMediaPanel({
             <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={item.mediaFileId}>
               <span className='flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium text-on-surface'>
                 {item.downloadUrl && item.contentType?.startsWith('image/') ? (
-                  <img
+                  <ViewableImage
                     alt={item.originalFileName || t('common.providerMedia.image')}
-                    className='h-12 w-12 shrink-0 rounded-lg border border-outline-variant/50 object-cover'
+                    className='h-14 w-14 shrink-0 rounded-lg border border-outline-variant/50'
+                    gallery={gallery}
+                    index={gallery.findIndex((image) => image.src === item.downloadUrl)}
                     src={item.downloadUrl}
                   />
                 ) : (
@@ -147,34 +155,34 @@ export function ProviderMediaPanel({
           ))}
         </ul>
       ) : null}
-      <div className='flex flex-wrap items-center gap-3 rounded-xl border border-outline-variant/50 bg-surface-container-low p-4'>
-        <input
-          accept={ownerType === 'CERTIFICATE' ? '.pdf,.jpg,.jpeg,.png' : '.jpg,.jpeg,.png,.webp'}
-          aria-label={t('common.providerMedia.upload')}
-          className='min-w-0 flex-1 text-xs file:mr-3 file:rounded-lg file:border file:border-outline-variant file:bg-surface-container-lowest file:px-3 file:py-2 file:font-semibold file:text-primary'
-          key={inputKey}
-          multiple
-          onChange={(event) => {
-            const selected = Array.from(event.target.files ?? [])
-            const error = validateProviderFiles(ownerType, selected)
-            setFileError(error)
-            setFiles(error ? [] : selected)
-            if (error) event.target.value = ''
-          }}
-          type='file'
-        />
-        <Button
-          disabled={files.length === 0 || upload.isPending}
-          loading={upload.isPending}
-          onClick={() => upload.mutate()}
-          size='sm'
-          variant='primary'
-        >
-          {t('common.providerMedia.upload')}
-        </Button>
-      </div>
+      <FileDropZone
+        accept={ownerType === 'CERTIFICATE' ? '.pdf,.jpg,.jpeg,.png' : '.jpg,.jpeg,.png,.webp'}
+        describedBy={fileError ? 'provider-media-error' : undefined}
+        disabled={upload.isPending}
+        files={files}
+        hint={t(`common.providerMedia.validation.${ownerType === 'CERTIFICATE' ? 'hintCertificate' : 'hintImage'}`)}
+        label={t('common.providerMedia.upload')}
+        multiple
+        onFiles={(picked) => {
+          const next = [...files, ...picked]
+          const error = validateProviderFiles(ownerType, next)
+          setFileError(error)
+          if (!error) setFiles(next)
+        }}
+        onRemove={(file) => {
+          setFileError(null)
+          setFiles((current) => current.filter((item) => item !== file))
+        }}
+      />
+      {files.length ? (
+        <div className='flex justify-end'>
+          <Button loading={upload.isPending} onClick={() => upload.mutate()}>
+            {t('common.providerMedia.uploadCount', { count: files.length })}
+          </Button>
+        </div>
+      ) : null}
       {fileError ? (
-        <p className='text-sm text-error' role='alert'>
+        <p className='text-sm text-error' id='provider-media-error' role='alert'>
           {t(`common.providerMedia.validation.${fileError}`, { maxSize: ownerType === 'CERTIFICATE' ? 10 : 5 })}
         </p>
       ) : null}

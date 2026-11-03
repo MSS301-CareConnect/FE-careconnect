@@ -13,6 +13,7 @@ import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import type { ProviderCertificateRecord } from '~/shared/api/generated/contracts'
 import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
+import { ViewableImage } from '~/shared/ui/image-viewer'
 
 const key = 'centerManager.provider' as const
 const statusLabels = {
@@ -34,11 +35,24 @@ function CertificateFiles({ certificateId }: { certificateId: string }) {
   if (media.isError) return <p className='text-sm text-error'>{t('common.providerMedia.error')}</p>
   if (!media.data?.length) return <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.empty')}</p>
 
+  const gallery = media.data.flatMap((file) =>
+    file.downloadUrl && file.contentType?.startsWith('image/')
+      ? [{ src: file.downloadUrl, alt: file.originalFileName || t('common.providerMedia.image') }]
+      : []
+  )
   return (
     <ul className='flex flex-wrap gap-2'>
       {media.data.map((file) => (
         <li key={file.mediaFileId}>
-          {file.downloadUrl ? (
+          {file.downloadUrl && file.contentType?.startsWith('image/') ? (
+            <ViewableImage
+              alt={file.originalFileName || t('common.providerMedia.image')}
+              className='h-20 w-20 rounded-lg border border-outline-variant/50'
+              gallery={gallery}
+              index={gallery.findIndex((image) => image.src === file.downloadUrl)}
+              src={file.downloadUrl}
+            />
+          ) : file.downloadUrl ? (
             <a
               className='inline-flex items-center gap-2 rounded-lg border border-outline-variant/50 bg-white px-3 py-2 text-sm font-medium text-primary hover:border-primary'
               href={file.downloadUrl}

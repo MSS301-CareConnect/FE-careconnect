@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -16,6 +16,17 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchPublicCenter: vi.fn(async (id: string) => ({
     centerId: id,
     centerName: id === 'center-a' ? 'Phòng khám An Khang' : 'Trung tâm Bình An'
+  })),
+  // Two active centers, so the page shows the "At … · Change" line and the center on each card.
+  fetchPublicCenters: vi.fn(async () => ({
+    items: [
+      { centerId: 'center-a', centerName: 'Phòng khám An Khang' },
+      { centerId: 'center-b', centerName: 'Trung tâm Bình An' }
+    ],
+    page: 0,
+    size: 100,
+    totalElements: 2,
+    totalPages: 1
   }))
 }))
 
@@ -89,7 +100,7 @@ function renderPage(path = '/customer/services') {
 }
 
 function serviceNames() {
-  return screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)
+  return screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)
 }
 
 describe('Customer care services', () => {
@@ -121,10 +132,13 @@ describe('Customer care services', () => {
   it('shows the platform-wide catalog without prices until a center is chosen', async () => {
     renderPage()
 
-    expect(screen.getByText('Đang tải danh sách dịch vụ...')).toHaveAttribute('role', 'status')
+    expect(screen.getByText('Đang tải danh sách dịch vụ...').closest('[role="status"]')).toHaveAttribute(
+      'aria-busy',
+      'true'
+    )
     expect(await screen.findByRole('heading', { name: 'Chăm sóc tại nhà' })).toBeInTheDocument()
     expect(serviceNames()).toEqual(['Chăm sóc tại nhà', 'Thay băng vết mổ', 'Tư vấn dinh dưỡng'])
-    expect(screen.getByText(/Bạn đang xem dịch vụ của tất cả trung tâm/)).toBeInTheDocument()
+    expect(await screen.findByText('Đang xem tất cả trung tâm')).toBeInTheDocument()
     expect(screen.getAllByText('Giá theo từng trung tâm')).toHaveLength(3)
     expect(screen.queryByRole('link', { name: /Đặt lịch dịch vụ này/ })).not.toBeInTheDocument()
     expect(fetchCenterOfferings).not.toHaveBeenCalled()
@@ -139,27 +153,62 @@ describe('Customer care services', () => {
 
     expect(await screen.findByRole('heading', { name: 'Chăm sóc tại nhà' })).toBeInTheDocument()
     expect(serviceNames()).toEqual(['Chăm sóc tại nhà'])
-    expect(screen.getByText(/350\.000/, { selector: 'strong.text-lg' })).toBeInTheDocument()
-    expect(screen.queryByText('Gói a1-old')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Đặt lịch dịch vụ này/ })).toHaveAttribute(
+    // Two plans with different prices: the card says "From" the cheapest active one, once, without the old plan.
+    expect(screen.getByText('Từ 350.000 ₫')).toBeInTheDocument()
+    expect(screen.getByText('2 gói giá')).toBeInTheDocument()
+    expect(screen.queryByText(/Gói a1/)).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Đặt lịch Chăm sóc tại nhà' })).toHaveAttribute(
       'href',
       '/customer/booking?center=center-a&service=item-1'
     )
-    expect(screen.getByText('Phòng khám An Khang', { selector: 'strong' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Chăm sóc tại nhà' })).toHaveAttribute('href', '/customer/services/off-a1')
+    expect(await screen.findByText('Tại Phòng khám An Khang')).toBeInTheDocument()
+    // The category is translated, never the stored code.
+    expect(screen.getByText('Người cao tuổi')).toBeInTheDocument()
     expect(fetchCenterOfferings).toHaveBeenCalledExactlyOnceWith('center-a')
     expect(fetchCatalogItems).not.toHaveBeenCalled()
   })
 
-  it('follows a center change and sorts by price in the URL', async () => {
+  it('follows a center change and keeps only the search box for a short list', async () => {
     renderPage()
     await screen.findByRole('heading', { name: 'Tư vấn dinh dưỡng' })
 
     act(() => selectCenter({ id: 'center-b', name: 'Trung tâm Bình An' }))
     expect(await screen.findByRole('heading', { name: 'Thay băng vết mổ' })).toBeInTheDocument()
     expect(serviceNames()).toEqual(['Thay băng vết mổ'])
+    expect(screen.getByRole('searchbox', { name: 'Tìm dịch vụ' })).toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Sắp xếp' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Nhóm dịch vụ' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Phân trang dịch vụ' })).not.toBeInTheDocument()
+  })
 
-    fireEvent.change(screen.getByLabelText('Sắp xếp'), { target: { value: 'priceAsc' } })
+  it('offers category chips and sort for a longer list, both kept in the URL', async () => {
+    const many = Array.from({ length: 7 }, (_, index) => ({
+      ...(index % 2 ? wound : elderly),
+      id: `item-many-${index}`,
+      name: `Dịch vụ ${index + 1}`
+    }))
+    vi.mocked(fetchCatalogItems).mockResolvedValue(many)
+    renderPage()
+    await screen.findByRole('heading', { name: 'Dịch vụ 1' })
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Sắp xếp' }), { target: { value: 'priceAsc' } })
     expect(screen.getByTestId('location')).toHaveTextContent('/customer/services?sort=priceAsc')
+    fireEvent.click(screen.getByRole('button', { name: 'Người cao tuổi' }))
+    expect(screen.getByTestId('location')).toHaveTextContent('category=elderly')
+    expect(serviceNames()).toEqual(['Dịch vụ 1', 'Dịch vụ 3', 'Dịch vụ 5', 'Dịch vụ 7'])
+    expect(screen.getByRole('button', { name: 'Người cao tuổi' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('searches after typing pauses and clears with one click', async () => {
+    renderPage()
+    await screen.findByRole('heading', { name: 'Tư vấn dinh dưỡng' })
+
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Tìm dịch vụ' }), { target: { value: 'băng' } })
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('q='))
+    await waitFor(() => expect(serviceNames()).toEqual(['Thay băng vết mổ']))
+    fireEvent.click(screen.getByRole('button', { name: 'Xóa tìm kiếm' }))
+    await waitFor(() => expect(serviceNames()).toHaveLength(3))
   })
 
   it('asks for a center instead of reporting an error when the platform-wide list fails', async () => {
@@ -198,7 +247,7 @@ describe('Customer care services', () => {
     renderPage()
     await screen.findByRole('heading', { name: 'Chăm sóc tại nhà' })
     await act(() => setAppLanguage('en', false))
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Care services at medical centers')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Home care services')
     expect(screen.getAllByText('Prices vary by center')).toHaveLength(3)
   })
 })

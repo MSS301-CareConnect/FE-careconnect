@@ -1,91 +1,62 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BOOKING_STATUSES } from '~/entities/booking/booking-format'
-import { Icon } from '~/shared/ui/icon'
+import { ActiveFilters, FilterMenuChip } from '~/shared/ui/filter-menu-chip'
+import { SearchInput } from '~/shared/ui/search-input'
+import { Tabs } from '~/shared/ui/tabs'
 
-import { BOOKING_SORTS, type BookingSort, type useCustomerBookings } from '../hooks/use-customer-bookings'
+import { BOOKING_GROUPS, BOOKING_SORTS, type BookingGroup, type BookingSort } from '../booking-groups'
+import type { useCustomerBookings } from '../hooks/use-customer-bookings'
 
 type List = ReturnType<typeof useCustomerBookings>
-const SORT_LABELS = {
-  'createdAt,desc': 'newest',
-  'startDate,asc': 'startSoonest',
-  'startDate,desc': 'startLatest'
-} as const satisfies Record<BookingSort, string>
+const key = 'customer.myBookings' as const
 
-/** Status tabs, code search and sort; mounted with key={keyword} so the field resets with the URL. */
+export const BOOKING_TABS_ID = 'customer-bookings'
+
+/** Status tabs with counts, then one row: search by code or name, and sort. */
 export function BookingListToolbar({ list }: { list: List }) {
   const { t } = useTranslation()
-  const [draft, setDraft] = useState(list.keyword)
+  const loaded = list.collection.isSuccess
 
   return (
-    <section aria-label={t('customer.myBookings.filters.label')} className='flex flex-col gap-4'>
-      <div
-        aria-label={t('customer.myBookings.filters.status')}
-        className='flex gap-2 overflow-x-auto pb-1'
-        role='group'
-      >
-        {(['', ...BOOKING_STATUSES] as const).map((item) => {
-          const active = (list.status ?? '') === item
-          return (
-            <button
-              aria-pressed={active}
-              className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${active ? 'bg-primary text-on-primary shadow-xs' : 'border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container'}`}
-              key={item || 'all'}
-              onClick={() => list.setStatus(item)}
-              type='button'
-            >
-              {item ? t(`booking.status.${item}`) : t('customer.myBookings.filters.all')}
-            </button>
-          )
-        })}
+    <div className='flex flex-col gap-4'>
+      <Tabs
+        idBase={BOOKING_TABS_ID}
+        items={BOOKING_GROUPS.map((group) => ({
+          value: group,
+          label: t(`${key}.tabs.${group}`),
+          badge: loaded && group !== 'all' ? list.counts[group] : undefined,
+          badgeTone: group === 'action' ? 'attention' : 'neutral'
+        }))}
+        label={t(`${key}.filters.status`)}
+        onChange={(value: BookingGroup) => list.setGroup(value)}
+        value={list.group}
+      />
+      <div className='flex flex-wrap items-center gap-2'>
+        <SearchInput
+          className='min-w-0 flex-1 basis-64'
+          label={t(`${key}.filters.search`)}
+          onChange={list.setKeyword}
+          placeholder={t(`${key}.filters.searchPlaceholder`)}
+          value={list.keyword}
+        />
+        <FilterMenuChip
+          defaultValue='newest'
+          icon='sort'
+          label={t(`${key}.filters.sort`)}
+          onChange={(value) => list.setSort(BOOKING_SORTS.find((item) => item === value) ?? 'newest')}
+          options={BOOKING_SORTS.map((value: BookingSort) => ({ value, label: t(`${key}.sorts.${value}`) }))}
+          value={list.sort}
+        />
       </div>
-      <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]'>
-        <form
-          className='relative'
-          onSubmit={(event) => {
-            event.preventDefault()
-            list.setKeyword(draft)
-          }}
-          role='search'
-        >
-          <label className='sr-only' htmlFor='booking-search'>
-            {t('customer.myBookings.filters.search')}
-          </label>
-          <Icon className='pointer-events-none absolute top-3 left-3.5 text-xl text-primary' name='search' />
-          <input
-            className='w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-3 pr-4 pl-10 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none'
-            id='booking-search'
-            maxLength={50}
-            onBlur={() => draft.trim() !== list.keyword && list.setKeyword(draft)}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder={t('customer.myBookings.filters.searchPlaceholder')}
-            type='search'
-            value={draft}
-          />
-        </form>
-        <label className='relative'>
-          <span className='sr-only'>{t('customer.myBookings.filters.sort')}</span>
-          <Icon className='pointer-events-none absolute top-3 left-3.5 text-xl text-primary' name='sort' />
-          <select
-            className='w-full appearance-none rounded-xl border border-outline-variant bg-surface-container-lowest py-3 pr-9 pl-10 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none'
-            onChange={(event) =>
-              list.setSort(BOOKING_SORTS.find((item) => item === event.target.value) ?? BOOKING_SORTS[0])
-            }
-            value={list.sort}
-          >
-            {BOOKING_SORTS.map((item) => (
-              <option key={item} value={item}>
-                {t(`customer.myBookings.sorts.${SORT_LABELS[item]}`)}
-              </option>
-            ))}
-          </select>
-          <Icon
-            className='pointer-events-none absolute top-3 right-3 text-xl text-on-surface-variant'
-            name='keyboard_arrow_down'
-          />
-        </label>
-      </div>
-    </section>
+      {list.status ? (
+        <ActiveFilters
+          clearLabel={t(`${key}.filters.reset`)}
+          items={[{ id: 'status', label: t(`booking.status.${list.status}`), onRemove: list.clearStatus }]}
+          label={t(`${key}.filters.filtering`)}
+          onClear={list.clearFilters}
+          removeLabel={(label) => t(`${key}.filters.removeFilter`, { label })}
+        />
+      ) : null}
+    </div>
   )
 }

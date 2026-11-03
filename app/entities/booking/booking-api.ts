@@ -35,6 +35,7 @@ import type {
   BookingCancelRequest,
   BookingCreateRequest,
   BookingQuoteRequest,
+  BookingSummaryRecord,
   CareSessionStartRequest,
   CareTaskUpdateRequest,
   CenterBookingPolicyRequest,
@@ -74,6 +75,8 @@ export const bookingKeys = {
   all: ['booking'] as const,
   lists: ['booking', 'list'] as const,
   list: (params: ListBookingsParams) => ['booking', 'list', params] as const,
+  collection: (params: Omit<ListBookingsParams, 'page' | 'size' | 'sort'>) =>
+    ['booking', 'list', 'collection', params] as const,
   detail: (id: string) => ['booking', 'detail', id] as const,
   history: (id: string, page: number) => ['booking', 'history', id, page] as const,
   quote: (request: BookingQuoteRequest | null) => ['booking', 'quote', request] as const,
@@ -86,6 +89,25 @@ export const bookingKeys = {
 
 export async function fetchBookings(params: ListBookingsParams = {}) {
   return result(await listBookings(params, readOptions))
+}
+
+const COLLECTION_PAGE_SIZE = 100
+const COLLECTION_MAX_PAGES = 5
+
+/**
+ * Up to 500 bookings in pages of 100 (the BookingService maximum), newest first, so a screen can group several
+ * statuses and count them; the list endpoint filters one status at a time. `truncated` says more exist.
+ */
+export async function fetchBookingCollection(params: Omit<ListBookingsParams, 'page' | 'size' | 'sort'> = {}) {
+  const items: BookingSummaryRecord[] = []
+  let totalElements = 0
+  for (let page = 0; page < COLLECTION_MAX_PAGES; page += 1) {
+    const chunk = await fetchBookings({ ...params, sort: 'createdAt,desc', page, size: COLLECTION_PAGE_SIZE })
+    items.push(...chunk.items)
+    totalElements = chunk.totalElements
+    if (page + 1 >= chunk.totalPages) break
+  }
+  return { items, totalElements, truncated: totalElements > items.length }
 }
 /** Booking policy in effect for a center (spec §8): advance notice, deadlines, deposit and refund rules. */
 export async function fetchCenterBookingPolicy(centerId: string) {

@@ -8,6 +8,10 @@ export interface StepperStep {
   id: string
   label: string
   state: StepState
+  /** A short line under the label, e.g. the deadline of the current step. */
+  note?: string
+  /** Draws the note in the warning colour (a deadline that is close or past). */
+  noteTone?: 'default' | 'warning'
 }
 
 /**
@@ -24,10 +28,10 @@ export function Stepper({
   onSelect?: (id: string) => void
 }) {
   const { t } = useTranslation()
-  const currentIndex = Math.max(
-    0,
-    steps.findIndex((step) => step.state === 'current')
-  )
+  const found = steps.findIndex((step) => step.state === 'current')
+  // Every step done (a finished process): the last step stands for where it ended.
+  const allDone = found < 0 && steps.length > 0 && steps.every((step) => step.state === 'done')
+  const currentIndex = found >= 0 ? found : allDone ? steps.length - 1 : 0
   const progress = steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 0
 
   return (
@@ -39,6 +43,13 @@ export function Stepper({
             {t('common.kit.stepOf', { current: currentIndex + 1, total: steps.length })}
           </span>
         </p>
+        {steps[currentIndex]?.note ? (
+          <p
+            className={`mt-0.5 text-xs whitespace-pre-line ${steps[currentIndex].noteTone === 'warning' ? 'font-medium text-caution' : 'text-on-surface-variant'}`}
+          >
+            {steps[currentIndex].note}
+          </p>
+        ) : null}
         <div aria-hidden='true' className='mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container'>
           <div
             className='h-full rounded-full bg-primary transition-[width] duration-300 ease-[var(--ease-out-soft)]'
@@ -47,7 +58,11 @@ export function Stepper({
         </div>
       </div>
       <ol className='relative hidden grid-flow-col sm:grid' style={{ gridAutoColumns: '1fr' }}>
-        <span aria-hidden='true' className='absolute top-4 right-[12.5%] left-[12.5%] h-0.5 bg-outline-variant'>
+        <span
+          aria-hidden='true'
+          className='absolute top-4 h-0.5 bg-outline-variant'
+          style={{ left: `${50 / steps.length}%`, right: `${50 / steps.length}%` }}
+        >
           <span
             className='block h-full bg-primary transition-[width] duration-300 ease-[var(--ease-out-soft)]'
             style={{ width: `${progress}%` }}
@@ -67,6 +82,13 @@ export function Stepper({
                 className={`mt-2 text-center text-sm leading-5 ${current ? 'font-semibold text-on-surface' : done ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}
               >
                 {step.label}
+                {step.note ? (
+                  <span
+                    className={`mt-0.5 block text-xs font-normal whitespace-pre-line ${step.noteTone === 'warning' ? 'font-medium text-caution' : 'text-on-surface-variant'}`}
+                  >
+                    {step.note}
+                  </span>
+                ) : null}
                 <span className='sr-only'>
                   {' '}
                   {done ? t('common.kit.stepDone') : current ? t('common.kit.stepCurrent') : t('common.kit.stepTodo')}

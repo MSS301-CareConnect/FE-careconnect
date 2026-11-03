@@ -1,66 +1,43 @@
-import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { acknowledgeOccurrence, bookingKeys, checkIn, reportNoShow } from '~/entities/booking/booking-api'
-import { bookingErrorKey, formatClock, hasStarted } from '~/entities/booking/booking-format'
+import { bookingKeys, reportNoShow } from '~/entities/booking/booking-api'
+import { bookingErrorKey, hasStarted } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 
-import { currentPosition } from '../current-position'
+import { checkInWindow, nextVisitStep, useVisitActions } from '../../data/use-visit-actions'
+import { StickyActionBar, SuccessCheck } from '../../ui/action-bits'
+import { useCaregiverFormat } from '../../ui/caregiver-format'
+import { cgCard } from '../../ui/caregiver-page'
+import { useNow } from '../../ui/use-now'
 
-/** Fallback for a response without the window; the center policy default is 30 minutes either side. */
-const DEFAULT_WINDOW_MS = 30 * 60 * 1000
-const CLOCK_TICK_MS = 30_000
-
-/** The current time, refreshed while the page stays open so the check-in button opens and closes on time. */
-function useNow() {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), CLOCK_TICK_MS)
-    return () => window.clearInterval(timer)
-  }, [])
-  return now
-}
-
-/** The next job for a visit that has no care session yet: acknowledge, check in, or report a no-show. */
+/**
+ * Next step of a visit without a care session: accept it, start it inside the check-in window, or report that the
+ * customer is not there. The main button sits in the sticky bar on phones.
+ */
 export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const format = useCaregiverFormat()
   const queryClient = useQueryClient()
-  const [reporting, setReporting] = useState(false)
-  const waiting = visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED'
   const now = useNow()
-  const start = new Date(visit.startAt).getTime()
-  // Q12: the check-in window follows the center booking policy captured on the booking; after it closes the visit
-  // becomes CAREGIVER_MISSED.
-  const opens = visit.checkInOpensAt ? new Date(visit.checkInOpensAt).getTime() : start - DEFAULT_WINDOW_MS
-  const closes = visit.checkInClosesAt ? new Date(visit.checkInClosesAt).getTime() : start + DEFAULT_WINDOW_MS
-  const opensAt = formatClock(new Date(opens).toISOString(), i18n.language)
-  const closesAt = formatClock(new Date(closes).toISOString(), i18n.language)
-  const tooEarly = now < opens
-  const tooLate = now >= closes
-  const started = hasStarted(visit.startAt, now)
-  const noShowReported = Boolean(visit.noShowReportedAt)
-
-  function refresh() {
-    void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-  }
-  const acknowledge = useMutation({ mutationFn: () => acknowledgeOccurrence(visit.id), onSuccess: refresh })
-  const checkInVisit = useMutation({
-    mutationFn: async () => checkIn({ occurrenceId: visit.id, ...(await currentPosition()) }),
-    onSuccess: refresh
-  })
+  const [reporting, setReporting] = useState(false)
+  const [celebrate, setCelebrate] = useState<string | null>(null)
+  const { accept, start } = useVisitActions(visit)
   const noShow = useMutation({
     mutationFn: (note: string) => reportNoShow(visit.id, note),
-    onSuccess: () => {
-      refresh()
+    onSuccess: async () => {
       setReporting(false)
+      await queryClient.invalidateQueries({ queryKey: bookingKeys.all })
     }
   })
 
+  const waiting = visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED'
   if (!waiting) return null
-  if (noShowReported)
+  if (visit.noShowReportedAt)
     return (
       <p className='flex items-start gap-2 rounded-xl border border-warning/25 bg-warning-container p-4 text-sm font-medium text-on-warning-container'>
         <Icon className='text-lg' name='pending' />
@@ -68,56 +45,71 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
       </p>
     )
 
-  const error = acknowledge.error ?? checkInVisit.error
+  const step = nextVisitStep(visit, now)
+  const { opens, closes } = checkInWindow(visit)
+  const opensAt = format.clock(new Date(opens).toISOString())
+  const closesAt = format.clock(new Date(closes).toISOString())
+  const tooLate = now >= closes
+  const started = hasStarted(visit.startAt, now)
+  const hasAction = step === 'accept' || step === 'start' || step === 'waitToStart' || started
+
   return (
-    <section className='flex flex-col gap-3 rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-sm sm:p-6'>
-      <h2 className='text-base font-bold text-on-surface'>{t('caregiver.visitDetail.nextStep')}</h2>
-      <div className='flex flex-wrap gap-2.5'>
-        {visit.status === 'SCHEDULED' ? (
-          <button
-            className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface-container px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50'
-            disabled={acknowledge.isPending}
-            onClick={() => acknowledge.mutate()}
-            type='button'
-          >
-            <Icon className='text-lg' name='thumb_up' />
-            {acknowledge.isPending ? t('booking.actions.working') : t('caregiver.visitDetail.acknowledge')}
-          </button>
-        ) : null}
-        <button
-          className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50'
-          disabled={checkInVisit.isPending || tooEarly || tooLate}
-          onClick={() => checkInVisit.mutate()}
-          type='button'
-        >
-          <Icon className='text-lg' name='login' />
-          {checkInVisit.isPending ? t('caregiver.visitDetail.checkingIn') : t('caregiver.visitDetail.checkIn')}
-        </button>
-        {started ? (
-          <button
-            className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-error ring-1 ring-error/30 transition-colors hover:bg-error-container/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error'
-            onClick={() => setReporting(true)}
-            type='button'
-          >
-            <Icon className='text-lg' name='person_off' />
-            {t('caregiver.visitDetail.reportNoShow')}
-          </button>
-        ) : null}
-      </div>
+    <section aria-labelledby='visit-next-step' className={`${cgCard} p-4 sm:p-5`}>
+      <h2 className='text-base font-semibold text-on-surface' id='visit-next-step'>
+        {t('caregiver.visitDetail.nextStep')}
+      </h2>
+      {celebrate ? <SuccessCheck label={celebrate} /> : null}
       {tooLate ? (
-        <p className='rounded-lg bg-warning-container p-3 text-sm text-on-warning-container tabular-nums'>
+        <p className='mt-2 rounded-lg bg-warning-container p-3 text-sm text-on-warning-container tabular-nums'>
           {t('caregiver.visitDetail.checkInClosed', { time: closesAt })}
         </p>
       ) : (
-        <p className='text-sm text-on-surface-variant tabular-nums'>
+        <p className='mt-1 text-sm text-on-surface-variant tabular-nums'>
           {t('caregiver.visitDetail.checkInHint', { time: opensAt, closes: closesAt })}
         </p>
       )}
-      {error ? (
-        <p className='rounded-lg bg-error-container/40 p-3 text-sm text-error' role='alert'>
-          {t(bookingErrorKey(error))}
-        </p>
+
+      {hasAction ? (
+        <StickyActionBar>
+          {step === 'accept' ? (
+            <Button
+              leftIcon={<Icon className='text-lg' name='thumb_up' />}
+              loading={accept.isPending}
+              onClick={() =>
+                accept.mutate(undefined, { onSuccess: () => setCelebrate(t('caregiver.visitDetail.actions.accepted')) })
+              }
+              size='lg'
+            >
+              {t('caregiver.visitDetail.actions.accept')}
+            </Button>
+          ) : null}
+          {step === 'start' || step === 'waitToStart' ? (
+            <Button
+              disabled={step === 'waitToStart'}
+              leftIcon={<Icon className='text-lg' name='play_arrow' />}
+              loading={start.isPending}
+              onClick={() => start.mutate()}
+              size='lg'
+            >
+              {step === 'waitToStart'
+                ? t('caregiver.visitDetail.actions.opensAt', { time: opensAt })
+                : t('caregiver.visitDetail.actions.start')}
+            </Button>
+          ) : null}
+          {started ? (
+            <Button
+              className='text-error'
+              leftIcon={<Icon className='text-lg' name='person_off' />}
+              onClick={() => setReporting(true)}
+              size='lg'
+              variant='outline'
+            >
+              {t('caregiver.visitDetail.reportNoShow')}
+            </Button>
+          ) : null}
+        </StickyActionBar>
       ) : null}
+
       {reporting ? (
         <BookingReasonDialog
           confirmLabel={t('caregiver.visitDetail.reportNoShow')}

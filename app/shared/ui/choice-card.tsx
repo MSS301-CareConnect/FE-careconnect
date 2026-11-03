@@ -73,7 +73,17 @@ export function ChoiceCard({
             aria-hidden='true'
             className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center border-2 transition-colors ${type === 'radio' ? 'rounded-full' : 'rounded-md'} ${checked ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant bg-surface-container-lowest'}`}
           >
-            {checked ? <Icon className='cc-pop text-[14px] font-bold' name='check' /> : null}
+            {checked ? (
+              <svg aria-hidden='true' className='cc-pop h-3 w-3' fill='none' viewBox='0 0 12 12'>
+                <path
+                  d='M2.5 6.2 5 8.6 9.6 3.6'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                />
+              </svg>
+            ) : null}
           </span>
         )}
       </label>

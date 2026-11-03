@@ -63,7 +63,8 @@ export function CustomerBookingPage() {
 
   const steps = STEP_IDS.map((id, index) => {
     const number = (index + 1) as WizardStep
-    const state: StepState = number === form.step ? 'current' : number < form.furthest ? 'done' : 'todo'
+    const state: StepState =
+      number === form.step ? 'current' : number < form.furthest && number <= form.reached ? 'done' : 'todo'
     return { id, label: t(`customer.booking.steps.${id}`), state }
   })
   const last = form.step === 4

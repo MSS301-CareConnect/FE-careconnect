@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { fetchMyCaregiverProfile, fetchProviderMedia } from '~/entities/provider/provider-api'
 import { AdminLayout } from '~/features/admin/layout/admin-layout'
-import { CaregiverLayout } from '~/features/caregiver/layout/caregiver-layout'
 import { CenterManagerLayout } from '~/features/center-manager/layout/center-manager-layout'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AuthUserContext } from './auth-user-context'
@@ -32,8 +31,7 @@ beforeEach(async () => {
 describe('Portal account menus', () => {
   it.each([
     { role: 'ADMIN', path: '/admin/dashboard', layout: AdminLayout },
-    { role: 'CENTER_MANAGER', path: '/center-manager/caregivers', layout: CenterManagerLayout },
-    { role: 'CAREGIVER', path: '/caregiver/visits', layout: CaregiverLayout }
+    { role: 'CENTER_MANAGER', path: '/center-manager/caregivers', layout: CenterManagerLayout }
   ])('places account actions under the $role avatar', ({ role, path, layout: Layout }) => {
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>

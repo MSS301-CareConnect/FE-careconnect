@@ -22,6 +22,57 @@ export const caregiverVisitDetailEn = {
   services: 'Services',
   customerNote: 'Customer note',
   specialNotes: 'Special notes',
+  backToVisits: 'Care visits',
+  when: 'When',
+  where: 'Where',
+  bookingCode: 'Booking {{code}}',
+  care: {
+    title: 'Care recipient',
+    allergies: 'Allergies',
+    chronicConditions: 'Health conditions',
+    medications: 'Medications & times',
+    mobility: 'Mobility',
+    independence: 'Independence',
+    diet: 'Diet',
+    behavior: 'Behaviour notes',
+    requirements: 'Care requirements',
+    bloodType: 'Blood type {{type}}',
+    noNotes: 'No special notes for this person.',
+    mobilityLevels: {
+      INDEPENDENT: 'Walks independently',
+      NEEDS_ASSISTANCE: 'Needs help to move',
+      WHEELCHAIR: 'Uses a wheelchair',
+      BEDRIDDEN: 'Bedridden'
+    },
+    independenceLevels: {
+      INDEPENDENT: 'Independent',
+      PARTIALLY_DEPENDENT: 'Partly dependent',
+      FULLY_DEPENDENT: 'Fully dependent'
+    }
+  },
+  contact: {
+    title: 'Contact',
+    family: 'Family (booking owner)',
+    emergency: 'Emergency contact',
+    none: 'No phone number on this booking.'
+  },
+  timeline: {
+    title: 'Progress',
+    assigned: 'Assigned to you',
+    acknowledged: 'You accepted',
+    checkedIn: 'Visit started',
+    checkedOut: 'Visit finished',
+    noShow: 'No-show reported'
+  },
+  actions: {
+    accept: 'Accept visit',
+    start: 'Start visit',
+    finish: 'Finish visit',
+    accepted: 'Visit accepted',
+    started: 'Visit started — have a good shift!',
+    finished: 'Visit finished. Remember the care report.',
+    opensAt: 'Opens at {{time}}'
+  },
   session: {
     title: 'Task list',
     loading: 'Loading the care session…',
@@ -70,6 +121,57 @@ export const caregiverVisitDetailVi = {
   services: 'Dịch vụ',
   customerNote: 'Ghi chú của khách',
   specialNotes: 'Lưu ý đặc biệt',
+  backToVisits: 'Buổi chăm sóc',
+  when: 'Thời gian',
+  where: 'Địa điểm',
+  bookingCode: 'Lịch đặt {{code}}',
+  care: {
+    title: 'Người được chăm sóc',
+    allergies: 'Dị ứng',
+    chronicConditions: 'Bệnh nền',
+    medications: 'Thuốc & giờ dùng',
+    mobility: 'Vận động',
+    independence: 'Mức độ tự lập',
+    diet: 'Dinh dưỡng',
+    behavior: 'Lưu ý hành vi',
+    requirements: 'Yêu cầu chăm sóc',
+    bloodType: 'Nhóm máu {{type}}',
+    noNotes: 'Không có lưu ý đặc biệt.',
+    mobilityLevels: {
+      INDEPENDENT: 'Tự đi lại',
+      NEEDS_ASSISTANCE: 'Cần hỗ trợ khi di chuyển',
+      WHEELCHAIR: 'Dùng xe lăn',
+      BEDRIDDEN: 'Nằm tại giường'
+    },
+    independenceLevels: {
+      INDEPENDENT: 'Tự lập',
+      PARTIALLY_DEPENDENT: 'Phụ thuộc một phần',
+      FULLY_DEPENDENT: 'Phụ thuộc hoàn toàn'
+    }
+  },
+  contact: {
+    title: 'Liên hệ',
+    family: 'Người nhà (người đặt lịch)',
+    emergency: 'Liên hệ khẩn cấp',
+    none: 'Lịch đặt này chưa có số điện thoại.'
+  },
+  timeline: {
+    title: 'Tiến trình',
+    assigned: 'Được giao cho bạn',
+    acknowledged: 'Bạn đã nhận buổi',
+    checkedIn: 'Bắt đầu ca',
+    checkedOut: 'Kết thúc ca',
+    noShow: 'Đã báo khách vắng'
+  },
+  actions: {
+    accept: 'Nhận buổi',
+    start: 'Bắt đầu ca',
+    finish: 'Kết thúc ca',
+    accepted: 'Đã nhận buổi',
+    started: 'Đã bắt đầu ca — chúc bạn làm việc thuận lợi!',
+    finished: 'Đã kết thúc ca. Nhớ gửi báo cáo chăm sóc.',
+    opensAt: 'Mở lúc {{time}}'
+  },
   session: {
     title: 'Danh sách công việc',
     loading: 'Đang tải ca chăm sóc…',

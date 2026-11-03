@@ -9,6 +9,7 @@ import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
 
+import { usePendingInvitations } from '../account-shell'
 import { useBookingsAttention } from '../hooks/use-bookings-attention'
 import { CenterChip } from './center-chip'
 
@@ -25,6 +26,7 @@ export function CustomerHeader() {
   const isCustomer = Boolean(authUser?.status === 'ACTIVE' && authUser.roles?.includes('CUSTOMER'))
   const homePath = isCustomer ? '/customer' : '/'
   const attention = useBookingsAttention(isCustomer)
+  const pendingInvitations = usePendingInvitations(isCustomer).data?.length ?? 0
   const navigation = [
     { to: homePath, label: t('customer.nav.home'), end: true },
     { to: '/customer/caregivers', label: t('customer.nav.caregivers'), end: false },
@@ -110,7 +112,26 @@ export function CustomerHeader() {
                 {t('customer.nav.book')}
               </Link>
               <CenterChip />
-              <NotificationBell />
+              <NotificationBell
+                pinned={
+                  pendingInvitations > 0
+                    ? (close) => (
+                        <Link
+                          className='mb-1 flex items-center gap-3 rounded-xl bg-info-container px-3 py-2.5 text-sm text-on-info-container hover:brightness-95 focus-visible:outline-2 focus-visible:outline-primary'
+                          onClick={close}
+                          to='/customer/invitations'
+                        >
+                          <Icon className='text-xl' name='mail' />
+                          <span className='min-w-0 flex-1 font-medium'>
+                            {t('customer.accountArea.invitationsNotice', { count: pendingInvitations })}
+                          </span>
+                          <Icon className='text-lg' name='chevron_right' />
+                        </Link>
+                      )
+                    : undefined
+                }
+                pinnedCount={pendingInvitations}
+              />
               <div className='relative' ref={menuRef}>
                 <button
                   aria-controls='customer-account-menu'

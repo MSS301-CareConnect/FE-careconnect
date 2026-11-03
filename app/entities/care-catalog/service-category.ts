@@ -15,6 +15,17 @@ export type ServiceCategoryKey = (typeof SERVICE_CATEGORIES)[number]['key']
 /** A stored category outside the six groups. */
 export type ServiceCategoryGroup = ServiceCategoryKey | 'other'
 
+/** Material Symbols icon of each group, so a service card is recognisable before its name is read. */
+export const SERVICE_CATEGORY_ICONS: Record<ServiceCategoryGroup, string> = {
+  elderly: 'elderly',
+  postSurgery: 'healing',
+  rehabilitation: 'accessible_forward',
+  chronic: 'monitor_heart',
+  nursing: 'vaccines',
+  motherBaby: 'child_care',
+  other: 'medical_services'
+}
+
 /** Comparison form that ignores case, surrounding spaces and Unicode composition. */
 function normalize(value: string) {
   return value.trim().normalize('NFC').toLocaleLowerCase('vi')

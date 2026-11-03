@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
 
 import { fetchPublicCaregiver, providerKeys } from './provider-api'
@@ -41,20 +42,13 @@ export function AssignedCaregiverCard({
       {profile.isError ? <p className='text-on-surface-variant'>{t('booking.caregiver.unavailable')}</p> : null}
       {profile.data ? (
         <div className='flex items-center gap-3'>
-          {profile.data.avatarUrl ? (
-            <img
-              alt={t('booking.caregiver.photo', { name: profile.data.fullName })}
-              className='h-14 w-14 shrink-0 rounded-full object-cover'
-              src={profile.data.avatarUrl}
-            />
-          ) : (
-            <span
-              aria-hidden='true'
-              className='grid h-14 w-14 shrink-0 place-items-center rounded-full bg-secondary-container text-lg font-bold text-primary'
-            >
-              {profile.data.fullName.trim().charAt(0).toUpperCase()}
-            </span>
-          )}
+          <Avatar
+            alt={t('booking.caregiver.photo', { name: profile.data.fullName })}
+            className='h-14 w-14 shrink-0 rounded-full text-lg'
+            name={profile.data.fullName}
+            src={profile.data.avatarUrl}
+            viewable
+          />
           <div className='min-w-0'>
             <p className='text-base font-bold text-on-surface'>{profile.data.fullName}</p>
             <p className='text-on-surface-variant'>

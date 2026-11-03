@@ -10,6 +10,7 @@ import { Skeleton } from '~/shared/ui/skeleton'
 
 import type { BookingForm, WizardStep } from '../hooks/use-booking-form'
 import { quoteFacts } from './booking-quote'
+import { QuoteLines } from './quote-lines'
 import { MissingHint } from './wizard-parts'
 
 function Total({ form, large = false }: { form: BookingForm; large?: boolean }) {
@@ -52,7 +53,7 @@ function SummaryBody({ form, onNavigate }: { form: BookingForm; onNavigate?: () 
   const missing = [
     { key: 'recipient', done: !form.issues[1] },
     { key: 'services', done: !form.issues[2] },
-    { key: 'schedule', done: !form.issues[3] }
+    { key: 'schedule', done: form.reached >= 3 && !form.issues[3] }
   ] as const
 
   return (
@@ -87,7 +88,7 @@ function SummaryBody({ form, onNavigate }: { form: BookingForm; onNavigate?: () 
           label={t('customer.booking.summary.schedule')}
           onClick={() => go(3)}
           value={
-            form.step >= 3 || form.request
+            form.reached >= 3
               ? [
                   t(`customer.booking.schedule.types.${form.schedule.bookingType}.title`),
                   visitCount ? t('customer.booking.summary.visits', { count: visitCount }) : null
@@ -98,6 +99,15 @@ function SummaryBody({ form, onNavigate }: { form: BookingForm; onNavigate?: () 
           }
         />
       </dl>
+
+      {form.request && form.quote.isSuccess && facts.lines.length > 0 ? (
+        <section aria-labelledby='summary-quote-lines' className='border-t border-outline-variant pt-4'>
+          <h3 className='mb-3 text-sm font-semibold text-on-surface' id='summary-quote-lines'>
+            {t('customer.booking.quote.caption')}
+          </h3>
+          <QuoteLines compact lines={facts.lines} />
+        </section>
+      ) : null}
 
       {form.request ? (
         <div className='rounded-xl bg-surface-container-low p-4'>

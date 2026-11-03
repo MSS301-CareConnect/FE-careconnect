@@ -14,8 +14,18 @@ import {
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
+import { awaitsRemaining } from '../booking-lifecycle'
+
 const primaryAction =
-  'group mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:bg-outline'
+  'group mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-xs transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:bg-outline'
+
+// Statuses that wait on the customer get the attention colour; closed ones stay quiet.
+const TONES: Partial<Record<BookingStatus, string>> = {
+  AWAITING_INITIAL_PAYMENT: 'border-caution/40 bg-caution-container/40',
+  REJECTED: 'border-outline-variant bg-surface-container-low',
+  CANCELLED: 'border-outline-variant bg-surface-container-low',
+  EXPIRED: 'border-outline-variant bg-surface-container-low'
+}
 
 const ICONS: Record<BookingStatus, string> = {
   PENDING_CENTER_CONFIRMATION: 'hourglass_top',
@@ -40,8 +50,7 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   const deposit = initialPaymentOf(booking)
   // Without a known amount the copy still asks for the payment, just without a figure.
   const depositKnown = deposit.amount !== undefined
-  const awaitingRemaining =
-    booking.status === 'CONFIRMED' && Boolean(booking.remainingPaymentDueAt) && !booking.fullyPaidAt
+  const awaitingRemaining = awaitsRemaining(booking)
   const invoice = useQuery({
     queryKey: paymentKeys.bookingInvoice(booking.id),
     queryFn: () => fetchOpenInvoiceOfBooking(booking.id),
@@ -64,15 +73,20 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   }
 
   return (
-    <section className='flex items-start gap-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs sm:p-6'>
-      <span className='grid h-12 w-12 shrink-0 place-items-center rounded-full bg-secondary-container text-primary'>
-        <Icon className='text-2xl' name={ICONS[booking.status]} />
-      </span>
-      <div className='min-w-0'>
-        <h2 className='text-lg font-bold text-on-surface'>
+    <section
+      aria-labelledby='booking-next-title'
+      className={`rounded-2xl border p-5 shadow-[var(--shadow-card)] ${TONES[booking.status] ?? (awaitingRemaining ? 'border-caution/40 bg-caution-container/40' : 'border-outline-variant bg-surface-container-lowest')}`}
+    >
+      <div className='flex items-start gap-3'>
+        <span className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-primary'>
+          <Icon className='text-xl' name={ICONS[booking.status]} />
+        </span>
+        <h2 className='pt-1.5 text-base leading-snug font-semibold text-on-surface' id='booking-next-title'>
           {t(`customer.bookingDetail.next.${booking.status}.title`)}
         </h2>
-        <p className='mt-1 text-sm leading-6 text-on-surface-variant'>
+      </div>
+      <div>
+        <p className='mt-2 text-sm leading-6 text-on-surface-variant'>
           {booking.status === 'AWAITING_INITIAL_PAYMENT' && !depositKnown
             ? t('customer.bookingDetail.next.AWAITING_INITIAL_PAYMENT.bodyNoAmount', values)
             : awaitingRemaining

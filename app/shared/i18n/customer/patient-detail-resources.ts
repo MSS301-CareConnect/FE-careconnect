@@ -1,9 +1,59 @@
 export const patientDetailEn = {
   documentTitle: 'Health Record | CareConnect',
+  edit: 'Edit',
+  addField: 'Add {{field}}',
+  notProvidedList: 'Not provided: {{fields}}',
+  deleted: 'Profile deleted',
+  header: {
+    bloodType: 'Blood type {{type}}',
+    more: 'More actions for this profile'
+  },
+  completeness: {
+    label: 'Profile complete',
+    missing: 'Missing {{item}}',
+    add: 'Add {{item}}',
+    items: {
+      birth: 'date of birth and gender',
+      bloodType: 'blood type',
+      body: 'height and weight',
+      address: 'care address',
+      conditions: 'chronic conditions',
+      allergies: 'allergies',
+      mobility: 'mobility',
+      diet: 'diet',
+      needs: 'care needs',
+      contact: 'an emergency contact'
+    }
+  },
+  tabs: {
+    label: 'Profile sections',
+    overview: 'Overview',
+    medical: 'Health & medications',
+    daily: 'Daily life',
+    contacts: 'Emergency contacts',
+    managers: 'Managers'
+  },
+  overview: {
+    basic: 'Basic information',
+    address: 'Care address',
+    addressValue: 'Address',
+    medications: 'Current medications',
+    primaryContact: 'Primary contact',
+    allergyCallout: 'Allergies:'
+  },
+  drawer: {
+    save: 'Save',
+    cancel: 'Cancel',
+    basic: { title: 'Edit basic information', description: 'Name, date of birth, gender and body measures.' },
+    address: { title: 'Edit care address', description: 'Where the caregiver will come.' },
+    medical: { title: 'Edit medical background', description: 'Chronic conditions, allergies and history.' },
+    daily: { title: 'Edit daily life', description: 'Mobility, meals, sleep and care notes.' }
+  },
   breadcrumb: {
     home: 'Home',
     myAccount: 'My Account',
-    patientProfiles: 'Family member health profiles',
+    label: 'Breadcrumb',
+    patientProfiles: 'Family profiles',
     title: 'Health Record'
   },
   banner: {
@@ -15,8 +65,8 @@ export const patientDetailEn = {
     editMode: 'Edit mode',
     saveUpdate: 'Save updates',
     saving: 'Saving...',
-    bookNewCare: 'Book new care session',
-    toastSuccess: 'Health record saved!',
+    bookNewCare: 'Book care',
+    toastSuccess: 'Profile saved',
     saveError: 'Unable to save the profile. Please check the information and try again.',
     conflictError: 'This profile was changed by someone else. Reload the page to see the latest version.',
     nameRequired: 'Full name is required.',
@@ -49,7 +99,13 @@ export const patientDetailEn = {
     selectPlaceholder: 'Not selected'
   },
   emergencySection: {
-    title: 'Emergency Contacts',
+    title: 'Emergency contacts',
+    addShort: 'Add contact',
+    addTitle: 'Add an emergency contact',
+    editTitle: 'Edit emergency contact',
+    more: 'Actions for contact {{name}}',
+    deleteTitle: 'Delete the contact {{name}}?',
+    saved: 'Contact saved',
     priorityBadge: 'Priority 24/7',
     call: 'Call {{name}}',
     primaryBadge: 'Primary contact',
@@ -69,19 +125,26 @@ export const patientDetailEn = {
     required: 'Full name, relationship and phone number are required.',
     phoneInvalid: 'Phone number must contain 10 or 11 digits.',
     actionError: 'Unable to update emergency contacts. Please try again.',
-    hotlineTitle: 'Emergency Medical Dispatch',
+    hotlineTitle: 'Medical emergency: call now',
     hotlineDesc: '115 Emergency Dispatch & Rapid Response Team',
     hotlineNumber: '115'
   },
   medicalBackground: {
-    title: 'Underlying Conditions & Medical History',
+    title: 'Medical background',
     lastUpdated: 'Last updated: {{date}}',
     chronicLabel: 'Chronic conditions under treatment',
-    allergyLabel: 'Drug & Food allergy history',
+    allergyLabel: 'Drug and food allergies',
     historyLabel: 'Medical history'
   },
   prescriptions: {
-    title: 'Current Prescriptions & Schedule',
+    title: 'Current medications',
+    add: 'Add medication',
+    addTitle: 'Add a medication',
+    editTitle: 'Edit medication',
+    more: 'Actions for {{name}}',
+    deleteTitle: 'Delete {{name}}?',
+    deleteHint: 'The medication is removed from the profile. To pause it, choose "Stop taking" instead.',
+    saved: 'Medication saved',
     activeCount: '{{count, number}} active medications',
     thMedication: 'Medication',
     thDosage: 'Dosage & frequency',
@@ -98,7 +161,7 @@ export const patientDetailEn = {
     edit: 'Edit',
     delete: 'Delete',
     activate: 'Resume',
-    deactivate: 'Stop',
+    deactivate: 'Stop taking',
     nameLabel: 'Medication name',
     dosageLabel: 'Dosage',
     frequencyLabel: 'Frequency',
@@ -117,7 +180,7 @@ export const patientDetailEn = {
     actionError: 'Unable to update medications. Please try again.'
   },
   carePlan: {
-    title: 'Care Plan & Daily Needs',
+    title: 'Daily life',
     mobilityTitle: 'Mobility & Independence',
     nutritionTitle: 'Dietary notes',
     sleepTitle: 'Sleep habits',
@@ -136,10 +199,60 @@ export const patientDetailEn = {
 
 export const patientDetailVi = {
   documentTitle: 'Chi tiết hồ sơ sức khỏe | CareConnect',
+  edit: 'Sửa',
+  addField: 'Thêm {{field}}',
+  notProvidedList: 'Chưa cập nhật: {{fields}}',
+  deleted: 'Đã xóa hồ sơ',
+  header: {
+    bloodType: 'Nhóm máu {{type}}',
+    more: 'Thao tác khác với hồ sơ'
+  },
+  completeness: {
+    label: 'Hồ sơ hoàn thiện',
+    missing: 'Còn thiếu {{item}}',
+    add: 'Thêm {{item}}',
+    items: {
+      birth: 'ngày sinh và giới tính',
+      bloodType: 'nhóm máu',
+      body: 'chiều cao, cân nặng',
+      address: 'địa chỉ chăm sóc',
+      conditions: 'bệnh nền',
+      allergies: 'dị ứng',
+      mobility: 'khả năng vận động',
+      diet: 'chế độ ăn',
+      needs: 'yêu cầu chăm sóc',
+      contact: 'liên hệ khẩn cấp'
+    }
+  },
+  tabs: {
+    label: 'Các phần của hồ sơ',
+    overview: 'Tổng quan',
+    medical: 'Y tế & thuốc',
+    daily: 'Sinh hoạt hằng ngày',
+    contacts: 'Liên hệ khẩn cấp',
+    managers: 'Người quản lý'
+  },
+  overview: {
+    basic: 'Thông tin cơ bản',
+    address: 'Địa chỉ chăm sóc',
+    addressValue: 'Địa chỉ',
+    medications: 'Thuốc đang dùng',
+    primaryContact: 'Liên hệ chính',
+    allergyCallout: 'Dị ứng:'
+  },
+  drawer: {
+    save: 'Lưu',
+    cancel: 'Hủy',
+    basic: { title: 'Sửa thông tin cơ bản', description: 'Họ tên, ngày sinh, giới tính và chỉ số cơ thể.' },
+    address: { title: 'Sửa địa chỉ chăm sóc', description: 'Nơi người chăm sóc sẽ đến.' },
+    medical: { title: 'Sửa tiền sử & bệnh nền', description: 'Bệnh nền, dị ứng và tiền sử bệnh.' },
+    daily: { title: 'Sửa sinh hoạt hằng ngày', description: 'Vận động, ăn uống, giấc ngủ và lưu ý chăm sóc.' }
+  },
   breadcrumb: {
     home: 'Trang chủ',
     myAccount: 'Tài khoản của tôi',
-    patientProfiles: 'Hồ sơ người thân cần chăm sóc',
+    label: 'Đường dẫn',
+    patientProfiles: 'Hồ sơ người thân',
     title: 'Chi tiết hồ sơ sức khỏe'
   },
   banner: {
@@ -151,8 +264,8 @@ export const patientDetailVi = {
     editMode: 'Chế độ chỉnh sửa',
     saveUpdate: 'Lưu cập nhật',
     saving: 'Đang lưu...',
-    bookNewCare: 'Đặt lịch chăm sóc mới',
-    toastSuccess: 'Đã lưu thông tin hồ sơ người bệnh thành công!',
+    bookNewCare: 'Đặt lịch',
+    toastSuccess: 'Đã lưu hồ sơ',
     saveError: 'Không thể lưu hồ sơ. Vui lòng kiểm tra thông tin và thử lại.',
     conflictError: 'Hồ sơ vừa được người khác cập nhật. Hãy tải lại trang để xem thông tin mới nhất.',
     nameRequired: 'Vui lòng nhập họ tên.',
@@ -186,6 +299,12 @@ export const patientDetailVi = {
   },
   emergencySection: {
     title: 'Liên hệ khẩn cấp',
+    addShort: 'Thêm liên hệ',
+    addTitle: 'Thêm liên hệ khẩn cấp',
+    editTitle: 'Sửa liên hệ khẩn cấp',
+    more: 'Thao tác với liên hệ {{name}}',
+    deleteTitle: 'Xóa liên hệ {{name}}?',
+    saved: 'Đã lưu liên hệ',
     priorityBadge: 'Ưu tiên 24/7',
     call: 'Gọi cho {{name}}',
     primaryBadge: 'Liên hệ chính',
@@ -205,19 +324,26 @@ export const patientDetailVi = {
     required: 'Vui lòng nhập họ tên, mối quan hệ và số điện thoại.',
     phoneInvalid: 'Số điện thoại phải gồm 10 hoặc 11 chữ số.',
     actionError: 'Không thể cập nhật liên hệ khẩn cấp. Vui lòng thử lại.',
-    hotlineTitle: 'Cấp cứu y tế khẩn cấp',
+    hotlineTitle: 'Cấp cứu y tế: gọi ngay',
     hotlineDesc: 'Tổng đài cấp cứu 115 & Đội phản ứng nhanh',
     hotlineNumber: '115'
   },
   medicalBackground: {
-    title: 'Tiền sử bệnh & Bệnh lý nền',
+    title: 'Tiền sử & bệnh nền',
     lastUpdated: 'Cập nhật lần cuối: {{date}}',
-    chronicLabel: 'Bệnh lý mãn tính đang điều trị',
-    allergyLabel: 'Tiền sử dị ứng thuốc & thực phẩm',
+    chronicLabel: 'Bệnh nền đang điều trị',
+    allergyLabel: 'Dị ứng thuốc & thực phẩm',
     historyLabel: 'Tiền sử bệnh'
   },
   prescriptions: {
-    title: 'Toa thuốc hiện tại & Lịch dùng thuốc',
+    title: 'Thuốc đang dùng',
+    add: 'Thêm thuốc',
+    addTitle: 'Thêm thuốc',
+    editTitle: 'Sửa thuốc',
+    more: 'Thao tác với thuốc {{name}}',
+    deleteTitle: 'Xóa thuốc {{name}}?',
+    deleteHint: 'Thuốc sẽ bị xóa khỏi hồ sơ. Nếu chỉ tạm ngưng, hãy chọn "Ngưng dùng".',
+    saved: 'Đã lưu thuốc',
     activeCount: '{{count, number}} thuốc đang dùng',
     thMedication: 'Tên thuốc',
     thDosage: 'Liều lượng & tần suất',
@@ -234,7 +360,7 @@ export const patientDetailVi = {
     edit: 'Sửa',
     delete: 'Xóa',
     activate: 'Dùng lại',
-    deactivate: 'Ngưng',
+    deactivate: 'Ngưng dùng',
     nameLabel: 'Tên thuốc',
     dosageLabel: 'Liều lượng',
     frequencyLabel: 'Tần suất',
@@ -253,7 +379,7 @@ export const patientDetailVi = {
     actionError: 'Không thể cập nhật toa thuốc. Vui lòng thử lại.'
   },
   carePlan: {
-    title: 'Kế hoạch chăm sóc & Nhu cầu hằng ngày',
+    title: 'Sinh hoạt hằng ngày',
     mobilityTitle: 'Vận động & Mức độ tự chủ',
     nutritionTitle: 'Chế độ dinh dưỡng',
     sleepTitle: 'Thói quen ngủ',

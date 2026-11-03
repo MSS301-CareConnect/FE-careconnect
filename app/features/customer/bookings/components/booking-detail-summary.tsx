@@ -1,17 +1,14 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  bookingTypeKey,
-  formatDateTime,
-  formatDay,
-  formatMoney,
-  shortTime,
-  weekdayKey
-} from '~/entities/booking/booking-format'
+import { bookingTypeKey, shortTime, weekdayKey } from '~/entities/booking/booking-format'
 import { initialPaymentOf } from '~/entities/payment/payment-api'
 import { AssignedCaregiverCard } from '~/entities/provider/assigned-caregiver-card'
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
+import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
+
+const key = 'customer.bookingDetail.summary' as const
 
 // A booking that ended before anyone was assigned has no caregiver to promise.
 const WAITS_FOR_ASSIGNMENT: ReadonlySet<BookingStatus> = new Set([
@@ -22,108 +19,130 @@ const WAITS_FOR_ASSIGNMENT: ReadonlySet<BookingStatus> = new Set([
   'IN_PROGRESS'
 ])
 
-/** Schedule, caregiver, services and price of one booking as BookingService stored them. */
+function Block({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className='border-t border-outline-variant/70 px-5 py-4 first:border-t-0'>
+      <h2 className='text-sm font-semibold text-on-surface'>{title}</h2>
+      <div className='mt-2'>{children}</div>
+    </section>
+  )
+}
+
+/** Caregiver, schedule and address, services with unit price and quantity, and the payment summary. */
 export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord }) {
-  const { t, i18n } = useTranslation()
-  const language = i18n.language
+  const { t } = useTranslation()
+  const format = useFormat()
   const deposit = initialPaymentOf(booking)
   const weekdays = (booking.daysOfWeek ?? [])
     .flatMap((day) => {
-      const key = weekdayKey(day)
-      return key ? [t(`booking.weekdays.${key}`)] : []
+      const weekday = weekdayKey(day)
+      return weekday ? [t(`booking.weekdays.${weekday}`)] : []
     })
     .join(', ')
+  const hours = booking.startTime ? `${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''
 
   return (
-    <aside className='flex flex-col gap-5 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs sm:p-6 lg:sticky lg:top-24'>
+    <aside
+      aria-label={t(`${key}.label`)}
+      className='rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-card)]'
+    >
       {booking.caregiverId || WAITS_FOR_ASSIGNMENT.has(booking.status) ? (
-        <AssignedCaregiverCard
-          caregiverId={booking.caregiverId}
-          profileHref={booking.caregiverId ? `/customer/caregivers/${booking.caregiverId}` : undefined}
-        />
-      ) : null}
-      <div>
-        <h2 className='text-base font-bold text-on-surface'>{t('customer.bookingDetail.summary.schedule')}</h2>
-        <p className='mt-2 flex items-start gap-2 text-sm text-on-surface'>
-          <Icon className='text-lg text-primary' name='calendar_month' />
-          <span>
-            {formatDay(booking.startDate, language)}
-            {booking.endDate && booking.endDate !== booking.startDate
-              ? ` – ${formatDay(booking.endDate, language)}`
-              : ''}
-            <span className='block text-on-surface-variant'>
-              {t(bookingTypeKey(booking))}
-              {booking.startTime ? ` · ${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''}
-              {weekdays ? ` · ${weekdays}` : ''}
-            </span>
-          </span>
-        </p>
-        {booking.serviceAddress ? (
-          <p className='mt-2 flex items-start gap-2 text-sm text-on-surface-variant'>
-            <Icon className='text-lg text-primary' name='home_pin' />
-            {booking.serviceAddress}
-          </p>
-        ) : null}
-        {booking.customerNote ? (
-          <p className='mt-2 rounded-lg bg-surface-container-low p-3 text-sm text-on-surface-variant'>
-            {booking.customerNote}
-          </p>
-        ) : null}
-      </div>
-
-      <div>
-        <h2 className='text-base font-bold text-on-surface'>{t('customer.bookingDetail.summary.services')}</h2>
-        <ul className='mt-2 flex flex-col gap-2 text-sm'>
-          {(booking.services ?? []).map((service) => (
-            <li className='flex justify-between gap-3' key={service.id}>
-              <span className='min-w-0'>
-                <span className='block font-semibold text-on-surface'>{service.serviceName}</span>
-                <span className='block text-xs text-on-surface-variant'>
-                  {formatMoney(service.unitPrice, language)}
-                  {service.unitType ? ` ${t(`booking.unitType.${service.unitType}`)}` : ''}
-                </span>
-              </span>
-              <span className='shrink-0 tabular-nums'>{formatMoney(service.totalPrice, language)}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <dl className='flex flex-col gap-2 rounded-lg bg-surface-container-low p-4 text-sm'>
-        {deposit.amount !== undefined ? (
-          <div className='flex justify-between gap-3 text-on-surface-variant'>
-            <dt>
-              {deposit.estimated
-                ? t('customer.bookingDetail.summary.depositEstimated', { percent: deposit.percent ?? '' })
-                : t('customer.bookingDetail.summary.deposit')}
-            </dt>
-            <dd className='tabular-nums'>{formatMoney(deposit.amount, language)}</dd>
-          </div>
-        ) : null}
-        {booking.remainingPaymentDueAt && deposit.remaining ? (
-          <div className='flex justify-between gap-3 text-on-surface-variant'>
-            <dt>
-              {t('customer.bookingDetail.summary.remaining')}
-              <span className='block text-xs'>
-                {t('customer.bookingDetail.summary.remainingDue', {
-                  time: formatDateTime(booking.remainingPaymentDueAt, language)
-                })}
-              </span>
-            </dt>
-            <dd className='tabular-nums'>{formatMoney(deposit.remaining, language)}</dd>
-          </div>
-        ) : null}
-        {booking.fullyPaidAt ? (
-          <p className='flex items-center gap-1.5 font-semibold text-primary'>
-            <Icon className='text-lg' name='verified' />
-            {t('customer.bookingDetail.summary.fullyPaid')}
-          </p>
-        ) : null}
-        <div className='flex items-baseline justify-between gap-3'>
-          <dt className='font-semibold text-on-surface'>{t('customer.bookingDetail.summary.total')}</dt>
-          <dd className='text-xl font-bold text-primary tabular-nums'>{formatMoney(booking.totalAmount, language)}</dd>
+        <div className='px-5 py-4'>
+          <AssignedCaregiverCard
+            caregiverId={booking.caregiverId}
+            profileHref={booking.caregiverId ? `/customer/caregivers/${booking.caregiverId}` : undefined}
+          />
         </div>
-      </dl>
+      ) : null}
+
+      <Block title={t(`${key}.schedule`)}>
+        <ul className='flex flex-col gap-2 text-sm'>
+          <li className='flex items-start gap-2.5'>
+            <Icon className='mt-0.5 text-lg text-primary' name='calendar_month' />
+            <span className='min-w-0'>
+              <span className='block font-medium text-on-surface tabular-nums'>
+                {format.date(booking.startDate)}
+                {booking.endDate && booking.endDate !== booking.startDate ? ` – ${format.date(booking.endDate)}` : ''}
+              </span>
+              <span className='block text-on-surface-variant'>
+                {[t(bookingTypeKey(booking)), hours, weekdays].filter(Boolean).join(' · ')}
+              </span>
+            </span>
+          </li>
+          {booking.serviceAddress ? (
+            <li className='flex items-start gap-2.5 text-on-surface'>
+              <Icon className='mt-0.5 text-lg text-primary' name='home_pin' />
+              <span className='min-w-0'>{booking.serviceAddress}</span>
+            </li>
+          ) : null}
+          {booking.customerNote ? (
+            <li className='flex items-start gap-2.5 text-on-surface-variant'>
+              <Icon className='mt-0.5 text-lg text-primary' name='sticky_note_2' />
+              <span className='min-w-0 whitespace-pre-line'>{booking.customerNote}</span>
+            </li>
+          ) : null}
+        </ul>
+      </Block>
+
+      {booking.services?.length ? (
+        <Block title={t(`${key}.services`)}>
+          <ul className='flex flex-col gap-2.5 text-sm'>
+            {booking.services.map((service) => (
+              <li className='flex justify-between gap-3' key={service.id}>
+                <span className='min-w-0'>
+                  <span className='block font-medium text-on-surface'>{service.serviceName}</span>
+                  <span className='block text-xs text-on-surface-variant tabular-nums'>
+                    {service.unitType
+                      ? t(`${key}.unitLine`, {
+                          price: format.money(service.unitPrice),
+                          unit: t(`booking.unitType.${service.unitType}`),
+                          quantity: service.quantity ?? 1
+                        })
+                      : format.money(service.unitPrice)}
+                  </span>
+                </span>
+                <span className='shrink-0 font-medium tabular-nums'>{format.money(service.totalPrice)}</span>
+              </li>
+            ))}
+          </ul>
+        </Block>
+      ) : null}
+
+      <Block title={t(`${key}.payment`)}>
+        <dl className='flex flex-col gap-2 text-sm'>
+          {deposit.amount !== undefined ? (
+            <div className='flex justify-between gap-3 text-on-surface-variant'>
+              <dt>
+                {deposit.estimated
+                  ? t(`${key}.depositEstimated`, { percent: deposit.percent ?? '' })
+                  : t(`${key}.deposit`)}
+              </dt>
+              <dd className='tabular-nums'>{format.money(deposit.amount)}</dd>
+            </div>
+          ) : null}
+          {booking.remainingPaymentDueAt && deposit.remaining ? (
+            <div className='flex justify-between gap-3 text-on-surface-variant'>
+              <dt>
+                {t(`${key}.remaining`)}
+                <span className='block text-xs'>
+                  {t(`${key}.remainingDue`, { time: format.dateTime(booking.remainingPaymentDueAt) })}
+                </span>
+              </dt>
+              <dd className='tabular-nums'>{format.money(deposit.remaining)}</dd>
+            </div>
+          ) : null}
+          <div className='mt-1 flex items-baseline justify-between gap-3 border-t border-dashed border-outline-variant pt-3'>
+            <dt className='font-semibold text-on-surface'>{t(`${key}.total`)}</dt>
+            <dd className='text-xl font-bold text-on-surface tabular-nums'>{format.money(booking.totalAmount)}</dd>
+          </div>
+          {booking.fullyPaidAt ? (
+            <p className='mt-1 inline-flex items-center gap-1.5 self-start rounded-full bg-success-container px-2.5 py-1 text-xs font-semibold text-on-success-container'>
+              <Icon className='text-base' name='verified' />
+              {t(`${key}.fullyPaid`)}
+            </p>
+          ) : null}
+        </dl>
+      </Block>
     </aside>
   )
 }

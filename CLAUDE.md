@@ -1,2 +1,2 @@
 @AGENTS.md
-@ARCHITECTURE.md
+@docs/ARCHITECTURE.md

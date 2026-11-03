@@ -18,7 +18,8 @@ import {
   type CustomerService
 } from '../services-data'
 
-export const SERVICES_PAGE_SIZE = 8
+/** Three rows of the three-column grid. */
+export const SERVICES_PAGE_SIZE = 9
 
 type FilterName = 'q' | 'category' | 'sort' | 'page'
 
@@ -94,6 +95,7 @@ export function useCustomerServices() {
     sort,
     categories,
     filtered,
+    total: all.length,
     rows,
     page,
     pageCount,
@@ -105,3 +107,5 @@ export function useCustomerServices() {
     retry: () => void source.refetch()
   }
 }
+
+export type CustomerServicesList = ReturnType<typeof useCustomerServices>

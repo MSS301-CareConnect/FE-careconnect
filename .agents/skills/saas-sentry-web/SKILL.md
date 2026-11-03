@@ -10,7 +10,7 @@ from the relevant quality gates.
 
 ## Workflow
 
-1. Read `../../../AGENTS.md` and `../../../ARCHITECTURE.md` completely.
+1. Read `../../../AGENTS.md` and `../../../docs/ARCHITECTURE.md` completely.
 2. If the task touches routes, loaders, actions, metadata, or rendering, also read
    `../react-router/SKILL.md` and only its Framework Mode guidance.
 3. Inspect the closest route, feature, generated API surface, and tests before

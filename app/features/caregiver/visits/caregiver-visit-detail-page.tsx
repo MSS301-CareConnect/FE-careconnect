@@ -1,137 +1,99 @@
-import { CareReportForm } from '~/entities/aftercare/care-report-form'
-import { SessionNotesCard } from '~/entities/aftercare/session-notes-card'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
+import { CareReportForm } from '~/entities/aftercare/care-report-form'
+import { SessionNotesCard } from '~/entities/aftercare/session-notes-card'
 import { bookingKeys, fetchOccurrence } from '~/entities/booking/booking-api'
-import { bookingErrorKey, formatClock, formatDate } from '~/entities/booking/booking-format'
-import { BookingRecipientSnapshot } from '~/entities/booking/booking-recipient-snapshot'
-import { OccurrenceStatusBadge } from '~/entities/booking/booking-status-badge'
+import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { Icon } from '~/shared/ui/icon'
-import { SectionCard } from '~/shared/ui/section-card'
+import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
+import { useToday } from '../data/caregiver-queries'
+import { calendarDayOf, minutesBetweenInstants, useCaregiverFormat } from '../ui/caregiver-format'
+import { CaregiverError, CaregiverPageHeader, cgCard, cgContainer } from '../ui/caregiver-page'
+import { visitPeople } from '../ui/visit-card'
+import { VisitStatusBadge } from '../ui/visit-status-badge'
+import { AllergyCallout, CareProfile } from './components/care-profile'
 import { VisitActions } from './components/visit-actions'
 import { VisitChecklist } from './components/visit-checklist'
+import { VisitLogistics } from './components/visit-logistics'
 
 export function CaregiverVisitDetailPage({ id }: { id: string }) {
-  const { t, i18n } = useTranslation()
-  const language = i18n.language
+  const { t } = useTranslation()
+  const format = useCaregiverFormat()
+  const today = useToday()
   const visit = useQuery({ queryKey: bookingKeys.occurrence(id), queryFn: () => fetchOccurrence(id), retry: false })
   useDocumentTitle(t('caregiver.visitDetail.documentTitle', { name: visit.data?.recipientName ?? '' }))
+  const back = { to: '/caregiver/visits', label: t('caregiver.visitDetail.backToVisits') }
 
   if (visit.isPending)
     return (
-      <p className='mx-auto max-w-5xl px-6 py-10 text-sm text-on-surface-variant' role='status'>
-        {t('caregiver.visitDetail.loading')}
-      </p>
+      <div className={cgContainer}>
+        <SkeletonGroup className='flex flex-col gap-4' label={t('caregiver.visitDetail.loading')}>
+          <Skeleton className='h-5 w-32 rounded-md' />
+          <Skeleton className='h-9 w-56 rounded-md' />
+          <div className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]'>
+            <Skeleton className='h-72 rounded-xl' />
+            <Skeleton className='h-48 rounded-xl' />
+          </div>
+        </SkeletonGroup>
+      </div>
     )
   if (visit.isError)
     return (
-      <div className='mx-auto max-w-5xl px-6 py-10' role='alert'>
-        <h1 className='text-xl font-bold'>{t('caregiver.visitDetail.error')}</h1>
-        <p className='mt-2 text-sm text-on-surface-variant'>{t(bookingErrorKey(visit.error))}</p>
-        <Link className='mt-4 inline-block font-semibold text-primary underline' to='/caregiver/visits'>
-          {t('caregiver.visitDetail.back')}
-        </Link>
+      <div className={cgContainer}>
+        <CaregiverPageHeader back={back} title={t('caregiver.visitDetail.error')} />
+        <CaregiverError
+          message={t(bookingErrorKey(visit.error))}
+          onRetry={() => void visit.refetch()}
+          retryLabel={t('caregiver.ui.actions.retry')}
+        />
       </div>
     )
 
   const data = visit.data
-  const notes = data.specialNotes
+  const day = calendarDayOf(data.startAt)
+  const allergies = visitPeople(data).allergies
+
   return (
-    <div className='mx-auto flex max-w-5xl flex-col gap-6 px-4 py-7 sm:px-6'>
-      <Link
-        className='inline-flex items-center gap-1.5 self-start text-sm font-semibold text-primary'
-        to='/caregiver/visits'
-      >
-        <Icon className='text-lg' name='arrow_back' />
-        {t('caregiver.visitDetail.back')}
-      </Link>
+    <div className={`${cgContainer} pb-28 lg:pb-8`}>
+      <CaregiverPageHeader
+        actions={<VisitStatusBadge className='text-sm' status={data.status} />}
+        back={back}
+        description={data.bookingCode ? t('caregiver.visitDetail.bookingCode', { code: data.bookingCode }) : undefined}
+        eyebrow={
+          <span className='tabular-nums'>
+            {format.relativeDay(day, today)} · {format.date(day)} ·{' '}
+            {format.duration(minutesBetweenInstants(data.startAt, data.endAt))}
+          </span>
+        }
+        title={<span className='tabular-nums'>{format.clockRange(data.startAt, data.endAt)}</span>}
+      />
 
-      <header className='flex flex-wrap items-start justify-between gap-4'>
-        <div className='min-w-0'>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
-            {data.recipientName ?? t('caregiver.visits.patientFallback')}
-          </h1>
-          <p className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
-            <span className='font-semibold text-on-surface tabular-nums'>
-              {formatDate(data.startAt, language)} · {formatClock(data.startAt, language)}–
-              {formatClock(data.endAt, language)}
-            </span>
-            <OccurrenceStatusBadge status={data.status} />
-            {data.bookingCode ? <span className='tabular-nums'>#{data.bookingCode}</span> : null}
-          </p>
+      <div className='flex flex-col gap-4'>
+        {allergies ? <AllergyCallout value={allergies} /> : null}
+        <div className='grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]'>
+          <div className='flex min-w-0 flex-col gap-4'>
+            {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
+            <CareProfile visit={data} />
+            {data.customerNote ? (
+              <section aria-labelledby='visit-customer-note' className={`${cgCard} p-4 sm:p-5`}>
+                <h2 className='text-sm font-semibold text-on-surface-variant' id='visit-customer-note'>
+                  {t('caregiver.visitDetail.customerNote')}
+                </h2>
+                <p className='mt-1 text-[15px] whitespace-pre-line text-on-surface'>{data.customerNote}</p>
+              </section>
+            ) : null}
+            {data.sessionId ? (
+              <div className='grid items-start gap-4 xl:grid-cols-2'>
+                <SessionNotesCard canWrite sessionId={data.sessionId} />
+                <CareReportForm bookingId={data.bookingId} sessionId={data.sessionId} />
+              </div>
+            ) : null}
+          </div>
+          <VisitLogistics visit={data} />
         </div>
-        {data.customerPhone ? (
-          <a
-            className='inline-flex min-h-11 items-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm hover:bg-surface-container-low tabular-nums'
-            href={`tel:${data.customerPhone}`}
-          >
-            <Icon className='text-lg' name='call' />
-            {data.customerPhone}
-          </a>
-        ) : null}
-      </header>
-
-      <div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]'>
-        {data.recipientSnapshot ? (
-          <SectionCard icon='personal_injury' title={t('caregiver.visitDetail.patient')}>
-            <BookingRecipientSnapshot snapshot={data.recipientSnapshot} />
-          </SectionCard>
-        ) : (
-          <SectionCard icon='personal_injury' title={t('caregiver.visitDetail.patient')}>
-            <p className='text-sm text-on-surface-variant'>{t('caregiver.visitDetail.snapshotHidden')}</p>
-          </SectionCard>
-        )}
-        <aside className='flex flex-col gap-5 rounded-2xl border border-outline-variant/20 bg-white p-5 text-sm shadow-sm'>
-          <div>
-            <h2 className='text-base font-bold'>{t('caregiver.visitDetail.address')}</h2>
-            <p className='mt-1 text-on-surface-variant'>{data.serviceAddress ?? '—'}</p>
-          </div>
-          <div>
-            <h2 className='text-base font-bold'>{t('caregiver.visitDetail.services')}</h2>
-            <ul className='mt-1 flex flex-col gap-1 text-on-surface-variant'>
-              {(data.services ?? []).map((service) => (
-                <li key={service.careServiceId}>{service.serviceName}</li>
-              ))}
-            </ul>
-          </div>
-          {data.customerNote ? (
-            <div>
-              <h2 className='text-base font-bold'>{t('caregiver.visitDetail.customerNote')}</h2>
-              <p className='mt-1 rounded-lg bg-surface-container-low p-3 text-on-surface-variant'>
-                {data.customerNote}
-              </p>
-            </div>
-          ) : null}
-          {notes && !data.recipientSnapshot ? (
-            <div>
-              <h2 className='text-base font-bold'>{t('caregiver.visitDetail.specialNotes')}</h2>
-              <p className='mt-1 text-on-surface-variant'>
-                {[
-                  notes.allergies,
-                  notes.chronicConditions,
-                  notes.careRequirements,
-                  notes.dietaryNotes,
-                  notes.behaviorNotes
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </p>
-            </div>
-          ) : null}
-        </aside>
       </div>
-
-      {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
-      {data.sessionId ? (
-        <div className='grid items-start gap-6 lg:grid-cols-2'>
-          <SessionNotesCard canWrite sessionId={data.sessionId} />
-          <CareReportForm bookingId={data.bookingId} sessionId={data.sessionId} />
-        </div>
-      ) : null}
     </div>
   )
 }

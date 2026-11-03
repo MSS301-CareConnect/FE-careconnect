@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Outlet, useLocation, useNavigation } from 'react-router'
 
+import { Toaster } from '~/shared/ui/toaster'
+
 import { SiteFooter } from '~/shared/ui/site-footer'
 
 import { CenterPickerDialog } from './components/center-picker-dialog'
@@ -48,6 +50,8 @@ export function CustomerLayout({
         <CustomerBottomNav />
       </div>
       <CenterPickerDialog />
+      {/* Action results (saved, invited…) as toasts, kept above the bottom navigation on phones. */}
+      <Toaster mobileOffset={{ bottom: 88 }} />
     </div>
   )
 }

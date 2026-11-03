@@ -1,5 +1,27 @@
 export const customerProviderVi = {
   catalogBadge: 'Hồ sơ từ trung tâm chăm sóc',
+  list: {
+    title: 'Người chăm sóc',
+    subtitle: 'Đội ngũ do trung tâm xác minh. Xem hồ sơ và đặt lịch trực tiếp.',
+    breadcrumb: { label: 'Đường dẫn', home: 'Trang chủ' },
+    count: '{{count, number}} người chăm sóc',
+    sort: 'Sắp xếp',
+    sorts: {
+      recommended: 'Phù hợp nhất',
+      experience: 'Nhiều kinh nghiệm nhất',
+      rating: 'Đánh giá cao nhất',
+      name: 'Tên A–Z'
+    },
+    experience: 'Kinh nghiệm',
+    experienceAtLeast: '≥ {{years}} năm',
+    filtering: 'Đang lọc:',
+    clearAll: 'Xóa tất cả',
+    removeFilter: 'Bỏ lọc {{label}}',
+    years: '{{count, number}} năm kinh nghiệm',
+    viewProfile: 'Xem hồ sơ',
+    book: 'Đặt lịch',
+    bookWith: 'Đặt lịch với {{name}}'
+  },
   catalogTitle: 'Tìm người chăm sóc phù hợp',
   catalogIntro: 'Xem kinh nghiệm, trung tâm và chứng chỉ để chọn người phù hợp với gia đình bạn.',
   searchPlaceholder: 'Tìm người chăm sóc theo tên…',
@@ -71,6 +93,28 @@ export const customerProviderVi = {
 
 export const customerProviderEn = {
   catalogBadge: 'Caregivers from partner centers',
+  list: {
+    title: 'Caregivers',
+    subtitle: 'A team verified by the center. See profiles and book directly.',
+    breadcrumb: { label: 'Breadcrumb', home: 'Home' },
+    count: '{{count, number}} caregivers',
+    sort: 'Sort',
+    sorts: {
+      recommended: 'Best match',
+      experience: 'Most experienced',
+      rating: 'Highest rated',
+      name: 'Name A–Z'
+    },
+    experience: 'Experience',
+    experienceAtLeast: '≥ {{years}} yrs',
+    filtering: 'Filtering:',
+    clearAll: 'Clear all',
+    removeFilter: 'Remove filter {{label}}',
+    years: '{{count, number}} yrs experience',
+    viewProfile: 'View profile',
+    book: 'Book',
+    bookWith: 'Book with {{name}}'
+  },
   catalogTitle: 'Find the right caregiver',
   catalogIntro: 'Compare experience, care centers, and certificates to find a good fit for your family.',
   searchPlaceholder: 'Search caregivers by name…',

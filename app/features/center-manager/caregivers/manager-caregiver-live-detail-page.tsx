@@ -241,6 +241,7 @@ export function ManagerCaregiverDetailPage() {
                   name={caregiver.data.fullName}
                   onExpired={() => void avatarMedia.refetch()}
                   src={pickAvatar(avatarMedia.data)?.downloadUrl}
+                  viewable
                 />
               </span>
               <div className='min-w-0'>

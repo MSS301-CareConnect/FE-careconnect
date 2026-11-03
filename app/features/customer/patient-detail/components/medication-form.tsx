@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { MedicationNameInput } from '~/entities/care-recipient/medication-name-input'
 import { MedicationRequestRoute, type MedicationRecord, type MedicationRequest } from '~/shared/api/generated/contracts'
 
+import { Button } from '~/shared/ui/button'
+import { DatePicker } from '~/shared/ui/date-picker'
+
 import { FormField, inputClassName } from './form-field'
 
 const TIME_PATTERN = /^([01][0-9]|2[0-3]):[0-5][0-9]$/
@@ -51,11 +54,7 @@ export function MedicationForm({ medication, isSaving, onSubmit, onCancel }: Med
   }
 
   return (
-    <form
-      onSubmit={submit}
-      noValidate
-      className='grid grid-cols-1 gap-3 rounded-lg bg-surface-container-low p-4 sm:grid-cols-2'
-    >
+    <form onSubmit={submit} noValidate className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
       <FormField label={t('customer.patientDetail.prescriptions.nameLabel')} className='sm:col-span-2'>
         <MedicationNameInput
           value={name}
@@ -104,17 +103,18 @@ export function MedicationForm({ medication, isSaving, onSubmit, onCancel }: Med
           ))}
         </select>
       </FormField>
-      <FormField label={t('customer.patientDetail.prescriptions.startDateLabel')}>
-        <input
-          type='date'
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className={inputClassName}
-        />
-      </FormField>
-      <FormField label={t('customer.patientDetail.prescriptions.endDateLabel')}>
-        <input type='date' value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClassName} />
-      </FormField>
+      <div className='flex flex-col gap-1.5'>
+        <label className='text-sm font-medium text-on-surface' htmlFor='medication-start-date'>
+          {t('customer.patientDetail.prescriptions.startDateLabel')}
+        </label>
+        <DatePicker id='medication-start-date' onChange={setStartDate} value={startDate} />
+      </div>
+      <div className='flex flex-col gap-1.5'>
+        <label className='text-sm font-medium text-on-surface' htmlFor='medication-end-date'>
+          {t('customer.patientDetail.prescriptions.endDateLabel')}
+        </label>
+        <DatePicker id='medication-end-date' min={startDate || undefined} onChange={setEndDate} value={endDate} />
+      </div>
       <FormField label={t('customer.patientDetail.prescriptions.prescribedByLabel')} className='sm:col-span-2'>
         <input
           type='text'
@@ -134,25 +134,17 @@ export function MedicationForm({ medication, isSaving, onSubmit, onCancel }: Med
         />
       </FormField>
       {error ? (
-        <p role='alert' className='text-xs text-error sm:col-span-2'>
+        <p role='alert' className='text-sm text-error sm:col-span-2'>
           {t(`customer.patientDetail.prescriptions.${error}`)}
         </p>
       ) : null}
-      <div className='flex gap-2 sm:col-span-2'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className='rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-on-primary disabled:opacity-60'
-        >
-          {t('customer.patientDetail.prescriptions.save')}
-        </button>
-        <button
-          type='button'
-          onClick={onCancel}
-          className='rounded-lg bg-surface-container-lowest px-3 py-2 text-xs font-medium text-on-surface'
-        >
+      <div className='flex justify-end gap-2 border-t border-outline-variant pt-4 sm:col-span-2'>
+        <Button onClick={onCancel} variant='outline'>
           {t('customer.patientDetail.prescriptions.cancel')}
-        </button>
+        </Button>
+        <Button loading={isSaving} type='submit'>
+          {t('customer.patientDetail.prescriptions.save')}
+        </Button>
       </div>
     </form>
   )

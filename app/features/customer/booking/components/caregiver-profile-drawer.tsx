@@ -42,7 +42,12 @@ export function CaregiverProfileDrawer({
       {caregiver ? (
         <div className='flex flex-col gap-5'>
           <div className='flex items-center gap-4'>
-            <Avatar className='h-16 w-16 rounded-full text-lg' name={caregiver.fullName} src={caregiver.avatarUrl} />
+            <Avatar
+              className='h-16 w-16 rounded-full text-lg'
+              name={caregiver.fullName}
+              src={caregiver.avatarUrl}
+              viewable
+            />
             <div className='min-w-0'>
               <p className='text-lg font-semibold text-on-surface'>{caregiver.fullName}</p>
               <div className='mt-1 flex flex-wrap items-center gap-2'>

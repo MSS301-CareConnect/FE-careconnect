@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 
-import { CenterScope } from '~/entities/care-center/center-scope'
+import { CenterContextLine } from '~/entities/care-center/center-scope'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { Icon } from '~/shared/ui/icon'
+import { PageHeader, pageContainer } from '~/shared/ui/page-header'
 
 import { ServicesFilters } from './components/services-filters'
 import { ServicesResults } from './components/services-results'
@@ -10,63 +10,26 @@ import { useCustomerServices } from './hooks/use-customer-services'
 
 const key = 'customer.services' as const
 
+/** Home care services: one title block, one filter row and a card grid (2026-11 redesign, no hero). */
 export function CustomerServicesPage() {
   const { t } = useTranslation()
   const list = useCustomerServices()
   useDocumentTitle(t(`${key}.documentTitle`))
 
   return (
-    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
-      <section className='relative isolate overflow-hidden border-b border-outline-variant/60 bg-surface-container-lowest'>
-        <div
-          aria-hidden='true'
-          className='absolute inset-0 bg-surface-container-lowest'
-          style={{
-            backgroundImage: "url('/images/services-catalog-hero.jpg')",
-            backgroundPosition: 'right center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'auto 100%'
-          }}
-        />
-        <div aria-hidden='true' className='absolute inset-0 bg-surface-container-lowest/88 lg:hidden' />
-        <div
-          aria-hidden='true'
-          className='absolute inset-0 hidden lg:block'
-          style={{
-            backgroundImage:
-              'linear-gradient(90deg, var(--color-surface-container-lowest) 0%, rgba(251,252,249,.98) 29%, rgba(251,252,249,.84) 48%, rgba(251,252,249,.08) 82%)'
-          }}
-        />
-        <div className='relative mx-auto w-full max-w-[1440px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20'>
-          <header className='max-w-[920px]'>
-            <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-primary'>
-              <Icon aria-hidden='true' className='text-lg' name='verified' />
-              {t(`${key}.badge`)}
-            </p>
-            <h1 className='mt-4 max-w-[18ch] text-[clamp(2.75rem,4.4vw,3.75rem)] font-bold leading-[1.08] tracking-[-0.045em] text-on-surface'>
-              {t(`${key}.title`)}
-            </h1>
-            <p className='mt-5 max-w-[54ch] text-base leading-7 text-on-surface-variant lg:text-lg lg:leading-8'>
-              {t(`${key}.subtitle`)}
-            </p>
-          </header>
-        </div>
-      </section>
-      <section className='mx-auto w-full max-w-[1440px] px-5 pt-2 sm:px-8 lg:px-12'>
-        <div className='mt-7'>
-          <CenterScope generalText={t(`${key}.scope.general`)} />
-        </div>
-        <ServicesFilters
-          categories={list.categories}
-          category={list.category}
-          keyword={list.keyword}
-          onChange={list.update}
-          onReset={list.reset}
-        />
-      </section>
-      <section className='mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-12 lg:py-10'>
-        <ServicesResults list={list} />
-      </section>
+    <div className={`${pageContainer} pb-16`}>
+      <PageHeader
+        breadcrumb={[
+          { label: t(`${key}.breadcrumb.home`), to: '/customer' },
+          { label: t(`${key}.breadcrumb.current`) }
+        ]}
+        breadcrumbLabel={t(`${key}.breadcrumb.label`)}
+        description={t(`${key}.subtitle`)}
+        meta={<CenterContextLine />}
+        title={t(`${key}.title`)}
+      />
+      <ServicesFilters list={list} />
+      <ServicesResults list={list} />
     </div>
   )
 }

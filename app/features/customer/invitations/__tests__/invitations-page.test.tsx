@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -19,6 +19,7 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { InvitationsPage } from '../invitations-page'
 
+vi.mock('~/shared/ui/app-toast', () => ({ toastSuccess: vi.fn(), toastSystemError: vi.fn() }))
 vi.mock('~/entities/care-recipient/care-recipient-managers-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-managers-api')>()),
   fetchManagers: vi.fn(),
@@ -85,6 +86,7 @@ describe('Co-manager invitations (C-04)', () => {
 
     expect(await screen.findByText('Con gái')).toBeInTheDocument()
     expect(await screen.findByText('em@example.com')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mời người quản lý' }))
     fireEvent.change(screen.getByLabelText('Email người được mời'), { target: { value: ' new@example.com ' } })
     fireEvent.change(screen.getByLabelText('Quyền'), { target: { value: 'EDITOR' } })
     fireEvent.click(screen.getByRole('button', { name: 'Gửi lời mời' }))
@@ -95,7 +97,7 @@ describe('Co-manager invitations (C-04)', () => {
         accessLevel: 'EDITOR'
       })
     )
-    expect(await screen.findByText(/Nếu email có tài khoản khách hàng/)).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: 'Thu hồi lời mời gửi em@example.com' }))
     await waitFor(() => expect(revokeInvitation).toHaveBeenCalledWith('rec-1', 'inv-1'))
@@ -106,7 +108,7 @@ describe('Co-manager invitations (C-04)', () => {
     renderWith({ id: 'user-2' } as UserResponse, <ManagersCard recipientId='rec-1' />)
 
     expect(await screen.findByText('Con gái')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Gửi lời mời' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mời người quản lý' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Gỡ/ })).not.toBeInTheDocument()
     expect(fetchInvitations).not.toHaveBeenCalled()
   })
@@ -129,5 +131,27 @@ describe('Co-manager invitations (C-04)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Chấp nhận' }))
     await waitFor(() => expect(acceptInvitation).toHaveBeenCalledWith('inv-9', expect.anything()))
     expect(await screen.findByText('Đã chấp nhận lời mời.')).toBeInTheDocument()
+  })
+
+  it('asks before declining an invitation and shows an empty state without any', async () => {
+    vi.mocked(fetchMyInvitations).mockResolvedValueOnce([
+      {
+        id: 'inv-9',
+        recipientId: 'rec-1',
+        recipientFullName: 'Bà Lan',
+        accessLevel: 'VIEWER',
+        expiresAt: '2026-11-06T00:00:00Z'
+      }
+    ])
+    vi.mocked(fetchMyInvitations).mockResolvedValue([])
+    vi.mocked(declineInvitation).mockResolvedValue(undefined)
+    renderWith({ id: 'user-2' } as UserResponse, <InvitationsPage />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Từ chối' }))
+    expect(declineInvitation).not.toHaveBeenCalled()
+    const dialog = screen.getByRole('dialog', { name: 'Từ chối lời mời quản lý hồ sơ Bà Lan?' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Từ chối' }))
+    await waitFor(() => expect(declineInvitation).toHaveBeenCalledWith('inv-9', expect.anything()))
+    expect(await screen.findByRole('heading', { name: 'Không có lời mời nào' })).toBeInTheDocument()
   })
 })

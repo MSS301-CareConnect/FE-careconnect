@@ -1,107 +1,61 @@
 import { useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
-import { formatDateTime, formatMoney } from '~/entities/booking/booking-format'
-import {
-  fetchOutstandingDebt,
-  fetchRemainingInvoices,
-  paymentErrorKey,
-  paymentKeys,
-  redirectToCheckout,
-  startInvoiceCheckout
-} from '~/entities/payment/payment-api'
+import { fetchRemainingInvoices, paymentErrorKey, paymentKeys } from '~/entities/payment/payment-api'
+import { useFormat } from '~/shared/lib/format'
+import { StatusBadge } from '~/shared/ui/status-badge'
 
-import { PaymentListSection, bodyCell, headCell, tableClass } from './payments-ui'
+import type { BookingLabel } from '../hooks/use-booking-labels'
+import { INVOICE_STATUS_TONES, MoneyRow, PaymentListSection } from './payments-ui'
 
-const OPEN = new Set(['PENDING', 'OVERDUE'])
+const key = 'customer.payments' as const
 
-/** Remaining-balance invoices; an overdue one is a debt that blocks new bookings until paid. */
-export function InvoiceSection() {
-  const { t, i18n } = useTranslation()
-  const language = i18n.language
+/** Every remaining-balance invoice of the customer, open or closed; open ones are paid from "To pay". */
+export function InvoiceSection({ labels }: { labels: ReadonlyMap<string, BookingLabel> }) {
+  const { t } = useTranslation()
+  const format = useFormat()
   const [page, setPage] = useState(0)
-  const outstanding = useQuery({ queryKey: paymentKeys.outstanding, queryFn: fetchOutstandingDebt, retry: false })
   const invoices = useQuery({
     queryKey: paymentKeys.invoices(page),
     queryFn: () => fetchRemainingInvoices(page),
     retry: false
   })
-  const pay = useMutation({
-    mutationFn: startInvoiceCheckout,
-    onSuccess: (checkout) => redirectToCheckout(checkout.checkoutUrl)
-  })
   const items = invoices.data?.items ?? []
   return (
-    <div className='flex flex-col gap-4'>
-      {outstanding.data?.hasDebt ? (
-        <p
-          className='rounded-xl border border-error/30 bg-error-container p-4 text-sm font-semibold text-on-error-container'
-          role='alert'
-        >
-          {t('customer.payments.invoices.debt')}
-        </p>
-      ) : null}
-      {pay.isError ? (
-        <p className='rounded-xl bg-error-container p-3 text-sm text-on-error-container' role='alert'>
-          {t(paymentErrorKey(pay.error))}
-        </p>
-      ) : null}
-      <PaymentListSection
-        emptyText={t('customer.payments.invoices.empty')}
-        error={invoices.isError ? t(paymentErrorKey(invoices.error)) : null}
-        id='payments-invoices'
-        isEmpty={items.length === 0}
-        isPending={invoices.isPending}
-        onPageChange={setPage}
-        page={page}
-        title={t('customer.payments.invoices.title')}
-        totalPages={invoices.data?.totalPages ?? 0}
-      >
-        <table className={tableClass}>
-          <thead>
-            <tr>
-              <th className={headCell}>{t('customer.payments.columns.booking')}</th>
-              <th className={headCell}>{t('customer.payments.columns.amount')}</th>
-              <th className={headCell}>{t('customer.payments.columns.dueAt')}</th>
-              <th className={headCell}>{t('customer.payments.columns.status')}</th>
-              <th className={headCell}>
-                <span className='sr-only'>{t('customer.payments.columns.action')}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((invoice) => (
-              <tr key={invoice.id}>
-                <td className={bodyCell}>
-                  <Link
-                    className='font-semibold text-primary hover:underline'
-                    to={`/customer/bookings/${invoice.bookingId}`}
-                  >
-                    {t('customer.payments.viewBooking')}
-                  </Link>
-                </td>
-                <td className={`${bodyCell} font-semibold tabular-nums`}>{formatMoney(invoice.amount, language)}</td>
-                <td className={`${bodyCell} tabular-nums`}>{formatDateTime(invoice.dueAt, language)}</td>
-                <td className={bodyCell}>{t(`payment.invoiceStatus.${invoice.status}`)}</td>
-                <td className={`${bodyCell} text-right`}>
-                  {OPEN.has(invoice.status) ? (
-                    <button
-                      className='rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary hover:bg-primary-container disabled:bg-outline'
-                      disabled={pay.isPending}
-                      onClick={() => pay.mutate(invoice.id)}
-                      type='button'
-                    >
-                      {t('customer.payments.invoices.pay')}
-                    </button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </PaymentListSection>
-    </div>
+    <PaymentListSection
+      description={t(`${key}.invoices.description`)}
+      empty={{ icon: 'receipt_long', title: t(`${key}.invoices.empty`) }}
+      error={invoices.isError ? t(paymentErrorKey(invoices.error)) : null}
+      id='payments-invoices'
+      isEmpty={items.length === 0}
+      isPending={invoices.isPending}
+      onPageChange={setPage}
+      onRetry={() => void invoices.refetch()}
+      page={page}
+      title={t(`${key}.invoices.title`)}
+      totalPages={invoices.data?.totalPages ?? 0}
+    >
+      {items.map((invoice) => (
+        <MoneyRow
+          amount={format.money(invoice.amount)}
+          booking={labels.get(invoice.bookingId)}
+          bookingId={invoice.bookingId}
+          icon='receipt_long'
+          key={invoice.id}
+          meta={
+            invoice.paidAt
+              ? t(`${key}.invoices.paidAt`, { time: format.dateTime(invoice.paidAt) })
+              : t(`${key}.due.dueAt`, { time: format.dateTime(invoice.dueAt) })
+          }
+          status={
+            <StatusBadge tone={INVOICE_STATUS_TONES[invoice.status]}>
+              {t(`payment.invoiceStatus.${invoice.status}`)}
+            </StatusBadge>
+          }
+          title={t('payment.type.REMAINING')}
+        />
+      ))}
+    </PaymentListSection>
   )
 }

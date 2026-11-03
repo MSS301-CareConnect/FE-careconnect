@@ -1,17 +1,19 @@
 export const customerServicesVi = {
-  documentTitle: 'Dịch vụ chăm sóc | CareConnect',
-  breadcrumb: { label: 'Đường dẫn trang', home: 'Trang chủ', current: 'Dịch vụ chăm sóc' },
+  documentTitle: 'Dịch vụ chăm sóc tại nhà | CareConnect',
+  breadcrumb: { label: 'Đường dẫn trang', home: 'Trang chủ', current: 'Dịch vụ' },
   badge: 'Dịch vụ y tế tại nhà',
-  title: 'Dịch vụ chăm sóc tại các cơ sở y tế',
-  subtitle:
-    'Xem các dịch vụ chăm sóc đang được cung cấp, cơ sở y tế phụ trách và bảng giá tương ứng để chọn hình thức phù hợp cho người thân.',
+  title: 'Dịch vụ chăm sóc tại nhà',
+  subtitle: 'Chọn dịch vụ phù hợp cho người thân, xem giá rõ ràng và đặt lịch ngay.',
+  count: '{{count, number}} dịch vụ',
+  clearFilters: 'Xóa bộ lọc',
+  priceUnit: { HOUR: 'giờ', DAY: 'ngày', SHIFT: 'ca' },
   filters: {
     title: 'Bộ lọc',
     reset: 'Đặt lại',
     search: 'Tìm dịch vụ',
     searchPlaceholder: 'Tên dịch vụ hoặc nhóm dịch vụ...',
     category: 'Nhóm dịch vụ',
-    allCategories: 'Tất cả nhóm',
+    allCategories: 'Tất cả',
     hint: 'Giá hiển thị là giá cơ bản của từng gói. Giá cuối cùng được xác nhận khi bạn đặt lịch.'
   },
   results: 'dịch vụ',
@@ -39,7 +41,13 @@ export const customerServicesVi = {
     noCenter: 'Chưa chọn trung tâm',
     findCaregivers: 'Tìm người chăm sóc',
     details: 'Xem chi tiết',
-    book: 'Đặt lịch dịch vụ này'
+    book: 'Đặt lịch dịch vụ này',
+    bookShort: 'Đặt lịch',
+    detailsShort: 'Chi tiết',
+    price: '{{price}} / {{unit}}',
+    fromPrice: 'Từ {{price}}',
+    minimum: 'Tối thiểu {{duration}}',
+    plansCount: '{{count, number}} gói giá'
   },
   pricingUnits: { HOUR: 'Theo giờ', DAY: 'Theo ngày', SHIFT: 'Theo ca' },
   states: {
@@ -56,19 +64,21 @@ export const customerServicesVi = {
 } as const
 
 export const customerServicesEn = {
-  documentTitle: 'Care services | CareConnect',
-  breadcrumb: { label: 'Breadcrumb', home: 'Home', current: 'Care services' },
+  documentTitle: 'Home care services | CareConnect',
+  breadcrumb: { label: 'Breadcrumb', home: 'Home', current: 'Services' },
   badge: 'Home healthcare services',
-  title: 'Care services at medical centers',
-  subtitle:
-    'Browse the care services on offer, the medical center providing each one and its prices to choose the right care for your loved one.',
+  title: 'Home care services',
+  subtitle: 'Pick the right care for your loved one, see clear prices and book right away.',
+  count: '{{count, number}} services',
+  clearFilters: 'Clear filters',
+  priceUnit: { HOUR: 'hour', DAY: 'day', SHIFT: 'shift' },
   filters: {
     title: 'Filters',
     reset: 'Reset',
     search: 'Search services',
     searchPlaceholder: 'Service or category...',
     category: 'Service category',
-    allCategories: 'All categories',
+    allCategories: 'All',
     hint: 'Prices shown are the base price of each plan. The final price is confirmed when you book.'
   },
   results: 'services',
@@ -96,7 +106,13 @@ export const customerServicesEn = {
     noCenter: 'No center chosen yet',
     findCaregivers: 'Find caregivers',
     details: 'View details',
-    book: 'Book this service'
+    book: 'Book this service',
+    bookShort: 'Book',
+    detailsShort: 'Details',
+    price: '{{price}} / {{unit}}',
+    fromPrice: 'From {{price}}',
+    minimum: 'Min. {{duration}}',
+    plansCount: '{{count, number}} price plans'
   },
   pricingUnits: { HOUR: 'Hourly', DAY: 'Daily', SHIFT: 'Per shift' },
   states: {

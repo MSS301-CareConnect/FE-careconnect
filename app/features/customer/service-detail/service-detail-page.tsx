@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
+import { SERVICE_CATEGORY_ICONS, serviceCategoryGroup } from '~/entities/care-catalog/service-category'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { PageHeader, pageContainer } from '~/shared/ui/page-header'
 
 import { ServiceBookingCard } from './components/service-booking-card'
 import { ServiceCaregivers } from './components/service-caregivers'
@@ -16,46 +17,46 @@ export function CustomerServiceDetailPage() {
   const { t } = useTranslation()
   const { offering, plans, center, caregivers } = useServiceDetail()
   const service = offering.data
+  const group = serviceCategoryGroup(service?.catalogItem.category)
   useDocumentTitle(service ? t(`${key}.documentTitle`, { name: service.catalogItem.name }) : t(`${key}.fallbackTitle`))
 
   return (
-    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
-      <section className='border-b border-outline-variant/60 bg-surface-container-lowest'>
-        <div className='mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12'>
-          <Link
-            className='inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-container focus-visible:outline-2 focus-visible:outline-primary'
-            to='/customer/services'
-          >
-            <Icon className='text-lg' name='arrow_back' />
-            {t(`${key}.back`)}
-          </Link>
-          {service ? (
-            <header className='mt-6 max-w-[920px]'>
-              <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-primary'>
-                <Icon className='text-lg' name='medical_services' />
-                {service.catalogItem.category}
-              </p>
-              <h1 className='mt-4 text-[clamp(2.25rem,3.6vw,3.25rem)] font-bold leading-[1.1] tracking-[-0.045em] text-on-surface'>
-                {service.catalogItem.name}
-              </h1>
-              {center.data ? (
-                <p className='mt-4 flex items-center gap-2 text-base text-on-surface-variant'>
-                  <Icon className='text-xl text-primary' name='home_health' />
-                  {center.data.centerName}
-                </p>
-              ) : null}
-            </header>
-          ) : null}
-        </div>
-      </section>
-
-      <section className='mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10'>
+    <div className={`${pageContainer} pb-16`}>
+      <PageHeader
+        breadcrumb={[
+          { label: t(`${key}.breadcrumbHome`), to: '/customer' },
+          { label: t(`${key}.breadcrumbServices`), to: '/customer/services' },
+          ...(service ? [{ label: service.catalogItem.name }] : [])
+        ]}
+        breadcrumbLabel={t(`${key}.breadcrumbLabel`)}
+        description={
+          service ? (
+            <span className='inline-flex items-center gap-2'>
+              <Icon className='text-lg text-primary' name={SERVICE_CATEGORY_ICONS[group]} />
+              {t(`common.serviceCategories.${group}`)}
+            </span>
+          ) : undefined
+        }
+        meta={
+          center.data ? (
+            <span className='inline-flex items-center gap-1.5'>
+              <Icon className='text-base text-primary' name='home_health' />
+              {center.data.centerName}
+            </span>
+          ) : undefined
+        }
+        title={service?.catalogItem.name ?? t(`${key}.loadingTitle`)}
+      />
+      <section>
         {offering.isPending ? (
           <div
-            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-10 text-center text-on-surface-variant'
+            className='space-y-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-7'
             role='status'
           >
-            {t(`${key}.loading`)}
+            <span className='sr-only'>{t(`${key}.loading`)}</span>
+            <span className='cc-skeleton block h-5 w-1/3 rounded' />
+            <span className='cc-skeleton block h-4 w-full rounded' />
+            <span className='cc-skeleton block h-4 w-2/3 rounded' />
           </div>
         ) : null}
         {offering.isError ? (

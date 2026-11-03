@@ -43,6 +43,10 @@ import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-reso
 import { caregiverProviderEn, caregiverProviderVi } from './caregiver/provider-resources'
 import { caregiverVisitsEn, caregiverVisitsVi } from './caregiver/visits-resources'
 import { caregiverVisitDetailEn, caregiverVisitDetailVi } from './caregiver/visit-detail-resources'
+import { caregiverUiEn, caregiverUiVi } from './caregiver/ui-resources'
+import { caregiverTodayEn, caregiverTodayVi } from './caregiver/today-resources'
+import { caregiverWorkEn, caregiverWorkVi } from './caregiver/work-resources'
+import { caregiverMeEn, caregiverMeVi } from './caregiver/me-resources'
 import { managerLayoutEn, managerLayoutVi } from './center-manager/layout-resources'
 import { managerManagementEn, managerManagementVi } from './center-manager/management-resources'
 import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
@@ -107,7 +111,11 @@ export const resources = {
         profile: caregiverProfileEn,
         provider: caregiverProviderEn,
         visits: caregiverVisitsEn,
-        visitDetail: caregiverVisitDetailEn
+        visitDetail: caregiverVisitDetailEn,
+        ui: caregiverUiEn,
+        today: caregiverTodayEn,
+        work: caregiverWorkEn,
+        me: caregiverMeEn
       },
       centerManager: {
         ...managerLayoutEn,
@@ -177,7 +185,11 @@ export const resources = {
         profile: caregiverProfileVi,
         provider: caregiverProviderVi,
         visits: caregiverVisitsVi,
-        visitDetail: caregiverVisitDetailVi
+        visitDetail: caregiverVisitDetailVi,
+        ui: caregiverUiVi,
+        today: caregiverTodayVi,
+        work: caregiverWorkVi,
+        me: caregiverMeVi
       },
       centerManager: {
         ...managerLayoutVi,

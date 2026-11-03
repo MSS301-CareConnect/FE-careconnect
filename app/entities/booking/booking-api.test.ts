@@ -5,6 +5,7 @@ import {
   bookingErrorCode,
   cancelBookingRequest,
   checkIn,
+  fetchBookingCollection,
   fetchBookings,
   fetchMyOccurrences,
   placeBooking,
@@ -44,6 +45,26 @@ describe('BookingService gateway API', () => {
     expect(String(fetchMock.mock.calls[1][0])).toBe('/api/v1/booking-occurrences?from=2026-11-01&to=2026-11-01')
     for (const [, options] of fetchMock.mock.calls)
       expect(options).toMatchObject({ credentials: 'include', method: 'GET' })
+  })
+
+  it('reads the whole booking collection in pages of 100, newest first, up to five pages', async () => {
+    const chunk = (pageNo: number) => ({
+      items: [{ ...booking, id: `bk-${pageNo}` }],
+      page: pageNo,
+      size: 100,
+      totalElements: 700,
+      totalPages: 7
+    })
+    const fetchMock = vi.fn<typeof fetch>()
+    for (let pageNo = 0; pageNo < 5; pageNo += 1) fetchMock.mockResolvedValueOnce(reply(chunk(pageNo)))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const collection = await fetchBookingCollection()
+
+    expect(fetchMock).toHaveBeenCalledTimes(5)
+    expect(String(fetchMock.mock.calls[4][0])).toBe('/api/v1/bookings?sort=createdAt%2Cdesc&page=4&size=100')
+    expect(collection).toMatchObject({ totalElements: 700, truncated: true })
+    expect(collection.items).toHaveLength(5)
   })
 
   it('creates a booking with the CSRF header, web client type and the Idempotency-Key', async () => {

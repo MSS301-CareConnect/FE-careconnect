@@ -7,63 +7,90 @@ import { activeCaregiverNavigation, caregiverNavigation } from '../caregiver-nav
 
 export const CAREGIVER_SIDEBAR_ID = 'caregiver-sidebar'
 
-export function CaregiverSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+/** Desktop (≥1024 px) navigation: 240 px wide, or a 72 px icon rail when collapsed. Phones use the bottom tab bar. */
+export function CaregiverSidebar({
+  collapsed,
+  onToggle,
+  toAccept
+}: {
+  collapsed: boolean
+  onToggle: () => void
+  toAccept: number
+}) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const active = activeCaregiverNavigation(pathname)
 
   return (
-    <>
-      {open && (
-        <div
-          aria-hidden='true'
-          className='fixed inset-0 z-40 bg-on-surface/40 backdrop-blur-[1px] lg:hidden'
-          onClick={onClose}
-        />
-      )}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-outline-variant/25 bg-white shadow-xl transition-[transform,visibility] duration-200 lg:z-30 lg:translate-x-0 lg:shadow-none print:hidden ${open ? 'translate-x-0' : 'max-lg:invisible -translate-x-full'}`}
-        id={CAREGIVER_SIDEBAR_ID}
-      >
-        <div className='flex h-16 shrink-0 items-center justify-between gap-2 border-b border-outline-variant/25 px-5'>
-          <Link className='flex min-w-0 items-center gap-2' onClick={onClose} to='/caregiver/visits'>
-            <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white'>
-              <Icon name='volunteer_activism' />
-            </span>
+    <aside
+      className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-outline-variant bg-surface-container-lowest transition-[width] duration-200 ease-[var(--cg-ease)] lg:flex print:hidden ${collapsed ? 'w-[72px]' : 'w-60'}`}
+      id={CAREGIVER_SIDEBAR_ID}
+    >
+      <div className={`flex h-16 shrink-0 items-center gap-2.5 ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
+        <Link
+          aria-label={t('common.brand')}
+          className='flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-primary'
+          to='/caregiver/today'
+        >
+          <span className='grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary text-on-primary'>
+            <Icon className='text-xl' name='volunteer_activism' />
+          </span>
+          {collapsed ? null : (
             <span className='min-w-0 leading-tight'>
-              <strong className='block truncate text-sm tracking-tight'>{t('common.brand')}</strong>
-              <span className='block truncate text-[10px] font-bold uppercase tracking-wider text-primary'>
-                {t('caregiver.identity.role')}
-              </span>
+              <strong className='block truncate text-[15px] font-bold text-on-surface'>{t('common.brand')}</strong>
+              <span className='block truncate text-xs text-on-surface-variant'>{t('caregiver.identity.role')}</span>
             </span>
-          </Link>
-          <button
-            aria-label={t('caregiver.nav.close')}
-            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden'
-            onClick={onClose}
-            type='button'
-          >
-            <Icon name='close' />
-          </button>
-        </div>
-        <nav aria-label={t('caregiver.nav.label')} className='flex-1 overflow-y-auto overscroll-contain px-3 py-4'>
-          <ul className='space-y-1'>
-            {caregiverNavigation.map((item) => (
+          )}
+        </Link>
+      </div>
+      <nav aria-label={t('caregiver.nav.label')} className='flex-1 overflow-y-auto px-3 py-3'>
+        <ul className='space-y-1'>
+          {caregiverNavigation.map((item) => {
+            const current = active.key === item.key
+            const badge = item.key === 'visits' && toAccept > 0 ? toAccept : 0
+            const label = t(`caregiver.nav.${item.key}`)
+            return (
               <li key={item.key}>
                 <Link
-                  aria-current={active.key === item.key ? 'page' : undefined}
-                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active.key === item.key ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
-                  onClick={onClose}
+                  aria-current={current ? 'page' : undefined}
+                  aria-label={collapsed ? label : undefined}
+                  className={`cg-press relative flex min-h-11 items-center gap-3 rounded-lg text-sm font-semibold focus-visible:outline-2 focus-visible:outline-primary ${collapsed ? 'justify-center px-0' : 'px-3'} ${current ? 'bg-brand-50 text-primary' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
+                  title={collapsed ? label : undefined}
                   to={item.to}
                 >
-                  <Icon className='text-xl' name={item.icon} />
-                  <span>{t(`caregiver.nav.${item.key}`)}</span>
+                  {current ? (
+                    <span aria-hidden='true' className='absolute top-2 bottom-2 left-0 w-1 rounded-r-full bg-primary' />
+                  ) : null}
+                  <Icon className='text-[22px]' filled={current} name={item.icon} />
+                  {collapsed ? null : <span className='flex-1 truncate'>{label}</span>}
+                  {badge ? (
+                    <span
+                      aria-label={t('caregiver.nav.toAccept', { count: badge })}
+                      className={`grid min-w-5 place-items-center rounded-full bg-warning px-1.5 text-[11px] leading-5 font-bold text-white tabular-nums ${collapsed ? 'absolute top-1 right-2' : ''}`}
+                    >
+                      {badge > 99 ? '99+' : badge}
+                    </span>
+                  ) : null}
                 </Link>
               </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-    </>
+            )
+          })}
+        </ul>
+      </nav>
+      <div className='border-t border-outline-variant p-3'>
+        <button
+          aria-controls={CAREGIVER_SIDEBAR_ID}
+          aria-expanded={!collapsed}
+          aria-label={t(collapsed ? 'caregiver.nav.expand' : 'caregiver.nav.collapse')}
+          className={`cg-press flex min-h-11 w-full items-center gap-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary ${collapsed ? 'justify-center' : 'px-3'}`}
+          onClick={onToggle}
+          title={collapsed ? t('caregiver.nav.expand') : undefined}
+          type='button'
+        >
+          <Icon className='text-[22px]' name={collapsed ? 'left_panel_open' : 'left_panel_close'} />
+          {collapsed ? null : t('caregiver.nav.collapse')}
+        </button>
+      </div>
+    </aside>
   )
 }

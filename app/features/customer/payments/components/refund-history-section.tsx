@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
-import { formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import { fetchRefundHistory, paymentErrorKey, paymentKeys } from '~/entities/payment/payment-api'
+import { useFormat } from '~/shared/lib/format'
+import { StatusBadge } from '~/shared/ui/status-badge'
 
-import { PaymentListSection, bodyCell, headCell, tableClass } from './payments-ui'
+import type { BookingLabel } from '../hooks/use-booking-labels'
+import { MoneyRow, PaymentListSection, REFUND_STATUS_TONES } from './payments-ui'
 
+const key = 'customer.payments' as const
 const REASONS = [
   'CUSTOMER_CANCEL',
   'CENTER_REJECT',
@@ -25,9 +28,9 @@ function reasonKey(reason: string) {
 }
 
 /** Refunds PaymentService made to the customer, with the cancellation fee it kept. */
-export function RefundHistorySection() {
-  const { t, i18n } = useTranslation()
-  const language = i18n.language
+export function RefundHistorySection({ labels }: { labels: ReadonlyMap<string, BookingLabel> }) {
+  const { t } = useTranslation()
+  const format = useFormat()
   const [page, setPage] = useState(0)
   const refunds = useQuery({
     queryKey: paymentKeys.refunds(page),
@@ -37,40 +40,42 @@ export function RefundHistorySection() {
   const items = refunds.data?.items ?? []
   return (
     <PaymentListSection
-      emptyText={t('customer.payments.refunds.empty')}
+      description={t(`${key}.refunds.description`)}
+      empty={{ icon: 'currency_exchange', title: t(`${key}.refunds.empty`) }}
       error={refunds.isError ? t(paymentErrorKey(refunds.error)) : null}
       id='payments-refunds'
       isEmpty={items.length === 0}
       isPending={refunds.isPending}
       onPageChange={setPage}
+      onRetry={() => void refunds.refetch()}
       page={page}
-      title={t('customer.payments.refunds.title')}
+      title={t(`${key}.refunds.title`)}
       totalPages={refunds.data?.totalPages ?? 0}
     >
-      <table className={tableClass}>
-        <thead>
-          <tr>
-            <th className={headCell}>{t('customer.payments.columns.createdAt')}</th>
-            <th className={headCell}>{t('customer.payments.columns.reason')}</th>
-            <th className={headCell}>{t('customer.payments.columns.amount')}</th>
-            <th className={headCell}>{t('customer.payments.columns.fee')}</th>
-            <th className={headCell}>{t('customer.payments.columns.status')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((refund) => (
-            <tr key={refund.id}>
-              <td className={`${bodyCell} tabular-nums`}>
-                {refund.createdAt ? formatDateTime(refund.createdAt, language) : '—'}
-              </td>
-              <td className={bodyCell}>{t(`payment.refundReason.${reasonKey(refund.reason)}`)}</td>
-              <td className={`${bodyCell} font-semibold tabular-nums`}>{formatMoney(refund.amount, language)}</td>
-              <td className={`${bodyCell} tabular-nums`}>{formatMoney(refund.feeAmount, language)}</td>
-              <td className={bodyCell}>{t(`payment.refundStatus.${refund.status}`)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {items.map((refund) => (
+        <MoneyRow
+          amount={format.money(refund.amount)}
+          booking={labels.get(refund.bookingId)}
+          bookingId={refund.bookingId}
+          icon='currency_exchange'
+          iconTone='refund'
+          key={refund.id}
+          meta={format.dateTime(refund.refundedAt ?? refund.createdAt)}
+          status={
+            <span className='flex flex-wrap items-center gap-2 sm:justify-end'>
+              {refund.feeAmount > 0 ? (
+                <span className='text-xs text-on-surface-variant tabular-nums'>
+                  {t(`${key}.refunds.fee`, { amount: format.money(refund.feeAmount) })}
+                </span>
+              ) : null}
+              <StatusBadge tone={REFUND_STATUS_TONES[refund.status]}>
+                {t(`payment.refundStatus.${refund.status}`)}
+              </StatusBadge>
+            </span>
+          }
+          title={t(`payment.refundReason.${reasonKey(refund.reason)}`)}
+        />
+      ))}
     </PaymentListSection>
   )
 }

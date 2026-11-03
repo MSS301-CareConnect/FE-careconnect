@@ -6,6 +6,7 @@ import { fetchPublicCaregiver, fetchVerifiedCertificates, providerKeys } from '~
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { pageContainer } from '~/shared/ui/page-header'
 
 import {
   CaregiverBookingCard,
@@ -37,26 +38,41 @@ export function CustomerCaregiverDetailPage() {
   useDocumentTitle(profile.data?.fullName ?? t(`${key}.title`))
 
   return (
-    <div className='flex w-full flex-1 flex-col bg-surface text-on-surface'>
-      <div className='mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-12 lg:py-10'>
-        <Link
-          className='inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-container focus-visible:outline-2 focus-visible:outline-primary'
-          to='/customer/caregivers'
-        >
-          <Icon className='text-lg' name='arrow_back' />
-          {t(`${key}.back`)}
-        </Link>
+    <div className='flex w-full flex-1 flex-col text-on-surface'>
+      <div className={`${pageContainer} pb-16`}>
+        <nav aria-label={t(`${key}.list.breadcrumb.label`)} className='pt-6 sm:pt-8'>
+          <ol className='flex flex-wrap items-center gap-1 text-sm text-on-surface-variant'>
+            <li>
+              <Link className='rounded hover:text-primary hover:underline' to='/customer'>
+                {t(`${key}.list.breadcrumb.home`)}
+              </Link>
+            </li>
+            <li className='flex items-center gap-1'>
+              <Icon className='text-base text-outline' name='chevron_right' />
+              <Link className='rounded hover:text-primary hover:underline' to='/customer/caregivers'>
+                {t(`${key}.list.title`)}
+              </Link>
+            </li>
+            {profile.data ? (
+              <li className='flex items-center gap-1'>
+                <Icon className='text-base text-outline' name='chevron_right' />
+                <span aria-current='page' className='font-medium text-on-surface'>
+                  {profile.data.fullName}
+                </span>
+              </li>
+            ) : null}
+          </ol>
+        </nav>
 
         {profile.isPending ? (
-          <div className='mt-8 overflow-hidden rounded-[2rem] bg-surface-container-lowest' role='status'>
+          <div className='mt-6 rounded-2xl border border-outline-variant bg-surface-container-lowest p-7' role='status'>
             <span className='sr-only'>{t(`${key}.loading`)}</span>
-            <div className='grid md:grid-cols-[minmax(14rem,38%)_minmax(0,1fr)]'>
-              <div className='min-h-72 animate-pulse bg-primary-fixed md:min-h-[21rem]' />
-              <div className='space-y-5 px-7 py-10'>
-                <div className='h-4 w-36 animate-pulse rounded bg-surface-container-high' />
-                <div className='h-12 w-2/3 animate-pulse rounded bg-surface-container-high' />
-                <div className='h-8 w-32 animate-pulse rounded bg-surface-container-high' />
-                <div className='h-5 w-1/2 animate-pulse rounded bg-surface-container-high' />
+            <div className='flex items-center gap-5'>
+              <span className='cc-skeleton h-28 w-28 rounded-full' />
+              <div className='flex-1 space-y-3'>
+                <span className='cc-skeleton block h-8 w-2/3 rounded' />
+                <span className='cc-skeleton block h-5 w-40 rounded' />
+                <span className='cc-skeleton block h-4 w-1/2 rounded' />
               </div>
             </div>
           </div>
@@ -81,7 +97,7 @@ export function CustomerCaregiverDetailPage() {
         ) : null}
 
         {profile.isSuccess ? (
-          <div className='mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8'>
+          <div className='mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8'>
             <div className='flex min-w-0 flex-col gap-6'>
               <CaregiverDetailHero profile={profile.data} />
               <DetailSection icon='medical_services' title={t(`${key}.detail.services`)}>

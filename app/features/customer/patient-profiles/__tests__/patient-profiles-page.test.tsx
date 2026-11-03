@@ -10,6 +10,10 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { PatientProfilesPage } from '../patient-profiles-page'
 
+vi.mock('~/entities/care-recipient/care-recipient-managers-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-managers-api')>()),
+  fetchMyInvitations: vi.fn().mockResolvedValue([])
+}))
 vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-api')>()),
   fetchCareRecipients: vi.fn(),
@@ -60,72 +64,70 @@ beforeEach(async () => {
 })
 
 describe('PatientProfilesPage', () => {
-  it('renders care recipient profiles from the backend', async () => {
+  it('renders the profiles from the backend as cards with facts and access', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue(page)
     renderPage()
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Hồ sơ người cần chăm sóc' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Đang tải hồ sơ người cần chăm sóc...')
-    expect(await screen.findByRole('heading', { level: 3, name: 'Nguyễn Văn An' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 3, name: 'Trần Thị Lan' })).toBeInTheDocument()
-    expect(screen.getByText('Bình Thạnh, TP.HCM')).toBeInTheDocument()
-    expect(screen.queryByText('Quản lý chính')).not.toBeInTheDocument()
-    expect(screen.queryByText('Chủ sở hữu')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: 'Family Member' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Hồ sơ người thân' })).toBeInTheDocument()
+    const owner = (await screen.findByRole('heading', { level: 2, name: 'Nguyễn Văn An' })).closest('article')!
+    expect(within(owner).getByText('78 tuổi · Nam · Bình Thạnh, TP.HCM')).toBeInTheDocument()
+    expect(within(owner).getByText('Chủ sở hữu')).toBeInTheDocument()
+    expect(within(owner).getByRole('link', { name: /Đặt lịch/ })).toHaveAttribute(
+      'href',
+      '/customer/booking?patientId=rec-1'
+    )
+    expect(screen.getByRole('heading', { level: 2, name: 'Trần Thị Lan' })).toBeInTheDocument()
     expect(fetchCareRecipients).toHaveBeenCalledWith({ page: 0, size: 10 })
   })
 
-  it('only offers edit and delete to profile owners', async () => {
+  it('only offers edit and delete to profile owners, behind the more-actions menu', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue(page)
     renderPage()
 
-    const owner = (await screen.findByRole('heading', { level: 3, name: 'Nguyễn Văn An' })).closest('article')!
-    const viewer = screen.getByRole('heading', { level: 3, name: 'Trần Thị Lan' }).closest('article')!
-    expect(within(owner).getByRole('link', { name: 'Chỉnh sửa' })).toHaveAttribute(
-      'href',
-      '/customer/patient-profiles/rec-1?mode=edit'
-    )
-    expect(within(owner).getByRole('button', { name: 'Xóa' })).toBeInTheDocument()
-    expect(within(viewer).queryByRole('link', { name: 'Chỉnh sửa' })).not.toBeInTheDocument()
-    expect(within(viewer).queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Thao tác với hồ sơ Nguyễn Văn An' }))
+    expect(screen.getByRole('menuitem', { name: 'Sửa thông tin' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Xóa hồ sơ' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thao tác với hồ sơ Trần Thị Lan' })).not.toBeInTheDocument()
   })
 
-  it('sends the search keyword and status filter to the backend', async () => {
+  it('searches as the customer types and filters by status chip', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue(page)
     renderPage()
-    await screen.findByRole('heading', { level: 3, name: 'Nguyễn Văn An' })
+    await screen.findByRole('heading', { level: 2, name: 'Nguyễn Văn An' })
 
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Tìm hồ sơ' }), { target: { value: ' Lan ' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Tìm kiếm' }))
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Tìm hồ sơ theo tên' }), { target: { value: ' Lan ' } })
     await waitFor(() =>
       expect(fetchCareRecipients).toHaveBeenCalledWith({ keyword: 'Lan', status: undefined, page: 0, size: 10 })
     )
 
-    fireEvent.change(screen.getByRole('combobox', { name: 'Trạng thái hồ sơ' }), { target: { value: 'ARCHIVED' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Đã lưu trữ' }))
     await waitFor(() =>
       expect(fetchCareRecipients).toHaveBeenCalledWith({ keyword: 'Lan', status: 'ARCHIVED', page: 0, size: 10 })
     )
   })
 
-  it('archives a profile only after confirmation', async () => {
+  it('archives a profile only after confirmation in a dialog', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue(page)
     vi.mocked(archiveCareRecipient).mockResolvedValue()
     renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Xóa' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Thao tác với hồ sơ Nguyễn Văn An' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Xóa hồ sơ' }))
     expect(archiveCareRecipient).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận xóa' }))
+    const dialog = screen.getByRole('dialog', { name: 'Xóa hồ sơ Nguyễn Văn An?' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Xóa hồ sơ' }))
 
     await waitFor(() => expect(archiveCareRecipient).toHaveBeenCalled())
     expect(vi.mocked(archiveCareRecipient).mock.calls[0][0]).toBe('rec-1')
     await waitFor(() => expect(vi.mocked(fetchCareRecipients).mock.calls.length).toBeGreaterThan(1))
   })
 
-  it('shows the empty state when the customer has no profiles', async () => {
+  it('shows the empty state with an add action when the customer has no profiles', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue({ ...page, items: [], totalElements: 0, totalPages: 0 })
     renderPage()
 
     expect(await screen.findByRole('heading', { name: 'Chưa có hồ sơ người thân' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Thêm hồ sơ/ })).toHaveLength(2)
   })
 
   it('shows a retryable error when the gateway fails', async () => {
@@ -134,21 +136,20 @@ describe('PatientProfilesPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Không thể tải danh sách hồ sơ.')
     fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }))
-    expect(await screen.findByRole('heading', { level: 3, name: 'Nguyễn Văn An' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 2, name: 'Nguyễn Văn An' })).toBeInTheDocument()
   })
 
   it('switches text to English when language is changed', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue(page)
     renderPage()
-    await screen.findByRole('heading', { level: 3, name: 'Nguyễn Văn An' })
+    await screen.findByRole('heading', { level: 2, name: 'Nguyễn Văn An' })
 
     await setAppLanguage('en', false)
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: 'Profiles of Care Recipients' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 1, name: 'Family profiles' })).toBeInTheDocument()
     })
-    expect(screen.getAllByRole('link', { name: 'View details' })[0]).toBeInTheDocument()
-    expect(screen.queryByText('Primary manager')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'View profile' })[0]).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('lang', 'en')
   })
 })

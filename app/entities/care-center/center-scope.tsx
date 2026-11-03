@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
 
+import { useServiceCenters } from './care-center-api'
 import { openCenterPicker, useCurrentCenter } from './selected-center'
 
 const key = 'customer.centerPicker' as const
@@ -67,5 +68,31 @@ export function CenterReminder({ title, text }: { title: string; text: string })
         {t(`${key}.choose`)}
       </button>
     </div>
+  )
+}
+
+/**
+ * One small line under a page title — "At TT An Tâm · Change" — replacing the old banner. It appears only when the
+ * customer can actually choose between several centers; with a single center there is nothing to say.
+ */
+export function CenterContextLine() {
+  const { t } = useTranslation()
+  const center = useCurrentCenter()
+  const centers = useServiceCenters()
+  if ((centers.data?.length ?? 0) < 2) return null
+
+  return (
+    <span className='inline-flex flex-wrap items-center gap-x-1.5 text-sm text-on-surface-variant'>
+      <Icon aria-hidden='true' className='text-base text-primary' name='home_health' />
+      {center ? t(`${key}.context.at`, { name: center.name }) : t(`${key}.context.none`)}
+      <span aria-hidden='true'>·</span>
+      <button
+        className='rounded font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+        onClick={openCenterPicker}
+        type='button'
+      >
+        {center ? t(`${key}.context.change`) : t(`${key}.context.choose`)}
+      </button>
+    </span>
   )
 }
