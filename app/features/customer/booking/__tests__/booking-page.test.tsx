@@ -236,6 +236,26 @@ describe('CustomerBookingPage', () => {
     expect(fetchPublicCenters).toHaveBeenCalledWith({ page: 0, size: 100 })
   })
 
+  it('reads every page of caregivers who provide the chosen services (search caps a page at 50)', async () => {
+    vi.mocked(searchCaregiversByService).mockImplementation(async ({ page }) => ({
+      items: page === 0 ? [hoa] : [{ ...hoa, caregiverId: 'cg-3', fullName: 'Cô Mai' }],
+      page: page ?? 0,
+      size: 50,
+      totalElements: 51,
+      totalPages: 2
+    }))
+    renderPage('/customer/booking')
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Trung tâm chăm sóc' }), {
+      target: { value: 'center-1' }
+    })
+    await fillPatientAndService()
+
+    expect(await screen.findByRole('radio', { name: /Cô Mai/ })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /Chị Hoa/ })).toBeInTheDocument()
+    expect(searchCaregiversByService).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 50 }))
+    expect(screen.queryByText('Không tải được người chăm sóc của trung tâm.')).not.toBeInTheDocument()
+  })
+
   it('picks the center, then services, then only caregivers who provide them (Q10)', async () => {
     renderPage('/customer/booking')
 
@@ -253,7 +273,7 @@ describe('CustomerBookingPage', () => {
         centerId: 'center-2',
         careServiceIds: ['svc-1'],
         page: 0,
-        size: 100
+        size: 50
       })
     )
     expect(screen.getByRole('radio', { name: /Để trung tâm phân công/ })).toBeChecked()
