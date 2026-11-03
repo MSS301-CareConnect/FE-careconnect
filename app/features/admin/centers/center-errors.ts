@@ -1,5 +1,6 @@
 /** ProviderService center codes (4100–4122, 4500–4503) as business sentences shown at the end of a form or dialog. */
 export const CENTER_BUSINESS_ERRORS = {
+  4101: 'admin.centersPage.detail.business.emailTaken',
   4114: 'admin.centersPage.detail.business.stale',
   4115: 'admin.centersPage.detail.business.archived',
   4121: 'admin.centersPage.detail.business.hasBookings',

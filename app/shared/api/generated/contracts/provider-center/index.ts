@@ -8,6 +8,7 @@
 
 export * from './archiveProviderCenterParams'
 export * from './centerCreateRequest'
+export * from './centerRestoreRequest'
 export * from './centerSelfUpdateRequest'
 export * from './centerStatusUpdateRequest'
 export * from './centerStatusUpdateRequestStatus'

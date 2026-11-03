@@ -8,7 +8,7 @@ export const caregiverVisitDetailEn = {
   checkIn: 'Start visit',
   checkingIn: 'Starting…',
   checkInHint:
-    'You can start the visit from {{time}} until {{closes}} (30 minutes either side of the scheduled time). Your location is shared if you allow it.',
+    'You can start the visit from {{time}} until {{closes}}, the check-in window set by your center. Your location is shared if you allow it.',
   checkInClosed:
     'Check-in closed at {{time}}. The visit will be marked as missed; contact your center if you are already with the patient.',
   reportNoShow: 'Report customer no-show',
@@ -56,7 +56,7 @@ export const caregiverVisitDetailVi = {
   checkIn: 'Bắt đầu ca',
   checkingIn: 'Đang bắt đầu ca…',
   checkInHint:
-    'Có thể bắt đầu ca từ {{time}} đến {{closes}} (30 phút trước và sau giờ hẹn). Vị trí của bạn sẽ được gửi kèm nếu bạn cho phép.',
+    'Có thể bắt đầu ca từ {{time}} đến {{closes}}, theo khung giờ check-in của trung tâm. Vị trí của bạn sẽ được gửi kèm nếu bạn cho phép.',
   checkInClosed:
     'Đã hết giờ bắt đầu ca lúc {{time}}. Buổi này sẽ bị ghi nhận vắng; nếu bạn đang ở chỗ bệnh nhân, hãy liên hệ trung tâm.',
   reportNoShow: 'Báo khách vắng mặt',

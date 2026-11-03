@@ -41,7 +41,8 @@ export const adminCentersVi = {
   error: 'Không thể tải danh sách trung tâm.',
   retry: 'Thử lại',
   archivedOn: 'Lưu trữ {{date}}',
-  archivedHint: 'Trung tâm đã lưu trữ chỉ để tra cứu, không mở hay chỉnh sửa được.',
+  archivedHint:
+    'Trung tâm đã lưu trữ không hiện với khách và không nhận lịch đặt. Mở trung tâm để xem lại hoặc khôi phục về Ngừng hoạt động.',
   pagination: 'Phân trang trung tâm',
   csv: { center: 'Trung tâm', email: 'Email', phone: 'Số điện thoại', address: 'Địa chỉ', status: 'Trạng thái' },
   hours: {
@@ -87,13 +88,13 @@ export const adminCentersVi = {
     back: 'Trung tâm',
     loading: 'Đang tải trung tâm…',
     error: 'Không thể tải trung tâm.',
-    notFound: 'Trung tâm không tồn tại hoặc đã được lưu trữ.',
+    notFound: 'Trung tâm không tồn tại.',
     retry: 'Thử lại',
     edit: 'Sửa thông tin',
     archive: 'Lưu trữ trung tâm',
     archiveTitle: 'Lưu trữ {{name}}?',
     archiveDescription:
-      'Lưu trữ là vĩnh viễn: trung tâm rời khỏi danh sách đang quản lý và không mở lại được. Chỉ lưu trữ khi trung tâm không còn lịch đặt đang chạy; nếu chỉ tạm dừng, hãy chọn Ngừng hoạt động.',
+      'Trung tâm rời khỏi danh sách đang quản lý; email và người quản lý được trả lại để trung tâm khác dùng. Chỉ lưu trữ khi không còn lịch đặt đang chạy. Có thể khôi phục sau ở thẻ Đã lưu trữ; nếu chỉ tạm dừng, hãy chọn Ngừng hoạt động.',
     tabsLabel: 'Nội dung trung tâm',
     tabs: { overview: 'Tổng quan', staff: 'Nhân sự', bookings: 'Lịch đặt', activity: 'Hoạt động', images: 'Hình ảnh' },
     info: 'Thông tin',
@@ -113,6 +114,8 @@ export const adminCentersVi = {
       transition: 'Trạng thái trung tâm vừa thay đổi. Tải lại trang để xem thao tác phù hợp.',
       managerRequired: 'Trung tâm chưa có người quản lý đang hoạt động. Ghép người quản lý trước khi duyệt.',
       managerTaken: 'Tài khoản này đang quản lý một trung tâm khác.',
+      emailTaken:
+        'Email của trung tâm này đã được một trung tâm khác dùng nên chưa khôi phục được. Đổi email trung tâm kia trước.',
       managerInvalid: 'Tài khoản đã chọn đang bị khóa hoặc không có vai trò quản lý trung tâm.',
       managerMismatch: 'Tài khoản này thuộc trung tâm khác. Hãy tạo tài khoản quản lý mới cho trung tâm này.',
       managerNotFound: 'Không tìm thấy tài khoản quản lý đã chọn.'
@@ -161,6 +164,12 @@ export const adminCentersVi = {
     activeHint: 'Trung tâm đang nhận lịch đặt.',
     pausedHint: 'Trung tâm đang không nhận lịch đặt.',
     rejectedHint: 'Trung tâm đã bị từ chối; không còn thao tác trạng thái.',
+    archivedHint:
+      'Trung tâm đã lưu trữ, chỉ xem được. Khôi phục để đưa về Ngừng hoạt động rồi rà soát trước khi mở lại.',
+    restore: 'Khôi phục',
+    restoreTitle: 'Khôi phục {{name}}?',
+    restoreDescription:
+      'Trung tâm trở về trạng thái Ngừng hoạt động và chưa nhận lịch đặt. Nếu người quản lý cũ đã sang trung tâm khác, cần ghép người quản lý mới trước khi mở lại.',
     changed: 'Đã cập nhật trạng thái trung tâm.',
     errors: {
       reasonRequired: 'Nhập lý do để quản trị viên khác biết vì sao.',
@@ -277,7 +286,8 @@ export const adminCentersEn = {
   error: 'Centers could not be loaded.',
   retry: 'Retry',
   archivedOn: 'Archived {{date}}',
-  archivedHint: 'Archived centers are kept for reference and cannot be opened or edited.',
+  archivedHint:
+    'Archived centers are hidden from customers and take no bookings. Open one to review it or restore it as inactive.',
   pagination: 'Centers pagination',
   csv: { center: 'Center', email: 'Email', phone: 'Phone', address: 'Address', status: 'Status' },
   hours: {
@@ -323,13 +333,13 @@ export const adminCentersEn = {
     back: 'Centers',
     loading: 'Loading center…',
     error: 'The center could not be loaded.',
-    notFound: 'This center does not exist or was archived.',
+    notFound: 'This center does not exist.',
     retry: 'Retry',
     edit: 'Edit details',
     archive: 'Archive center',
     archiveTitle: 'Archive {{name}}?',
     archiveDescription:
-      'Archiving is permanent: the center leaves the managed list and cannot be reopened. Archive only when it has no running bookings; to pause it, choose Inactive instead.',
+      'The center leaves the managed list, and its email and manager become free for other centers. Archive only when it has no running bookings. It can be restored later from the Archived tab; to pause it, choose Inactive instead.',
     tabsLabel: 'Center sections',
     tabs: { overview: 'Overview', staff: 'Staff', bookings: 'Bookings', activity: 'Activity', images: 'Images' },
     info: 'Details',
@@ -350,6 +360,8 @@ export const adminCentersEn = {
       transition: 'The center status just changed. Reload the page to see the right actions.',
       managerRequired: 'The center has no active manager. Link a manager before approving it.',
       managerTaken: 'This account already manages another center.',
+      emailTaken:
+        'Another center now uses this center’s email, so it cannot be restored yet. Change that center’s email first.',
       managerInvalid: 'The chosen account is locked or is not a center manager.',
       managerMismatch: 'This account belongs to another center. Create a new manager account for this center.',
       managerNotFound: 'The chosen manager account was not found.'
@@ -398,6 +410,11 @@ export const adminCentersEn = {
     activeHint: 'The center is taking bookings.',
     pausedHint: 'The center is not taking bookings.',
     rejectedHint: 'The center was rejected; there are no status actions.',
+    archivedHint: 'This center is archived and read-only. Restore it as inactive, then review it before reopening.',
+    restore: 'Restore',
+    restoreTitle: 'Restore {{name}}?',
+    restoreDescription:
+      'The center comes back as inactive and takes no bookings yet. If its previous manager now runs another center, link a new manager before reopening.',
     changed: 'Center status updated.',
     errors: {
       reasonRequired: 'Enter a reason so other administrators know why.',

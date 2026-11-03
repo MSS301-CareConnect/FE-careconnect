@@ -182,8 +182,8 @@ export const bookingSharedVi = {
       checkInLateMinutes: 'Check-in trễ tối đa'
     },
     remindersHint: 'Các mốc cách nhau bằng dấu phẩy, vd 72, 48. Tối đa 5 mốc, để trống nếu không nhắc.',
-    checkInNotApplied:
-      'Hai giá trị này được lưu theo trung tâm nhưng hệ thống check-in hiện vẫn dùng cửa sổ chung của nền tảng.',
+    checkInApplies:
+      'Áp dụng cho booking tạo sau khi lưu. Quá giờ check-in trễ tối đa mà chưa check-in, buổi được ghi nhận người chăm sóc vắng và khách được hoàn tiền buổi đó.',
     tightTitle: 'Có tổ hợp quá ngắn — vẫn lưu được, nhưng booking đặt sát mức tối thiểu sẽ có hạn ngắn hơn:',
     tight: {
       shift: 'SHIFT: xác nhận + thanh toán cần {{needed}} giờ, nhưng chỉ đặt trước tối thiểu {{available}} giờ.',
@@ -235,7 +235,7 @@ export const bookingSharedVi = {
     e5216: 'Người bệnh đã có lịch chăm sóc trùng thời gian.',
     e5218: 'Chỉ đổi được buổi chăm sóc chưa bắt đầu.',
     e5221: 'Buổi chăm sóc không ở trạng thái cho phép thao tác này.',
-    e5222: 'Chỉ check-in được từ 30 phút trước tới 30 phút sau giờ bắt đầu buổi.',
+    e5222: 'Ngoài khung giờ check-in của trung tâm cho buổi này.',
     e5223: 'Lịch đặt chưa được xác nhận (chưa đặt cọc) hoặc đã kết thúc.',
     e5242: 'Khách chưa thanh toán đủ lịch đặt nên chưa bắt đầu chăm sóc được.',
     e5413: 'Chính sách có giá trị không hợp lệ hoặc mâu thuẫn nhau.',
@@ -262,7 +262,7 @@ export const bookingSharedVi = {
     e5812: 'Cần mô tả tình huống khách vắng mặt (10–1000 ký tự).',
     e5813: 'Buổi chăm sóc chưa có báo cáo khách vắng mặt.',
     e5814: 'Buổi chăm sóc này đã được báo khách vắng mặt.',
-    e5817: 'Chỉ báo khách vắng mặt từ giờ bắt đầu tới 30 phút sau giờ bắt đầu.',
+    e5817: 'Chỉ báo khách vắng mặt từ giờ bắt đầu tới khi hết khung giờ check-in.',
     e5822: 'Chỉ được thêm tối đa 20 công việc.',
     forbidden: 'Bạn không có quyền thực hiện thao tác này.',
     unavailable: 'Hệ thống đang tạm gián đoạn, vui lòng thử lại sau ít phút.',
@@ -456,8 +456,8 @@ export const bookingSharedEn = {
       checkInLateMinutes: 'Latest check-in'
     },
     remindersHint: 'Separate the times with commas, e.g. 72, 48. At most 5; leave empty for no reminder.',
-    checkInNotApplied:
-      'These two values are stored per center, but check-in still uses the platform-wide window for now.',
+    checkInApplies:
+      'Applies to bookings made after saving. A visit not checked in by the latest check-in time is recorded as missed by the caregiver and refunded for that visit.',
     tightTitle:
       'Some combinations are tight — you can save them, but bookings made at the minimum notice get shorter deadlines:',
     tight: {
@@ -511,7 +511,7 @@ export const bookingSharedEn = {
     e5216: 'The patient already has a visit at that time.',
     e5218: 'Only visits that have not started can be changed.',
     e5221: 'The visit is not in a status that allows this action.',
-    e5222: 'Check-in is open from 30 minutes before to 30 minutes after the scheduled start.',
+    e5222: 'This visit is outside the center’s check-in window.',
     e5223: 'The booking is not confirmed (no deposit yet) or has ended.',
     e5242: 'The customer has not paid the booking in full, so care cannot start yet.',
     e5413: 'Some policy values are invalid or contradict each other.',
@@ -538,7 +538,7 @@ export const bookingSharedEn = {
     e5812: 'Describe the no-show (10–1000 characters).',
     e5813: 'This visit has no no-show report.',
     e5814: 'A no-show was already reported for this visit.',
-    e5817: 'A no-show can be reported from the start until 30 minutes after the start.',
+    e5817: 'A no-show can be reported from the start until the check-in window closes.',
     e5822: 'You can add at most 20 tasks.',
     forbidden: 'You are not allowed to do this.',
     unavailable: 'Something is temporarily unavailable. Please try again in a few minutes.',

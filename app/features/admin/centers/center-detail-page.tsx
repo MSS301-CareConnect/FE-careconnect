@@ -31,6 +31,8 @@ import { CenterStatusPanel } from './components/center-status-panel'
 const key = 'admin.centersPage' as const
 const TABS = ['overview', 'staff', 'bookings', 'activity', 'images'] as const
 type Tab = (typeof TABS)[number]
+/** An archived center is read-only (D31): its history stays readable, staff and images belong to live centers. */
+const ARCHIVED_TABS: readonly Tab[] = ['overview', 'bookings', 'activity']
 const bookingPath = (bookingId: string) => `/admin/bookings/${bookingId}`
 
 function Overview({ center }: { center: ProviderCenterRecord }) {
@@ -80,14 +82,16 @@ export function CenterDetailPage({ id }: { id: string }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [params, setParams] = useSearchParams()
-  const tab: Tab = TABS.find((item) => item === params.get('tab')) ?? 'overview'
   const [editing, setEditing] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const center = useQuery({ queryKey: providerKeys.center(id), queryFn: () => fetchCenter(id), retry: false })
+  const archived = center.data?.centerStatus === 'ARCHIVED'
+  const tabs = archived ? ARCHIVED_TABS : TABS
+  const tab: Tab = tabs.find((item) => item === params.get('tab')) ?? 'overview'
   const media = useQuery({
     queryKey: providerKeys.media('CARE_CENTER', id),
     queryFn: () => fetchProviderMedia('CARE_CENTER', id),
-    enabled: center.isSuccess,
+    enabled: center.isSuccess && !archived,
     retry: false
   })
   useDocumentTitle(center.data?.centerName ?? t(`${key}.detail.documentTitle`))
@@ -157,32 +161,34 @@ export function CenterDetailPage({ id }: { id: string }) {
                 ) : null}
               </div>
             </div>
-            <div className='flex flex-wrap gap-2'>
-              <Button
-                leftIcon={<Icon className='text-lg' name='edit' />}
-                onClick={() => setEditing(true)}
-                variant='outline'
-              >
-                {t(`${key}.detail.edit`)}
-              </Button>
-              <Button
-                className='text-error! hover:bg-error-container/50!'
-                onClick={() => {
-                  archive.reset()
-                  setArchiving(true)
-                }}
-                variant='ghost'
-              >
-                {t(`${key}.detail.archive`)}
-              </Button>
-            </div>
+            {archived ? null : (
+              <div className='flex flex-wrap gap-2'>
+                <Button
+                  leftIcon={<Icon className='text-lg' name='edit' />}
+                  onClick={() => setEditing(true)}
+                  variant='outline'
+                >
+                  {t(`${key}.detail.edit`)}
+                </Button>
+                <Button
+                  className='text-error! hover:bg-error-container/50!'
+                  onClick={() => {
+                    archive.reset()
+                    setArchiving(true)
+                  }}
+                  variant='ghost'
+                >
+                  {t(`${key}.detail.archive`)}
+                </Button>
+              </div>
+            )}
           </header>
           <div
             aria-label={t(`${key}.detail.tabsLabel`)}
             className='flex gap-1 overflow-x-auto border-b border-outline-variant/40'
             role='tablist'
           >
-            {TABS.map((item) => (
+            {tabs.map((item) => (
               <button
                 aria-controls={`center-panel-${item}`}
                 aria-selected={tab === item}

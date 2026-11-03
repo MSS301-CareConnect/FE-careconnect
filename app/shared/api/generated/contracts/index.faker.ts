@@ -109,6 +109,7 @@ import type {
   CenterOfferingResponse,
   CenterOperationalStatsPage,
   CenterOperationalStatsRecord,
+  CenterRestoreRequest,
   CenterSelfUpdateRequest,
   CenterStatusUpdateRequest,
   CenterUpdateRequest,
@@ -992,6 +993,14 @@ export const getCenterStatusUpdateRequestMock = (
 ): CenterStatusUpdateRequest => ({
   status: faker.helpers.arrayElement(['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'REJECTED', 'ARCHIVED'] as const),
   reason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 0, max: 500 } }), undefined]),
+  version: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCenterRestoreRequestMock = (
+  overrideResponse: Partial<CenterRestoreRequest> = {}
+): CenterRestoreRequest => ({
+  reason: faker.string.alpha({ length: { min: 1, max: 500 } }),
   version: faker.number.int(),
   ...overrideResponse
 })
@@ -2752,8 +2761,8 @@ export const getBookingItemRecordMock = (overrideResponse: Partial<BookingItemRe
   serviceName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   unitType: faker.helpers.arrayElement([getBookingUnitTypeMock(), undefined]),
   unitPrice: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
-  quantity: faker.helpers.arrayElement([faker.number.int(), undefined]),
-  unitsPerOccurrence: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  quantity: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  unitsPerOccurrence: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   totalPrice: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   ...overrideResponse
 })
@@ -2990,7 +2999,7 @@ export const getBookingQuoteLineRecordMock = (
   serviceName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   pricingUnit: faker.helpers.arrayElement([getBookingUnitTypeMock(), undefined]),
   unitPrice: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
-  unitsPerOccurrence: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  unitsPerOccurrence: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   occurrenceCount: faker.helpers.arrayElement([faker.number.int(), undefined]),
   lineTotal: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   ...overrideResponse
@@ -3162,6 +3171,8 @@ export const getCaregiverOccurrenceRecordMock = (
   occurrenceNo: faker.number.int(),
   startAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
   endAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  checkInOpensAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  checkInClosesAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   durationMinutes: faker.helpers.arrayElement([faker.number.int(), undefined]),
   status: getOccurrenceStatusMock(),
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),

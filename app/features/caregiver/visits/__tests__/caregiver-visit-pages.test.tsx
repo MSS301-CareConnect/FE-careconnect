@@ -96,7 +96,7 @@ describe('Caregiver assigned visits', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu ca' }))
     await waitFor(() => expect(checkIn).toHaveBeenCalledWith({ occurrenceId: 'occ-1' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Chỉ check-in được từ 30 phút trước')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ngoài khung giờ check-in của trung tâm')
     // The visit has not started, so a no-show cannot be reported yet.
     expect(screen.queryByRole('button', { name: 'Báo khách vắng mặt' })).not.toBeInTheDocument()
   })
@@ -114,6 +114,31 @@ describe('Caregiver assigned visits', () => {
     expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
     expect(screen.getByText(/Đã hết giờ bắt đầu ca/)).toBeInTheDocument()
     expect(checkIn).not.toHaveBeenCalled()
+  })
+
+  it('opens check-in by the window the center policy set on the booking (Q12)', async () => {
+    const start = Date.now() + 50 * 60_000
+    vi.mocked(fetchOccurrence).mockResolvedValue({
+      ...visit,
+      startAt: new Date(start).toISOString(),
+      checkInOpensAt: new Date(start - 60 * 60_000).toISOString(),
+      checkInClosesAt: new Date(start + 10 * 60_000).toISOString()
+    })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+    // 50 minutes ahead: closed by the old fixed 30-minute window, open under a 60-minute policy.
+    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeEnabled()
+    cleanup()
+
+    const started = Date.now() - 15 * 60_000
+    vi.mocked(fetchOccurrence).mockResolvedValue({
+      ...visit,
+      startAt: new Date(started).toISOString(),
+      checkInOpensAt: new Date(started - 60 * 60_000).toISOString(),
+      checkInClosesAt: new Date(started + 10 * 60_000).toISOString()
+    })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+    expect(await screen.findByRole('button', { name: 'Bắt đầu ca' })).toBeDisabled()
+    expect(screen.getByText(/Đã hết giờ bắt đầu ca/)).toBeInTheDocument()
   })
 
   it('works through the checklist and checks out once nothing is pending', async () => {

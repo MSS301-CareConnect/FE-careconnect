@@ -3,7 +3,7 @@ import { useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { accountKeys, fetchAccount } from '~/entities/identity/account-api'
-import { changeCenterStatus, fetchProviderMedia, providerKeys } from '~/entities/provider/provider-api'
+import { changeCenterStatus, fetchProviderMedia, providerKeys, restoreCenter } from '~/entities/provider/provider-api'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { classifyApiError } from '~/shared/api/api-error'
 import { Button } from '~/shared/ui/button'
@@ -19,9 +19,10 @@ import { parseCenterHours } from '../center-hours'
 const key = 'admin.centersPage' as const
 const REASON_MAX = 500
 const QUICK_REASONS = ['unverified', 'ineligible', 'duplicate'] as const
-type Target = 'ACTIVE' | 'REJECTED' | 'SUSPENDED' | 'INACTIVE'
+/** RESTORE brings an archived center back as INACTIVE (D31); the others are status changes. */
+type Target = 'ACTIVE' | 'REJECTED' | 'SUSPENDED' | 'INACTIVE' | 'RESTORE'
 /** ProviderService requires a reason for these (CENTER_STATUS_REASON_REQUIRED 4111). */
-const NEEDS_REASON = new Set<Target>(['REJECTED', 'SUSPENDED', 'INACTIVE'])
+const NEEDS_REASON = new Set<Target>(['REJECTED', 'SUSPENDED', 'INACTIVE', 'RESTORE'])
 
 function CheckItem({
   ok,
@@ -85,12 +86,14 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
   const managerReady = manager.data?.status === 'ACTIVE' && Boolean(manager.data.roles?.includes('CENTER_MANAGER'))
   const change = useMutation({
     mutationFn: (next: Target) =>
-      changeCenterStatus(center.id, {
-        status: next,
-        reason: NEEDS_REASON.has(next) ? reason.trim() : undefined,
-        version: center.version
-      }),
-    onSuccess: async (_saved, next) => {
+      next === 'RESTORE'
+        ? restoreCenter(center.id, { reason: reason.trim(), version: center.version })
+        : changeCenterStatus(center.id, {
+            status: next,
+            reason: NEEDS_REASON.has(next) ? reason.trim() : undefined,
+            version: center.version
+          }),
+    onSuccess: async (saved, next) => {
       setTarget(null)
       setReason('')
       // The panel remounts with the new version, so the outcome is a toast rather than inline text.
@@ -98,7 +101,9 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
         ACTIVE: center.centerStatus === 'PENDING' ? 'approved' : 'reopened',
         REJECTED: 'rejected',
         SUSPENDED: 'suspended',
-        INACTIVE: 'deactivated'
+        INACTIVE: 'deactivated',
+        // The previous manager may now run another center; ProviderService then drops it.
+        RESTORE: saved.managerUserId ? 'restored' : 'restoredWithoutManager'
       } as const
       notify.success(t(`admin.toast.centers.${sentence[next]}`, { name: center.centerName }))
       await queryClient.invalidateQueries({ queryKey: providerKeys.center(center.id) })
@@ -163,6 +168,11 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
           title: t(`${key}.statusActions.deactivateTitle`, { name }),
           description: t(`${key}.statusActions.deactivateDescription`),
           tone: 'danger' as const
+        },
+        RESTORE: {
+          title: t(`${key}.statusActions.restoreTitle`, { name }),
+          description: t(`${key}.statusActions.restoreDescription`),
+          tone: 'primary' as const
         }
       }[target]
     : null
@@ -170,7 +180,8 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
     ACTIVE: center.centerStatus === 'PENDING' ? t(`${key}.review.approve`) : t(`${key}.statusActions.reopen`),
     REJECTED: t(`${key}.review.reject`),
     SUSPENDED: t(`${key}.statusActions.suspend`),
-    INACTIVE: t(`${key}.statusActions.deactivate`)
+    INACTIVE: t(`${key}.statusActions.deactivate`),
+    RESTORE: t(`${key}.statusActions.restore`)
   }
   const contactOk = Boolean(center.email && center.address && center.phoneNumber)
   const hoursOk = parseCenterHours(center.operatingHours).kind !== 'none'
@@ -230,6 +241,13 @@ export function CenterStatusPanel({ center }: { center: ProviderCenterRecord }) 
             <div className='flex flex-wrap items-center gap-2.5'>
               <p className='flex-1 text-sm text-on-surface-variant'>{t(`${key}.statusActions.pausedHint`)}</p>
               <Button onClick={() => open('ACTIVE')}>{t(`${key}.statusActions.reopen`)}</Button>
+            </div>
+          ) : center.centerStatus === 'ARCHIVED' ? (
+            <div className='flex flex-wrap items-center gap-2.5'>
+              <p className='flex-1 text-sm text-on-surface-variant'>{t(`${key}.statusActions.archivedHint`)}</p>
+              <Button leftIcon={<Icon className='text-lg' name='unarchive' />} onClick={() => open('RESTORE')}>
+                {t(`${key}.statusActions.restore`)}
+              </Button>
             </div>
           ) : (
             <p className='text-sm text-on-surface-variant'>{t(`${key}.statusActions.rejectedHint`)}</p>

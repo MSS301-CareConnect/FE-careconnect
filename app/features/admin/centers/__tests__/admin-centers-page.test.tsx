@@ -100,7 +100,7 @@ describe('AdminCentersPage', () => {
     )
   })
 
-  it('lists archived centers read-only', async () => {
+  it('lists archived centers with their archive date and opens them', async () => {
     vi.mocked(fetchCenters).mockResolvedValue({
       items: [{ ...center, centerStatus: 'ARCHIVED', updatedAt: '2026-10-01T00:00:00Z' }],
       page: 0,
@@ -109,9 +109,9 @@ describe('AdminCentersPage', () => {
       totalPages: 1
     })
     renderPage('/admin/centers?status=ARCHIVED')
-    expect(await screen.findByText('Care One')).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Care One' })).toHaveAttribute('href', '/admin/centers/center-1')
     expect(fetchCenters).toHaveBeenCalledWith(expect.objectContaining({ status: 'ARCHIVED', includeDeleted: true }))
-    expect(screen.queryByRole('link', { name: 'Care One' })).not.toBeInTheDocument()
+    expect(screen.getByText(/^Lưu trữ /)).toBeInTheDocument()
   })
 
   it('opens an old ?center= link on the center page', async () => {

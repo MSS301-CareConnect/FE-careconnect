@@ -10,9 +10,8 @@ import { Icon } from '~/shared/ui/icon'
 
 import { currentPosition } from '../current-position'
 
-const CHECK_IN_LEAD_MS = 30 * 60 * 1000
-// D22: after start + 30 minutes the visit becomes MISSED, so check-in closes then.
-const CHECK_IN_GRACE_MS = 30 * 60 * 1000
+/** Fallback for a response without the window; the center policy default is 30 minutes either side. */
+const DEFAULT_WINDOW_MS = 30 * 60 * 1000
 const CLOCK_TICK_MS = 30_000
 
 /** The current time, refreshed while the page stays open so the check-in button opens and closes on time. */
@@ -33,10 +32,14 @@ export function VisitActions({ visit }: { visit: CaregiverOccurrenceRecord }) {
   const waiting = visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED'
   const now = useNow()
   const start = new Date(visit.startAt).getTime()
-  const opensAt = formatClock(new Date(start - CHECK_IN_LEAD_MS).toISOString(), i18n.language)
-  const closesAt = formatClock(new Date(start + CHECK_IN_GRACE_MS).toISOString(), i18n.language)
-  const tooEarly = now < start - CHECK_IN_LEAD_MS
-  const tooLate = now > start + CHECK_IN_GRACE_MS
+  // Q12: the check-in window follows the center booking policy captured on the booking; after it closes the visit
+  // becomes CAREGIVER_MISSED.
+  const opens = visit.checkInOpensAt ? new Date(visit.checkInOpensAt).getTime() : start - DEFAULT_WINDOW_MS
+  const closes = visit.checkInClosesAt ? new Date(visit.checkInClosesAt).getTime() : start + DEFAULT_WINDOW_MS
+  const opensAt = formatClock(new Date(opens).toISOString(), i18n.language)
+  const closesAt = formatClock(new Date(closes).toISOString(), i18n.language)
+  const tooEarly = now < opens
+  const tooLate = now >= closes
   const started = hasStarted(visit.startAt, now)
   const noShowReported = Boolean(visit.noShowReportedAt)
 

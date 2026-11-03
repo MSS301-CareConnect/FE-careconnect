@@ -24,6 +24,7 @@ import type {
 import type {
   ArchiveProviderCenterParams,
   CenterCreateRequest,
+  CenterRestoreRequest,
   CenterSelfUpdateRequest,
   CenterStatusUpdateRequest,
   CenterUpdateRequest,
@@ -1370,6 +1371,146 @@ export const useSetProviderCenterStatus = <
   TContext
 > => {
   return useMutation(getSetProviderCenterStatusMutationOptions(options), queryClient)
+}
+export type restoreProviderCenterResponse200 = {
+  data: ProviderCenterResponse
+  status: 200
+}
+
+export type restoreProviderCenterResponse400 = {
+  data: void
+  status: 400
+}
+
+export type restoreProviderCenterResponse401 = {
+  data: void
+  status: 401
+}
+
+export type restoreProviderCenterResponse403 = {
+  data: void
+  status: 403
+}
+
+export type restoreProviderCenterResponse404 = {
+  data: void
+  status: 404
+}
+
+export type restoreProviderCenterResponse409 = {
+  data: void
+  status: 409
+}
+
+export type restoreProviderCenterResponse500 = {
+  data: void
+  status: 500
+}
+
+export type restoreProviderCenterResponseSuccess = restoreProviderCenterResponse200 & {
+  headers: Headers
+}
+export type restoreProviderCenterResponseError = (
+  | restoreProviderCenterResponse400
+  | restoreProviderCenterResponse401
+  | restoreProviderCenterResponse403
+  | restoreProviderCenterResponse404
+  | restoreProviderCenterResponse409
+  | restoreProviderCenterResponse500
+) & {
+  headers: Headers
+}
+
+export const getRestoreProviderCenterUrl = (centerId: string) => {
+  return `${env.API_BASE_URL}/v1/care-centers/${centerId}/restore`
+}
+
+export const restoreProviderCenter = async (
+  centerId: string,
+  centerRestoreRequest: CenterRestoreRequest,
+  options?: RequestInit
+): Promise<restoreProviderCenterResponseSuccess> => {
+  const res = await fetch(getRestoreProviderCenterUrl(centerId), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(centerRestoreRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: restoreProviderCenterResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: restoreProviderCenterResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: restoreProviderCenterResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as restoreProviderCenterResponseSuccess
+}
+
+export const getRestoreProviderCenterMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restoreProviderCenter>>,
+    TError,
+    { centerId: string; data: CenterRestoreRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof restoreProviderCenter>>,
+  TError,
+  { centerId: string; data: CenterRestoreRequest },
+  TContext
+> => {
+  const mutationKey = ['restoreProviderCenter']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof restoreProviderCenter>>,
+    { centerId: string; data: CenterRestoreRequest }
+  > = (props) => {
+    const { centerId, data } = props ?? {}
+
+    return restoreProviderCenter(centerId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type RestoreProviderCenterMutationResult = NonNullable<Awaited<ReturnType<typeof restoreProviderCenter>>>
+export type RestoreProviderCenterMutationBody = CenterRestoreRequest
+export type RestoreProviderCenterMutationError = globalThis.Error & { info?: void; status?: number }
+
+export const useRestoreProviderCenter = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof restoreProviderCenter>>,
+      TError,
+      { centerId: string; data: CenterRestoreRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof restoreProviderCenter>>,
+  TError,
+  { centerId: string; data: CenterRestoreRequest },
+  TContext
+> => {
+  return useMutation(getRestoreProviderCenterMutationOptions(options), queryClient)
 }
 export type listProviderCenterSchedulesResponse200 = {
   data: ProviderSchedulePageResponse

@@ -5,6 +5,7 @@ import {
   getPublicProviderCenter,
   listProviderCenters,
   listPublicProviderCenters,
+  restoreProviderCenter,
   setProviderCenterStatus,
   updateProviderCenter,
   listProviderCenterSchedules
@@ -62,6 +63,7 @@ import type {
   CaregiverCreateRequest,
   CaregiverUpdateRequest,
   CenterCreateRequest,
+  CenterRestoreRequest,
   CenterStatusUpdateRequest,
   CenterUpdateRequest,
   CaregiverStatusRequest,
@@ -153,6 +155,10 @@ export async function changeCenterStatus(id: string, request: CenterStatusUpdate
 }
 export async function removeCenter(id: string, version: number) {
   success(await archiveProviderCenter(id, { version }, await writeOptions()))
+}
+/** ADMIN: an archived center comes back INACTIVE; its manager is dropped when another center took it (D31). */
+export async function restoreCenter(id: string, request: CenterRestoreRequest) {
+  return result(await restoreProviderCenter(id, request, await writeOptions()))
 }
 
 export async function fetchCaregivers(centerId: string, params: ListCenterCaregiversParams = {}) {

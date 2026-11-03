@@ -444,8 +444,9 @@ with the center PUT and emails a password code, or picks one of the center's act
 manager offers to lock the previous account because ProviderService does not revoke its Identity access. Staff counts
 and lists caregivers with a work status taken from the Identity account and the ProviderService profile, never from
 check-in. Activity reads `/statistics/centers?centerId=`. Operating hours stay `HH:mm - HH:mm`; a closing time before the
-opening time means overnight and equal times mean 24 hours. Archiving is permanent and lists read-only under the
-Archived tab. Caregivers and certificates are reviewed at `/admin/centers/:id/caregivers`; each rejection asks its own
+opening time means overnight and equal times mean 24 hours. Archived centers list under the Archived tab and open
+read-only (Overview, Bookings, Activity); their status panel restores them as INACTIVE with a reason
+(`POST /care-centers/{id}/restore`, D31), dropping a manager that now runs another center. Caregivers and certificates are reviewed at `/admin/centers/:id/caregivers`; each rejection asks its own
 reason. `/admin/accounts` filters, searches and pages on the server (`GET /users` role, status, keyword) with counts from
 `GET /users/statistics`; creating an account continues into `entities/identity/password-reset-panel.tsx`, which sends
 the owner an email OTP (`/auth/forgot-password`) and lets the owner finish on `/forgot-password?email=` or the

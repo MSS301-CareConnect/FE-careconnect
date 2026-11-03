@@ -18,6 +18,9 @@ export const adminToastVi = {
     deactivated: 'Đã chuyển {{name}} sang ngừng hoạt động.',
     reopened: 'Đã mở lại {{name}}.',
     archived: 'Đã lưu trữ trung tâm {{name}}.',
+    restored: 'Đã khôi phục {{name}} về trạng thái ngừng hoạt động.',
+    restoredWithoutManager:
+      'Đã khôi phục {{name}}. Người quản lý cũ đã sang trung tâm khác, hãy ghép người quản lý mới.',
     managerCreated: 'Đã tạo tài khoản quản lý {{name}}.',
     managerLinked: 'Đã ghép {{name}} làm người quản lý.',
     oldManagerLocked: 'Đã khóa tài khoản quản lý cũ {{name}}.',
@@ -93,6 +96,8 @@ export const adminToastEn = {
     deactivated: '{{name}} set inactive.',
     reopened: '{{name}} reopened.',
     archived: '{{name}} archived.',
+    restored: '{{name}} restored as inactive.',
+    restoredWithoutManager: '{{name}} restored. Its previous manager now runs another center; link a new manager.',
     managerCreated: 'Manager account {{name}} created.',
     managerLinked: '{{name}} is now the manager.',
     oldManagerLocked: 'Previous manager account {{name}} locked.',

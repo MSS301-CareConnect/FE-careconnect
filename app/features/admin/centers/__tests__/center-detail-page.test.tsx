@@ -10,6 +10,7 @@ import {
   fetchCaregivers,
   fetchCenter,
   fetchProviderMedia,
+  restoreCenter,
   saveCenter
 } from '~/entities/provider/provider-api'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
@@ -23,7 +24,8 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchProviderMedia: vi.fn(),
   fetchCaregivers: vi.fn(),
   saveCenter: vi.fn(),
-  changeCenterStatus: vi.fn()
+  changeCenterStatus: vi.fn(),
+  restoreCenter: vi.fn()
 }))
 vi.mock('~/entities/identity/account-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/identity/account-api')>()),
@@ -295,5 +297,27 @@ describe('CenterDetailPage', () => {
     expect(rows[2]).toHaveTextContent('Tài khoản bị khóa')
     expect(rows[3]).toHaveTextContent('Tạm nghỉ')
     expect(screen.getByText(/không theo giờ check-in/)).toBeInTheDocument()
+  })
+  it('shows an archived center read-only and restores it as inactive with a reason', async () => {
+    const archived: ProviderCenterRecord = { ...pending, centerStatus: 'ARCHIVED', version: 5 }
+    vi.mocked(fetchCenter).mockResolvedValue(archived)
+    vi.mocked(restoreCenter).mockResolvedValue({ ...archived, centerStatus: 'INACTIVE', version: 6 })
+    renderPage('/admin/centers/center-1?tab=staff')
+    fireEvent.click(await screen.findByRole('button', { name: 'Khôi phục' }))
+    expect(screen.queryByRole('button', { name: 'Sửa thông tin' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Lưu trữ trung tâm' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Nhân sự' })).not.toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Tổng quan' })).toHaveAttribute('aria-selected', 'true')
+    expect(fetchProviderMedia).not.toHaveBeenCalled()
+
+    const confirm = screen.getByRole('dialog', { name: 'Khôi phục Care One?' })
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Khôi phục' }))
+    expect(within(confirm).getByLabelText('Lý do')).toHaveAccessibleDescription(
+      'Nhập lý do để quản trị viên khác biết vì sao.'
+    )
+    expect(restoreCenter).not.toHaveBeenCalled()
+    fireEvent.change(within(confirm).getByLabelText('Lý do'), { target: { value: ' Hoạt động lại ' } })
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Khôi phục' }))
+    await waitFor(() => expect(restoreCenter).toHaveBeenCalledWith('center-1', { reason: 'Hoạt động lại', version: 5 }))
   })
 })

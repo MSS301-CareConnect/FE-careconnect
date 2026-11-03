@@ -314,7 +314,7 @@ function PolicyEditor({ policy }: { policy: CenterBookingPolicyRecord }) {
             ) : null}
           </div>
           {group.key === 'checkIn' ? (
-            <p className='mt-3 text-xs leading-5 text-on-surface-variant'>{t(`${key}.checkInNotApplied`)}</p>
+            <p className='mt-3 text-xs leading-5 text-on-surface-variant'>{t(`${key}.checkInApplies`)}</p>
           ) : null}
         </fieldset>
       ))}

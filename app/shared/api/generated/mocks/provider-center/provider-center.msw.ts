@@ -27,6 +27,7 @@ import {
   getListProviderCenterSchedulesResponseMock,
   getListProviderCentersResponseMock,
   getListPublicProviderCentersResponseMock,
+  getRestoreProviderCenterResponseMock,
   getSetProviderCenterStatusResponseMock,
   getUpdateMyProviderCenterResponseMock,
   getUpdateProviderCenterResponseMock
@@ -41,6 +42,7 @@ export {
   getUpdateProviderCenterResponseMock,
   getArchiveProviderCenterResponseMock,
   getSetProviderCenterStatusResponseMock,
+  getRestoreProviderCenterResponseMock,
   getListProviderCenterSchedulesResponseMock,
   getGetProviderStatisticsResponseMock,
   getUpdateMyProviderCenterResponseMock
@@ -250,6 +252,32 @@ export const getSetProviderCenterStatusMockHandler = (
   )
 }
 
+export const getRestoreProviderCenterMockHandler = (
+  overrideResponse?:
+    | ProviderCenterResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<ProviderCenterResponse> | ProviderCenterResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/care-centers/:centerId/restore',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getRestoreProviderCenterResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getListProviderCenterSchedulesMockHandler = (
   overrideResponse?:
     | ProviderSchedulePageResponse
@@ -336,6 +364,7 @@ export const getProviderCenterMock = () => [
   getUpdateProviderCenterMockHandler(),
   getArchiveProviderCenterMockHandler(),
   getSetProviderCenterStatusMockHandler(),
+  getRestoreProviderCenterMockHandler(),
   getListProviderCenterSchedulesMockHandler(),
   getGetProviderStatisticsMockHandler(),
   getUpdateMyProviderCenterMockHandler()

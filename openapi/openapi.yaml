@@ -986,6 +986,43 @@ paths:
           description: ProviderService error
         '503':
           description: ProviderService error
+  /v1/care-centers/{centerId}/restore:
+    post:
+      tags:
+        - ProviderCenter
+      operationId: restoreProviderCenter
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CenterRestoreRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCenterResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
   /v1/caregivers/centers/{centerId}:
     get:
       tags:
@@ -8812,6 +8849,19 @@ components:
       required:
         - status
         - version
+    CenterRestoreRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 1
+        version:
+          type: integer
+          format: int64
+      required:
+        - reason
+        - version
     CaregiverCreateRequest:
       type: object
       properties:
@@ -11890,9 +11940,9 @@ components:
         unitPrice:
           type: number
         quantity:
-          type: integer
+          type: number
         unitsPerOccurrence:
-          type: integer
+          type: number
         totalPrice:
           type: number
     BookingOccurrenceRecord:
@@ -12297,7 +12347,7 @@ components:
         unitPrice:
           type: number
         unitsPerOccurrence:
-          type: integer
+          type: number
         occurrenceCount:
           type: integer
         lineTotal:
@@ -12630,6 +12680,12 @@ components:
           type: string
           format: date-time
         endAt:
+          type: string
+          format: date-time
+        checkInOpensAt:
+          type: string
+          format: date-time
+        checkInClosesAt:
           type: string
           format: date-time
         durationMinutes:

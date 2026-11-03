@@ -98,6 +98,15 @@ export const getSetProviderCenterStatusResponseMock = (
   ...overrideResponse
 })
 
+export const getRestoreProviderCenterResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCenterResponse, object>> = {}
+): ProviderCenterResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCenterRecordMock() },
+  ...overrideResponse
+})
+
 export const getListProviderCenterSchedulesResponseMock = (
   overrideResponse: Partial<Extract<ProviderSchedulePageResponse, object>> = {}
 ): ProviderSchedulePageResponse => ({

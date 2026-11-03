@@ -241,31 +241,25 @@ export function AdminCentersPage() {
               </thead>
               <tbody className='divide-y divide-outline-variant/25'>
                 {rows.map((center) => {
-                  // ProviderService cannot open an archived center, so its row is read-only.
+                  // An archived center opens read-only; its page offers the restore (D31).
                   const archived = center.centerStatus === 'ARCHIVED'
                   return (
                     <tr
-                      className={
-                        archived ? 'text-on-surface-variant' : 'cursor-pointer hover:bg-surface-container-low/60'
-                      }
+                      className={`cursor-pointer hover:bg-surface-container-low/60 ${archived ? 'text-on-surface-variant' : ''}`}
                       key={center.id}
-                      onClick={archived ? undefined : () => navigate(`/admin/centers/${center.id}`)}
+                      onClick={() => navigate(`/admin/centers/${center.id}`)}
                     >
                       <td className='px-4 py-3'>
                         <span className='flex items-center gap-3'>
                           <CenterLogo center={center} />
                           <span className='min-w-0'>
-                            {archived ? (
-                              <span className='block font-semibold'>{center.centerName}</span>
-                            ) : (
-                              <Link
-                                className='block font-semibold text-on-surface hover:text-primary'
-                                onClick={(event) => event.stopPropagation()}
-                                to={`/admin/centers/${center.id}`}
-                              >
-                                {center.centerName}
-                              </Link>
-                            )}
+                            <Link
+                              className='block font-semibold text-on-surface hover:text-primary'
+                              onClick={(event) => event.stopPropagation()}
+                              to={`/admin/centers/${center.id}`}
+                            >
+                              {center.centerName}
+                            </Link>
                             <span className='block max-w-80 truncate text-xs text-on-surface-variant'>
                               {center.address || '—'}
                             </span>
@@ -295,18 +289,15 @@ export function AdminCentersPage() {
                         </ProviderStatusBadge>
                       </td>
                       <td className='px-4 py-3'>
-                        {archived ? (
-                          <span className='text-xs'>
-                            {center.updatedAt
-                              ? t(`${key}.archivedOn`, { date: date.format(new Date(center.updatedAt)) })
-                              : t(`${key}.status.ARCHIVED`)}
+                        {archived && center.updatedAt ? (
+                          <span className='block text-xs'>
+                            {t(`${key}.archivedOn`, { date: date.format(new Date(center.updatedAt)) })}
                           </span>
-                        ) : (
-                          <span className='inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-primary'>
-                            {center.centerStatus === 'PENDING' ? t(`${key}.reviewAction`) : t(`${key}.open`)}
-                            <Icon className='text-base' name='chevron_right' />
-                          </span>
-                        )}
+                        ) : null}
+                        <span className='inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-primary'>
+                          {center.centerStatus === 'PENDING' ? t(`${key}.reviewAction`) : t(`${key}.open`)}
+                          <Icon className='text-base' name='chevron_right' />
+                        </span>
                       </td>
                     </tr>
                   )

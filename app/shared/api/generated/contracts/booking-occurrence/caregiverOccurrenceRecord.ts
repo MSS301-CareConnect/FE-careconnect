@@ -17,6 +17,8 @@ export interface CaregiverOccurrenceRecord {
   occurrenceNo: number
   startAt: string
   endAt: string
+  checkInOpensAt?: string
+  checkInClosesAt?: string
   durationMinutes?: number
   status: OccurrenceStatus
   caregiverId?: string
