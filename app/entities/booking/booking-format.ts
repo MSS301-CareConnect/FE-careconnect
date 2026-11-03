@@ -7,6 +7,7 @@ import type {
 
 import { bookingErrorCode, bookingErrorStatus } from './booking-api'
 import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
+import { dateLocale } from '~/shared/lib/format'
 
 /** BookingService stores occurrences as instants and schedules every booking in Vietnam time. */
 export const BOOKING_TIME_ZONE = 'Asia/Ho_Chi_Minh'
@@ -83,15 +84,17 @@ export function isUpcomingOccurrence(occurrence: { status: OccurrenceStatus; sta
 }
 
 export function formatMoney(value: number | undefined, language: string) {
-  return new Intl.NumberFormat(language, { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(
-    value ?? 0
-  )
+  return new Intl.NumberFormat(dateLocale(language), {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(value ?? 0)
 }
 
 /** Formats a calendar date (YYYY-MM-DD) without shifting it through the browser time zone. */
 export function formatDay(value: string | undefined, language: string) {
   if (!value) return ''
-  return new Intl.DateTimeFormat(language, {
+  return new Intl.DateTimeFormat(dateLocale(language), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -101,12 +104,13 @@ export function formatDay(value: string | undefined, language: string) {
 
 export function formatDateTime(value: string | undefined, language: string) {
   if (!value) return ''
-  return new Intl.DateTimeFormat(language, {
+  return new Intl.DateTimeFormat(dateLocale(language), {
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
     timeZone: BOOKING_TIME_ZONE
   }).format(new Date(value))
 }
@@ -114,7 +118,7 @@ export function formatDateTime(value: string | undefined, language: string) {
 /** Weekday and date of an instant in Vietnam time, without the clock. */
 export function formatDate(value: string | undefined, language: string) {
   if (!value) return ''
-  return new Intl.DateTimeFormat(language, {
+  return new Intl.DateTimeFormat(dateLocale(language), {
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
@@ -124,9 +128,12 @@ export function formatDate(value: string | undefined, language: string) {
 
 export function formatClock(value: string | undefined, language: string) {
   if (!value) return ''
-  return new Intl.DateTimeFormat(language, { hour: '2-digit', minute: '2-digit', timeZone: BOOKING_TIME_ZONE }).format(
-    new Date(value)
-  )
+  return new Intl.DateTimeFormat(dateLocale(language), {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: BOOKING_TIME_ZONE
+  }).format(new Date(value))
 }
 
 /** LocalTime values arrive as HH:mm or HH:mm:ss; the UI shows HH:mm. */

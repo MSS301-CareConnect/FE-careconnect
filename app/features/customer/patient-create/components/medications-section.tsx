@@ -19,7 +19,7 @@ export interface MedicationsSectionProps {
 }
 
 const SECTION_STEP = '3'
-const fieldClass = `mt-1 h-9 w-full rounded-md bg-surface-container-lowest px-3 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:outline-none ${invalidClassName}`
+const fieldClass = `mt-1 min-h-9 py-1.5 w-full rounded-md bg-surface-container-lowest px-3 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:outline-none ${invalidClassName}`
 
 export function MedicationsSection({
   medications,

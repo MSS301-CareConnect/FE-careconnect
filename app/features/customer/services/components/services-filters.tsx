@@ -5,7 +5,7 @@ import type { ServiceCategoryGroup } from '~/entities/care-catalog/service-categ
 
 const key = 'customer.services' as const
 const control =
-  'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15'
+  'mt-2 min-h-12 py-2.5 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15'
 
 type ServicesFiltersProps = {
   keyword: string

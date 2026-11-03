@@ -29,7 +29,21 @@ const LEGACY_CATEGORIES: Record<string, ServiceCategoryKey> = {
   'chăm sóc bệnh mạn tính & sa sút trí tuệ': 'chronic',
   'chăm sóc giảm nhẹ': 'chronic',
   'điều dưỡng & kỹ thuật y tế': 'nursing',
-  'chăm sóc mẹ và bé sau sinh': 'motherBaby'
+  'chăm sóc mẹ và bé sau sinh': 'motherBaby',
+  // Enum-style codes some seed data stores (e.g. ELDERLY_CARE); never shown raw.
+  elderly_care: 'elderly',
+  elderly: 'elderly',
+  post_surgery: 'postSurgery',
+  post_surgery_care: 'postSurgery',
+  rehabilitation: 'rehabilitation',
+  physiotherapy: 'rehabilitation',
+  chronic_care: 'chronic',
+  chronic_disease: 'chronic',
+  palliative_care: 'chronic',
+  nursing: 'nursing',
+  medical_nursing: 'nursing',
+  mother_baby: 'motherBaby',
+  mother_and_baby: 'motherBaby'
 }
 
 const BY_VALUE = new Map<string, ServiceCategoryKey>(

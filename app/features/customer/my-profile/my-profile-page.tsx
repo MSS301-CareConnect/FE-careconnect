@@ -13,7 +13,7 @@ import { saveMyProfile } from './profile-api'
 import { PasswordChangePanel } from './password-change-panel'
 
 const inputClass =
-  'mt-2 h-12 w-full rounded-lg bg-surface-container-low px-4 outline-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/30'
+  'mt-2 min-h-12 py-2.5 w-full rounded-lg bg-surface-container-low px-4 outline-none focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/30'
 
 function ProfileForm({ user }: { user: UserResponse }) {
   const { t } = useTranslation()

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, fireEvent, render as renderUi, screen, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { createMemoryRouter, Route, RouterProvider, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { closeCenterPicker, selectCenter } from '~/entities/care-center/selected-center'
@@ -19,6 +19,12 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
 
 const customer = { id: 'customer-1', fullName: 'An', status: 'ACTIVE' as const, roles: ['CUSTOMER'] }
 const PROMPTED_KEY = 'careconnect.center-prompted'
+
+/** The layout reads the navigation state, which needs a data router; descendant <Routes> keep the old tree. */
+function MemoryRouter({ initialEntries, children }: { initialEntries: string[]; children: ReactNode }) {
+  const router = createMemoryRouter([{ path: '*', element: children }], { initialEntries })
+  return <RouterProvider router={router} />
+}
 
 function render(ui: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -90,22 +96,18 @@ describe('CustomerLayout', () => {
 
     const header = within(screen.getByRole('banner'))
     expect(screen.getByText(outletText)).toBeInTheDocument()
-    expect(header.getByRole('link', { name: 'Tìm người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
+    expect(header.getByRole('link', { name: 'Người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
     expect(header.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/customer/services')
     expect(header.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/')
     expect(header.getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login')
-    expect(header.queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
+    expect(header.queryByRole('link', { name: 'Lịch đặt' })).not.toBeInTheDocument()
+    expect(header.queryByRole('link', { name: /Đặt lịch/ })).not.toBeInTheDocument()
     expect(header.queryByRole('button', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
-
-    fireEvent.click(header.getByRole('button', { name: 'Menu khách hàng' }))
-    expect(
-      within(screen.getByRole('navigation', { name: 'Menu khách hàng' })).queryByRole('link', {
-        name: 'Lịch đặt của tôi'
-      })
-    ).not.toBeInTheDocument()
+    const bottom = within(screen.getByRole('navigation', { name: 'Điều hướng nhanh' }))
+    expect(bottom.queryByRole('link', { name: 'Lịch đặt' })).not.toBeInTheDocument()
   })
 
-  it('renders navigation header with brand and customer links', () => {
+  it('renders the header with the main navigation, the booking action and the footer', () => {
     const outletText = 'Customer Content'
 
     render(
@@ -124,28 +126,25 @@ describe('CustomerLayout', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getAllByText('CareConnect')[0]).toBeInTheDocument()
-    expect(within(screen.getByRole('banner')).getByText('Tìm người chăm sóc')).toBeInTheDocument()
-    // Booking history lives in the avatar menu, not in the header navigation.
-    expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'Lịch đặt của tôi' })).not.toBeInTheDocument()
-    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Hồ sơ người thân' })).toBeInTheDocument()
-    expect(screen.getByText('Customer Content')).toBeInTheDocument()
-    expect(within(screen.getByRole('banner')).getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute(
-      'href',
-      '/customer/services'
-    )
-    expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'Cách hoạt động' })).not.toBeInTheDocument()
-    expect(screen.getByText(`© ${new Date().getFullYear()} CareConnect. Bảo lưu mọi quyền.`)).toBeInTheDocument()
+    const header = within(screen.getByRole('banner'))
+    const main = within(header.getByRole('navigation', { name: 'Điều hướng chính' }))
+    expect(main.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/customer')
+    expect(main.getByRole('link', { name: 'Người chăm sóc' })).toHaveAttribute('href', '/customer/caregivers')
+    expect(main.getByRole('link', { name: 'Dịch vụ' })).toHaveAttribute('href', '/customer/services')
+    // Bookings are a first-level destination now, not hidden in the avatar menu.
+    expect(main.getByRole('link', { name: 'Lịch đặt' })).toHaveAttribute('href', '/customer/bookings')
+    expect(header.getByRole('link', { name: 'Đặt lịch' })).toHaveAttribute('href', '/customer/booking')
+    expect(header.getByRole('link', { name: 'CareConnect' })).toHaveAttribute('href', '/customer')
+    expect(screen.getByText(outletText)).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/customer')
-    expect(within(screen.getByRole('banner')).getByRole('link', { name: 'CareConnect' })).toHaveAttribute(
-      'href',
-      '/customer'
-    )
+    const footer = within(screen.getByRole('contentinfo'))
+    expect(footer.getByRole('link', { name: 'Người thân' })).toHaveAttribute('href', '/customer/patient-profiles')
+    expect(footer.getByRole('link', { name: /1900 6868/ })).toHaveAttribute('href', 'tel:19006868')
+    expect(screen.getByText(`© ${new Date().getFullYear()} CareConnect. Bảo lưu mọi quyền.`)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Đăng xuất' })).not.toBeInTheDocument()
   })
 
-  it('opens the avatar menu with profile, family profiles and sign-out actions, then closes on Escape', () => {
+  it('opens the avatar menu with account, family, payments, language and sign-out, then closes on Escape', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
@@ -166,17 +165,17 @@ describe('CustomerLayout', () => {
     fireEvent.click(accountButton)
     const accountMenu = screen.getByRole('navigation', { name: 'Menu tài khoản' })
     expect(accountButton).toHaveAttribute('aria-expanded', 'true')
-    expect(within(accountMenu).getByRole('link', { name: 'Hồ sơ của tôi' })).toHaveAttribute(
+    expect(within(accountMenu).getByRole('link', { name: 'Tài khoản' })).toHaveAttribute('href', '/customer/my-profile')
+    expect(within(accountMenu).getByRole('link', { name: 'Người thân' })).toHaveAttribute(
       'href',
-      '/customer/my-profile'
+      '/customer/patient-profiles'
     )
-    const familyProfiles = within(accountMenu).getByRole('link', { name: 'Hồ sơ người thân' })
-    expect(familyProfiles).toHaveAttribute('href', '/customer/patient-profiles')
-    const bookings = within(accountMenu).getByRole('link', { name: 'Lịch đặt của tôi' })
-    expect(bookings).toHaveAttribute('href', '/customer/bookings')
-    // The booking history entry sits directly under the family profiles entry.
-    expect(familyProfiles.nextElementSibling).toBe(bookings)
-    expect(accountMenu).toContainElement(screen.getByRole('button', { name: 'Đăng xuất' }))
+    expect(within(accountMenu).getByRole('link', { name: 'Thanh toán & hoàn tiền' })).toHaveAttribute(
+      'href',
+      '/customer/payments'
+    )
+    expect(screen.getByRole('group', { name: 'Ngôn ngữ' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument()
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(accountButton).toHaveAttribute('aria-expanded', 'false')
@@ -206,14 +205,14 @@ describe('CustomerLayout', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Menu tài khoản' }))
     fireEvent.click(
-      within(screen.getByRole('navigation', { name: 'Menu tài khoản' })).getByRole('link', { name: 'Hồ sơ người thân' })
+      within(screen.getByRole('navigation', { name: 'Menu tài khoản' })).getByRole('link', { name: 'Người thân' })
     )
 
     expect(screen.getByText(familyProfilesPage)).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
   })
 
-  it('opens the customer menu without the booking history link on small screens', () => {
+  it('gives phones a bottom navigation with the booking action', () => {
     render(
       <MemoryRouter initialEntries={['/customer']}>
         <Routes>
@@ -230,17 +229,12 @@ describe('CustomerLayout', () => {
       </MemoryRouter>
     )
 
-    const menuButton = screen.getByRole('button', { name: 'Menu khách hàng' })
-    fireEvent.click(menuButton)
-
-    expect(menuButton).toHaveAttribute('aria-expanded', 'true')
-    expect(
-      within(screen.getByRole('navigation', { name: 'Menu khách hàng' })).queryByRole('link', {
-        name: 'Lịch đặt của tôi'
-      })
-    ).not.toBeInTheDocument()
-    expect(screen.getAllByRole('link', { name: 'Trang chủ' })[1]).toHaveAttribute('href', '/customer')
-    expect(screen.queryByRole('navigation', { name: 'Menu tài khoản' })).not.toBeInTheDocument()
+    const bottom = within(screen.getByRole('navigation', { name: 'Điều hướng nhanh' }))
+    expect(bottom.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/customer')
+    expect(bottom.getByRole('link', { name: 'Tìm' })).toHaveAttribute('href', '/customer/caregivers')
+    expect(bottom.getByRole('link', { name: 'Đặt lịch' })).toHaveAttribute('href', '/customer/booking')
+    expect(bottom.getByRole('link', { name: 'Lịch đặt' })).toHaveAttribute('href', '/customer/bookings')
+    expect(bottom.getByRole('link', { name: 'Tài khoản' })).toHaveAttribute('href', '/customer/my-profile')
   })
 
   it('asks for a center on the first visit and applies the choice to the header selector', async () => {
@@ -279,7 +273,7 @@ describe('CustomerLayout', () => {
     selectCenter({ id: 'center-b', name: 'Trung tâm Bình An' })
     renderPortal()
 
-    const selector = within(screen.getByRole('banner')).getByRole('button', { name: /Trung tâm Bình An/ })
+    const selector = await within(screen.getByRole('banner')).findByRole('button', { name: /Trung tâm Bình An/ })
     fireEvent.click(selector)
     expect(selector).toHaveAttribute('aria-expanded', 'true')
     const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
@@ -298,8 +292,9 @@ describe('CustomerLayout', () => {
     vi.mocked(fetchPublicCenters).mockRejectedValue(Object.assign(new Error('unavailable'), { status: 401 }))
     renderPortal()
 
+    const trigger = await within(screen.getByRole('banner')).findByRole('button', { name: /Tất cả trung tâm/ })
     act(() => {
-      fireEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: /Tất cả trung tâm/ }))
+      fireEvent.click(trigger)
     })
     const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
     expect(await within(menu).findByRole('alert')).toBeInTheDocument()
@@ -309,7 +304,7 @@ describe('CustomerLayout', () => {
   it('lists active centers with their address from the customer center endpoint', async () => {
     renderPortal()
 
-    fireEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: /Tất cả trung tâm/ }))
+    fireEvent.click(await within(screen.getByRole('banner')).findByRole('button', { name: /Tất cả trung tâm/ }))
     const menu = screen.getByRole('region', { name: 'Danh sách trung tâm chăm sóc' })
     expect(await within(menu).findByRole('button', { name: /Trung tâm Bình An/ })).toHaveTextContent(
       '12 Lê Lợi, Quận 1'

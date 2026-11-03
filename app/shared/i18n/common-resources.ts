@@ -1,6 +1,39 @@
 export const commonEn = {
   common: {
     brand: 'CareConnect',
+    format: {
+      hours_one: '{{count}} hour',
+      hours_other: '{{count}} hours',
+      minutes_one: '{{count}} min',
+      minutes_other: '{{count}} min',
+      hoursMinutes: '{{hours}} h {{minutes}} min'
+    },
+    kit: {
+      ratingNew: 'New',
+      ratingLabel: 'Rated {{rating}} out of 5 from {{count}} reviews',
+      verified: 'Verified',
+      clearSearch: 'Clear search',
+      stepOf: 'Step {{current}} of {{total}}',
+      stepDone: '(done)',
+      stepCurrent: '(current step)',
+      stepTodo: '(not reached)',
+      datePlaceholder: 'dd/mm/yyyy',
+      openCalendar: 'Choose a date',
+      previousMonth: 'Previous month',
+      nextMonth: 'Next month',
+      invalidDate: 'Enter a date as dd/mm/yyyy.',
+      dateTooEarly: 'Pick a date on or after {{date}}.',
+      dateTooLate: 'Pick a date on or before {{date}}.',
+      today: 'Today',
+      chooseTime: 'Choose a time',
+      closePanel: 'Close panel',
+      loadingPage: 'Loading page…',
+      skipToContent: 'Skip to main content',
+      characters: '{{count}}/{{max}} characters',
+      copy: 'Copy',
+      copied: 'Copied',
+      more: 'More actions'
+    },
     accountMenu: 'Account menu',
     providerMedia: {
       title: 'Files and images',
@@ -134,6 +167,39 @@ export const commonEn = {
 export const commonVi = {
   common: {
     brand: 'CareConnect',
+    format: {
+      hours_one: '{{count}} giờ',
+      hours_other: '{{count}} giờ',
+      minutes_one: '{{count}} phút',
+      minutes_other: '{{count}} phút',
+      hoursMinutes: '{{hours}} giờ {{minutes}} phút'
+    },
+    kit: {
+      ratingNew: 'Mới',
+      ratingLabel: 'Đánh giá {{rating}}/5 từ {{count}} lượt',
+      verified: 'Đã xác minh',
+      clearSearch: 'Xóa tìm kiếm',
+      stepOf: 'Bước {{current}}/{{total}}',
+      stepDone: '(đã xong)',
+      stepCurrent: '(bước hiện tại)',
+      stepTodo: '(chưa tới)',
+      datePlaceholder: 'dd/mm/yyyy',
+      openCalendar: 'Chọn ngày',
+      previousMonth: 'Tháng trước',
+      nextMonth: 'Tháng sau',
+      invalidDate: 'Nhập ngày theo dạng dd/mm/yyyy.',
+      dateTooEarly: 'Chọn ngày từ {{date}} trở đi.',
+      dateTooLate: 'Chọn ngày không sau {{date}}.',
+      today: 'Hôm nay',
+      chooseTime: 'Chọn giờ',
+      closePanel: 'Đóng bảng',
+      loadingPage: 'Đang tải trang…',
+      skipToContent: 'Chuyển đến nội dung chính',
+      characters: '{{count}}/{{max}} ký tự',
+      copy: 'Sao chép',
+      copied: 'Đã sao chép',
+      more: 'Thao tác khác'
+    },
     accountMenu: 'Menu tài khoản',
     providerMedia: {
       title: 'Tệp và hình ảnh',

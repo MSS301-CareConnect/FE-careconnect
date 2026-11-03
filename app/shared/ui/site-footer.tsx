@@ -3,93 +3,105 @@ import { Link } from 'react-router'
 
 import { Icon } from './icon'
 
+const link = 'rounded hover:text-on-surface hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+
+/** Compact footer (~200 px): brand, two link groups and the support hotline. */
 export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
   const { t } = useTranslation()
   const isCustomer = audience === 'customer'
 
   return (
-    <footer className='bg-inverse-surface text-inverse-on-surface'>
-      <div className='mx-auto grid max-w-[1440px] gap-12 px-5 py-14 sm:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,1fr))] sm:gap-8 sm:px-8 lg:px-12 lg:py-16'>
+    <footer className='border-t border-outline-variant bg-surface-container-lowest'>
+      <div className='mx-auto grid w-full max-w-[1200px] gap-8 px-4 py-10 text-sm text-on-surface-variant sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]'>
         <div>
           <Link
-            className='inline-flex items-center gap-2.5 text-xl font-extrabold tracking-[-0.04em]'
+            className='inline-flex items-center gap-2 text-base font-bold text-primary'
             to={isCustomer ? '/customer' : '/'}
           >
-            <span
-              aria-hidden='true'
-              className='grid h-9 w-9 place-items-center rounded-lg bg-inverse-accent text-inverse-surface'
-            >
-              <Icon className='text-[22px]' name='volunteer_activism' />
+            <span aria-hidden='true' className='grid h-7 w-7 place-items-center rounded-lg bg-primary text-on-primary'>
+              <Icon className='text-lg' name='volunteer_activism' />
             </span>
             {t('common.brand')}
           </Link>
-          <p className='mt-5 max-w-[32ch] text-sm leading-7 text-inverse-muted'>{t('home.footer')}</p>
+          <p className='mt-3 max-w-[30ch] leading-6'>{t('customer.footer.tagline')}</p>
         </div>
-        <nav aria-label={t('home.footerExplore')}>
-          <h2 className='text-xs font-extrabold uppercase tracking-[0.14em] text-inverse-accent'>
-            {t('home.footerExplore')}
-          </h2>
-          <div className='mt-5 flex flex-col items-start gap-3 text-sm'>
-            <Link
-              className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-              to='/customer/caregivers'
-            >
-              {t('home.primaryAction')}
-            </Link>
-            <Link
-              className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-              to='/customer/services'
-            >
-              {t('home.services')}
-            </Link>
-            <a
-              className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-              href={isCustomer ? '/customer#how-it-works' : '/#how-it-works'}
-            >
-              {t('home.howItWorks')}
-            </a>
-          </div>
+        <nav aria-label={t('customer.footer.explore')}>
+          <h2 className='font-semibold text-on-surface'>{t('customer.footer.explore')}</h2>
+          <ul className='mt-3 flex flex-col gap-2'>
+            <li>
+              <Link className={link} to='/customer/caregivers'>
+                {t('customer.nav.caregivers')}
+              </Link>
+            </li>
+            <li>
+              <Link className={link} to='/customer/services'>
+                {t('customer.nav.services')}
+              </Link>
+            </li>
+            <li>
+              <a className={link} href={isCustomer ? '/customer#how-it-works' : '/#how-it-works'}>
+                {t('home.howItWorks')}
+              </a>
+            </li>
+          </ul>
         </nav>
-        <nav aria-label={t('home.footerAccount')}>
-          <h2 className='text-xs font-extrabold uppercase tracking-[0.14em] text-inverse-accent'>
-            {t('home.footerAccount')}
-          </h2>
-          <div className='mt-5 flex flex-col items-start gap-3 text-sm'>
+        <nav aria-label={t('customer.footer.account')}>
+          <h2 className='font-semibold text-on-surface'>{t('customer.footer.account')}</h2>
+          <ul className='mt-3 flex flex-col gap-2'>
             {isCustomer ? (
               <>
-                <Link
-                  className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-                  to='/customer/my-profile'
-                >
-                  {t('customer.nav.myProfile')}
-                </Link>
-                <Link
-                  className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-                  to='/customer/patient-profiles'
-                >
-                  {t('customer.nav.familyProfiles')}
-                </Link>
+                <li>
+                  <Link className={link} to='/customer/bookings'>
+                    {t('customer.nav.bookings')}
+                  </Link>
+                </li>
+                <li>
+                  <Link className={link} to='/customer/patient-profiles'>
+                    {t('customer.nav.relatives')}
+                  </Link>
+                </li>
+                <li>
+                  <Link className={link} to='/customer/payments'>
+                    {t('customer.nav.payments')}
+                  </Link>
+                </li>
               </>
             ) : (
               <>
-                <Link className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2' to='/login'>
-                  {t('home.signIn')}
-                </Link>
-                <Link
-                  className='hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2'
-                  to='/register'
-                >
-                  {t('home.createAccount')}
-                </Link>
+                <li>
+                  <Link className={link} to='/login'>
+                    {t('home.signIn')}
+                  </Link>
+                </li>
+                <li>
+                  <Link className={link} to='/register'>
+                    {t('home.createAccount')}
+                  </Link>
+                </li>
               </>
             )}
-          </div>
+          </ul>
         </nav>
-      </div>
-      <div className='border-t border-white/15'>
-        <div className='mx-auto max-w-[1440px] px-5 py-5 text-xs text-inverse-muted sm:px-8 lg:px-12'>
-          {t('home.footerCopyright', { year: new Date().getFullYear() })}
+        <div>
+          <h2 className='font-semibold text-on-surface'>{t('customer.footer.support')}</h2>
+          <a
+            className='mt-3 inline-flex items-center gap-2 text-lg font-semibold text-primary tabular-nums hover:underline'
+            href={`tel:${t('customer.nav.hotlineNumber').replace(/\s/g, '')}`}
+          >
+            <Icon className='text-xl' name='call' />
+            {t('customer.nav.hotlineNumber')}
+          </a>
+          <p className='mt-1'>{t('customer.footer.hours')}</p>
+          <p className='mt-2 inline-flex items-center gap-1.5 text-error'>
+            <Icon className='text-base' name='emergency' />
+            {t('customer.nav.emergency')}
+          </p>
         </div>
+      </div>
+      <div className='border-t border-outline-variant'>
+        <p className='mx-auto w-full max-w-[1200px] px-4 py-4 text-xs text-on-surface-variant sm:px-6'>
+          {t('home.footerCopyright', { year: new Date().getFullYear() })}
+        </p>
       </div>
     </footer>
   )

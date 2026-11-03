@@ -1,7 +1,7 @@
 export const bookingSharedVi = {
   status: {
     PENDING_CENTER_CONFIRMATION: 'Chờ trung tâm xác nhận',
-    PENDING_CAREGIVER_ASSIGNMENT: 'Chờ phân người chăm sóc',
+    PENDING_CAREGIVER_ASSIGNMENT: 'Chờ phân công người chăm sóc',
     AWAITING_INITIAL_PAYMENT: 'Chờ thanh toán',
     CONFIRMED: 'Đã xác nhận',
     IN_PROGRESS: 'Đang chăm sóc',

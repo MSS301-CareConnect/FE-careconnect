@@ -20,7 +20,7 @@ export interface MedicalHistorySectionProps {
 }
 
 const SECTION_STEP = '2'
-const inputClass = `h-11 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`
+const inputClass = `min-h-11 py-2 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`
 
 export function MedicalHistorySection({
   formData,
@@ -102,7 +102,7 @@ export function MedicalHistorySection({
               aria-label={t('customer.patientCreate.section2.otherChronicPlaceholder')}
               placeholder={t('customer.patientCreate.section2.otherChronicPlaceholder')}
               {...fieldErrorProps('otherChronic', errors)}
-              className={`h-10 w-full rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+              className={`min-h-10 py-2 w-full rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
             />
             <FieldError field='otherChronic' errors={errors} />
           </div>
@@ -156,7 +156,7 @@ export function MedicalHistorySection({
               aria-label={t('customer.patientCreate.section2.allergyInputPlaceholder')}
               placeholder={t('customer.patientCreate.section2.allergyInputPlaceholder')}
               {...fieldErrorProps('allergies', errors)}
-              className={`h-10 flex-1 rounded-lg bg-surface-container-lowest px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:ring-2 focus:ring-error focus:outline-none ${invalidClassName}`}
+              className={`min-h-10 py-2 flex-1 rounded-lg bg-surface-container-lowest px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:ring-2 focus:ring-error focus:outline-none ${invalidClassName}`}
             />
             <button
               type='button'

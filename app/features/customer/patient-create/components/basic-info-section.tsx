@@ -68,7 +68,7 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
             onChange={(e) => onUpdate('fullName', e.target.value)}
             placeholder={t('customer.patientCreate.section1.fullNamePlaceholder')}
             {...fieldErrorProps('fullName', errors)}
-            className={`h-11 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+            className={`min-h-11 py-2 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface placeholder:text-on-surface-variant/60 transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
           />
           <FieldError field='fullName' errors={errors} />
           <span className='text-[11px] text-on-surface-variant'>
@@ -87,7 +87,7 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
               value={formData.relationship}
               onChange={(e) => onUpdate('relationship', e.target.value as Relationship)}
               {...fieldErrorProps('relationship', errors)}
-              className={`h-11 w-full cursor-pointer appearance-none rounded-lg bg-surface-container-low px-4 pr-10 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+              className={`min-h-11 py-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-container-low px-4 pr-10 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
             >
               <option value='' disabled>
                 {t('customer.patientCreate.section1.relationshipPlaceholder')}
@@ -118,7 +118,7 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
             value={formData.birthDate}
             onChange={(e) => onUpdate('birthDate', e.target.value)}
             {...fieldErrorProps('birthDate', errors)}
-            className={`h-11 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+            className={`min-h-11 py-2 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
           />
           <FieldError field='birthDate' errors={errors} />
         </div>
@@ -174,7 +174,7 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
                   value={formData.height}
                   onChange={(e) => onUpdate('height', e.target.value === '' ? '' : Number(e.target.value))}
                   {...fieldErrorProps('height', errors)}
-                  className={`h-11 w-full rounded-lg bg-surface-container-low px-4 pr-12 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+                  className={`min-h-11 py-2 w-full rounded-lg bg-surface-container-low px-4 pr-12 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
                 />
                 <span className='pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-on-surface-variant'>
                   {CM_UNIT}
@@ -196,7 +196,7 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
                   value={formData.weight}
                   onChange={(e) => onUpdate('weight', e.target.value === '' ? '' : Number(e.target.value))}
                   {...fieldErrorProps('weight', errors)}
-                  className={`h-11 w-full rounded-lg bg-surface-container-low px-4 pr-12 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+                  className={`min-h-11 py-2 w-full rounded-lg bg-surface-container-low px-4 pr-12 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
                 />
                 <span className='pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-on-surface-variant'>
                   {KG_UNIT}

@@ -12,7 +12,30 @@ export const customerLayoutEn = {
     myProfile: 'My Profile',
     payments: 'Payments & refunds',
     invitations: 'Profile invitations',
-    accountMenu: 'Account menu'
+    accountMenu: 'Account menu',
+    mainNav: 'Main navigation',
+    bottomNav: 'Quick navigation',
+    caregivers: 'Caregivers',
+    bookings: 'Bookings',
+    book: 'Book care',
+    search: 'Search',
+    account: 'Account',
+    relatives: 'Family profiles',
+    language: 'Language',
+    bookingsAttention: '{{count}} bookings need your action',
+    atCenter: 'At {{name}}',
+    changeCenter: 'Change',
+    hotline: 'Support hotline',
+    hotlineNumber: '1900 6868',
+    emergency: 'Medical emergency: call 115',
+    loading: 'Loading…'
+  },
+  footer: {
+    tagline: 'Verified home caregivers for the people you love.',
+    explore: 'Explore',
+    account: 'Your account',
+    support: 'Support',
+    hours: 'Every day, 7:00–22:00'
   }
 } as const
 
@@ -30,6 +53,29 @@ export const customerLayoutVi = {
     myProfile: 'Hồ sơ của tôi',
     payments: 'Thanh toán & hoàn tiền',
     invitations: 'Lời mời quản lý hồ sơ',
-    accountMenu: 'Menu tài khoản'
+    accountMenu: 'Menu tài khoản',
+    mainNav: 'Điều hướng chính',
+    bottomNav: 'Điều hướng nhanh',
+    caregivers: 'Người chăm sóc',
+    bookings: 'Lịch đặt',
+    book: 'Đặt lịch',
+    search: 'Tìm',
+    account: 'Tài khoản',
+    relatives: 'Người thân',
+    language: 'Ngôn ngữ',
+    bookingsAttention: '{{count}} lịch đặt cần bạn xử lý',
+    atCenter: 'Tại {{name}}',
+    changeCenter: 'Đổi',
+    hotline: 'Tổng đài hỗ trợ',
+    hotlineNumber: '1900 6868',
+    emergency: 'Cấp cứu y tế: gọi 115',
+    loading: 'Đang tải…'
+  },
+  footer: {
+    tagline: 'Người chăm sóc tại nhà đã xác minh, cho người thân của bạn.',
+    explore: 'Khám phá',
+    account: 'Tài khoản',
+    support: 'Hỗ trợ',
+    hours: 'Mỗi ngày, 07:00–22:00'
   }
 } as const

@@ -122,7 +122,7 @@ export function CenterOptions({ onPick, size }: CenterOptionsProps) {
               name='search'
             />
             <input
-              className='h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest pl-11 pr-4 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15'
+              className='min-h-11 py-2 w-full rounded-xl border border-outline-variant bg-surface-container-lowest pl-11 pr-4 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15'
               id={searchId}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t(`${key}.searchPlaceholder`)}
