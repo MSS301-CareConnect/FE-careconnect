@@ -37,28 +37,6 @@ export function ServiceBookingCard({ centerId, careServiceId, fromPrice, center,
 
   return (
     <aside className='flex flex-col gap-4 lg:sticky lg:top-24'>
-      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 shadow-xs'>
-        <p className='text-sm text-on-surface-variant tabular-nums'>
-          {fromPrice === undefined ? (
-            t(`${key}.booking.contactPrice`)
-          ) : (
-            <>
-              {t(`${key}.booking.from`)}{' '}
-              <strong className='block text-3xl font-bold tracking-tight text-primary'>
-                {money.format(fromPrice)}
-              </strong>
-            </>
-          )}
-        </p>
-        <Link
-          className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-          to={`/customer/booking?${params.toString()}`}
-        >
-          <Icon className='text-lg' name='calendar_add_on' />
-          {t(`${key}.booking.book`)}
-        </Link>
-        <p className='mt-3 text-xs leading-5 text-on-surface-variant'>{t(`${key}.booking.hint`)}</p>
-      </div>
       <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs'>
         <h2 className='text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant'>
           {t(`${key}.center.title`)}
@@ -81,6 +59,28 @@ export function ServiceBookingCard({ centerId, careServiceId, fromPrice, center,
             </dl>
           </>
         ) : null}
+      </div>
+      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 shadow-xs'>
+        <p className='text-sm text-on-surface-variant tabular-nums'>
+          {fromPrice === undefined ? (
+            t(`${key}.booking.contactPrice`)
+          ) : (
+            <>
+              {t(`${key}.booking.from`)}{' '}
+              <strong className='block text-3xl font-bold tracking-tight text-primary'>
+                {money.format(fromPrice)}
+              </strong>
+            </>
+          )}
+        </p>
+        <Link
+          className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          to={`/customer/booking?${params.toString()}`}
+        >
+          <Icon className='text-lg' name='calendar_add_on' />
+          {t(`${key}.booking.book`)}
+        </Link>
+        <p className='mt-3 text-xs leading-5 text-on-surface-variant'>{t(`${key}.booking.hint`)}</p>
       </div>
     </aside>
   )

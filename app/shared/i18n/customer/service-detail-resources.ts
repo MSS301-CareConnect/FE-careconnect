@@ -13,6 +13,14 @@ export const serviceDetailVi = {
   about: 'Mô tả dịch vụ',
   centerNote: 'Ghi chú của trung tâm',
   aboutEmpty: 'Trung tâm chưa cập nhật mô tả cho dịch vụ này.',
+  gallery: {
+    title: 'Hình ảnh dịch vụ',
+    emptyImage: 'Ảnh minh họa đang được cập nhật',
+    emptyHint: 'Hình ảnh dịch vụ sẽ sớm được cập nhật.',
+    thumbnails: 'Ảnh dịch vụ',
+    position: '{{current, number}} / {{total, number}}',
+    selectImage: 'Xem ảnh số {{number, number}}'
+  },
   plans: {
     title: 'Bảng giá',
     hint: 'Giá cơ bản của từng gói. Giá cuối cùng được xác nhận khi bạn đặt lịch.',
@@ -64,6 +72,14 @@ export const serviceDetailEn = {
   about: 'About this service',
   centerNote: 'Note from the center',
   aboutEmpty: 'The center has not described this service yet.',
+  gallery: {
+    title: 'Service photos',
+    emptyImage: 'Service photos are being prepared',
+    emptyHint: 'Photos for this service will be available soon.',
+    thumbnails: 'Service photos',
+    position: '{{current, number}} / {{total, number}}',
+    selectImage: 'View photo {{number, number}}'
+  },
   plans: {
     title: 'Price plans',
     hint: 'Base price of each plan. The final price is confirmed when you book.',

@@ -7,6 +7,7 @@ import { PageHeader, pageContainer } from '~/shared/ui/page-header'
 
 import { ServiceBookingCard } from './components/service-booking-card'
 import { ServiceCaregivers } from './components/service-caregivers'
+import { ServiceImageGallery } from './components/service-image-gallery'
 import { ServicePlans } from './components/service-plans'
 import { useServiceDetail } from './hooks/use-service-detail'
 import { planPrice } from '~/entities/care-catalog/price-plan-price'
@@ -80,6 +81,7 @@ export function CustomerServiceDetailPage() {
         {service ? (
           <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8'>
             <div className='flex min-w-0 flex-col gap-6'>
+              <ServiceImageGallery categoryIcon={SERVICE_CATEGORY_ICONS[group]} />
               <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs sm:p-7'>
                 <h2 className='flex items-center gap-2 text-lg font-bold tracking-[-0.02em] text-on-surface'>
                   <Icon className='text-xl text-primary' name='description' />
