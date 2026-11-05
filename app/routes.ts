@@ -57,6 +57,7 @@ export default [
       route('visits', 'routes/caregiver/visits.tsx'),
       route('visits/:id', 'routes/caregiver/visit-detail.tsx'),
       route('requests', 'routes/caregiver/requests.tsx'),
+      route('requests/:id', 'routes/caregiver/request-detail.tsx'),
       route('earnings', 'routes/caregiver/earnings.tsx'),
       route('profile', 'routes/caregiver/profile.tsx'),
       route('security', 'routes/caregiver/security.tsx'),

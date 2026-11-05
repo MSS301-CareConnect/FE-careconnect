@@ -1,54 +1,21 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-
-import { acceptAsCaregiverRequest, bookingKeys, declineAsCaregiverRequest } from '~/entities/booking/booking-api'
-import { bookingErrorKey } from '~/entities/booking/booking-format'
-import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
-import type { CaregiverBookingRequestRecord } from '~/shared/api/generated/contracts'
 
 import { useBookingRequests } from '../data/caregiver-queries'
 import { CaregiverEmpty, CaregiverError } from '../ui/caregiver-page'
 import { useNow } from '../ui/use-now'
 import { VisitListSkeleton } from '../ui/visit-skeleton'
 import { BookingRequestCard } from './components/booking-request-card'
+import { useRequestAnswer } from './hooks/use-request-answer'
 
 /**
- * CR-3: bookings customers sent straight to this caregiver, shown in the visits tab "Needs your answer". Accepting
- * moves the booking to payment without the center; declining hands a RECURRING / CUSTOM booking to the center and
- * closes a SHIFT booking. `hideEmpty` lets the tab show one empty state for both sources.
+ * CR-3: bookings customers sent straight to this caregiver, shown in the visits tab "Needs your answer". Each card
+ * answers in place or opens the full request. `hideEmpty` lets the tab show one empty state for both sources.
  */
 export function BookingRequestsList({ hideEmpty = false }: { hideEmpty?: boolean }) {
   const { t } = useTranslation()
-  const now = useNow(60_000)
-  const queryClient = useQueryClient()
+  const now = useNow(30_000)
   const requests = useBookingRequests()
-  const [declining, setDeclining] = useState<CaregiverBookingRequestRecord | null>(null)
-
-  const refresh = () => queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-  const failed = (error: unknown) => toast.error(t(bookingErrorKey(error)))
-  const accept = useMutation({
-    mutationFn: (id: string) => acceptAsCaregiverRequest(id),
-    onSuccess: async () => {
-      toast.success(t('caregiver.requests.accepted'))
-      await refresh()
-    },
-    onError: failed
-  })
-  const decline = useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => declineAsCaregiverRequest(id, reason),
-    onSuccess: async (record) => {
-      setDeclining(null)
-      toast.success(
-        record.status === 'PENDING_CAREGIVER_ASSIGNMENT'
-          ? t('caregiver.requests.declinedToCenter')
-          : t('caregiver.requests.declined')
-      )
-      await refresh()
-    },
-    onError: failed
-  })
+  const answer = useRequestAnswer()
   const items = requests.data?.items ?? []
 
   return (
@@ -74,29 +41,17 @@ export function BookingRequestsList({ hideEmpty = false }: { hideEmpty?: boolean
           {items.map((request) => (
             <li key={request.id}>
               <BookingRequestCard
-                busy={(accept.isPending && accept.variables === request.id) || decline.isPending}
+                busy={answer.busy(request.id)}
                 now={now}
-                onAccept={() => accept.mutate(request.id)}
-                onDecline={() => setDeclining(request)}
+                onAccept={() => answer.accept(request.id)}
+                onDecline={() => answer.startDecline(request.id)}
                 request={request}
               />
             </li>
           ))}
         </ul>
       )}
-
-      {declining ? (
-        <BookingReasonDialog
-          confirmLabel={t('caregiver.requests.declineConfirm')}
-          danger
-          description={t('caregiver.requests.declineDescription')}
-          label={t('caregiver.requests.declineReason')}
-          onClose={() => setDeclining(null)}
-          onConfirm={(reason) => decline.mutate({ id: declining.id, reason })}
-          pending={decline.isPending}
-          title={t('caregiver.requests.declineTitle')}
-        />
-      ) : null}
+      {answer.declineDialog}
     </div>
   )
 }

@@ -26,6 +26,19 @@ export const caregiverVisitDetailEn = {
   when: 'When',
   where: 'Where',
   bookingCode: 'Booking {{code}}',
+  booking: {
+    title: 'Booking',
+    customer: 'Booked by',
+    code: 'Booking code',
+    type: 'Booking type',
+    shift: 'Work shift',
+    price: 'This visit',
+    services: 'Services',
+    plan: 'Plan {{name}}',
+    visitsTitle: 'Your visits in this booking ({{count}})',
+    visitNo: 'Visit {{no}}',
+    current: 'This visit'
+  },
   care: {
     title: 'Care recipient',
     allergies: 'Allergies',
@@ -125,6 +138,19 @@ export const caregiverVisitDetailVi = {
   when: 'Thời gian',
   where: 'Địa điểm',
   bookingCode: 'Lịch đặt {{code}}',
+  booking: {
+    title: 'Lịch đặt',
+    customer: 'Khách đặt',
+    code: 'Mã lịch',
+    type: 'Hình thức',
+    shift: 'Ca làm việc',
+    price: 'Giá trị buổi này',
+    services: 'Dịch vụ',
+    plan: 'Gói {{name}}',
+    visitsTitle: 'Các buổi của bạn trong lịch này ({{count}})',
+    visitNo: 'Buổi {{no}}',
+    current: 'Buổi đang xem'
+  },
   care: {
     title: 'Người được chăm sóc',
     allergies: 'Dị ứng',

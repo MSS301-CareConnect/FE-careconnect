@@ -177,7 +177,16 @@ export function VisitCard({
         ) : (
           <span className='flex-1' />
         )}
-        <span className='ml-auto'>
+        <span className='ml-auto flex items-center gap-1'>
+          {step === 'continue' ? null : (
+            <Link
+              className='cg-press inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm font-semibold text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
+              to={detail}
+            >
+              {t('caregiver.ui.actions.viewDetail')}
+              <Icon className='text-lg' name='chevron_right' />
+            </Link>
+          )}
           <OverflowMenu actions={menu} />
         </span>
       </div>

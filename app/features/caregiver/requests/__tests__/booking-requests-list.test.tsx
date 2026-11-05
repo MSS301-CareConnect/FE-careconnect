@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -34,6 +34,9 @@ const request: CaregiverBookingRequestRecord = {
   ward: 'Phường Hàng Bài',
   district: 'Hoàn Kiếm',
   province: 'Hà Nội',
+  recipientName: 'Bà Lan',
+  customerName: 'Nguyễn Văn An',
+  allergies: 'Penicillin',
   customerNote: 'Bà đi lại bằng gậy',
   totalAmount: 400000,
   acceptanceDueAt: '2030-01-05T01:00:00Z',
@@ -44,9 +47,17 @@ const request: CaregiverBookingRequestRecord = {
       occurrenceNo: 1,
       startAt: '2030-01-07T01:00:00Z',
       endAt: '2030-01-07T03:00:00Z',
-      status: 'RESERVED'
+      status: 'RESERVED',
+      priceAmount: 200000
     },
-    { id: 'occ-2', occurrenceNo: 2, startAt: '2030-01-14T01:00:00Z', endAt: '2030-01-14T03:00:00Z', status: 'RESERVED' }
+    {
+      id: 'occ-2',
+      occurrenceNo: 2,
+      startAt: '2030-01-14T01:00:00Z',
+      endAt: '2030-01-14T03:00:00Z',
+      status: 'RESERVED',
+      priceAmount: 200000
+    }
   ]
 } as CaregiverBookingRequestRecord
 
@@ -73,14 +84,21 @@ beforeEach(async () => {
 })
 
 describe('Caregiver booking requests (CR-3)', () => {
-  it('shows the area, the person and the visits without the care profile, and accepts', async () => {
+  it('shows who, where, each visit with service and price, links to the detail, and accepts', async () => {
     vi.mocked(acceptAsCaregiverRequest).mockResolvedValue({ ...request, status: 'AWAITING_INITIAL_PAYMENT' })
     renderPage()
 
     expect(await screen.findByText('Phường Hàng Bài, Hoàn Kiếm, Hà Nội')).toBeInTheDocument()
+    expect(screen.getByText('Bà Lan')).toBeInTheDocument()
     expect(screen.getByText('78 tuổi · Nữ')).toBeInTheDocument()
-    expect(screen.getByText('Chăm sóc người cao tuổi')).toBeInTheDocument()
-    expect(screen.getByText('Hồ sơ chăm sóc đầy đủ sẽ mở khi khách đã thanh toán.')).toBeInTheDocument()
+    expect(screen.getByText('Nguyễn Văn An')).toBeInTheDocument()
+    expect(screen.getByText('Dị ứng: Penicillin')).toBeInTheDocument()
+    const visits = within(screen.getByRole('list', { name: 'Các buổi' })).getAllByRole('listitem')
+    expect(visits).toHaveLength(2)
+    expect(visits[0]).toHaveTextContent('08:00–10:00')
+    expect(visits[0]).toHaveTextContent('Chăm sóc người cao tuổi')
+    expect(visits[0]).toHaveTextContent('200.000')
+    expect(screen.getByRole('link', { name: /Xem chi tiết/ })).toHaveAttribute('href', '/caregiver/requests/bk-1')
 
     fireEvent.click(screen.getByRole('button', { name: 'Nhận lịch' }))
     await waitFor(() => expect(acceptAsCaregiverRequest).toHaveBeenCalledWith('bk-1'))

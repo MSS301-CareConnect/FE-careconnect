@@ -1,17 +1,28 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { bookingKeys, fetchCaregiverBookingRequests, fetchMyOccurrences } from '~/entities/booking/booking-api'
+import {
+  bookingKeys,
+  fetchCaregiverBookingRequest,
+  fetchCaregiverBookingRequests,
+  fetchMyOccurrences
+} from '~/entities/booking/booking-api'
 import {
   fetchMyCaregiverProfile,
+  fetchMySchedules,
   fetchMyShiftRegistrations,
   fetchProviderMedia,
+  fetchWorkShift,
   fetchWorkShifts,
   providerKeys
 } from '~/entities/provider/provider-api'
 import { pickAvatar } from '~/entities/provider/provider-avatar'
 import { fetchDepositForfeitureSummary, fetchDepositForfeitures, paymentKeys } from '~/entities/payment/payment-api'
-import type { ListMyBookingOccurrencesParams, OccurrenceStatus } from '~/shared/api/generated/contracts'
+import type {
+  ListMyBookingOccurrencesParams,
+  OccurrenceStatus,
+  ProviderScheduleRecord
+} from '~/shared/api/generated/contracts'
 import { calendarDayOf } from '~/shared/lib/format'
 
 /** BookingService caps a page at 100 visits. */
@@ -85,6 +96,55 @@ export function useBookingRequests() {
     retry: false,
     refetchInterval: 60_000
   })
+}
+
+/** One booking still waiting for this caregiver's answer; 404 once answered, expired or handed over. */
+export function useCaregiverRequest(id: string) {
+  return useQuery({
+    queryKey: bookingKeys.caregiverRequest(id),
+    queryFn: () => fetchCaregiverBookingRequest(id),
+    retry: false
+  })
+}
+
+const SCHEDULE_PAGE_SIZE = 100
+const MAX_SCHEDULE_PAGES = 5
+
+/** Every availability slot of the caregiver; ProviderService has no date filter, so pages are collected. */
+async function fetchAllMySchedules() {
+  const items: ProviderScheduleRecord[] = []
+  for (let page = 0; page < MAX_SCHEDULE_PAGES; page += 1) {
+    const result = await fetchMySchedules({ page, size: SCHEDULE_PAGE_SIZE })
+    items.push(...result.items)
+    if (page + 1 >= result.totalPages) break
+  }
+  return items
+}
+
+export function useMySchedules(enabled = true) {
+  return useQuery({
+    queryKey: [...providerKeys.mySchedules, 'all'],
+    queryFn: fetchAllMySchedules,
+    enabled,
+    retry: false
+  })
+}
+
+/**
+ * The work shift a SHIFT visit belongs to: the caregiver's schedule (from the shared schedule list) and its shift for
+ * the type ("Ca sáng"). Either part may be missing; callers fall back to the schedule's or the visit's own hours.
+ */
+export function useVisitShift(scheduleId: string | undefined) {
+  const schedules = useMySchedules(Boolean(scheduleId))
+  const schedule = scheduleId ? schedules.data?.find((item) => item.id === scheduleId) : undefined
+  const workShiftId = schedule?.workShiftId
+  const shift = useQuery({
+    queryKey: providerKeys.shift(workShiftId ?? ''),
+    queryFn: () => fetchWorkShift(workShiftId ?? ''),
+    enabled: Boolean(workShiftId),
+    retry: false
+  })
+  return { schedule, shift: shift.data, loading: schedules.isPending && Boolean(scheduleId) }
 }
 
 /** CR-4: the caregiver's share of deposits kept from customers in a period, with the rows page by page. */

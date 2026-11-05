@@ -7,11 +7,12 @@ import { Icon } from '~/shared/ui/icon'
 import { directionsUrl, useCaregiverFormat } from '../../ui/caregiver-format'
 import { cgCard } from '../../ui/caregiver-page'
 import { visitPeople } from '../../ui/visit-card'
+import { VisitBooking } from './visit-booking'
 
 const actionLink =
   'cg-press inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm font-semibold text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
 
-/** Where to go and whom to call, plus the services and the visit's milestones. */
+/** Where to go and whom to call, the booking (customer, shift, price, services) and the visit's milestones. */
 export function VisitLogistics({ visit }: { visit: CaregiverOccurrenceRecord }) {
   const { t } = useTranslation()
   const format = useCaregiverFormat()
@@ -63,7 +64,12 @@ export function VisitLogistics({ visit }: { visit: CaregiverOccurrenceRecord }) 
             <li className='flex items-center justify-between gap-3'>
               <span className='min-w-0 text-sm'>
                 <span className='block text-on-surface-variant'>{t('caregiver.visitDetail.contact.family')}</span>
-                <span className='font-semibold text-on-surface tabular-nums'>{format.phone(visit.customerPhone)}</span>
+                {visit.customerName ? (
+                  <span className='block font-semibold text-on-surface'>{visit.customerName}</span>
+                ) : null}
+                <span className='block font-semibold text-on-surface tabular-nums'>
+                  {format.phone(visit.customerPhone)}
+                </span>
               </span>
               <a
                 aria-label={t('caregiver.ui.actions.callNumber', { phone: format.phone(visit.customerPhone) })}
@@ -98,23 +104,7 @@ export function VisitLogistics({ visit }: { visit: CaregiverOccurrenceRecord }) 
         </ul>
       </section>
 
-      {visit.services?.length ? (
-        <section aria-labelledby='visit-services' className={`${cgCard} p-4 sm:p-5`}>
-          <h2 className='text-sm font-semibold text-on-surface-variant' id='visit-services'>
-            {t('caregiver.visitDetail.services')}
-          </h2>
-          <ul className='mt-2 flex flex-wrap gap-2'>
-            {visit.services.map((service, index) => (
-              <li
-                className='rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-primary'
-                key={service.careServiceId ?? index}
-              >
-                {service.serviceName}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <VisitBooking visit={visit} />
 
       {milestones.some((item) => item.at) ? (
         <section aria-labelledby='visit-timeline' className={`${cgCard} p-4 sm:p-5`}>

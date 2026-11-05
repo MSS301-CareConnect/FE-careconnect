@@ -16,6 +16,7 @@ import { VisitStatusBadge } from '../ui/visit-status-badge'
 import { AllergyCallout, CareProfile } from './components/care-profile'
 import { VisitActions } from './components/visit-actions'
 import { VisitChecklist } from './components/visit-checklist'
+import { BookingVisits } from './components/visit-booking'
 import { VisitLogistics } from './components/visit-logistics'
 
 export function CaregiverVisitDetailPage({ id }: { id: string }) {
@@ -84,6 +85,7 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
                 <p className='mt-1 text-[15px] whitespace-pre-line text-on-surface'>{data.customerNote}</p>
               </section>
             ) : null}
+            <BookingVisits visit={data} />
             {data.sessionId ? (
               <div className='grid items-start gap-4 xl:grid-cols-2'>
                 <SessionNotesCard canWrite sessionId={data.sessionId} />

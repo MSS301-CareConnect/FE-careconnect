@@ -140,6 +140,35 @@ describe('Caregiver visit detail', () => {
     expect(screen.getByText(/82 tuổi/)).toBeInTheDocument()
   })
 
+  it('shows the booking: who booked, this visit price, the plan and the other visits of the booking', async () => {
+    vi.mocked(fetchOccurrence).mockResolvedValue({
+      ...visit,
+      bookingType: 'CUSTOM',
+      customerName: 'Nguyễn Văn An',
+      priceAmount: 250000,
+      services: [{ careServiceId: 'svc-1', serviceName: 'Chăm sóc người già tại nhà', planName: 'Gói 2 giờ' }],
+      bookingVisits: [
+        { id: 'occ-1', occurrenceNo: 1, startAt: visit.startAt, endAt: visit.endAt, status: 'SCHEDULED' },
+        {
+          id: 'occ-2',
+          occurrenceNo: 2,
+          startAt: '2030-01-14T01:00:00Z',
+          endAt: '2030-01-14T03:00:00Z',
+          status: 'SCHEDULED'
+        }
+      ]
+    })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+
+    const booking = await screen.findByRole('region', { name: 'Lịch đặt' })
+    expect(within(booking).getByText('Nguyễn Văn An')).toBeInTheDocument()
+    expect(within(booking).getByText('Tự chọn buổi')).toBeInTheDocument()
+    expect(within(booking).getByText(/250\.000/)).toBeInTheDocument()
+    expect(within(booking).getByText('Gói Gói 2 giờ')).toBeInTheDocument()
+    const visits = screen.getByRole('region', { name: 'Các buổi của bạn trong lịch này (2)' })
+    expect(within(visits).getByRole('link', { name: 'Buổi 2' })).toHaveAttribute('href', '/caregiver/visits/occ-2')
+  })
+
   it('keeps check-in closed outside 30 minutes either side of the start (D22)', async () => {
     const early = new Date(Date.now() + 2 * 3_600_000).toISOString()
     vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED', startAt: early })
