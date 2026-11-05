@@ -13,6 +13,7 @@ import {
   fetchOccurrence,
   saveSessionTask
 } from '~/entities/booking/booking-api'
+import { fetchAssignedCareRecipient } from '~/entities/care-recipient/care-recipient-api'
 import type { CaregiverOccurrenceRecord, CareSessionRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
@@ -28,6 +29,11 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   checkIn: vi.fn(),
   checkOut: vi.fn(),
   saveSessionTask: vi.fn()
+}))
+
+vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-api')>()),
+  fetchAssignedCareRecipient: vi.fn()
 }))
 
 const visit: CaregiverOccurrenceRecord = {
@@ -138,6 +144,73 @@ describe('Caregiver visit detail', () => {
     )
     expect(screen.getByRole('link', { name: 'Gọi 0912 345 678' })).toHaveAttribute('href', 'tel:0912345678')
     expect(screen.getByText(/82 tuổi/)).toBeInTheDocument()
+  })
+
+  it('shows a hidden customer number with dots and no call button until 24 hours before', async () => {
+    vi.mocked(fetchOccurrence).mockResolvedValue({ ...visit, customerName: 'Trần Anh Vũ', customerPhone: '09******78' })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+
+    expect(await screen.findByText('09•• ••• •78')).toBeInTheDocument()
+    expect(screen.getByText('Số đầy đủ hiện từ 24 giờ trước buổi.')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^Gọi/ })).not.toBeInTheDocument()
+  })
+
+  it('opens the full care recipient profile with history, medicines and every emergency contact', async () => {
+    vi.mocked(fetchOccurrence).mockResolvedValue({
+      ...visit,
+      recipientId: 'rcp-1',
+      recipientSnapshot: { fullName: 'Bà Lan', age: 81, gender: 'FEMALE' }
+    })
+    vi.mocked(fetchAssignedCareRecipient).mockResolvedValue({
+      snapshot: {
+        recipientId: 'rcp-1',
+        fullName: 'Bà Lan',
+        age: 81,
+        status: 'ACTIVE',
+        snapshotAt: new Date().toISOString(),
+        chronicConditions: 'Tăng huyết áp',
+        activeMedications: [
+          {
+            id: 'm-1',
+            medicationName: 'Amlodipine 5mg',
+            route: 'ORAL',
+            startDate: '2026-01-01',
+            timeOfDay: ['07:00'],
+            active: true
+          }
+        ]
+      },
+      details: { medicalHistory: 'Mổ ruột thừa 2010', sleepHabits: 'Ngủ trưa 1 tiếng' },
+      emergencyContacts: [
+        {
+          id: 'c-2',
+          fullName: 'Trần Văn B',
+          relationship: 'Con trai',
+          phoneNumber: '0987654321',
+          primary: false,
+          priority: 2
+        },
+        {
+          id: 'c-1',
+          fullName: 'Trần Thị A',
+          relationship: 'Con gái',
+          phoneNumber: '0909999999',
+          primary: true,
+          priority: 1
+        }
+      ]
+    })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Xem hồ sơ đầy đủ của Bà Lan' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Hồ sơ người được chăm sóc' })
+    expect(await within(dialog).findByText('Mổ ruột thừa 2010')).toBeInTheDocument()
+    expect(within(dialog).getByText('Ngủ trưa 1 tiếng')).toBeInTheDocument()
+    expect(within(dialog).getByText('Amlodipine 5mg')).toBeInTheDocument()
+    expect(within(dialog).getByText('Uống')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Gọi 0909 999 999' })).toHaveAttribute('href', 'tel:0909999999')
+    expect(within(dialog).getByRole('link', { name: 'Gọi 0987 654 321' })).toBeInTheDocument()
+    expect(fetchAssignedCareRecipient).toHaveBeenCalledWith('rcp-1')
   })
 
   it('shows the booking: who booked, this visit price, the plan and the other visits of the booking', async () => {

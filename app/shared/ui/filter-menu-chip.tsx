@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import { Icon } from './icon'
+import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from './use-anchored-popover'
 
 export interface FilterMenuOption {
   value: string
@@ -9,7 +10,8 @@ export interface FilterMenuOption {
 
 /**
  * FilterChip: a chip that shows its current choice ("Gender: Female") and opens a small popover of options. It looks
- * active when the value differs from the default, so a glance tells which filters apply.
+ * active when the value differs from the default, so a glance tells which filters apply. The options open in the top
+ * layer, so cards and `overflow` containers below the toolbar never cover them.
  */
 export function FilterMenuChip({
   label,
@@ -32,28 +34,25 @@ export function FilterMenuChip({
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const listId = useId()
   const current = options.find((option) => option.value === value)
   const active = value !== defaultValue
 
+  const dismiss = useCallback(() => setOpen(false), [])
+  const side = useAnchoredPopover({ open, anchorRef: buttonRef, panelRef, rootRef, onDismiss: dismiss, gap: 8 })
+
   useEffect(() => {
     if (!open) return
-    function onPointer(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
-    }
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setOpen(false)
         buttonRef.current?.focus()
       }
     }
-    document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
-    rootRef.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus()
-    return () => {
-      document.removeEventListener('pointerdown', onPointer)
-      document.removeEventListener('keydown', onKey)
-    }
+    panelRef.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus({ preventScroll: true })
+    return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
   return (
@@ -77,8 +76,10 @@ export function FilterMenuChip({
       {open ? (
         <div
           aria-label={label}
-          className='cc-scale-in absolute top-full left-0 z-30 mt-2 min-w-48 origin-top-left rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--shadow-raised)]'
+          className={`${popoverPanelClass} cc-scale-in min-w-48 rounded-xl p-1.5 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
           id={listId}
+          popover={popoverAttribute}
+          ref={panelRef}
           role='menu'
         >
           {options.map((option) => {

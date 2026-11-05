@@ -11677,11 +11677,19 @@ components:
           format: date-time
     CareRecipientDetailRecord:
       type: object
+      description: >-
+        A customer or admin gets profile, medications and emergency contacts. An assigned caregiver (BookingService
+        caregiver-access: a visit of a CONFIRMED / IN_PROGRESS booking) gets only careSnapshot, careDetails and
+        emergencyContacts (every contact); profile, medications and myAccessLevel are then absent.
       required:
         - profile
       properties:
         profile:
           $ref: '#/components/schemas/CareRecipientRecord'
+        careSnapshot:
+          $ref: '#/components/schemas/CareRecipientSnapshotRecord'
+        careDetails:
+          $ref: '#/components/schemas/CaregiverCareDetailsRecord'
         myAccessLevel:
           type: string
           enum:
@@ -11746,6 +11754,18 @@ components:
           type: string
         userStatus:
           type: string
+    CaregiverCareDetailsRecord:
+      type: object
+      description: Profile fields only an assigned caregiver receives beside careSnapshot.
+      properties:
+        medicalHistory:
+          type: string
+        sleepHabits:
+          type: string
+        heightCm:
+          type: number
+        weightKg:
+          type: number
     CareRecipientSnapshotRecord:
       type: object
       required:

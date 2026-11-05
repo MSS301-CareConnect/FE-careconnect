@@ -8,7 +8,7 @@ import { createCenter, fetchCenters, fetchProviderMedia } from '~/entities/provi
 import { fetchProviderStatistics } from '~/entities/statistics/statistics-api'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
-import { pickTime } from '~/shared/test/pickers'
+import { pickOption, pickTime } from '~/shared/test/pickers'
 
 import { AdminCentersPage } from '../admin-centers-page'
 
@@ -128,12 +128,17 @@ describe('AdminCentersPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo trung tâm' }))
     expect(within(dialog).getByLabelText('Tên trung tâm')).toHaveAccessibleDescription('Nhập tên trung tâm.')
     expect(within(dialog).getByLabelText('Tên trung tâm')).toHaveFocus()
-    expect(within(dialog).getByLabelText('Địa chỉ')).toHaveAccessibleDescription('Nhập địa chỉ trung tâm.')
+    expect(within(dialog).getByLabelText('Số nhà, tên đường')).toHaveAccessibleDescription(
+      expect.stringContaining('Nhập số nhà, tên đường.')
+    )
+    expect(within(dialog).getByLabelText('Tỉnh / thành phố')).toHaveAccessibleDescription('Chọn tỉnh / thành phố.')
     expect(createCenter).not.toHaveBeenCalled()
 
     fireEvent.change(within(dialog).getByLabelText('Tên trung tâm'), { target: { value: 'Night Care' } })
     fireEvent.change(within(dialog).getByLabelText('Email'), { target: { value: 'night@example.com' } })
-    fireEvent.change(within(dialog).getByLabelText('Địa chỉ'), { target: { value: '2 Lê Lợi' } })
+    await pickOption(within(dialog).getByLabelText('Tỉnh / thành phố'), 'Thành phố Hà Nội', 'ha noi')
+    await pickOption(within(dialog).getByLabelText('Phường / xã'), 'Phường Ba Đình', 'ba dinh')
+    fireEvent.change(within(dialog).getByLabelText('Số nhà, tên đường'), { target: { value: '2 Lê Lợi' } })
     pickTime(within(dialog).getByLabelText('Mở cửa'), '22:00')
     pickTime(within(dialog).getByLabelText('Đóng cửa'), '06:00')
     // Overnight hours are a note, not an error (D-04).
@@ -148,7 +153,7 @@ describe('AdminCentersPage', () => {
       expect(createCenter).toHaveBeenCalledWith({
         centerName: 'Night Care',
         email: 'night@example.com',
-        address: '2 Lê Lợi',
+        address: '2 Lê Lợi, Phường Ba Đình, Thành phố Hà Nội',
         operatingHours: '22:00 - 06:00'
       })
     )

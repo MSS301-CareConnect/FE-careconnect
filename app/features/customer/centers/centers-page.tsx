@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
@@ -8,6 +9,7 @@ import { foldText } from '~/shared/lib/fold-text'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { Pagination } from '~/shared/ui/pagination'
 import { SearchInput } from '~/shared/ui/search-input'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
@@ -25,15 +27,20 @@ export function CentersPage() {
   const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
   const keyword = params.get('q') ?? ''
+  const [page, setPage] = useState(0)
   const centers = useServiceCenters()
   useDocumentTitle(t(`${key}.documentTitle`))
 
+  const PAGE_SIZE = 9
   const needle = foldText(keyword.trim())
   const visible = (centers.data ?? []).filter(
     (center) => !needle || foldText(`${center.name} ${center.address ?? ''}`).includes(needle)
   )
+  const totalPages = Math.ceil(visible.length / PAGE_SIZE)
+  const pagedCenters = visible.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   function search(value: string) {
+    setPage(0)
     setParams(
       (previous) => {
         const next = new URLSearchParams(previous)
@@ -111,10 +118,16 @@ export function CentersPage() {
             {t(`${key}.count`, { count: visible.length })}
           </p>
           <div className='cc-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-            {visible.map((center) => (
+            {pagedCenters.map((center) => (
               <CenterCard center={center} key={center.id} />
             ))}
           </div>
+          <Pagination
+            className='mt-8'
+            onPageChange={setPage}
+            page={page}
+            totalPages={totalPages}
+          />
         </>
       ) : null}
     </div>

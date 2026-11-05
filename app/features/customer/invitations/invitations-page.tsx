@@ -18,6 +18,7 @@ import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 import { PageHeader } from '~/shared/ui/page-header'
+import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
 
@@ -45,6 +46,12 @@ export function InvitationsPage() {
   })
   const items = invitations.data ?? []
   const busy = accept.isPending || decline.isPending
+
+  const PAGE_SIZE = 5
+  const [page, setPage] = useState(0)
+  const totalPages = Math.ceil(items.length / PAGE_SIZE)
+  const safePage = Math.min(page, Math.max(0, totalPages - 1))
+  const pagedItems = items.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE)
 
   return (
     <div>
@@ -95,7 +102,7 @@ export function InvitationsPage() {
       ) : null}
 
       <ul className='cc-stagger flex flex-col gap-4'>
-        {items.map((invitation) => {
+        {pagedItems.map((invitation) => {
           const name = invitation.recipientFullName ?? t(`${key}.unknownProfile`)
           return (
             <li
@@ -153,6 +160,13 @@ export function InvitationsPage() {
           )
         })}
       </ul>
+
+      <Pagination
+        className='mt-6'
+        onPageChange={setPage}
+        page={safePage}
+        totalPages={totalPages}
+      />
 
       <ConfirmDialog
         confirmLabel={t(`${key}.decline`)}

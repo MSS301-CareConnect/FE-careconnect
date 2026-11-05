@@ -117,8 +117,6 @@ export const patientDetailEn = {
     label: 'Name',
     labelHint: "e.g. Daughter's home",
     labelRequired: 'Give the address a name.',
-    lineRequired: 'Enter the house number and street.',
-    provinceRequired: 'Enter the province or city.',
     noteHint: 'e.g. Ring the back gate; ask for Ms Hoa.',
     save: 'Save address',
     saved: 'Address saved.',
@@ -217,10 +215,6 @@ export const patientDetailEn = {
     mobilityLabel: 'Mobility level',
     independenceLabel: 'Independence level',
     addressLabel: 'Home care residential address:',
-    addressLineLabel: 'Street address',
-    wardLabel: 'Ward',
-    districtLabel: 'District',
-    provinceLabel: 'Province / City',
     selectPlaceholder: 'Not selected'
   }
 } as const
@@ -344,8 +338,6 @@ export const patientDetailVi = {
     label: 'Tên gợi nhớ',
     labelHint: 'VD: Nhà con gái, Nhà anh Minh',
     labelRequired: 'Nhập tên gợi nhớ.',
-    lineRequired: 'Nhập số nhà, tên đường.',
-    provinceRequired: 'Nhập tỉnh / thành phố.',
     noteHint: 'VD: Bấm chuông cổng sau, gặp chị Hoa.',
     save: 'Lưu địa chỉ',
     saved: 'Đã lưu địa chỉ.',
@@ -444,10 +436,6 @@ export const patientDetailVi = {
     mobilityLabel: 'Khả năng vận động',
     independenceLabel: 'Mức độ tự chủ',
     addressLabel: 'Địa chỉ nơi chăm sóc tại nhà:',
-    addressLineLabel: 'Số nhà, đường',
-    wardLabel: 'Phường / Xã',
-    districtLabel: 'Quận / Huyện',
-    provinceLabel: 'Tỉnh / Thành phố',
     selectPlaceholder: 'Chưa chọn'
   }
 } as const

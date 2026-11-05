@@ -223,9 +223,10 @@ export function PatientDetailPage() {
       <ProfileEditDialog
         draft={editor.draft}
         error={editor.error}
+        key={editor.section ?? 'closed'}
         onChange={editor.update}
         onClose={editor.close}
-        onSubmit={() => editor.submit(profile)}
+        onSubmit={(patch) => editor.submit(profile, patch)}
         saving={editor.saving}
         section={editor.section}
         today={today}

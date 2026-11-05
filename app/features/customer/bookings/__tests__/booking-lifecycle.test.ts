@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 
-import { lifecyclePosition, timeLeft } from '../booking-lifecycle'
+import { lifecyclePosition, lifecycleSteps, timeLeft } from '../booking-lifecycle'
 
 function booking(overrides: Partial<BookingDetailRecord>): BookingDetailRecord {
   return {
@@ -43,7 +43,22 @@ describe('booking lifecycle', () => {
           { id: 'o1', occurrenceNo: 1, startAt: '2026-11-05T01:00:00Z', endAt: 'x', status: 'SCHEDULED' }
         ]
       })
-    ).toEqual({ current: 'care', dueAt: '2026-11-05T01:00:00Z' })
+    ).toEqual({ current: 'upcoming', dueAt: '2026-11-05T01:00:00Z' })
+  })
+
+  it('moves from waiting for the first visit to care once a visit has started', () => {
+    const paid = booking({ status: 'CONFIRMED', bookingType: 'SHIFT' })
+    expect(lifecycleSteps(paid)).toEqual(['request', 'pay', 'upcoming', 'care', 'done'])
+    expect(
+      lifecyclePosition({
+        ...paid,
+        occurrences: [
+          { id: 'o1', occurrenceNo: 1, startAt: '2026-11-05T01:00:00Z', endAt: 'x', status: 'COMPLETED' },
+          { id: 'o2', occurrenceNo: 2, startAt: '2026-11-06T01:00:00Z', endAt: 'x', status: 'SCHEDULED' }
+        ]
+      })
+    ).toEqual({ current: 'care' })
+    expect(lifecyclePosition({ ...paid, status: 'IN_PROGRESS' })).toEqual({ current: 'care' })
   })
 
   it('counts down in days, hours and minutes and stops once the deadline passed', () => {

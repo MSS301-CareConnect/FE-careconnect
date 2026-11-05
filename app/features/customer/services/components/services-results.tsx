@@ -4,6 +4,7 @@ import { useServiceCenters } from '~/entities/care-center/care-center-api'
 import { CenterReminder } from '~/entities/care-center/center-scope'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
 
@@ -66,30 +67,13 @@ export function ServicesResults({ list }: { list: CustomerServicesList }) {
         ))}
       </div>
       {pageCount > 1 ? (
-        <nav
-          aria-label={t(`${key}.pagination`)}
-          className='mt-4 flex items-center justify-center gap-3 text-sm tabular-nums'
-        >
-          <Button
-            disabled={page === 0}
-            leftIcon={<Icon className='text-lg' name='chevron_left' />}
-            onClick={() => list.update('page', String(page - 1))}
-            size='sm'
-            variant='outline'
-          >
-            {t(`${key}.previous`)}
-          </Button>
-          <span className='text-on-surface-variant'>{t(`${key}.page`, { page: page + 1, pages: pageCount })}</span>
-          <Button
-            disabled={page + 1 >= pageCount}
-            onClick={() => list.update('page', String(page + 1))}
-            rightIcon={<Icon className='text-lg' name='chevron_right' />}
-            size='sm'
-            variant='outline'
-          >
-            {t(`${key}.next`)}
-          </Button>
-        </nav>
+        <Pagination
+          ariaLabel={t(`${key}.pagination`)}
+          className='mt-4'
+          onPageChange={(next) => list.update('page', String(next))}
+          page={page}
+          totalPages={pageCount}
+        />
       ) : null}
     </div>
   )

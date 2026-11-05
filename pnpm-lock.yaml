@@ -14,6 +14,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.101.4
         version: 5.101.4(react@19.2.8)
+      dvhcvn:
+        specifier: ^1.2.20250301
+        version: 1.2.20250301
       i18next:
         specifier: ^26.3.6
         version: 26.3.6(typescript@5.9.3)
@@ -1322,6 +1325,9 @@ packages:
 
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
+
+  dvhcvn@1.2.20250301:
+    resolution: {integrity: sha512-3/RtQd15aI3INn141+5h5/kQrrd8rb9UlBp3jrMhGAVUsivP6inAbU7adk5NdZ/703Wj7ONCzLNkvkDdNajMvQ==}
 
   electron-to-chromium@1.5.403:
     resolution: {integrity: sha512-MQsYmdaLzvaCX5j+ZZBr5Fm6uCCnPQcRtlvmvRlWqrXy+BH2O4ffXIAScF+JQznQWB9brWp4lSD9Z4yNmaf2BA==}
@@ -3722,6 +3728,8 @@ snapshots:
   dom-accessibility-api@0.5.16: {}
 
   dom-accessibility-api@0.6.3: {}
+
+  dvhcvn@1.2.20250301: {}
 
   electron-to-chromium@1.5.403: {}
 

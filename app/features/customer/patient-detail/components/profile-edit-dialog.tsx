@@ -1,6 +1,9 @@
-import type { FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AddressFields } from '~/entities/address/address-fields'
+import { addressIssues, hasAddressIssues, normalizeAddress } from '~/entities/address/admin-units'
+import { useAdminUnits } from '~/entities/address/use-admin-units'
 import {
   CareRecipientUpdateRequestBloodType,
   CareRecipientUpdateRequestGender,
@@ -46,14 +49,25 @@ export function ProfileEditDialog({
   saving: boolean
   error?: ProfileDraftError | 'conflict' | 'save'
   onChange: (partial: Partial<ProfileDraft>) => void
-  onSubmit: () => void
+  onSubmit: (patch?: Partial<ProfileDraft>) => void
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const units = useAdminUnits()
+  const [addressTried, setAddressTried] = useState(false)
   if (!section || !draft) return null
+  const address = { addressLine: draft.addressLine, ward: draft.ward, province: draft.province }
+  const issues = section === 'address' ? addressIssues(address, units.data, { optional: true }) : {}
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (section === 'address') {
+      setAddressTried(true)
+      if (hasAddressIssues(issues)) return
+      // The address is saved in today's two-level units, so a district from before 2025 is dropped.
+      onSubmit({ ...normalizeAddress(address, units.data), district: '' })
+      return
+    }
     onSubmit()
   }
 
@@ -202,14 +216,16 @@ export function ProfileEditDialog({
           </>
         ) : null}
 
-        {section === 'address'
-          ? [
-              text('addressLine', t(`${key}.carePlan.addressLineLabel`), 500, false, true),
-              text('ward', t(`${key}.carePlan.wardLabel`)),
-              text('district', t(`${key}.carePlan.districtLabel`)),
-              text('province', t(`${key}.carePlan.provinceLabel`))
-            ]
-          : null}
+        {section === 'address' ? (
+          <AddressFields
+            className='sm:col-span-2'
+            idPrefix='profile-address'
+            issues={addressTried ? issues : undefined}
+            lineMaxLength={500}
+            onChange={(next) => onChange({ ...next, district: '' })}
+            value={address}
+          />
+        ) : null}
 
         {section === 'medical'
           ? [

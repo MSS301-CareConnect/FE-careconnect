@@ -5,7 +5,7 @@ import { Link } from 'react-router'
 
 import { bookingErrorStatus, bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
 import { EXPIRING_STATUSES } from '~/entities/booking/booking-deadline'
-import { bookingErrorKey, bookingTypeKey } from '~/entities/booking/booking-format'
+import { bookingErrorKey, bookingTypeKey, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList, matchOccurrenceService } from '~/entities/booking/booking-occurrence-list'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
@@ -28,6 +28,8 @@ import { BookingLifecycleStepper } from './components/booking-lifecycle-stepper'
 import { BookingOccurrenceDetailDialog } from './components/booking-occurrence-detail-dialog'
 import { BookingOverviewCard } from './components/booking-overview-card'
 import { BookingStatusPanel } from './components/booking-status-panel'
+import { CaregiverChangeDialog } from './components/caregiver-change-dialog'
+import { OccurrenceRescheduleDialog } from './components/occurrence-reschedule-dialog'
 
 const key = 'customer.bookingDetail' as const
 // Visits that have taken place: reports and complaints apply only after one of these.
@@ -59,6 +61,8 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
   const [cancelling, setCancelling] = useState(false)
   const [editingAddress, setEditingAddress] = useState(false)
   const [selectedOccurrence, setSelectedOccurrence] = useState<BookingOccurrenceRecord | null>(null)
+  const [requestingCaregiverChange, setRequestingCaregiverChange] = useState<BookingOccurrenceRecord | null | boolean>(false)
+  const [reschedulingOccurrence, setReschedulingOccurrence] = useState<BookingOccurrenceRecord | null>(null)
   // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
   const [now] = useState(() => Date.now())
   const booking = useQuery({
@@ -108,6 +112,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
 
   const data = booking.data
   const occurrences = data.occurrences ?? []
+  const hasUpcoming = occurrences.some((occurrence) => isUpcomingOccurrence(occurrence))
   const menuItems = [
     ...(canChangeServiceAddress(data, now)
       ? [
@@ -116,6 +121,16 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
             label: t('booking.address.action'),
             icon: 'home_pin',
             onSelect: () => setEditingAddress(true)
+          }
+        ]
+      : []),
+    ...((data.status === 'CONFIRMED' || data.status === 'IN_PROGRESS') && hasUpcoming
+      ? [
+          {
+            id: 'change-caregiver',
+            label: 'Đổi người chăm sóc',
+            icon: 'sync_alt',
+            onSelect: () => setRequestingCaregiverChange(true)
           }
         ]
       : []),
@@ -213,7 +228,31 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
           caregiverProfile={caregiverProfile.data}
           occurrence={selectedOccurrence}
           onClose={() => setSelectedOccurrence(null)}
+          onRequestCaregiverChange={(occ) => {
+            setSelectedOccurrence(null)
+            setRequestingCaregiverChange(occ)
+          }}
+          onReschedule={(occ) => {
+            setSelectedOccurrence(null)
+            setReschedulingOccurrence(occ)
+          }}
           service={selectedService}
+        />
+      ) : null}
+
+      {requestingCaregiverChange ? (
+        <CaregiverChangeDialog
+          booking={data}
+          initialOccurrence={typeof requestingCaregiverChange === 'object' ? requestingCaregiverChange : null}
+          onClose={() => setRequestingCaregiverChange(false)}
+        />
+      ) : null}
+
+      {reschedulingOccurrence ? (
+        <OccurrenceRescheduleDialog
+          booking={data}
+          occurrence={reschedulingOccurrence}
+          onClose={() => setReschedulingOccurrence(null)}
         />
       ) : null}
 

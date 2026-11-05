@@ -28,7 +28,7 @@ export function profileCompleteness(detail: CareRecipientDetailRecord) {
       id: 'address',
       tab: 'overview',
       section: 'address',
-      done: Boolean(profile.addressLine && profile.district && profile.province)
+      done: Boolean(profile.addressLine && (profile.ward || profile.district) && profile.province)
     },
     { id: 'conditions', tab: 'medical', section: 'medical', done: Boolean(profile.chronicConditions) },
     { id: 'allergies', tab: 'medical', section: 'medical', done: Boolean(profile.allergies) },

@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createRecipientAddress, fetchRecipientAddresses } from '~/entities/care-recipient/care-recipient-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
+import { pickOption } from '~/shared/test/pickers'
 
 import { updateServiceAddressRequest } from './booking-api'
 import { ServiceAddressDialog, canChangeServiceAddress } from './service-address-dialog'
@@ -39,10 +41,12 @@ const booking: BookingDetailRecord = {
   ]
 }
 
-function renderDialog() {
+function renderDialog(customer = true) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <ServiceAddressDialog booking={booking} onClose={vi.fn()} open />
+      <MemoryRouter>
+        <ServiceAddressDialog booking={booking} customer={customer} onClose={vi.fn()} open />
+      </MemoryRouter>
     </QueryClientProvider>
   )
 }
@@ -69,17 +73,25 @@ describe('Change care address of chosen visits', () => {
     expect(canChangeServiceAddress(soonOnly, Date.now(), false)).toBe(true)
   })
 
-  it('locks visits under 24 hours, uses a saved address and sends only the ticked visits', async () => {
+  it('locks visits under 24 hours, picks a saved address from the book and sends only the ticked visits', async () => {
     renderDialog()
 
     const checkboxes = screen.getAllByRole('checkbox')
     expect(checkboxes[0]).toBeDisabled()
     expect(checkboxes[1]).toBeChecked()
     expect(checkboxes[2]).toBeChecked()
+    expect(screen.getByText('Còn dưới 24 giờ — không đổi được')).toBeInTheDocument()
     fireEvent.click(checkboxes[2])
 
-    fireEvent.click(await screen.findByRole('button', { name: /Nhà con gái/ }))
-    expect(screen.getByLabelText('Số nhà, tên đường')).toHaveValue('9 Nguyễn Trãi')
+    expect(await screen.findByText('Sổ địa chỉ của Bà Lan')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Quản lý sổ địa chỉ/ })).toHaveAttribute(
+      'href',
+      '/customer/patient-profiles/rec-1?tab=addresses'
+    )
+    const saved = await screen.findByRole('radio', { name: /Nhà con gái/ })
+    fireEvent.click(saved)
+    expect(saved).toHaveAttribute('aria-checked', 'true')
+    expect(screen.queryByLabelText('Số nhà, tên đường')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Đổi địa chỉ 1 buổi' }))
     await waitFor(() =>
@@ -95,18 +107,38 @@ describe('Change care address of chosen visits', () => {
     expect(createRecipientAddress).not.toHaveBeenCalled()
   })
 
-  it('saves a typed address to the address book when asked', async () => {
+  it('asks for a new address before saving', async () => {
+    renderDialog()
+    fireEvent.click(screen.getByRole('button', { name: 'Đổi địa chỉ 2 buổi' }))
+    expect(await screen.findByText('Chọn địa chỉ mới cho các buổi đã chọn.')).toBeInTheDocument()
+    expect(updateServiceAddressRequest).not.toHaveBeenCalled()
+  })
+
+  it('says so when the address book is empty', async () => {
+    vi.mocked(fetchRecipientAddresses).mockResolvedValue([])
+    renderDialog()
+    expect(await screen.findByText(/Sổ địa chỉ chưa có địa chỉ nào/)).toBeInTheDocument()
+  })
+
+  it('types an address in the new province → ward lists and saves it to the address book', async () => {
     vi.mocked(createRecipientAddress).mockResolvedValue({
       id: 'addr-2',
       label: 'Nhà anh Minh',
       addressLine: '3 Hàng Bài',
-      province: 'Hà Nội'
+      ward: 'Phường Hoàn Kiếm',
+      province: 'Thành phố Hà Nội'
     })
     renderDialog()
 
-    fireEvent.click(screen.getByRole('button', { name: /Nhập địa chỉ khác/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Nhập địa chỉ khác/ }))
+    // The province of the current address is suggested ("Hà Nội" → today's "Thành phố Hà Nội").
+    await waitFor(() => expect(screen.getByLabelText('Tỉnh / thành phố')).toHaveTextContent('Thành phố Hà Nội'))
+    fireEvent.click(screen.getByRole('button', { name: 'Đổi địa chỉ 2 buổi' }))
+    expect(await screen.findByText('Chọn phường / xã.')).toBeInTheDocument()
+    expect(screen.getByText('Nhập số nhà, tên đường.')).toBeInTheDocument()
+
+    await pickOption(screen.getByLabelText('Phường / xã'), 'Phường Hoàn Kiếm', 'hoan kiem')
     fireEvent.change(screen.getByLabelText('Số nhà, tên đường'), { target: { value: '3 Hàng Bài' } })
-    fireEvent.change(screen.getByLabelText('Tỉnh / thành phố'), { target: { value: 'Hà Nội' } })
     fireEvent.click(screen.getByLabelText('Lưu vào sổ địa chỉ của Bà Lan'))
     fireEvent.click(screen.getByRole('button', { name: 'Đổi địa chỉ 2 buổi' }))
     expect(await screen.findByText('Nhập tên gợi nhớ để lưu địa chỉ.')).toBeInTheDocument()
@@ -117,11 +149,18 @@ describe('Change care address of chosen visits', () => {
       expect(createRecipientAddress).toHaveBeenCalledWith('rec-1', {
         label: 'Nhà anh Minh',
         addressLine: '3 Hàng Bài',
-        ward: undefined,
+        ward: 'Phường Hoàn Kiếm',
         district: undefined,
-        province: 'Hà Nội'
+        province: 'Thành phố Hà Nội'
       })
     )
     await waitFor(() => expect(updateServiceAddressRequest).toHaveBeenCalled())
+  })
+
+  it('lets the center move every visit not started, without the address book', () => {
+    renderDialog(false)
+    expect(screen.getAllByRole('checkbox').every((box) => !(box as HTMLInputElement).disabled)).toBe(true)
+    expect(screen.queryByText('Sổ địa chỉ của Bà Lan')).not.toBeInTheDocument()
+    expect(fetchRecipientAddresses).not.toHaveBeenCalled()
   })
 })

@@ -29,4 +29,10 @@ export interface BookingOccurrenceRecord {
   note?: string
   /** Service done in this visit; absent when the visit covers every service of the booking */
   careServiceId?: string
+  rescheduleCount?: number
+  originalStartAt?: string
+  originalEndAt?: string
+  isEmergencyReplacement?: boolean
+  replacementReason?: string
+  replacementConsentStatus?: 'NONE' | 'PENDING_CUSTOMER' | 'ACCEPTED' | 'REJECTED_RESCHEDULE' | 'REJECTED_CANCEL'
 }

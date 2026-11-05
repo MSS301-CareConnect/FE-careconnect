@@ -2,6 +2,15 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
+import { AddressFields } from '~/entities/address/address-fields'
+import {
+  addressIssues,
+  EMPTY_ADDRESS,
+  hasAddressIssues,
+  normalizeAddress,
+  type AddressParts
+} from '~/entities/address/admin-units'
+import { useAdminUnits } from '~/entities/address/use-admin-units'
 import { careRecipientKeys, createRecipientProfile } from '~/entities/care-recipient/care-recipient-api'
 import type {
   CareRecipientCreateRequestGender,
@@ -10,6 +19,7 @@ import type {
 import { Button } from '~/shared/ui/button'
 import { DatePicker } from '~/shared/ui/date-picker'
 import { FormField, Input, Select } from '~/shared/ui/form-field'
+import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 
 /** "This person is your father" → the customer is their CHILD, as the profile form stores it. */
@@ -31,9 +41,7 @@ interface QuickProfile {
   dateOfBirth: string
   gender: '' | CareRecipientCreateRequestGender
   phoneNumber: string
-  addressLine: string
-  district: string
-  province: string
+  address: AddressParts
 }
 
 const EMPTY: QuickProfile = {
@@ -42,9 +50,7 @@ const EMPTY: QuickProfile = {
   dateOfBirth: '',
   gender: '',
   phoneNumber: '',
-  addressLine: '',
-  district: '',
-  province: ''
+  address: EMPTY_ADDRESS
 }
 
 /** Creates a basic family profile in a centred two-column dialog without leaving the booking, then selects it. */
@@ -61,17 +67,19 @@ export function RecipientQuickCreate({
   const queryClient = useQueryClient()
   const [value, setValue] = useState<QuickProfile>(EMPTY)
   const [touched, setTouched] = useState(false)
+  const units = useAdminUnits()
+  const issues = addressIssues(value.address, units.data, { optional: true })
   const create = useMutation({
-    mutationFn: () =>
+    mutationFn: (address: AddressParts) =>
       createRecipientProfile({
         fullName: value.fullName.trim(),
         relationshipType: value.relationshipType as CareRecipientCreateRequestRelationshipType,
         dateOfBirth: value.dateOfBirth || undefined,
         gender: value.gender || undefined,
         phoneNumber: value.phoneNumber.trim() || undefined,
-        addressLine: value.addressLine.trim() || undefined,
-        district: value.district.trim() || undefined,
-        province: value.province.trim() || undefined
+        addressLine: address.addressLine || undefined,
+        ward: address.ward || undefined,
+        province: address.province || undefined
       }),
     onSuccess: async (profile) => {
       await queryClient.invalidateQueries({ queryKey: careRecipientKeys.all })
@@ -86,8 +94,8 @@ export function RecipientQuickCreate({
 
   function submit() {
     setTouched(true)
-    if (!value.fullName.trim() || !value.relationshipType) return
-    create.mutate()
+    if (!value.fullName.trim() || !value.relationshipType || hasAddressIssues(issues)) return
+    create.mutate(normalizeAddress(value.address, units.data))
   }
 
   return (
@@ -183,26 +191,17 @@ export function RecipientQuickCreate({
             />
           )}
         </FormField>
-        <FormField label={t('customer.booking.quickCreate.addressLine')}>
-          {(props) => (
-            <Input
-              {...props}
-              onChange={(event) => set({ addressLine: event.target.value })}
-              value={value.addressLine}
-            />
-          )}
-        </FormField>
-        <div className='grid gap-4 sm:grid-cols-2'>
-          <FormField label={t('customer.booking.quickCreate.district')}>
-            {(props) => (
-              <Input {...props} onChange={(event) => set({ district: event.target.value })} value={value.district} />
-            )}
-          </FormField>
-          <FormField label={t('customer.booking.quickCreate.province')}>
-            {(props) => (
-              <Input {...props} onChange={(event) => set({ province: event.target.value })} value={value.province} />
-            )}
-          </FormField>
+        <div className='md:col-span-2'>
+          <p className='mb-3 flex items-center gap-2 text-sm font-semibold text-on-surface'>
+            <Icon className='text-lg text-on-surface-variant' name='home_pin' />
+            {t('customer.booking.quickCreate.addressTitle')}
+          </p>
+          <AddressFields
+            idPrefix='quick-create-address'
+            issues={touched ? issues : undefined}
+            onChange={(address) => set({ address })}
+            value={value.address}
+          />
         </div>
         {create.isError ? (
           <p className='rounded-lg bg-error-container p-3 text-sm text-on-error-container md:col-span-2' role='alert'>

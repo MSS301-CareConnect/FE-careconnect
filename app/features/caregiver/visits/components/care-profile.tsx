@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
@@ -6,9 +7,11 @@ import { Icon } from '~/shared/ui/icon'
 
 import { cgCard } from '../../ui/caregiver-page'
 import { visitPeople } from '../../ui/visit-card'
+import { RecipientProfileDialog } from './recipient-profile-dialog'
 
 const MOBILITY = ['INDEPENDENT', 'NEEDS_ASSISTANCE', 'WHEELCHAIR', 'BEDRIDDEN'] as const
 const INDEPENDENCE = ['INDEPENDENT', 'PARTIALLY_DEPENDENT', 'FULLY_DEPENDENT'] as const
+const ROUTES = ['ORAL', 'INJECTION', 'TOPICAL', 'INHALATION', 'OTHER'] as const
 
 /** Red callout for allergies, shown above everything else on the visit. */
 export function AllergyCallout({ value }: { value: string }) {
@@ -27,9 +30,17 @@ export function AllergyCallout({ value }: { value: string }) {
   )
 }
 
-/** The person cared for: identity, health notes, medicines with their times, mobility and diet. */
+/**
+ * The person cared for: identity, health notes, medicines with their times, mobility and diet. "Full profile" opens
+ * everything the family keeps (medical history, sleep, every contact…) while the caregiver may read it.
+ */
 export function CareProfile({ visit }: { visit: CaregiverOccurrenceRecord }) {
   const { t } = useTranslation()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const routeLabel = (value: string | undefined) => {
+    const route = ROUTES.find((item) => item === value)
+    return route ? t(`caregiver.visitDetail.profile.routes.${route}`) : null
+  }
   const snapshot = visit.recipientSnapshot
   const notes = visit.specialNotes
   const people = visitPeople(visit)
@@ -65,9 +76,9 @@ export function CareProfile({ visit }: { visit: CaregiverOccurrenceRecord }) {
       <h2 className='sr-only' id='care-profile-title'>
         {t('caregiver.visitDetail.care.title')}
       </h2>
-      <div className='flex items-center gap-3'>
+      <div className='flex flex-wrap items-center gap-3'>
         <Avatar className='h-12 w-12 rounded-full text-base' decorative name={name} />
-        <div className='min-w-0'>
+        <div className='min-w-0 flex-1'>
           <p className='text-xs font-medium text-on-surface-variant'>{t('caregiver.visitDetail.care.title')}</p>
           <p className='truncate text-lg font-semibold text-on-surface'>{name}</p>
           <p className='text-sm text-on-surface-variant'>
@@ -80,7 +91,25 @@ export function CareProfile({ visit }: { visit: CaregiverOccurrenceRecord }) {
               .join(' · ')}
           </p>
         </div>
+        {visit.recipientId && snapshot ? (
+          <button
+            aria-label={t('caregiver.visitDetail.profile.openLabel', { name })}
+            className='cg-press inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm font-semibold text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
+            onClick={() => setProfileOpen(true)}
+            type='button'
+          >
+            <Icon className='text-lg' name='clinical_notes' />
+            {t('caregiver.visitDetail.profile.open')}
+          </button>
+        ) : null}
       </div>
+      {visit.recipientId && snapshot ? (
+        <RecipientProfileDialog
+          onClose={() => setProfileOpen(false)}
+          open={profileOpen}
+          recipientId={visit.recipientId}
+        />
+      ) : null}
 
       {medications.length ? (
         <div className='mt-4'>
@@ -97,7 +126,7 @@ export function CareProfile({ visit }: { visit: CaregiverOccurrenceRecord }) {
                 <span className='min-w-0'>
                   <strong className='font-semibold text-on-surface'>{medication.medicationName}</strong>
                   <span className='block text-sm text-on-surface-variant'>
-                    {[medication.dosage, medication.route, medication.frequency, medication.usageNotes]
+                    {[medication.dosage, routeLabel(medication.route), medication.frequency, medication.usageNotes]
                       .filter(Boolean)
                       .join(' · ')}
                   </span>

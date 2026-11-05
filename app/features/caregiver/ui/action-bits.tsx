@@ -1,7 +1,16 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode
+} from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
+import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from '~/shared/ui/use-anchored-popover'
 
 /**
  * Bottom bar for the page's main action on phones, inside thumb reach and above the tab bar. From `lg` it becomes an
@@ -46,39 +55,56 @@ export interface MenuAction {
   danger?: boolean
 }
 
-/** The "⋯" menu for secondary actions of a card or page. */
+/**
+ * The "⋯" menu for secondary actions of a card or page. The menu opens in the browser top layer next to its button
+ * (below, or above when there is more room there), so the next card or an `overflow` container never covers it.
+ */
 export function OverflowMenu({ actions, label }: { actions: MenuAction[]; label?: string }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
+  const dismiss = useCallback(() => setOpen(false), [])
+  const side = useAnchoredPopover({
+    open,
+    anchorRef: buttonRef,
+    panelRef,
+    rootRef,
+    onDismiss: dismiss,
+    align: 'end',
+    gap: 4
+  })
 
   useEffect(() => {
     if (!open) return
-    function onPointer(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
-    }
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setOpen(false)
         buttonRef.current?.focus()
       }
     }
-    document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
-    rootRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus()
-    return () => {
-      document.removeEventListener('pointerdown', onPointer)
-      document.removeEventListener('keydown', onKey)
-    }
+    panelRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus({ preventScroll: true })
+    return () => document.removeEventListener('keydown', onKey)
   }, [open])
+
+  function onMenuKey(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+    event.preventDefault()
+    const entries = [...(panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])]
+    const index = entries.findIndex((entry) => entry === document.activeElement)
+    const next =
+      event.key === 'ArrowDown' ? (index + 1) % entries.length : (index - 1 + entries.length) % entries.length
+    entries[next]?.focus({ preventScroll: true })
+  }
 
   if (actions.length === 0) return null
   return (
     <div className='relative' ref={rootRef}>
       <button
-        aria-controls={menuId}
+        aria-controls={open ? menuId : undefined}
         aria-expanded={open}
         aria-haspopup='menu'
         aria-label={label ?? t('caregiver.ui.actions.more')}
@@ -91,19 +117,24 @@ export function OverflowMenu({ actions, label }: { actions: MenuAction[]; label?
       </button>
       {open ? (
         <div
-          className='cg-pop absolute top-full right-0 z-40 mt-1 w-56 origin-top-right rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
+          aria-label={label ?? t('caregiver.ui.actions.more')}
+          className={`${popoverPanelClass} cg-pop w-56 rounded-xl p-1.5 shadow-[var(--cg-shadow-2)] ${side === 'top' ? 'origin-bottom-right' : 'origin-top-right'}`}
           id={menuId}
+          onKeyDown={onMenuKey}
+          popover={popoverAttribute}
+          ref={panelRef}
           role='menu'
         >
           {actions.map((action) => (
             <button
-              className={`flex min-h-11 w-full items-center gap-2.5 rounded-lg px-3 text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-primary ${action.danger ? 'text-error hover:bg-error-container/60' : 'text-on-surface hover:bg-surface-container-low'}`}
+              className={`flex min-h-11 w-full items-center gap-2.5 rounded-lg px-3 text-left text-sm font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${action.danger ? 'text-error hover:bg-error-container/60' : 'text-on-surface hover:bg-surface-container-low'}`}
               key={action.key}
               onClick={() => {
                 setOpen(false)
                 action.onSelect()
               }}
               role='menuitem'
+              tabIndex={-1}
               type='button'
             >
               <Icon className='text-lg' name={action.icon} />

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { isMaskedPhone } from '~/shared/lib/phone'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { StatusBadge } from '~/shared/ui/status-badge'
@@ -26,7 +27,10 @@ export function visitPeople(visit: CaregiverOccurrenceRecord) {
     gender: snapshot?.gender,
     address,
     allergies,
-    phone: visit.customerPhone || snapshot?.primaryEmergencyContact?.phoneNumber
+    // A number to dial: the customer's, unless BookingService still hides its middle digits (more than 24 hours ahead).
+    phone:
+      (isMaskedPhone(visit.customerPhone) ? undefined : visit.customerPhone) ||
+      snapshot?.primaryEmergencyContact?.phoneNumber
   }
 }
 

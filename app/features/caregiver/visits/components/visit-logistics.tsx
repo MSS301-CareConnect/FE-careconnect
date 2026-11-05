@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { formatPhone, phoneHref } from '~/shared/lib/phone'
 import { Icon } from '~/shared/ui/icon'
 
 import { directionsUrl, useCaregiverFormat } from '../../ui/caregiver-format'
@@ -11,6 +12,57 @@ import { VisitBooking } from './visit-booking'
 
 const actionLink =
   'cg-press inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm font-semibold text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
+
+/**
+ * One person to call: who they are, the number grouped for reading and a call button. BookingService hides the middle
+ * digits of the customer's number until 24 hours before the visit; such a number is shown with dots and a note, and
+ * has no call button because it cannot be dialled.
+ */
+function ContactRow({
+  label,
+  name,
+  phone,
+  primary = false
+}: {
+  label: string
+  name?: string
+  phone: string
+  primary?: boolean
+}) {
+  const { t } = useTranslation()
+  const href = phoneHref(phone)
+  const shown = formatPhone(phone)
+  return (
+    <li className='flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0'>
+      <div className='min-w-0 text-sm'>
+        <p className='text-on-surface-variant'>{label}</p>
+        {name ? <p className='font-semibold break-words text-on-surface'>{name}</p> : null}
+        <p className='mt-0.5 text-[15px] font-semibold tracking-wide whitespace-nowrap text-on-surface tabular-nums'>
+          {shown}
+        </p>
+        {href ? null : (
+          <p className='mt-1 flex items-start gap-1 text-xs text-on-surface-variant'>
+            <Icon className='text-sm' name='lock_clock' />
+            {t('caregiver.visitDetail.contact.masked')}
+          </p>
+        )}
+      </div>
+      {href ? (
+        <a
+          aria-label={t('caregiver.ui.actions.callNumber', { phone: shown })}
+          className={`cg-press grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            primary
+              ? 'bg-primary text-on-primary hover:bg-primary-container'
+              : 'border border-outline-variant text-primary hover:bg-brand-50'
+          }`}
+          href={href}
+        >
+          <Icon className='text-xl' name='call' />
+        </a>
+      ) : null}
+    </li>
+  )
+}
 
 /** Where to go and whom to call, the booking (customer, shift, price, services) and the visit's milestones. */
 export function VisitLogistics({ visit }: { visit: CaregiverOccurrenceRecord }) {
@@ -59,44 +111,21 @@ export function VisitLogistics({ visit }: { visit: CaregiverOccurrenceRecord }) 
         <h2 className='text-sm font-semibold text-on-surface-variant' id='visit-contact'>
           {t('caregiver.visitDetail.contact.title')}
         </h2>
-        <ul className='mt-2 flex flex-col gap-2'>
+        <ul className='mt-2 flex flex-col divide-y divide-outline-variant'>
           {visit.customerPhone ? (
-            <li className='flex items-center justify-between gap-3'>
-              <span className='min-w-0 text-sm'>
-                <span className='block text-on-surface-variant'>{t('caregiver.visitDetail.contact.family')}</span>
-                {visit.customerName ? (
-                  <span className='block font-semibold text-on-surface'>{visit.customerName}</span>
-                ) : null}
-                <span className='block font-semibold text-on-surface tabular-nums'>
-                  {format.phone(visit.customerPhone)}
-                </span>
-              </span>
-              <a
-                aria-label={t('caregiver.ui.actions.callNumber', { phone: format.phone(visit.customerPhone) })}
-                className='cg-press grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-                href={`tel:${visit.customerPhone}`}
-              >
-                <Icon className='text-xl' name='call' />
-              </a>
-            </li>
+            <ContactRow
+              label={t('caregiver.visitDetail.contact.family')}
+              name={visit.customerName}
+              phone={visit.customerPhone}
+              primary
+            />
           ) : null}
           {emergency?.phoneNumber ? (
-            <li className='flex items-center justify-between gap-3'>
-              <span className='min-w-0 text-sm'>
-                <span className='block text-on-surface-variant'>{t('caregiver.visitDetail.contact.emergency')}</span>
-                <span className='font-semibold text-on-surface'>
-                  {[emergency.fullName, emergency.relationship].filter(Boolean).join(' · ')}
-                </span>
-                <span className='block text-on-surface tabular-nums'>{format.phone(emergency.phoneNumber)}</span>
-              </span>
-              <a
-                aria-label={t('caregiver.ui.actions.callNumber', { phone: format.phone(emergency.phoneNumber) })}
-                className='cg-press grid h-11 w-11 shrink-0 place-items-center rounded-full border border-outline-variant text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
-                href={`tel:${emergency.phoneNumber}`}
-              >
-                <Icon className='text-xl' name='call' />
-              </a>
-            </li>
+            <ContactRow
+              label={t('caregiver.visitDetail.contact.emergency')}
+              name={[emergency.fullName, emergency.relationship].filter(Boolean).join(' · ')}
+              phone={emergency.phoneNumber}
+            />
           ) : null}
           {!visit.customerPhone && !emergency?.phoneNumber ? (
             <li className='text-sm text-on-surface-variant'>{t('caregiver.visitDetail.contact.none')}</li>

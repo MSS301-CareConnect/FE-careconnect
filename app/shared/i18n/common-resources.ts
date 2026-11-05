@@ -64,9 +64,42 @@ export const commonEn = {
       characters: '{{count}}/{{max}} characters',
       copy: 'Copy',
       copied: 'Copied',
-      more: 'More actions'
+      more: 'More actions',
+      combobox: {
+        search: 'Search…',
+        empty: 'Nothing matches “{{query}}”',
+        count_one: '{{count}} result',
+        count_other: '{{count}} results',
+        loading: 'Loading…'
+      }
     },
     accountMenu: 'Account menu',
+    address: {
+      province: 'Province / city',
+      ward: 'Ward / commune',
+      addressLine: 'Street address',
+      provincePlaceholder: 'Choose a province or city',
+      wardPlaceholder: 'Choose a ward or commune',
+      addressLinePlaceholder: 'e.g. 45 Kim Ma Street, lane 12',
+      provinceSearch: 'Search 34 provinces and cities…',
+      wardSearch: 'Search {{count}} wards and communes…',
+      provinceFirst: 'Choose the province or city first.',
+      addressLineHint: 'House number, lane or alley, street, building.',
+      loading: 'Loading the list of places…',
+      loadError: 'The list of places could not be loaded.',
+      retry: 'Try again',
+      newUnits: 'Two-level administrative units in force since 01/07/2025 (no district level).',
+      provinceMerged: '“{{old}}” is now part of {{now}}. Pick the new ward or commune.',
+      provinceOutdated: '“{{value}}” is not in the current list. Choose it again.',
+      wardOutdated: '“{{value}}” is not in the current list. Choose it again.',
+      errors: {
+        addressLineRequired: 'Enter the house number and street.',
+        provinceRequired: 'Choose a province or city.',
+        provinceOutdated: 'Choose a province or city from the current list.',
+        wardRequired: 'Choose a ward or commune.',
+        wardOutdated: 'Choose a ward or commune from the current list.'
+      }
+    },
     providerMedia: {
       title: 'Files and images',
       centerTitle: 'Center logo and images',
@@ -284,9 +317,42 @@ export const commonVi = {
       characters: '{{count}}/{{max}} ký tự',
       copy: 'Sao chép',
       copied: 'Đã sao chép',
-      more: 'Thao tác khác'
+      more: 'Thao tác khác',
+      combobox: {
+        search: 'Tìm kiếm…',
+        empty: 'Không tìm thấy “{{query}}”',
+        count_one: '{{count}} kết quả',
+        count_other: '{{count}} kết quả',
+        loading: 'Đang tải…'
+      }
     },
     accountMenu: 'Menu tài khoản',
+    address: {
+      province: 'Tỉnh / thành phố',
+      ward: 'Phường / xã',
+      addressLine: 'Số nhà, tên đường',
+      provincePlaceholder: 'Chọn tỉnh / thành phố',
+      wardPlaceholder: 'Chọn phường / xã',
+      addressLinePlaceholder: 'VD: 45 Kim Mã, ngõ 12',
+      provinceSearch: 'Tìm trong 34 tỉnh, thành phố…',
+      wardSearch: 'Tìm trong {{count}} phường, xã…',
+      provinceFirst: 'Chọn tỉnh / thành phố trước.',
+      addressLineHint: 'Số nhà, ngõ / hẻm, tên đường, tòa nhà.',
+      loading: 'Đang tải danh mục địa chỉ…',
+      loadError: 'Không tải được danh mục địa chỉ.',
+      retry: 'Thử lại',
+      newUnits: 'Theo đơn vị hành chính 2 cấp áp dụng từ 01/07/2025 (không còn quận / huyện).',
+      provinceMerged: '“{{old}}” nay thuộc {{now}}. Hãy chọn lại phường / xã mới.',
+      provinceOutdated: '“{{value}}” không còn trong danh mục hiện hành. Hãy chọn lại.',
+      wardOutdated: '“{{value}}” không còn trong danh mục hiện hành. Hãy chọn lại.',
+      errors: {
+        addressLineRequired: 'Nhập số nhà, tên đường.',
+        provinceRequired: 'Chọn tỉnh / thành phố.',
+        provinceOutdated: 'Chọn tỉnh / thành phố theo danh mục hiện hành.',
+        wardRequired: 'Chọn phường / xã.',
+        wardOutdated: 'Chọn phường / xã theo danh mục hiện hành.'
+      }
+    },
     providerMedia: {
       title: 'Tệp và hình ảnh',
       centerTitle: 'Logo và hình ảnh trung tâm',

@@ -5,13 +5,20 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { CaregiverCareDetailsRecord } from './caregiverCareDetailsRecord'
 import type { CareRecipientDetailRecordMyAccessLevel } from './careRecipientDetailRecordMyAccessLevel'
 import type { CareRecipientRecord } from './careRecipientRecord'
+import type { CareRecipientSnapshotRecord } from './careRecipientSnapshotRecord'
 import type { EmergencyContactRecord } from './emergencyContactRecord'
 import type { MedicationRecord } from './medicationRecord'
 
+/**
+ * A customer or admin gets profile, medications and emergency contacts. An assigned caregiver (BookingService caregiver-access: a visit of a CONFIRMED / IN_PROGRESS booking) gets only careSnapshot, careDetails and emergencyContacts (every contact); profile, medications and myAccessLevel are then absent.
+ */
 export interface CareRecipientDetailRecord {
   profile: CareRecipientRecord
+  careSnapshot?: CareRecipientSnapshotRecord
+  careDetails?: CaregiverCareDetailsRecord
   myAccessLevel?: CareRecipientDetailRecordMyAccessLevel
   medications?: MedicationRecord[]
   emergencyContacts?: EmergencyContactRecord[]

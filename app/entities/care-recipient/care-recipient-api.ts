@@ -58,7 +58,9 @@ export const careRecipientKeys = {
   all: ['care-recipient'] as const,
   list: (params: ListCareRecipientsParams) => ['care-recipient', 'list', params] as const,
   detail: (id: string) => ['care-recipient', 'detail', id] as const,
-  addresses: (id: string) => ['care-recipient', 'addresses', id] as const
+  addresses: (id: string) => ['care-recipient', 'addresses', id] as const,
+  /** The assigned caregiver's view of the same profile (another response shape, so another cache entry). */
+  caregiverView: (id: string) => ['care-recipient', 'caregiver-view', id] as const
 }
 
 export async function fetchCareRecipients(params: ListCareRecipientsParams = {}) {
@@ -66,6 +68,20 @@ export async function fetchCareRecipients(params: ListCareRecipientsParams = {})
 }
 export async function fetchCareRecipient(id: string) {
   return result(await getCareRecipient(id, readOptions))
+}
+/**
+ * The profile as an assigned caregiver sees it: the care snapshot (with active medications), the extra care details
+ * and every emergency contact. CareRecipientService answers 404 once BookingService no longer lists the caregiver on a
+ * CONFIRMED / IN_PROGRESS booking of this person.
+ */
+export async function fetchAssignedCareRecipient(id: string) {
+  const detail = result(await getCareRecipient(id, readOptions))
+  if (!detail.careSnapshot) throw new Error('CareRecipientService returned no care snapshot for the caregiver')
+  return {
+    snapshot: detail.careSnapshot,
+    details: detail.careDetails,
+    emergencyContacts: detail.emergencyContacts ?? []
+  }
 }
 /** Creates the profile with its medications and emergency contacts in one backend transaction. */
 export async function createRecipientProfile(request: CareRecipientCreateRequest) {

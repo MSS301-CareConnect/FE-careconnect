@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
+import { AddressFields } from '~/entities/address/address-fields'
+import { addressIssues, hasAddressIssues, normalizeAddress, type AddressParts } from '~/entities/address/admin-units'
+import { useAdminUnits } from '~/entities/address/use-admin-units'
 import {
   careRecipientKeys,
   createRecipientAddress,
@@ -195,7 +198,7 @@ export function AddressesCard({
   )
 }
 
-/** Two-column form: name and street on top, then ward, district, province and a note. */
+/** Name of the place, then province → ward → street in today's units, and a note. */
 function AddressForm({
   initial,
   saving,
@@ -210,71 +213,70 @@ function AddressForm({
   onCancel: () => void
 }) {
   const { t } = useTranslation()
-  const [form, setForm] = useState(initial)
-  const [submitted, setSubmitted] = useState(false)
-  const missing = {
-    label: !form.label.trim(),
-    addressLine: !form.addressLine.trim(),
-    province: !form.province.trim()
-  }
-  const field = (name: keyof RecipientAddressRequest) => ({
-    value: form[name] ?? '',
-    onChange: (event: { target: { value: string } }) =>
-      setForm((current) => ({ ...current, [name]: event.target.value }))
+  const units = useAdminUnits()
+  const [label, setLabel] = useState(initial.label)
+  const [note, setNote] = useState(initial.note ?? '')
+  const [address, setAddress] = useState<AddressParts>({
+    addressLine: initial.addressLine,
+    ward: initial.ward ?? '',
+    province: initial.province
   })
+  const [submitted, setSubmitted] = useState(false)
+  const issues = addressIssues(address, units.data)
+  const missingLabel = !label.trim()
 
   return (
     <form
-      className='grid gap-4 sm:grid-cols-2'
+      className='flex flex-col gap-4'
       noValidate
       onSubmit={(event) => {
         event.preventDefault()
         setSubmitted(true)
-        if (missing.label || missing.addressLine || missing.province) return
+        if (missingLabel || hasAddressIssues(issues)) return
+        const parts = normalizeAddress(address, units.data)
         onSubmit({
-          label: form.label.trim(),
-          addressLine: form.addressLine.trim(),
-          ward: form.ward?.trim() || undefined,
-          district: form.district?.trim() || undefined,
-          province: form.province.trim(),
-          note: form.note?.trim() || undefined
+          label: label.trim(),
+          addressLine: parts.addressLine,
+          ward: parts.ward || undefined,
+          district: undefined,
+          province: parts.province,
+          note: note.trim() || undefined
         })
       }}
     >
       <FormField
-        error={submitted && missing.label ? t(`${key}.labelRequired`) : undefined}
+        error={submitted && missingLabel ? t(`${key}.labelRequired`) : undefined}
         hint={t(`${key}.labelHint`)}
         label={t(`${key}.label`)}
       >
-        {(props) => <Input {...props} maxLength={100} {...field('label')} />}
+        {(props) => (
+          <Input {...props} maxLength={100} onChange={(event) => setLabel(event.target.value)} value={label} />
+        )}
       </FormField>
-      <FormField
-        error={submitted && missing.addressLine ? t(`${key}.lineRequired`) : undefined}
-        label={t('booking.address.addressLine')}
-      >
-        {(props) => <Input {...props} autoComplete='street-address' maxLength={255} {...field('addressLine')} />}
-      </FormField>
-      <FormField label={t('booking.address.ward')}>
-        {(props) => <Input {...props} maxLength={100} {...field('ward')} />}
-      </FormField>
-      <FormField label={t('booking.address.district')}>
-        {(props) => <Input {...props} maxLength={100} {...field('district')} />}
-      </FormField>
-      <FormField
-        error={submitted && missing.province ? t(`${key}.provinceRequired`) : undefined}
-        label={t('booking.address.province')}
-      >
-        {(props) => <Input {...props} maxLength={100} {...field('province')} />}
-      </FormField>
-      <FormField className='sm:col-span-2' hint={t(`${key}.noteHint`)} label={t('booking.address.note')}>
-        {(props) => <Textarea {...props} maxLength={500} rows={2} {...field('note')} />}
+      <AddressFields
+        idPrefix='address-book'
+        issues={submitted ? issues : undefined}
+        onChange={setAddress}
+        value={address}
+      />
+      <FormField hint={t(`${key}.noteHint`)} label={t('booking.address.note')}>
+        {(props) => (
+          <Textarea
+            {...props}
+            className='min-h-20'
+            maxLength={500}
+            onChange={(event) => setNote(event.target.value)}
+            rows={2}
+            value={note}
+          />
+        )}
       </FormField>
       {error ? (
-        <p className='rounded-xl bg-error-container p-3 text-sm text-on-error-container sm:col-span-2' role='alert'>
+        <p className='rounded-xl bg-error-container p-3 text-sm text-on-error-container' role='alert'>
           {error}
         </p>
       ) : null}
-      <div className='flex justify-end gap-2 sm:col-span-2'>
+      <div className='flex justify-end gap-2'>
         <Button onClick={onCancel} type='button' variant='ghost'>
           {t('booking.address.cancel')}
         </Button>

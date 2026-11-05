@@ -2,6 +2,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useId, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AddressFields } from '~/entities/address/address-fields'
+import {
+  addressIssues,
+  EMPTY_ADDRESS,
+  hasAddressIssues,
+  joinAddress,
+  normalizeAddress,
+  splitAddressText,
+  type AddressParts
+} from '~/entities/address/admin-units'
+import { useAdminUnits } from '~/entities/address/use-admin-units'
 import { invalidateOwnerMedia } from '~/entities/provider/invalidate-provider-media'
 import { createCenter, providerKeys, saveCenter } from '~/entities/provider/provider-api'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
@@ -30,6 +41,7 @@ type FieldError =
   | 'phoneInvalid'
   | 'addressRequired'
   | 'addressTooLong'
+  | 'addressIncomplete'
   | 'hoursIncomplete'
 
 const ERROR_MAP = {
@@ -64,7 +76,17 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
   const [name, setName] = useState(center?.centerName ?? '')
   const [email, setEmail] = useState(center?.email ?? '')
   const [phone, setPhone] = useState(center?.phoneNumber ?? '')
-  const [address, setAddress] = useState(center?.address ?? '')
+  const units = useAdminUnits()
+  const [editedAddress, setEditedAddress] = useState<AddressParts | null>(null)
+  // The center keeps its address as one text; it is split into province, ward and street once the list is loaded.
+  const address =
+    editedAddress ??
+    (!center?.address
+      ? EMPTY_ADDRESS
+      : units.data
+        ? splitAddressText(center.address, units.data)
+        : { ...EMPTY_ADDRESS, addressLine: center.address })
+  const issues = addressIssues(address, units.data)
   const [opensAt, setOpensAt] = useState(stored.kind === 'none' || stored.kind === 'legacy' ? '' : stored.open)
   const [closesAt, setClosesAt] = useState(stored.kind === 'none' || stored.kind === 'legacy' ? '' : stored.close)
   const legacy = stored.kind === 'legacy' ? stored.text : ''
@@ -78,7 +100,7 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
       const fields = {
         centerName: name.trim(),
         email: email.trim(),
-        address: address.trim(),
+        address: joinAddress(normalizeAddress(address, units.data)),
         phoneNumber: phone.trim() || undefined,
         operatingHours: opensAt && closesAt ? formatCenterHours(opensAt, closesAt) : legacy || undefined
       }
@@ -108,8 +130,8 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
     if (!email.trim()) next.email = 'emailRequired'
     else if (!EMAIL.test(email.trim())) next.email = 'emailInvalid'
     if (phone.trim() && !PHONE.test(phone.trim())) next.phone = 'phoneInvalid'
-    if (!address.trim()) next.address = 'addressRequired'
-    else if (address.trim().length > 2000) next.address = 'addressTooLong'
+    if (hasAddressIssues(issues)) next.address = 'addressIncomplete'
+    else if (joinAddress(address).length > 2000) next.address = 'addressTooLong'
     // Only an unfinished pair is wrong; overnight and 24-hour centers are valid (D-04).
     if (Boolean(opensAt) !== Boolean(closesAt)) next.hours = 'hoursIncomplete'
     if (errors.validate(next)) save.mutate()
@@ -127,7 +149,8 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
 
   function fieldError(field: Field) {
     const error = errors.fieldErrors[field]
-    return error ? (
+    // An incomplete address is explained under each of its parts by AddressFields.
+    return error && error !== 'addressIncomplete' ? (
       <p className='mt-1 text-xs font-medium text-error' id={`${id}-${field}-error`}>
         {t(`${key}.errors.${error}`)}
       </p>
@@ -193,18 +216,20 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
         />
         {fieldError('phone')}
       </div>
-      <div className='sm:col-span-2'>
-        {label('address', t(`${key}.address`))}
-        <input
-          {...control('address')}
-          onChange={(event) => {
-            setAddress(event.target.value)
+      <fieldset className='sm:col-span-2'>
+        <legend className='mb-2 text-sm font-semibold text-on-surface'>{t(`${key}.address`)}</legend>
+        <AddressFields
+          idPrefix={`${id}-address`}
+          issues={errors.fieldErrors.address === 'addressIncomplete' ? issues : undefined}
+          lineMaxLength={500}
+          onChange={(next) => {
+            setEditedAddress(next)
             errors.clearField('address')
           }}
           value={address}
         />
         {fieldError('address')}
-      </div>
+      </fieldset>
       <fieldset
         aria-describedby={errors.fieldErrors.hours ? `${id}-hours-error` : `${id}-hours-note`}
         className='sm:col-span-2'

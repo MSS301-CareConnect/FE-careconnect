@@ -52,11 +52,14 @@ export function useProfileEditor(recipientId: string, onSaved: () => void) {
     setDraft(null)
   }
 
-  function submit(profile: CareRecipientRecord) {
+  /** `patch` holds last-moment corrections of the dialog, such as the address in its official spelling. */
+  function submit(profile: CareRecipientRecord, patch?: Partial<ProfileDraft>) {
     if (!draft) return
-    const error = validateProfileDraft(draft)
+    const next = patch ? { ...draft, ...patch } : draft
+    if (patch) setDraft(next)
+    const error = validateProfileDraft(next)
     setValidationError(error)
-    if (!error) save.mutate(toUpdateRequest(profile, draft))
+    if (!error) save.mutate(toUpdateRequest(profile, next))
   }
 
   const saveFailure: 'conflict' | 'save' | undefined = save.isError

@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { BookingItemRecord, BookingOccurrenceRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
+import { Pagination } from '~/shared/ui/pagination'
 
 import { formatClock, formatDateTime, formatMoney } from './booking-format'
 import { OccurrenceStatusBadge } from './booking-status-badge'
@@ -15,6 +16,7 @@ export interface BookingOccurrenceListProps {
   renderActions?: (occurrence: BookingOccurrenceRecord) => ReactNode
   services?: BookingItemRecord[]
   onSelectOccurrence?: (occurrence: BookingOccurrenceRecord) => void
+  pageSize?: number
 }
 
 /** Matches an occurrence to its care service if known */
@@ -54,20 +56,26 @@ export function BookingOccurrenceList({
   caregiverName,
   renderActions,
   services,
-  onSelectOccurrence
+  onSelectOccurrence,
+  pageSize = 6
 }: BookingOccurrenceListProps) {
   const { t, i18n } = useTranslation()
   const format = useFormat()
   const language = i18n.language
+  const [page, setPage] = useState(0)
 
   if (occurrences.length === 0)
     return <p className='text-sm text-on-surface-variant'>{t('booking.occurrences.empty')}</p>
 
+  const sorted = [...occurrences].sort((first, second) => first.occurrenceNo - second.occurrenceNo)
+  const totalPages = Math.ceil(sorted.length / pageSize)
+  const safePage = Math.min(page, Math.max(0, totalPages - 1))
+  const paged = sorted.slice(safePage * pageSize, (safePage + 1) * pageSize)
+
   return (
-    <ol className='flex flex-col gap-3'>
-      {[...occurrences]
-        .sort((first, second) => first.occurrenceNo - second.occurrenceNo)
-        .map((occurrence) => {
+    <div className='flex flex-col gap-3'>
+      <ol className='flex flex-col gap-3'>
+        {paged.map((occurrence) => {
           const caregiver = occurrence.caregiverId
             ? (caregiverName?.(occurrence.caregiverId) ?? t('booking.occurrences.assigned'))
             : t('booking.occurrences.unassigned')
@@ -158,6 +166,13 @@ export function BookingOccurrenceList({
             </li>
           )
         })}
-    </ol>
+      </ol>
+      <Pagination
+        className='mt-2'
+        onPageChange={setPage}
+        page={safePage}
+        totalPages={totalPages}
+      />
+    </div>
   )
 }

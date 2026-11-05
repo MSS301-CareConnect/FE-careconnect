@@ -2,18 +2,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AddressFields } from '~/entities/address/address-fields'
+import { addressIssues, hasAddressIssues, normalizeAddress, type AddressParts } from '~/entities/address/admin-units'
+import { useAdminUnits } from '~/entities/address/use-admin-units'
 import {
   careRecipientKeys,
   createRecipientAddress,
   fetchRecipientAddresses,
   formatRecipientAddress
 } from '~/entities/care-recipient/care-recipient-api'
-import type {
-  BookingDetailRecord,
-  BookingOccurrenceRecord,
-  ServiceAddressRequest
-} from '~/shared/api/generated/contracts'
-import { useFormat } from '~/shared/lib/format'
+import type { BookingDetailRecord, BookingOccurrenceRecord } from '~/shared/api/generated/contracts'
 import { Button } from '~/shared/ui/button'
 import { FormAlert } from '~/shared/ui/form-alert'
 import { FormField, Input, Textarea } from '~/shared/ui/form-field'
@@ -22,6 +20,8 @@ import { Modal } from '~/shared/ui/modal'
 
 import { bookingKeys, updateServiceAddressRequest } from './booking-api'
 import { bookingErrorKey } from './booking-format'
+import { ServiceAddressSource, type AddressSource } from './service-address-source'
+import { ServiceAddressVisits, StepNumber } from './service-address-visits'
 
 const NOTE_MAX = 500
 /** A customer changes only visits starting at least this far ahead (BookingService `address-change-lead`). */
@@ -55,12 +55,11 @@ export function canChangeServiceAddress(booking: BookingDetailRecord, now: numbe
   return upcomingVisits(booking, now).some((visit) => new Date(visit.startAt).getTime() > now + lead)
 }
 
-type Source = 'current' | 'new' | string
-
 /**
- * Moves chosen visits to another care address (the person cared for stays somewhere else for a while). The customer
- * ticks the visits — those under 24 hours keep their address — and picks a saved address of the person or types a new
- * one, which can be saved to the address book. The center and the assigned caregivers are notified by BookingService.
+ * Moves chosen visits to another care address (the person cared for stays somewhere else for a while). Step 1 ticks
+ * the visits — a customer's visits under 24 hours keep their address — and step 2 picks the booking's current address,
+ * a saved address from the person's address book, or another address typed in today's province → ward lists, which can
+ * be saved to the book. The center and the assigned caregivers are notified by BookingService.
  */
 export function ServiceAddressDialog({
   booking,
@@ -74,22 +73,22 @@ export function ServiceAddressDialog({
   customer?: boolean
 }) {
   const { t } = useTranslation()
-  const format = useFormat()
   const queryClient = useQueryClient()
+  const units = useAdminUnits()
   const [openedAt] = useState(() => Date.now())
   const visits = upcomingVisits(booking, openedAt)
   const lead = customer ? CUSTOMER_ADDRESS_LEAD_MS : 0
   const editable = (visit: BookingOccurrenceRecord) => new Date(visit.startAt).getTime() > openedAt + lead
-  const [chosen, setChosen] = useState<Set<string>>(() => new Set(visits.filter(editable).map((visit) => visit.id)))
+  const editableIds = visits.filter(editable).map((visit) => visit.id)
+  const [chosen, setChosen] = useState<Set<string>>(() => new Set(editableIds))
   const snapshot = booking.recipientSnapshot
-  const [form, setForm] = useState<ServiceAddressRequest>(() => ({
-    addressLine: snapshot?.addressLine ?? '',
-    ward: snapshot?.ward ?? '',
-    district: snapshot?.district ?? '',
-    province: snapshot?.province ?? '',
-    note: ''
+  const [source, setSource] = useState<AddressSource | null>(null)
+  const [typed, setTyped] = useState<AddressParts>(() => ({
+    addressLine: '',
+    ward: '',
+    province: snapshot?.province ?? ''
   }))
-  const [source, setSource] = useState<Source>('current')
+  const [note, setNote] = useState('')
   const [saveToBook, setSaveToBook] = useState(false)
   const [bookLabel, setBookLabel] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -99,27 +98,46 @@ export function ServiceAddressDialog({
     enabled: customer && open && Boolean(booking.recipientId),
     retry: false
   })
-  const missingLine = !form.addressLine.trim()
-  const missingProvince = !form.province.trim()
+
+  const currentAddress =
+    snapshot?.addressLine && snapshot.province
+      ? formatRecipientAddress({ ...snapshot, addressLine: snapshot.addressLine, province: snapshot.province })
+      : ''
+  const typedIssues = source === 'new' ? addressIssues(typed, units.data) : {}
   const missingVisits = chosen.size === 0
-  const missingLabel = saveToBook && source === 'new' && !bookLabel.trim()
-  const editableCount = visits.filter(editable).length
+  const missingSource = source === null
+  const missingLabel = customer && source === 'new' && saveToBook && !bookLabel.trim()
+
+  /** The address sent for the chosen source; a saved or current address keeps its stored parts as they are. */
+  function chosenAddress() {
+    if (source === 'new') {
+      const parts = normalizeAddress(typed, units.data)
+      return {
+        addressLine: parts.addressLine,
+        ward: parts.ward || undefined,
+        district: undefined,
+        province: parts.province
+      }
+    }
+    const from = source === 'current' ? snapshot : book.data?.find((item) => item.id === source)
+    return {
+      addressLine: from?.addressLine?.trim() ?? '',
+      ward: from?.ward?.trim() || undefined,
+      district: from?.district?.trim() || undefined,
+      province: from?.province?.trim() ?? ''
+    }
+  }
 
   const save = useMutation({
     mutationFn: async () => {
-      const address = {
-        addressLine: form.addressLine.trim(),
-        ward: form.ward?.trim() || undefined,
-        district: form.district?.trim() || undefined,
-        province: form.province.trim()
-      }
+      const address = chosenAddress()
       if (customer && saveToBook && source === 'new' && booking.recipientId) {
         await createRecipientAddress(booking.recipientId, { ...address, label: bookLabel.trim() })
         void queryClient.invalidateQueries({ queryKey: careRecipientKeys.addresses(booking.recipientId) })
       }
       return updateServiceAddressRequest(booking.id, {
         ...address,
-        note: form.note?.trim() || undefined,
+        note: note.trim() || undefined,
         occurrenceIds: [...chosen]
       })
     },
@@ -132,25 +150,8 @@ export function ServiceAddressDialog({
 
   function submit() {
     setSubmitted(true)
-    if (missingLine || missingProvince || missingVisits || missingLabel || save.isPending) return
+    if (missingVisits || missingSource || hasAddressIssues(typedIssues) || missingLabel || save.isPending) return
     save.mutate()
-  }
-
-  function pick(next: Source) {
-    setSource(next)
-    if (next === 'new') {
-      setForm((current) => ({ ...current, addressLine: '', ward: '', district: '', province: '' }))
-      return
-    }
-    const saved = book.data?.find((item) => item.id === next)
-    const from = saved ?? snapshot
-    setForm((current) => ({
-      ...current,
-      addressLine: from?.addressLine ?? '',
-      ward: from?.ward ?? '',
-      district: from?.district ?? '',
-      province: from?.province ?? ''
-    }))
   }
 
   function toggle(id: string) {
@@ -162,22 +163,16 @@ export function ServiceAddressDialog({
     })
   }
 
-  const field = (key: keyof ServiceAddressRequest) => ({
-    value: (form[key] as string | undefined) ?? '',
-    onChange: (event: { target: { value: string } }) => {
-      setForm((current) => ({ ...current, [key]: event.target.value }))
-      if (key !== 'note' && source !== 'new') setSource('new')
-    }
-  })
-  const chip = (active: boolean) =>
-    `inline-flex min-h-10 max-w-full items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary ${active ? 'border-primary bg-brand-50 text-primary' : 'border-outline-variant text-on-surface hover:bg-surface-container-low'}`
-
   return (
     <Modal
       description={t('booking.address.description')}
       dismissOnBackdrop={false}
       footer={
         <>
+          <p className='mr-auto flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant tabular-nums'>
+            <Icon className='text-base' name='event_available' />
+            {t('booking.address.selectedCount', { count: chosen.size, total: visits.length })}
+          </p>
           <Button onClick={onClose} variant='ghost'>
             {t('booking.address.cancel')}
           </Button>
@@ -186,173 +181,120 @@ export function ServiceAddressDialog({
           </Button>
         </>
       }
-      maxWidthClass='max-w-3xl'
       onClose={onClose}
       open={open}
+      size='xl'
       title={t('booking.address.title')}
     >
       <form
-        className='grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]'
+        className='grid gap-6 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-8'
         noValidate
         onSubmit={(event) => {
           event.preventDefault()
           submit()
         }}
       >
-        <fieldset className='min-w-0'>
-          <legend className='flex w-full items-center justify-between gap-2 text-sm font-semibold text-on-surface'>
-            {t('booking.address.visitsTitle')}
-            <button
-              className='rounded-md px-1.5 py-0.5 text-xs font-semibold text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
-              onClick={() =>
-                setChosen(
-                  chosen.size === editableCount ? new Set() : new Set(visits.filter(editable).map((visit) => visit.id))
-                )
-              }
-              type='button'
-            >
-              {chosen.size === editableCount ? t('booking.address.selectNone') : t('booking.address.selectAll')}
-            </button>
-          </legend>
-          <p className='mt-1 text-xs text-on-surface-variant'>
-            {customer ? t('booking.address.visitsHint') : t('booking.address.visitsHintCenter')}
-          </p>
-          <ul className='mt-3 flex max-h-72 flex-col gap-1.5 overflow-y-auto pr-1'>
-            {visits.map((visit) => {
-              const allowed = editable(visit)
-              return (
-                <li key={visit.id}>
-                  <label
-                    className={`flex items-start gap-2.5 rounded-xl border px-3 py-2.5 text-sm ${allowed ? 'cursor-pointer border-outline-variant hover:bg-surface-container-low' : 'border-outline-variant/60 bg-surface-container-low text-on-surface-variant'}`}
-                  >
-                    <input
-                      checked={chosen.has(visit.id)}
-                      className='mt-0.5 h-4 w-4 accent-[var(--color-primary)]'
-                      disabled={!allowed}
-                      onChange={() => toggle(visit.id)}
-                      type='checkbox'
-                    />
-                    <span className='min-w-0'>
-                      <span className='block font-medium tabular-nums'>
-                        {format.visitRange(visit.startAt, visit.endAt)}
-                      </span>
-                      {visit.serviceAddress ? (
-                        <span className='block truncate text-xs text-on-surface-variant'>
-                          {t('booking.address.visitAt', { address: visit.serviceAddress })}
-                        </span>
-                      ) : null}
-                      {!allowed ? (
-                        <span className='block text-xs font-semibold text-warning'>{t('booking.address.tooLate')}</span>
-                      ) : null}
-                    </span>
-                  </label>
-                </li>
-              )
-            })}
-          </ul>
-          <p className='mt-2 text-xs font-semibold text-on-surface-variant tabular-nums'>
-            {t('booking.address.selectedCount', { count: chosen.size, total: visits.length })}
-          </p>
-          {submitted && missingVisits ? (
-            <p className='mt-1 text-xs font-semibold text-error' role='alert'>
-              {t('booking.address.noneSelected')}
+        <ServiceAddressVisits
+          chosen={chosen}
+          editable={editable}
+          error={submitted && missingVisits ? t('booking.address.noneSelected') : undefined}
+          hint={customer ? t('booking.address.visitsHint') : t('booking.address.visitsHintCenter')}
+          onToggle={toggle}
+          onToggleAll={() => setChosen(chosen.size === editableIds.length ? new Set() : new Set(editableIds))}
+          visits={visits}
+        />
+
+        <div className='flex min-w-0 flex-col gap-4 md:border-l md:border-outline-variant/60 md:pl-8'>
+          <div>
+            <p className='flex items-center gap-2.5 text-base font-semibold text-on-surface'>
+              <StepNumber value={2} />
+              {t('booking.address.sourceTitle')}
+            </p>
+            <p className='mt-1.5 pl-[2.375rem] text-xs leading-5 text-on-surface-variant'>
+              {t('booking.address.sourceHint')}
+            </p>
+          </div>
+          <ServiceAddressSource
+            book={
+              customer
+                ? {
+                    ownerName: snapshot?.fullName ?? '',
+                    profileLink: booking.recipientId
+                      ? `/customer/patient-profiles/${booking.recipientId}?tab=addresses`
+                      : undefined,
+                    addresses: book.data,
+                    loading: book.isPending && book.fetchStatus !== 'idle',
+                    failed: book.isError
+                  }
+                : undefined
+            }
+            currentAddress={currentAddress}
+            onPick={setSource}
+            source={source}
+          />
+          {submitted && missingSource ? (
+            <p className='-mt-2 text-xs font-semibold text-error' role='alert'>
+              {t('booking.address.sourceRequired')}
             </p>
           ) : null}
-        </fieldset>
 
-        <div className='flex min-w-0 flex-col gap-4'>
-          <div>
-            <p className='text-sm font-semibold text-on-surface'>{t('booking.address.sourceTitle')}</p>
-            <div aria-label={t('booking.address.sourceTitle')} className='mt-2 flex flex-wrap gap-2' role='group'>
-              <button
-                aria-pressed={source === 'current'}
-                className={chip(source === 'current')}
-                onClick={() => pick('current')}
-                type='button'
-              >
-                <Icon className='text-base' name='home' />
-                {t('booking.address.sourceCurrent')}
-              </button>
-              {(book.data ?? []).map((saved) => (
-                <button
-                  aria-pressed={source === saved.id}
-                  className={chip(source === saved.id)}
-                  key={saved.id}
-                  onClick={() => pick(saved.id)}
-                  title={formatRecipientAddress(saved)}
-                  type='button'
-                >
-                  <Icon className='text-base' name='bookmark' />
-                  <span className='truncate'>{saved.label}</span>
-                </button>
-              ))}
-              <button
-                aria-pressed={source === 'new'}
-                className={chip(source === 'new')}
-                onClick={() => pick('new')}
-                type='button'
-              >
-                <Icon className='text-base' name='add_location_alt' />
-                {t('booking.address.sourceNew')}
-              </button>
-            </div>
-          </div>
-          <div className='grid gap-4 sm:grid-cols-2'>
-            <FormField
-              className='sm:col-span-2'
-              error={submitted && missingLine ? t('booking.errors.e5113') : undefined}
-              label={t('booking.address.addressLine')}
-            >
-              {(props) => <Input {...props} autoComplete='street-address' maxLength={255} {...field('addressLine')} />}
-            </FormField>
-            <FormField label={t('booking.address.ward')}>
-              {(props) => <Input {...props} maxLength={100} {...field('ward')} />}
-            </FormField>
-            <FormField label={t('booking.address.district')}>
-              {(props) => <Input {...props} maxLength={100} {...field('district')} />}
-            </FormField>
-            <FormField
-              className='sm:col-span-2'
-              error={submitted && missingProvince ? t('booking.errors.e5114') : undefined}
-              label={t('booking.address.province')}
-            >
-              {(props) => <Input {...props} maxLength={100} {...field('province')} />}
-            </FormField>
-          </div>
-          {customer && source === 'new' ? (
-            <div className='rounded-xl border border-outline-variant p-3'>
-              <label className='flex cursor-pointer items-center gap-2 text-sm font-medium text-on-surface'>
-                <input
-                  checked={saveToBook}
-                  className='h-4 w-4 accent-[var(--color-primary)]'
-                  onChange={(event) => setSaveToBook(event.target.checked)}
-                  type='checkbox'
-                />
-                {t('booking.address.saveToBook', { name: snapshot?.fullName ?? '' })}
-              </label>
-              {saveToBook ? (
-                <FormField
-                  className='mt-3'
-                  error={submitted && missingLabel ? t('booking.address.labelRequired') : undefined}
-                  hint={t('booking.address.labelHint')}
-                  label={t('booking.address.label')}
-                >
-                  {(props) => (
-                    <Input
-                      {...props}
-                      maxLength={100}
-                      onChange={(event) => setBookLabel(event.target.value)}
-                      value={bookLabel}
+          {source === 'new' ? (
+            <div className='cc-fade-up flex flex-col gap-4 rounded-2xl border border-outline-variant bg-surface-container-low/60 p-4'>
+              <AddressFields
+                idPrefix='service-address'
+                issues={submitted ? typedIssues : undefined}
+                onChange={setTyped}
+                value={typed}
+              />
+              {customer ? (
+                <div className='rounded-xl border border-outline-variant bg-surface-container-lowest p-3'>
+                  <label className='flex cursor-pointer items-center gap-2.5 text-sm font-medium text-on-surface'>
+                    <input
+                      checked={saveToBook}
+                      className='h-[1.125rem] w-[1.125rem] accent-[var(--color-primary)]'
+                      onChange={(event) => setSaveToBook(event.target.checked)}
+                      type='checkbox'
                     />
-                  )}
-                </FormField>
+                    {t('booking.address.saveToBook', { name: snapshot?.fullName ?? '' })}
+                  </label>
+                  {saveToBook ? (
+                    <FormField
+                      className='mt-3'
+                      error={submitted && missingLabel ? t('booking.address.labelRequired') : undefined}
+                      hint={t('booking.address.labelHint')}
+                      label={t('booking.address.label')}
+                    >
+                      {(props) => (
+                        <Input
+                          {...props}
+                          maxLength={100}
+                          onChange={(event) => setBookLabel(event.target.value)}
+                          value={bookLabel}
+                        />
+                      )}
+                    </FormField>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           ) : null}
+
           <FormField hint={t('booking.address.noteHint')} label={t('booking.address.note')}>
-            {(props) => <Textarea {...props} maxLength={NOTE_MAX} rows={2} {...field('note')} />}
+            {(props) => (
+              <Textarea
+                {...props}
+                className='min-h-20'
+                maxLength={NOTE_MAX}
+                onChange={(event) => setNote(event.target.value)}
+                rows={2}
+                value={note}
+              />
+            )}
           </FormField>
-          <p className='text-xs text-on-surface-variant'>{t('booking.address.notice')}</p>
+          <p className='flex items-start gap-2 rounded-xl bg-info-container/60 px-3 py-2.5 text-xs leading-5 text-on-info-container'>
+            <Icon className='mt-px text-base' name='notifications_active' />
+            {t('booking.address.notice')}
+          </p>
           {save.isError ? <FormAlert tone='error'>{t(bookingErrorKey(save.error))}</FormAlert> : null}
         </div>
       </form>

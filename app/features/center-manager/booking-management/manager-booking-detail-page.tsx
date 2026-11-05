@@ -4,11 +4,15 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 
 import {
+  approveCaregiverChangeRequest,
   assignBookingCaregiver,
   bookingErrorStatus,
   bookingKeys,
   cancelBookingRequest,
-  fetchBooking
+  fetchBooking,
+  fetchBookingCaregiverChangeRequests,
+  rejectCaregiverChangeRequest,
+  type CaregiverChangeRequestRecord
 } from '~/entities/booking/booking-api'
 import { EXPIRING_STATUSES, isPastDeadline } from '~/entities/booking/booking-deadline'
 import { BookingDeadlineChip } from '~/entities/booking/booking-deadline-chip'
@@ -58,6 +62,34 @@ export function ManagerBookingDetailPage() {
   })
   useDocumentTitle(t('centerManager.bookingDetail.documentTitle', { code: booking.data?.bookingCode ?? '' }))
   const free = useFreeCaregivers(booking.data, dialog === 'reassign')
+
+  const [approvingRequest, setApprovingRequest] = useState<CaregiverChangeRequestRecord | null>(null)
+  const [rejectingRequest, setRejectingRequest] = useState<CaregiverChangeRequestRecord | null>(null)
+
+  const changeRequests = useQuery({
+    queryKey: ['caregiver-change-requests', id],
+    queryFn: () => fetchBookingCaregiverChangeRequests(id),
+    enabled: Boolean(id)
+  })
+
+  const approveChange = useMutation({
+    mutationFn: ({ requestId, newCaregiverId }: { requestId: string; newCaregiverId: string }) =>
+      approveCaregiverChangeRequest(requestId, { newCaregiverId }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) })
+      void queryClient.invalidateQueries({ queryKey: ['caregiver-change-requests', id] })
+      setApprovingRequest(null)
+    }
+  })
+
+  const rejectChange = useMutation({
+    mutationFn: ({ requestId, reason }: { requestId: string; reason: string }) =>
+      rejectCaregiverChangeRequest(requestId, reason),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['caregiver-change-requests', id] })
+      setRejectingRequest(null)
+    }
+  })
 
   function done(updated: BookingDetailRecord) {
     queryClient.setQueryData(bookingKeys.detail(id), updated)
@@ -222,6 +254,44 @@ export function ManagerBookingDetailPage() {
         </p>
       ) : null}
 
+      {changeRequests.data?.filter((r) => r.status === 'PENDING').map((req) => (
+        <div key={req.id} className='rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-5 shadow-xs'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <div className='flex items-center gap-2 font-bold text-primary'>
+              <Icon className='text-xl' name='sync_alt' />
+              <span>Khách hàng yêu cầu đổi người chăm sóc</span>
+            </div>
+            <span className='rounded-md bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-semibold'>
+              Chờ quản lý xử lý
+            </span>
+          </div>
+          <p className='mt-2 text-sm text-on-surface'>
+            <strong>Lý do:</strong> {req.reasonCode} {req.reasonDetail ? `— ${req.reasonDetail}` : ''}
+          </p>
+          <p className='mt-0.5 text-xs text-on-surface-variant'>
+            Phạm vi: {req.scopeType === 'ALL_REMAINING' ? 'Tất cả các buổi còn lại' : `Chỉ định ${req.occurrences?.length ?? 0} buổi`}
+          </p>
+          <div className='mt-3.5 flex items-center gap-3'>
+            <button
+              type='button'
+              onClick={() => setApprovingRequest(req)}
+              className='inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-primary/90'
+            >
+              <Icon className='text-sm' name='check' />
+              Duyệt & chọn người mới
+            </button>
+            <button
+              type='button'
+              onClick={() => setRejectingRequest(req)}
+              className='inline-flex items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2 text-xs font-semibold text-error hover:bg-surface-container-low'
+            >
+              <Icon className='text-sm' name='close' />
+              Từ chối yêu cầu
+            </button>
+          </div>
+        </div>
+      ))}
+
       <div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]'>
         <div className='flex min-w-0 flex-col gap-6'>
           <SectionCard icon='event_note' title={t('centerManager.bookingDetail.occurrences')}>
@@ -283,6 +353,37 @@ export function ManagerBookingDetailPage() {
           onConfirm={(reason) => cancel.mutate(reason)}
           pending={cancel.isPending}
           title={t('centerManager.bookingDetail.cancelTitle', { code: data.bookingCode })}
+        />
+      ) : null}
+
+      {approvingRequest ? (
+        <CaregiverAssignDialog
+          confirmLabel='Xác nhận đổi người'
+          currentId={data.caregiverId}
+          description={`Chọn chuyên viên mới để thay thế cho yêu cầu của khách hàng (${approvingRequest.reasonDetail ?? ''})`}
+          error={approveChange.error ? t(bookingErrorKey(approveChange.error)) : undefined}
+          loading={caregivers.caregivers.isPending}
+          onClose={() => setApprovingRequest(null)}
+          onConfirm={(caregiverId) => caregiverId && approveChange.mutate({ requestId: approvingRequest.id, newCaregiverId: caregiverId })}
+          checking={free.checking}
+          freeIds={free.freeIds}
+          options={caregivers.options}
+          pending={approveChange.isPending}
+          title='Phân công chuyên viên mới'
+        />
+      ) : null}
+
+      {rejectingRequest ? (
+        <BookingReasonDialog
+          confirmLabel='Từ chối yêu cầu'
+          danger
+          description='Nhập lý do từ chối để thông báo cho khách hàng.'
+          error={rejectChange.error ? t(bookingErrorKey(rejectChange.error)) : undefined}
+          label='Lý do từ chối'
+          onClose={() => setRejectingRequest(null)}
+          onConfirm={(reason) => rejectChange.mutate({ requestId: rejectingRequest.id, reason })}
+          pending={rejectChange.isPending}
+          title='Từ chối yêu cầu đổi người chăm sóc'
         />
       ) : null}
     </div>

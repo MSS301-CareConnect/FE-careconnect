@@ -12,6 +12,7 @@ import { Button } from '~/shared/ui/button'
 import { ActiveFilters, FilterMenuChip } from '~/shared/ui/filter-menu-chip'
 import { Icon } from '~/shared/ui/icon'
 import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { Pagination } from '~/shared/ui/pagination'
 import { SearchInput } from '~/shared/ui/search-input'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
@@ -200,32 +201,13 @@ export function CustomerProviderCatalogPage() {
         </>
       ) : null}
       {catalog.isSuccess && catalog.data.totalPages > 1 ? (
-        <nav
-          aria-label={t(`${key}.title`)}
-          className='mt-8 flex items-center justify-center gap-3 text-sm tabular-nums'
-        >
-          <Button
-            disabled={page === 0}
-            leftIcon={<Icon className='text-lg' name='chevron_left' />}
-            onClick={() => update('page', String(page - 1))}
-            size='sm'
-            variant='outline'
-          >
-            {t(`${key}.previous`)}
-          </Button>
-          <span className='text-on-surface-variant'>
-            {t(`${key}.page`, { page: page + 1, pages: catalog.data.totalPages })}
-          </span>
-          <Button
-            disabled={page + 1 >= catalog.data.totalPages}
-            onClick={() => update('page', String(page + 1))}
-            rightIcon={<Icon className='text-lg' name='chevron_right' />}
-            size='sm'
-            variant='outline'
-          >
-            {t(`${key}.next`)}
-          </Button>
-        </nav>
+        <Pagination
+          ariaLabel={t(`${key}.title`)}
+          className='mt-8'
+          onPageChange={(next) => update('page', String(next))}
+          page={page}
+          totalPages={catalog.data.totalPages}
+        />
       ) : null}
     </div>
   )

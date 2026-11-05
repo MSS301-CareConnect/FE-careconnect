@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+
+import { Pagination } from '~/shared/ui/pagination'
 
 import { BOOKING_STATUSES, OCCURRENCE_STATUSES, formatDateTime } from './booking-format'
 import { bookingKeys, fetchBookingHistory } from './booking-api'
@@ -33,9 +36,10 @@ function HistoryReasonText({ reason }: { reason?: string | null }) {
 /** Status changes and occurrence events of one booking, oldest first, from GET /bookings/{id}/history. */
 export function BookingHistoryList({ bookingId }: { bookingId: string }) {
   const { t, i18n } = useTranslation()
+  const [page, setPage] = useState(0)
   const history = useQuery({
-    queryKey: bookingKeys.history(bookingId, 0),
-    queryFn: () => fetchBookingHistory(bookingId),
+    queryKey: bookingKeys.history(bookingId, page),
+    queryFn: () => fetchBookingHistory(bookingId, page),
     retry: false
   })
 
@@ -62,7 +66,8 @@ export function BookingHistoryList({ bookingId }: { bookingId: string }) {
     return <p className='text-sm text-on-surface-variant'>{t('booking.history.empty')}</p>
 
   return (
-    <ol className='flex flex-col gap-4'>
+    <>
+      <ol className='flex flex-col gap-4'>
       {history.data.items.map((entry, index) => {
         const type = knownEvent(entry.eventType)
         return (
@@ -95,5 +100,12 @@ export function BookingHistoryList({ bookingId }: { bookingId: string }) {
         )
       })}
     </ol>
+    <Pagination
+      className='mt-4'
+      onPageChange={setPage}
+      page={page}
+      totalPages={history.data.totalPages ?? 0}
+    />
+  </>
   )
 }

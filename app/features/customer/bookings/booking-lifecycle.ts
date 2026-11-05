@@ -15,15 +15,16 @@ export function awaitsRemaining(booking: BookingDetailRecord) {
   return booking.status === 'CONFIRMED' && Boolean(booking.remainingPaymentDueAt) && !booking.fullyPaidAt
 }
 
-export const LIFECYCLE_STEPS = ['request', 'confirm', 'assign', 'pay', 'care', 'done'] as const
+export const LIFECYCLE_STEPS = ['request', 'confirm', 'assign', 'pay', 'upcoming', 'care', 'done'] as const
 export type LifecycleStep = (typeof LIFECYCLE_STEPS)[number]
 
 /**
  * The steps a booking goes through. A SHIFT booking is held at once on the caregiver's own shift (2026-11-05), so it
  * has no confirmation or assignment step; a booking with a chosen caregiver is confirmed by that caregiver (CR-3).
+ * "upcoming" is the wait between full payment and the first visit, so a paid booking does not read "in care" days early.
  */
 export function lifecycleSteps(booking: BookingDetailRecord): readonly LifecycleStep[] {
-  return booking.bookingType === 'SHIFT' ? ['request', 'pay', 'care', 'done'] : LIFECYCLE_STEPS
+  return booking.bookingType === 'SHIFT' ? ['request', 'pay', 'upcoming', 'care', 'done'] : LIFECYCLE_STEPS
 }
 
 /** Translation key suffix of a step: "confirm" names who confirms. */
@@ -49,10 +50,12 @@ export function lifecyclePosition(
       return { current: 'assign', dueAt: booking.assignmentDueAt }
     case 'AWAITING_INITIAL_PAYMENT':
       return { current: 'pay', dueAt: booking.depositDueAt }
-    case 'CONFIRMED':
-      return awaitsRemaining(booking)
-        ? { current: 'pay', dueAt: booking.remainingPaymentDueAt }
-        : { current: 'care', dueAt: firstUpcomingVisit(booking) }
+    case 'CONFIRMED': {
+      if (awaitsRemaining(booking)) return { current: 'pay', dueAt: booking.remainingPaymentDueAt }
+      // Paid: waiting for the first visit until one has started (BookingService moves to IN_PROGRESS on check-in).
+      const started = (booking.occurrences ?? []).some((visit) => STARTED.has(visit.status))
+      return started ? { current: 'care' } : { current: 'upcoming', dueAt: firstUpcomingVisit(booking) }
+    }
     case 'IN_PROGRESS':
       return { current: 'care' }
     case 'COMPLETED':
@@ -61,6 +64,8 @@ export function lifecyclePosition(
       return null
   }
 }
+
+const STARTED: ReadonlySet<string> = new Set(['IN_PROGRESS', 'COMPLETED', 'CUSTOMER_NO_SHOW', 'CAREGIVER_MISSED'])
 
 function firstUpcomingVisit(booking: BookingDetailRecord) {
   return (booking.occurrences ?? [])

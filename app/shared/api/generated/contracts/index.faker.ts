@@ -95,6 +95,7 @@ import type {
   CaregiverBookingRequestPageResponse,
   CaregiverBookingRequestRecord,
   CaregiverBookingRequestResponse,
+  CaregiverCareDetailsRecord,
   CaregiverCreateRequest,
   CaregiverOccurrencePage,
   CaregiverOccurrencePageResponse,
@@ -2053,10 +2054,66 @@ export const getEmergencyContactRecordMock = (
   ...overrideResponse
 })
 
+export const getCareRecipientSnapshotRecordMock = (
+  overrideResponse: Partial<CareRecipientSnapshotRecord> = {}
+): CareRecipientSnapshotRecord => ({
+  recipientId: faker.string.uuid(),
+  fullName: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  dateOfBirth: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
+  age: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  gender: faker.helpers.arrayElement([faker.helpers.arrayElement(['MALE', 'FEMALE', 'OTHER'] as const), undefined]),
+  phoneNumber: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  addressLine: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  ward: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  district: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  province: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  latitude: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  longitude: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  bloodType: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'UNKNOWN'] as const),
+    undefined
+  ]),
+  mobilityLevel: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(['INDEPENDENT', 'NEEDS_ASSISTANCE', 'WHEELCHAIR', 'BEDRIDDEN'] as const),
+    undefined
+  ]),
+  independenceLevel: faker.helpers.arrayElement([
+    faker.helpers.arrayElement(['INDEPENDENT', 'PARTIALLY_DEPENDENT', 'FULLY_DEPENDENT'] as const),
+    undefined
+  ]),
+  allergies: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  chronicConditions: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  dietaryNotes: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  behaviorNotes: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  careRequirements: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'ARCHIVED'] as const),
+  activeMedications: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      ...getMedicationRecordMock()
+    })),
+    undefined
+  ]),
+  primaryEmergencyContact: faker.helpers.arrayElement([{ ...getEmergencyContactRecordMock() }, undefined]),
+  snapshotAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  ...overrideResponse
+})
+
+export const getCaregiverCareDetailsRecordMock = (
+  overrideResponse: Partial<CaregiverCareDetailsRecord> = {}
+): CaregiverCareDetailsRecord => ({
+  medicalHistory: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  sleepHabits: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  heightCm: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  weightKg: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  ...overrideResponse
+})
+
 export const getCareRecipientDetailRecordMock = (
   overrideResponse: Partial<CareRecipientDetailRecord> = {}
 ): CareRecipientDetailRecord => ({
   profile: { ...getCareRecipientRecordMock() },
+  careSnapshot: faker.helpers.arrayElement([{ ...getCareRecipientSnapshotRecordMock() }, undefined]),
+  careDetails: faker.helpers.arrayElement([{ ...getCaregiverCareDetailsRecordMock() }, undefined]),
   myAccessLevel: faker.helpers.arrayElement([
     faker.helpers.arrayElement(['VIEWER', 'EDITOR', 'OWNER'] as const),
     undefined
@@ -2103,50 +2160,6 @@ export const getRecipientManagerRecordMock = (
   email: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   phoneNumber: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   userStatus: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  ...overrideResponse
-})
-
-export const getCareRecipientSnapshotRecordMock = (
-  overrideResponse: Partial<CareRecipientSnapshotRecord> = {}
-): CareRecipientSnapshotRecord => ({
-  recipientId: faker.string.uuid(),
-  fullName: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  dateOfBirth: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 10), undefined]),
-  age: faker.helpers.arrayElement([faker.number.int(), undefined]),
-  gender: faker.helpers.arrayElement([faker.helpers.arrayElement(['MALE', 'FEMALE', 'OTHER'] as const), undefined]),
-  phoneNumber: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  addressLine: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  ward: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  district: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  province: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  latitude: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
-  longitude: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
-  bloodType: faker.helpers.arrayElement([
-    faker.helpers.arrayElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'UNKNOWN'] as const),
-    undefined
-  ]),
-  mobilityLevel: faker.helpers.arrayElement([
-    faker.helpers.arrayElement(['INDEPENDENT', 'NEEDS_ASSISTANCE', 'WHEELCHAIR', 'BEDRIDDEN'] as const),
-    undefined
-  ]),
-  independenceLevel: faker.helpers.arrayElement([
-    faker.helpers.arrayElement(['INDEPENDENT', 'PARTIALLY_DEPENDENT', 'FULLY_DEPENDENT'] as const),
-    undefined
-  ]),
-  allergies: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  chronicConditions: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  dietaryNotes: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  behaviorNotes: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  careRequirements: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
-  status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'ARCHIVED'] as const),
-  activeMedications: faker.helpers.arrayElement([
-    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      ...getMedicationRecordMock()
-    })),
-    undefined
-  ]),
-  primaryEmergencyContact: faker.helpers.arrayElement([{ ...getEmergencyContactRecordMock() }, undefined]),
-  snapshotAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
   ...overrideResponse
 })
 

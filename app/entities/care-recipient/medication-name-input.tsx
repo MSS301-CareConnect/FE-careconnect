@@ -1,5 +1,7 @@
-import { useId, useMemo, useState, type KeyboardEvent } from 'react'
+import { useCallback, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from '~/shared/ui/use-anchored-popover'
 
 import { suggestMedications } from './medication-catalog'
 import type { MedicationCatalogEntry } from './medication-catalog.constants'
@@ -19,7 +21,10 @@ export interface MedicationNameInputProps {
   containerClassName?: string
 }
 
-/** Free-text medication name with catalog suggestions after the first typed characters. */
+/**
+ * Free-text medication name with catalog suggestions after the first typed characters. The list opens in the top layer
+ * so a scrolling dialog never clips it.
+ */
 export function MedicationNameInput({
   value,
   onChange,
@@ -39,6 +44,11 @@ export function MedicationNameInput({
   const suggestions = useMemo(() => suggestMedications(value), [value])
   const alreadyChosen = suggestions.length === 1 && suggestions[0].medicationName === value
   const isExpanded = isOpen && suggestions.length > 0 && !alreadyChosen
+  const rootRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const dismiss = useCallback(() => setIsOpen(false), [])
+  useAnchoredPopover({ open: isExpanded, anchorRef: inputRef, panelRef: listRef, rootRef, onDismiss: dismiss, gap: 4 })
 
   function choose(entry: MedicationCatalogEntry) {
     onChange(entry.medicationName)
@@ -65,9 +75,10 @@ export function MedicationNameInput({
   }
 
   return (
-    <div className={containerClassName}>
+    <div className={containerClassName} ref={rootRef}>
       <input
         id={id}
+        ref={inputRef}
         type='text'
         role='combobox'
         autoComplete='off'
@@ -95,7 +106,9 @@ export function MedicationNameInput({
           id={listId}
           role='listbox'
           aria-label={t('customer.careRecipient.medicationSuggestions')}
-          className='absolute top-full left-0 z-20 mt-1 max-h-64 w-full min-w-60 overflow-y-auto rounded-lg bg-surface-container-lowest py-1 text-left shadow-lg ring-1 ring-outline-variant/40'
+          className={`${popoverPanelClass} max-h-64 w-[min(24rem,calc(100vw-1rem))] overflow-y-auto rounded-lg py-1 text-left`}
+          popover={popoverAttribute}
+          ref={listRef}
         >
           {suggestions.map((entry, index) => (
             <li

@@ -52,6 +52,7 @@ import type {
   ServiceAddressRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
+import { env } from '~/shared/config/env'
 
 const readOptions = { credentials: 'include' as const }
 const writeOptions = async (headers: HeadersInit = {}) => ({
@@ -220,4 +221,208 @@ export async function addSessionTask(id: string, title: string) {
 }
 export async function saveSessionTask(id: string, taskId: string, request: CareTaskUpdateRequest) {
   return result(await updateCareSessionTask(id, taskId, request, await writeOptions()))
+}
+
+// ─── SPEC V3: CAREGIVER CHANGE REQUESTS ──────────────────────────────────────
+
+export interface CaregiverChangeRequestRecord {
+  id: string
+  bookingId: string
+  customerUserId: string
+  centerId: string
+  scopeType: 'ALL_REMAINING' | 'SPECIFIC_OCCURRENCES' | 'FROM_DATE'
+  fromDate?: string
+  reasonCode: 'SKILL_MISMATCH' | 'ATTITUDE_ISSUE' | 'PUNCTUALITY_ISSUE' | 'PERSONAL_PREFERENCE' | 'OTHER'
+  reasonDetail?: string
+  preferredCaregiverId?: string
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+  reviewedBy?: string
+  reviewedAt?: string
+  rejectionReason?: string
+  createdAt: string
+  occurrences: Array<{ occurrenceId: string; occurrenceNo: number; startAt: string; endAt: string }>
+}
+
+export interface CaregiverChangeCreatePayload {
+  scopeType: 'ALL_REMAINING' | 'SPECIFIC_OCCURRENCES' | 'FROM_DATE'
+  occurrenceIds?: string[]
+  fromDate?: string
+  reasonCode: 'SKILL_MISMATCH' | 'ATTITUDE_ISSUE' | 'PUNCTUALITY_ISSUE' | 'PERSONAL_PREFERENCE' | 'OTHER'
+  reasonDetail?: string
+  preferredCaregiverId?: string
+}
+
+export async function createCaregiverChangeRequest(bookingId: string, payload: CaregiverChangeCreatePayload) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/bookings/${bookingId}/caregiver-change-requests`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to create caregiver change request')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  const json = await res.json()
+  return json.result as CaregiverChangeRequestRecord
+}
+
+export async function fetchBookingCaregiverChangeRequests(bookingId: string) {
+  const res = await fetch(`${env.API_BASE_URL}/v1/bookings/${bookingId}/caregiver-change-requests`, readOptions)
+  if (!res.ok) return []
+  const json = await res.json()
+  return (json.result || []) as CaregiverChangeRequestRecord[]
+}
+
+export async function cancelCaregiverChangeRequest(requestId: string) {
+  const options = await writeOptions()
+  const res = await fetch(`${env.API_BASE_URL}/v1/caregiver-change-requests/${requestId}`, {
+    ...options,
+    method: 'DELETE'
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to cancel request')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  return true
+}
+
+export async function approveCaregiverChangeRequest(requestId: string, payload: { newCaregiverId: string; note?: string }) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/caregiver-change-requests/${requestId}/approve`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to approve request')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  const json = await res.json()
+  return json.result as CaregiverChangeRequestRecord
+}
+
+export async function rejectCaregiverChangeRequest(requestId: string, reason: string) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/caregiver-change-requests/${requestId}/reject`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify({ reason })
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to reject request')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  const json = await res.json()
+  return json.result as CaregiverChangeRequestRecord
+}
+
+// ─── SPEC V3: EMERGENCY REASSIGNMENT & REPLACEMENT CONSENT ────────────────────
+
+export async function emergencyReassignBooking(
+  bookingId: string,
+  payload: { occurrenceIds: string[]; newCaregiverId: string; reason: string }
+) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/bookings/${bookingId}/emergency-reassignment`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to emergency reassign')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  return true
+}
+
+export async function submitReplacementConsent(
+  occurrenceId: string,
+  payload: { action: 'ACCEPT' | 'RESCHEDULE' | 'REJECT_AND_CANCEL'; newStartAt?: string; newEndAt?: string }
+) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/booking-occurrences/${occurrenceId}/replacement-consent`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to submit replacement consent')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  return true
+}
+
+// ─── SPEC V3: RESCHEDULE OCCURRENCE ──────────────────────────────────────────
+
+export interface OccurrenceRescheduleResponseRecord {
+  occurrenceId: string
+  bookingId: string
+  originalStartAt: string
+  originalEndAt: string
+  newStartAt: string
+  newEndAt: string
+  rescheduleCount: number
+  available: boolean
+  message: string
+}
+
+export async function previewRescheduleOccurrence(
+  occurrenceId: string,
+  payload: { newStartAt: string; newEndAt: string }
+) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/booking-occurrences/${occurrenceId}/reschedule-preview`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to preview reschedule')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  const json = await res.json()
+  return json.result as OccurrenceRescheduleResponseRecord
+}
+
+export async function rescheduleBookingOccurrence(
+  occurrenceId: string,
+  payload: { newStartAt: string; newEndAt: string; reason?: string }
+) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/booking-occurrences/${occurrenceId}/reschedule`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}))
+    const err: any = new Error(errorBody?.message || 'Failed to reschedule occurrence')
+    err.info = errorBody
+    err.status = res.status
+    throw err
+  }
+  const json = await res.json()
+  return json.result as OccurrenceRescheduleResponseRecord
 }

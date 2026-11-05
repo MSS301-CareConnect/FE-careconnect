@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
+    "dvhcvn": "^1.2.20250301",
     "i18next": "^26.3.6",
     "isbot": "^5",
     "react": "^19.2.7",

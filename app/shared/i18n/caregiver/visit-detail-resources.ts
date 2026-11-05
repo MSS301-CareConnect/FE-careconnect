@@ -63,11 +63,63 @@ export const caregiverVisitDetailEn = {
       FULLY_DEPENDENT: 'Fully dependent'
     }
   },
+  profile: {
+    open: 'Full profile',
+    openLabel: 'View the full profile of {{name}}',
+    title: 'Care recipient profile',
+    description: 'Shared by the family. You can read it while you are assigned to a confirmed booking of this person.',
+    loading: 'Loading the profile…',
+    error: 'Could not load the profile',
+    notAvailable: 'This profile is only available while you are assigned to a confirmed booking of this person.',
+    updatedAt: 'Information as of {{time}}',
+    sections: {
+      basic: 'Basic information',
+      health: 'Health',
+      medications: 'Current medications',
+      daily: 'Daily life',
+      contacts: 'Emergency contacts'
+    },
+    fields: {
+      dateOfBirth: 'Date of birth',
+      gender: 'Gender',
+      bloodType: 'Blood type',
+      height: 'Height',
+      weight: 'Weight',
+      phone: 'Phone',
+      address: 'Address',
+      allergies: 'Allergies',
+      chronicConditions: 'Health conditions',
+      medicalHistory: 'Medical history',
+      mobility: 'Mobility',
+      independence: 'Independence',
+      diet: 'Diet',
+      sleep: 'Sleep habits',
+      behavior: 'Behaviour notes',
+      requirements: 'Care requirements'
+    },
+    height: '{{value}} cm',
+    weight: '{{value}} kg',
+    notProvided: 'Not provided',
+    noMedications: 'No current medications.',
+    since: 'Since {{date}}',
+    dateRange: '{{from}} – {{to}}',
+    prescribedBy: 'Prescribed by {{name}}',
+    routes: {
+      ORAL: 'By mouth',
+      INJECTION: 'Injection',
+      TOPICAL: 'On the skin',
+      INHALATION: 'Inhaled',
+      OTHER: 'Other'
+    },
+    primaryContact: 'Main contact',
+    noContacts: 'No emergency contacts.'
+  },
   contact: {
     title: 'Contact',
     family: 'Family (booking owner)',
     emergency: 'Emergency contact',
-    none: 'No phone number on this booking.'
+    none: 'No phone number on this booking.',
+    masked: 'The full number shows from 24 hours before the visit.'
   },
   timeline: {
     title: 'Progress',
@@ -175,11 +227,63 @@ export const caregiverVisitDetailVi = {
       FULLY_DEPENDENT: 'Phụ thuộc hoàn toàn'
     }
   },
+  profile: {
+    open: 'Hồ sơ đầy đủ',
+    openLabel: 'Xem hồ sơ đầy đủ của {{name}}',
+    title: 'Hồ sơ người được chăm sóc',
+    description: 'Thông tin do gia đình cung cấp. Bạn xem được khi đang được giao chăm sóc trong lịch đặt đã xác nhận.',
+    loading: 'Đang tải hồ sơ…',
+    error: 'Không tải được hồ sơ',
+    notAvailable: 'Hồ sơ chỉ xem được khi bạn đang được giao chăm sóc trong một lịch đặt đã xác nhận của người này.',
+    updatedAt: 'Thông tin tính đến {{time}}',
+    sections: {
+      basic: 'Thông tin cơ bản',
+      health: 'Sức khỏe',
+      medications: 'Thuốc đang dùng',
+      daily: 'Sinh hoạt hằng ngày',
+      contacts: 'Liên hệ khẩn cấp'
+    },
+    fields: {
+      dateOfBirth: 'Ngày sinh',
+      gender: 'Giới tính',
+      bloodType: 'Nhóm máu',
+      height: 'Chiều cao',
+      weight: 'Cân nặng',
+      phone: 'Điện thoại',
+      address: 'Địa chỉ',
+      allergies: 'Dị ứng',
+      chronicConditions: 'Bệnh nền',
+      medicalHistory: 'Tiền sử bệnh',
+      mobility: 'Vận động',
+      independence: 'Mức độ tự lập',
+      diet: 'Dinh dưỡng',
+      sleep: 'Giấc ngủ',
+      behavior: 'Lưu ý hành vi',
+      requirements: 'Yêu cầu chăm sóc'
+    },
+    height: '{{value}} cm',
+    weight: '{{value}} kg',
+    notProvided: 'Chưa có',
+    noMedications: 'Không có thuốc đang dùng.',
+    since: 'Từ {{date}}',
+    dateRange: '{{from}} – {{to}}',
+    prescribedBy: 'Kê đơn: {{name}}',
+    routes: {
+      ORAL: 'Uống',
+      INJECTION: 'Tiêm',
+      TOPICAL: 'Bôi ngoài da',
+      INHALATION: 'Hít',
+      OTHER: 'Khác'
+    },
+    primaryContact: 'Liên hệ chính',
+    noContacts: 'Chưa có liên hệ khẩn cấp.'
+  },
   contact: {
     title: 'Liên hệ',
     family: 'Người nhà (người đặt lịch)',
     emergency: 'Liên hệ khẩn cấp',
-    none: 'Lịch đặt này chưa có số điện thoại.'
+    none: 'Lịch đặt này chưa có số điện thoại.',
+    masked: 'Số đầy đủ hiện từ 24 giờ trước buổi.'
   },
   timeline: {
     title: 'Tiến trình',
