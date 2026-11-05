@@ -13,6 +13,7 @@ export type CenterService = {
   name: string
   category: string
   description?: string
+  imageUrl?: string
   center?: ServiceCenter
   /** Active price plans, cheapest first. */
   plans: PricePlanRecord[]
@@ -43,6 +44,7 @@ export async function fetchCenterServices(center: ServiceCenter): Promise<Center
       name: offering.catalogItem.name,
       category: offering.catalogItem.category,
       description: offering.description || offering.catalogItem.description,
+      imageUrl: offering.catalogItem.imageUrl,
       center,
       plans: (await emptyWhenNotFound(fetchPricePlans(offering.id)))
         .filter((plan) => plan.isActive !== false)

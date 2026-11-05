@@ -28,96 +28,125 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
   const detailsTo = service.center ? `/customer/services/${service.id}` : undefined
 
   return (
-    <article className='cc-lift group relative flex flex-col rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] hover:border-brand-200'>
-      <div className='flex items-center gap-3'>
-        <span
-          aria-hidden='true'
-          className='grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-primary'
-        >
-          <Icon className='text-[22px]' name={SERVICE_CATEGORY_ICONS[group]} />
-        </span>
-        <span className='text-sm font-medium text-on-surface-variant'>{t(`common.serviceCategories.${group}`)}</span>
-      </div>
-      <h2 className='mt-4 text-lg font-semibold text-on-surface'>
-        {detailsTo ? (
-          <Link
-            className='rounded after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-            to={detailsTo}
-          >
-            {service.name}
-          </Link>
+    <article className='cc-lift group relative flex flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg'>
+      {/* Visual Image Header with Category Badge */}
+      <div className='relative aspect-[16/10] w-full overflow-hidden bg-surface-container-low'>
+        {service.imageUrl ? (
+          <img
+            alt={service.name}
+            className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+            loading='lazy'
+            src={service.imageUrl}
+          />
         ) : (
-          service.name
-        )}
-      </h2>
-      {service.description ? (
-        <p className='mt-1.5 line-clamp-2 text-sm leading-6 text-on-surface-variant'>{service.description}</p>
-      ) : null}
-
-      <div className='mt-auto pt-5'>
-        {cheapest ? (
-          <p className='text-sm'>
-            <span className='text-base font-semibold text-on-surface tabular-nums'>
-              {samePrice
-                ? t(`${key}.card.price`, {
-                    price: format.money(planPrice(cheapest).finalPrice),
-                    unit: t(`${key}.priceUnit.${cheapest.pricingUnit}`)
-                  })
-                : t(`${key}.card.fromPrice`, { price: format.money(planPrice(cheapest).finalPrice) })}
+          <div className='relative flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50/60 to-primary-fixed/25'>
+            <span
+              aria-hidden='true'
+              className='grid h-14 w-14 place-items-center rounded-2xl bg-white/90 text-primary shadow-xs backdrop-blur-sm transition-transform duration-300 group-hover:scale-110'
+            >
+              <Icon className='text-3xl' name={SERVICE_CATEGORY_ICONS[group]} />
             </span>
-            {samePrice && cheapest.durationMinutes ? (
-              <span className='block text-on-surface-variant'>
-                {t(`${key}.card.minimum`, { duration: format.duration(cheapest.durationMinutes) })}
-              </span>
-            ) : !samePrice ? (
-              <span className='block text-on-surface-variant'>
-                {t(`${key}.card.plansCount`, { count: service.plans.length })}
-              </span>
-            ) : null}
+          </div>
+        )}
+        <div className='absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-on-surface shadow-xs backdrop-blur-md'>
+          <Icon aria-hidden='true' className='text-sm text-primary' name={SERVICE_CATEGORY_ICONS[group]} />
+          <span>{t(`common.serviceCategories.${group}`)}</span>
+        </div>
+      </div>
+
+      {/* Card Content Body */}
+      <div className='flex flex-1 flex-col p-5'>
+        <h2 className='text-lg font-bold tracking-tight text-on-surface transition-colors group-hover:text-primary'>
+          {detailsTo ? (
+            <Link
+              className='rounded after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+              to={detailsTo}
+            >
+              {service.name}
+            </Link>
+          ) : (
+            service.name
+          )}
+        </h2>
+
+        {service.description ? (
+          <p className='mt-2 line-clamp-2 min-h-[2.75rem] text-sm leading-6 text-on-surface-variant'>
+            {service.description}
           </p>
         ) : (
-          <p className='text-sm text-on-surface-variant'>
-            {t(service.center ? `${key}.card.contactPrice` : `${key}.card.pricePerCenter`)}
-          </p>
+          <div className='mt-2 min-h-[2.75rem]' />
         )}
+
         {showCenter && service.center ? (
-          <p className='mt-2 flex items-center gap-1.5 text-xs text-on-surface-variant'>
+          <p className='mt-2 flex items-center gap-1.5 text-xs font-medium text-on-surface-variant'>
             <Icon className='text-sm text-primary' name='home_health' />
-            {service.center.name}
+            <span>{service.center.name}</span>
           </p>
         ) : null}
 
-        <div className='mt-4 flex items-center justify-between gap-3 border-t border-outline-variant pt-4'>
-          {service.center ? (
-            <>
-              <span aria-hidden='true' className='text-sm font-medium text-primary group-hover:underline'>
-                {t(`${key}.card.detailsShort`)}
-              </span>
-              <Link
-                aria-label={`${t(`${key}.card.bookShort`)} ${service.name}`}
-                className={primaryLink}
-                to={`/customer/booking?center=${service.center.id}&service=${service.catalogItemId}`}
-              >
-                <Icon className='text-lg' name='event_available' />
-                {t(`${key}.card.bookShort`)}
-              </Link>
-            </>
-          ) : (
-            <div className='flex w-full flex-col gap-2'>
-              <button className={`${primaryLink} justify-center`} onClick={openCenterPicker} type='button'>
-                <Icon className='text-lg' name='home_health' />
-                {t(`${key}.card.chooseCenter`)}
-              </button>
-              {/* All-centers mode has no prices: comparing the centers is the other way forward. */}
-              <Link
-                className='inline-flex min-h-10 items-center justify-center gap-1 rounded-lg text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary'
-                to='/customer/centers'
-              >
-                {t('customer.centerPicker.compare')}
-                <Icon aria-hidden='true' className='text-base' name='arrow_forward' />
-              </Link>
-            </div>
-          )}
+        <div className='mt-auto pt-4'>
+          <div className='border-t border-outline-variant/60 pt-3'>
+            {cheapest ? (
+              <div>
+                <div className='flex items-baseline justify-between gap-2'>
+                  <span className='text-base font-bold text-on-surface tabular-nums'>
+                    {samePrice
+                      ? t(`${key}.card.price`, {
+                          price: format.money(planPrice(cheapest).finalPrice),
+                          unit: t(`${key}.priceUnit.${cheapest.pricingUnit}`)
+                        })
+                      : t(`${key}.card.fromPrice`, { price: format.money(planPrice(cheapest).finalPrice) })}
+                  </span>
+                  {!samePrice ? (
+                    <span className='rounded-full bg-secondary-container px-2 py-0.5 text-xs font-semibold text-primary'>
+                      {t(`${key}.card.plansCount`, { count: service.plans.length })}
+                    </span>
+                  ) : null}
+                </div>
+                {samePrice && cheapest.durationMinutes ? (
+                  <span className='mt-0.5 block text-xs text-on-surface-variant'>
+                    {t(`${key}.card.minimum`, { duration: format.duration(cheapest.durationMinutes) })}
+                  </span>
+                ) : null}
+              </div>
+            ) : (
+              <p className='text-sm text-on-surface-variant'>
+                {t(service.center ? `${key}.card.contactPrice` : `${key}.card.pricePerCenter`)}
+              </p>
+            )}
+          </div>
+
+          <div className='mt-4 flex items-center justify-between gap-3 border-t border-outline-variant/40 pt-3'>
+            {service.center ? (
+              <>
+                <span aria-hidden='true' className='text-sm font-semibold text-primary group-hover:underline'>
+                  {t(`${key}.card.detailsShort`)}
+                </span>
+                <Link
+                  aria-label={`${t(`${key}.card.bookShort`)} ${service.name}`}
+                  className={primaryLink}
+                  to={`/customer/booking?center=${service.center.id}&service=${service.catalogItemId}`}
+                >
+                  <Icon className='text-lg' name='event_available' />
+                  {t(`${key}.card.bookShort`)}
+                </Link>
+              </>
+            ) : (
+              <div className='flex w-full flex-col gap-2'>
+                <button className={`${primaryLink} justify-center`} onClick={openCenterPicker} type='button'>
+                  <Icon className='text-lg' name='home_health' />
+                  {t(`${key}.card.chooseCenter`)}
+                </button>
+                <Link
+                  className='inline-flex min-h-9 items-center justify-center gap-1 rounded-lg text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+                  to='/customer/centers'
+                >
+                  {t('customer.centerPicker.compare')}
+                  <Icon aria-hidden='true' className='text-base' name='arrow_forward' />
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </article>

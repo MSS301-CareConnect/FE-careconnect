@@ -7,6 +7,7 @@ import { CatalogItemRequestStatus } from '~/shared/api/generated/contracts'
 import { serviceCategoryGroup } from '~/entities/care-catalog/service-category'
 
 export const CATALOG_PAGE_SIZE = 10
+export const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const
 export const catalogStatuses = Object.values(CatalogItemRequestStatus)
 
 /** Lowercases and strips Vietnamese diacritics so "cham soc" matches "Chăm sóc". */
@@ -24,6 +25,10 @@ export function useCatalogList() {
   const keyword = params.get('q') ?? ''
   const category = params.get('category') ?? ''
   const status = catalogStatuses.find((item) => item === params.get('status'))
+  const rawSize = Number(params.get('size'))
+  const pageSize = PAGE_SIZE_OPTIONS.includes(rawSize as (typeof PAGE_SIZE_OPTIONS)[number])
+    ? rawSize
+    : CATALOG_PAGE_SIZE
 
   const items = query.data ?? []
   // Groups present in the catalog, in the fixed order of the six categories ("other" last).
@@ -35,15 +40,18 @@ export function useCatalogList() {
       (!category || serviceCategoryGroup(item.category) === category) &&
       (!status || item.status === status)
   )
-  const pageCount = Math.max(1, Math.ceil(filtered.length / CATALOG_PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const page = Math.min(Math.max(0, Number(params.get('page')) || 0), pageCount - 1)
-  const rows = filtered.slice(page * CATALOG_PAGE_SIZE, (page + 1) * CATALOG_PAGE_SIZE)
+  const rows = filtered.slice(page * pageSize, (page + 1) * pageSize)
 
-  function update(name: 'q' | 'category' | 'status' | 'page', value: string) {
+  function update(name: 'q' | 'category' | 'status' | 'page' | 'size', value: string) {
     setParams((previous) => {
       const next = new URLSearchParams(previous)
-      if (value && value !== 'all' && !(name === 'page' && value === '0')) next.set(name, value)
-      else next.delete(name)
+      if (value && value !== 'all' && !(name === 'page' && value === '0') && !(name === 'size' && value === String(CATALOG_PAGE_SIZE))) {
+        next.set(name, value)
+      } else {
+        next.delete(name)
+      }
       if (name !== 'page') next.delete('page')
       return next
     })
@@ -52,7 +60,7 @@ export function useCatalogList() {
   function reset() {
     setParams((previous) => {
       const next = new URLSearchParams(previous)
-      for (const name of ['q', 'category', 'status', 'page']) next.delete(name)
+      for (const name of ['q', 'category', 'status', 'page', 'size']) next.delete(name)
       return next
     })
   }
@@ -65,6 +73,8 @@ export function useCatalogList() {
     rows,
     page,
     pageCount,
+    pageSize,
+    totalCount: filtered.length,
     keyword,
     category,
     status,

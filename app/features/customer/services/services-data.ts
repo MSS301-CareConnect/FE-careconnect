@@ -19,6 +19,7 @@ export function catalogServices(items: readonly CatalogItemRecord[]) {
       name: item.name,
       category: item.category,
       description: item.description,
+      imageUrl: item.imageUrl,
       plans: []
     }))
 }

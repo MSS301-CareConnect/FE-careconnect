@@ -81,7 +81,14 @@ export function CustomerServiceDetailPage() {
         {service ? (
           <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8'>
             <div className='flex min-w-0 flex-col gap-6'>
-              <ServiceImageGallery categoryIcon={SERVICE_CATEGORY_ICONS[group]} />
+              <ServiceImageGallery
+                categoryIcon={SERVICE_CATEGORY_ICONS[group]}
+                images={
+                  service.catalogItem.imageUrl
+                    ? [{ id: 'hero', url: service.catalogItem.imageUrl, alt: service.catalogItem.name }]
+                    : []
+                }
+              />
               <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs sm:p-7'>
                 <h2 className='flex items-center gap-2 text-lg font-bold tracking-[-0.02em] text-on-surface'>
                   <Icon className='text-xl text-primary' name='description' />

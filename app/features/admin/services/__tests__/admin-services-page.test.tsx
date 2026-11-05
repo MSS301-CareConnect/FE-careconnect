@@ -9,7 +9,8 @@ import {
   fetchCenterOfferings,
   fetchPricePlans,
   removeCatalog,
-  saveCatalog
+  saveCatalog,
+  uploadCatalogImage
 } from '~/entities/care-catalog/care-catalog-api'
 import { fetchCenters } from '~/entities/provider/provider-api'
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
@@ -25,7 +26,8 @@ vi.mock('~/entities/care-catalog/care-catalog-api', async (importOriginal) => ({
   saveCatalog: vi.fn(),
   removeCatalog: vi.fn(),
   fetchCenterOfferings: vi.fn(),
-  fetchPricePlans: vi.fn()
+  fetchPricePlans: vi.fn(),
+  uploadCatalogImage: vi.fn()
 }))
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
@@ -95,6 +97,7 @@ describe('Admin service catalog', () => {
     vi.mocked(fetchCenterOfferings).mockReset()
     vi.mocked(fetchPricePlans).mockReset()
     vi.mocked(fetchCenters).mockReset()
+    vi.mocked(uploadCatalogImage).mockReset()
     await setAppLanguage('vi', false)
   })
 
@@ -345,5 +348,45 @@ describe('Admin service catalog', () => {
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Services')
     expect(screen.getByRole('tab', { name: 'Standard catalog' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('uploads a cover image from the device and saves its catalog URL with the service', async () => {
+    const imageUrl = '/api/v1/catalog-items/images/media-1'
+    vi.mocked(uploadCatalogImage).mockResolvedValue({ mediaFileId: 'media-1', imageUrl })
+    vi.mocked(createCatalog).mockResolvedValue({ ...elderCare, id: 'item-4', name: 'Chăm sóc vết thương', imageUrl })
+    renderPage()
+    const dialog = await openCreateDialog()
+    fireEvent.change(within(dialog).getByLabelText(/Tên dịch vụ/), { target: { value: 'Chăm sóc vết thương' } })
+    fireEvent.change(within(dialog).getByLabelText(/Danh mục/), { target: { value: 'Sau phẫu thuật' } })
+
+    const photo = new File([new Uint8Array(16)], 'cover.png', { type: 'image/png' })
+    const fileInput = dialog.querySelector<HTMLInputElement>('input[type="file"]')
+    expect(fileInput).not.toBeNull()
+    fireEvent.change(fileInput!, { target: { files: [photo] } })
+
+    await waitFor(() => expect(within(dialog).getByLabelText('Hoặc dán liên kết ảnh')).toHaveValue(imageUrl))
+    expect(vi.mocked(uploadCatalogImage).mock.calls[0][0]).toBe(photo)
+    expect(within(dialog).getByRole('button', { name: 'Đổi ảnh khác' })).toBeInTheDocument()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo dịch vụ' }))
+    await waitFor(() => expect(createCatalog).toHaveBeenCalled())
+    expect(vi.mocked(createCatalog).mock.calls[0][0]).toMatchObject({ imageUrl })
+  })
+
+  it('rejects a non-image file before uploading and explains a server size refusal', async () => {
+    renderPage()
+    const dialog = await openCreateDialog()
+    const fileInput = dialog.querySelector<HTMLInputElement>('input[type="file"]')!
+
+    fireEvent.change(fileInput, { target: { files: [new File(['%PDF'], 'scan.pdf', { type: 'application/pdf' })] } })
+    expect(await within(dialog).findByText('Chỉ nhận ảnh JPG, PNG hoặc WebP.')).toBeInTheDocument()
+    expect(uploadCatalogImage).not.toHaveBeenCalled()
+
+    vi.mocked(uploadCatalogImage).mockRejectedValue(apiError(400, 3113))
+    fireEvent.change(fileInput, {
+      target: { files: [new File([new Uint8Array(8)], 'big.jpg', { type: 'image/jpeg' })] }
+    })
+    expect(await within(dialog).findByText('Ảnh tối đa 5 MB. Hãy chọn ảnh nhỏ hơn.')).toBeInTheDocument()
+    expect(within(dialog).getByLabelText('Hoặc dán liên kết ảnh')).toHaveValue('')
   })
 })

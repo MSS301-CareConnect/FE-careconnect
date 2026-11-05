@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 
 import { Icon } from './icon'
+import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from './use-anchored-popover'
 
 export interface ActionMenuItem {
   id: string
@@ -13,7 +14,8 @@ export interface ActionMenuItem {
 
 /**
  * The "⋯" button that holds secondary actions of a page or card. Arrow keys move between items, Escape and a click
- * outside close it and return focus to the button.
+ * outside close it and return focus to the button. The menu opens in the top layer so tables and overflow containers
+ * never clip it.
  */
 export function ActionMenu({
   label,
@@ -30,24 +32,31 @@ export function ActionMenu({
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
+
+  const dismiss = useCallback(() => setOpen(false), [])
+  const side = useAnchoredPopover({
+    open,
+    anchorRef: buttonRef,
+    panelRef,
+    rootRef,
+    onDismiss: dismiss,
+    align,
+    gap: 6
+  })
 
   useEffect(() => {
     if (!open) return
-    function onPointer(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
-    }
     function onKey(event: globalThis.KeyboardEvent) {
       if (event.key === 'Escape') {
         setOpen(false)
         buttonRef.current?.focus()
       }
     }
-    document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
-    rootRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus()
+    panelRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus({ preventScroll: true })
     return () => {
-      document.removeEventListener('pointerdown', onPointer)
       document.removeEventListener('keydown', onKey)
     }
   }, [open])
@@ -55,14 +64,23 @@ export function ActionMenu({
   function onMenuKey(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
     event.preventDefault()
-    const entries = [...(rootRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])]
+    const entries = [...(panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])]
     const index = entries.findIndex((entry) => entry === document.activeElement)
     const next =
       event.key === 'ArrowDown' ? (index + 1) % entries.length : (index - 1 + entries.length) % entries.length
-    entries[next]?.focus()
+    entries[next]?.focus({ preventScroll: true })
   }
 
   if (items.length === 0) return null
+  const originClass =
+    side === 'top'
+      ? align === 'end'
+        ? 'origin-bottom-right'
+        : 'origin-bottom-left'
+      : align === 'end'
+        ? 'origin-top-right'
+        : 'origin-top-left'
+
   return (
     <div className={`relative ${className}`} ref={rootRef}>
       <button
@@ -70,7 +88,7 @@ export function ActionMenu({
         aria-expanded={open}
         aria-haspopup='menu'
         aria-label={label}
-        className='grid h-11 w-11 place-items-center rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+        className='grid h-10 w-10 place-items-center rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
         onClick={() => setOpen((value) => !value)}
         ref={buttonRef}
         type='button'
@@ -80,14 +98,16 @@ export function ActionMenu({
       {open ? (
         <div
           aria-label={label}
-          className={`cc-scale-in absolute top-full z-30 mt-2 min-w-52 rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--shadow-raised)] ${align === 'end' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}
+          className={`${popoverPanelClass} cc-scale-in min-w-52 p-1.5 ${originClass}`}
           id={menuId}
           onKeyDown={onMenuKey}
+          popover={popoverAttribute}
+          ref={panelRef}
           role='menu'
         >
           {items.map((item) => (
             <button
-              className={`flex min-h-11 w-full items-center gap-2.5 rounded-lg px-3 text-left text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${item.tone === 'danger' ? 'text-error hover:bg-error-container/50' : 'text-on-surface hover:bg-surface-container-low'}`}
+              className={`flex min-h-10 w-full items-center gap-2.5 rounded-lg px-3 text-left text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${item.tone === 'danger' ? 'text-error hover:bg-error-container/50' : 'text-on-surface hover:bg-surface-container-low'}`}
               key={item.id}
               onClick={() => {
                 setOpen(false)

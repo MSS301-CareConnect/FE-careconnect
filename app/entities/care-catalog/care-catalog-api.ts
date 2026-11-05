@@ -2,7 +2,8 @@ import {
   createCatalogItem,
   deleteCatalogItem,
   listCatalogItems,
-  updateCatalogItem
+  updateCatalogItem,
+  uploadCatalogItemImage
 } from '~/shared/api/generated/api/catalog-item/catalog-item'
 import { getCenterOffering, listCenterOfferings } from '~/shared/api/generated/api/center-offering/center-offering'
 import {
@@ -77,6 +78,13 @@ export async function createCatalog(request: CatalogItemRequest) {
 }
 export async function saveCatalog(id: string, request: CatalogItemRequest) {
   return result(await updateCatalogItem(id, request, await writeOptions()))
+}
+/**
+ * Stores a cover image (JPG / PNG / WebP up to 5 MB) and returns its permanent catalog URL to send as `imageUrl`.
+ * The URL is public and redirects to a short-lived download link, so it works directly in an <img>.
+ */
+export async function uploadCatalogImage(file: File) {
+  return result(await uploadCatalogItemImage({ file }, await writeOptions()))
 }
 /** Soft-deletes the standard service; the backend keeps the row for existing center offerings. */
 export async function removeCatalog(id: string) {
