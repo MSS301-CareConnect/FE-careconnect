@@ -25,6 +25,7 @@ import { CaregiverServicesEditor } from './components/caregiver-services-editor'
 import { ManagerCertificates } from './components/manager-certificates'
 import { pickAvatar } from '~/entities/provider/provider-avatar'
 import { Avatar } from '~/shared/ui/avatar'
+import { DatePicker } from '~/shared/ui/date-picker'
 
 const key = 'centerManager.provider' as const
 const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
@@ -111,12 +112,7 @@ function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; 
         </label>
         <label className='text-sm'>
           {t(`${key}.birthDate`)}
-          <input
-            className={inputClass}
-            onChange={(event) => setBirthDate(event.target.value)}
-            type='date'
-            value={birthDate}
-          />
+          <DatePicker className='mt-1' defaultMonth='1990-01-01' onChange={setBirthDate} value={birthDate} />
         </label>
         <label className='text-sm'>
           {t(`${key}.status`)}

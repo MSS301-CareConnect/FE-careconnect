@@ -8,6 +8,7 @@ import { createCenter, fetchCenters, fetchProviderMedia } from '~/entities/provi
 import { fetchProviderStatistics } from '~/entities/statistics/statistics-api'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
+import { pickTime } from '~/shared/test/pickers'
 
 import { AdminCentersPage } from '../admin-centers-page'
 
@@ -133,8 +134,8 @@ describe('AdminCentersPage', () => {
     fireEvent.change(within(dialog).getByLabelText('Tên trung tâm'), { target: { value: 'Night Care' } })
     fireEvent.change(within(dialog).getByLabelText('Email'), { target: { value: 'night@example.com' } })
     fireEvent.change(within(dialog).getByLabelText('Địa chỉ'), { target: { value: '2 Lê Lợi' } })
-    fireEvent.change(within(dialog).getByLabelText('Mở cửa'), { target: { value: '22:00' } })
-    fireEvent.change(within(dialog).getByLabelText('Đóng cửa'), { target: { value: '06:00' } })
+    pickTime(within(dialog).getByLabelText('Mở cửa'), '22:00')
+    pickTime(within(dialog).getByLabelText('Đóng cửa'), '06:00')
     // Overnight hours are a note, not an error (D-04).
     expect(
       within(dialog).getByText(
@@ -158,11 +159,11 @@ describe('AdminCentersPage', () => {
     renderPage()
     fireEvent.click(await screen.findByRole('button', { name: 'Thêm trung tâm' }))
     const dialog = screen.getByRole('dialog', { name: 'Thêm trung tâm' })
-    fireEvent.change(within(dialog).getByLabelText('Mở cửa'), { target: { value: '08:00' } })
+    pickTime(within(dialog).getByLabelText('Mở cửa'), '08:00')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tạo trung tâm' }))
     expect(within(dialog).getByText('Chọn cả giờ mở và giờ đóng cửa, hoặc để trống cả hai.')).toBeInTheDocument()
     expect(within(dialog).getByLabelText('Đóng cửa')).toBeEnabled()
-    fireEvent.change(within(dialog).getByLabelText('Đóng cửa'), { target: { value: '07:00' } })
+    pickTime(within(dialog).getByLabelText('Đóng cửa'), '07:00')
     expect(within(dialog).queryByText('Chọn cả giờ mở và giờ đóng cửa, hoặc để trống cả hai.')).not.toBeInTheDocument()
   })
 })

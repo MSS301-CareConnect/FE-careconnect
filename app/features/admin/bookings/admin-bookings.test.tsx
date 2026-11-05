@@ -126,8 +126,8 @@ describe('Admin bookings (M-11, M-13)', () => {
     fireEvent.change(screen.getByLabelText('Trung tâm'), { target: { value: 'ct-1' } })
     await waitFor(() => expect(fetchBookings).toHaveBeenLastCalledWith(expect.objectContaining({ centerId: 'ct-1' })))
 
-    fireEvent.change(screen.getByLabelText('Từ ngày'), { target: { value: '2026-11-20' } })
-    fireEvent.change(screen.getByLabelText('Đến ngày'), { target: { value: '2026-11-01' } })
+    fireEvent.change(screen.getByLabelText('Từ ngày'), { target: { value: '20/11/2026' } })
+    fireEvent.change(screen.getByLabelText('Đến ngày'), { target: { value: '01/11/2026' } })
     expect(
       screen.getByText('Ngày kết thúc cần từ ngày bắt đầu trở đi; bộ lọc ngày chưa được áp dụng.')
     ).toBeInTheDocument()

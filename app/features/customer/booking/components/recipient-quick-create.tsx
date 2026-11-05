@@ -9,8 +9,8 @@ import type {
 } from '~/shared/api/generated/contracts'
 import { Button } from '~/shared/ui/button'
 import { DatePicker } from '~/shared/ui/date-picker'
-import { Drawer } from '~/shared/ui/drawer'
 import { FormField, Input, Select } from '~/shared/ui/form-field'
+import { Modal } from '~/shared/ui/modal'
 
 /** "This person is your father" → the customer is their CHILD, as the profile form stores it. */
 const RELATIONSHIPS = [
@@ -47,7 +47,7 @@ const EMPTY: QuickProfile = {
   province: ''
 }
 
-/** Creates a basic family profile without leaving the booking, then selects it. */
+/** Creates a basic family profile in a centred two-column dialog without leaving the booking, then selects it. */
 export function RecipientQuickCreate({
   open,
   onClose,
@@ -91,7 +91,8 @@ export function RecipientQuickCreate({
   }
 
   return (
-    <Drawer
+    <Modal
+      dismissOnBackdrop={false}
       description={t('customer.booking.quickCreate.description')}
       footer={
         <>
@@ -105,10 +106,11 @@ export function RecipientQuickCreate({
       }
       onClose={onClose}
       open={open}
+      size='xl'
       title={t('customer.booking.quickCreate.title')}
     >
       <form
-        className='flex flex-col gap-4'
+        className='grid gap-4 md:grid-cols-2'
         noValidate
         onSubmit={(event) => {
           event.preventDefault()
@@ -203,12 +205,12 @@ export function RecipientQuickCreate({
           </FormField>
         </div>
         {create.isError ? (
-          <p className='rounded-lg bg-error-container p-3 text-sm text-on-error-container' role='alert'>
+          <p className='rounded-lg bg-error-container p-3 text-sm text-on-error-container md:col-span-2' role='alert'>
             {t('customer.booking.quickCreate.error')}
           </p>
         ) : null}
         <button className='sr-only' tabIndex={-1} type='submit' />
       </form>
-    </Drawer>
+    </Modal>
   )
 }

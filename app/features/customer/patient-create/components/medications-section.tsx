@@ -6,6 +6,7 @@ import { Icon } from '~/shared/ui/icon'
 import { MAX_MEDICATIONS, medicationField, type PatientCreateErrors } from '../patient-create-request'
 import type { MedicationItem } from '../types'
 import { FieldError, fieldErrorProps, invalidClassName } from './field-error'
+import { DatePicker } from '~/shared/ui/date-picker'
 
 export interface MedicationsSectionProps {
   medications: MedicationItem[]
@@ -131,13 +132,11 @@ export function MedicationsSection({
                   <label htmlFor={`${item.id}-start`} className='text-[11px] font-medium text-on-surface-variant'>
                     {t('customer.patientCreate.section3.startDateLabel')}
                   </label>
-                  <input
+                  <DatePicker
                     id={`${item.id}-start`}
-                    type='date'
                     value={item.startDate}
-                    onChange={(e) => onUpdateMedicine(item.id, { startDate: e.target.value })}
+                    onChange={(value) => onUpdateMedicine(item.id, { startDate: value })}
                     {...fieldErrorProps(medicationField(item.id, 'startDate'), errors)}
-                    className={fieldClass}
                   />
                   <FieldError field={medicationField(item.id, 'startDate')} errors={errors} />
                 </div>

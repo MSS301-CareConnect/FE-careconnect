@@ -27,7 +27,7 @@ function renderPage() {
 function fillRequiredFields() {
   fireEvent.change(screen.getByLabelText(/Họ và tên người bệnh/), { target: { value: 'Nguyễn Văn An' } })
   fireEvent.change(screen.getByLabelText(/Mối quan hệ với bạn/), { target: { value: 'father' } })
-  fireEvent.change(screen.getByLabelText(/Ngày sinh/), { target: { value: '1956-08-14' } })
+  fireEvent.change(screen.getByLabelText(/Ngày sinh/), { target: { value: '14/08/1956' } })
   fireEvent.click(screen.getByRole('radio', { name: 'Nam' }))
 }
 
@@ -145,7 +145,7 @@ describe('PatientCreatePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '+ Thêm thuốc mới' }))
     fireEvent.change(screen.getByLabelText('Tên thuốc'), { target: { value: 'Amlodipine 5mg' } })
-    fireEvent.change(screen.getByLabelText('Ngày bắt đầu dùng'), { target: { value: '2026-10-01' } })
+    fireEvent.change(screen.getByLabelText('Ngày bắt đầu dùng'), { target: { value: '01/10/2026' } })
     fireEvent.change(screen.getByLabelText('Liều lượng'), { target: { value: '1 viên' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Hoàn tất tạo hồ sơ người bệnh' }))

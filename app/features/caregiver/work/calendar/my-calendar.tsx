@@ -13,7 +13,7 @@ import { useNow } from '../../ui/use-now'
 import { buildCalendarItems, itemsOfDay, type CalendarItem } from './calendar-model'
 import { LEGEND } from './calendar-item-style'
 import { DayAgenda } from './day-agenda'
-import { CalendarItemDrawer } from './item-drawer'
+import { CalendarItemDialog } from './item-dialog'
 import { MonthGrid } from './month-grid'
 import { useCalendarData } from './use-calendar-data'
 import { WeekGrid } from './week-grid'
@@ -231,7 +231,7 @@ export function MyCalendar({ profileId, today }: { profileId?: string; today: st
         </div>
       )}
 
-      {selected ? <CalendarItemDrawer item={selected} onClose={() => setSelected(null)} /> : null}
+      {selected ? <CalendarItemDialog item={selected} onClose={() => setSelected(null)} /> : null}
     </div>
   )
 }

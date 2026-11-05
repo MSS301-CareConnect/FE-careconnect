@@ -8,9 +8,8 @@ import { providerKeys, removeCertificate } from '~/entities/provider/provider-ap
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import type { ProviderCertificateRecord } from '~/shared/api/generated/contracts'
 import { Button } from '~/shared/ui/button'
-import { Drawer } from '~/shared/ui/drawer'
 import { Icon } from '~/shared/ui/icon'
-import { ConfirmDialog } from '~/shared/ui/modal'
+import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { StatusBadge, type StatusTone } from '~/shared/ui/status-badge'
 
@@ -190,13 +189,14 @@ export function CertificatesTab({
       ) : null}
 
       {viewing ? (
-        <Drawer
+        <Modal
           onClose={() => setViewing(null)}
           open
+          size='lg'
           title={t('caregiver.me.certificates.filesTitle', { name: viewing.certificateName })}
         >
           <ProviderMediaPanel embedded ownerId={viewing.id} ownerType='CERTIFICATE' />
-        </Drawer>
+        </Modal>
       ) : null}
 
       <ConfirmDialog

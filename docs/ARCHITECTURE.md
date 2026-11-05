@@ -386,7 +386,7 @@ targets and keyboard focus rings:
 - `section-card.tsx`, `language-switch.tsx`, `site-footer.tsx`, `icon.tsx`: generic layout cards, VI/EN language switcher, footer, and Material Symbols icon wrapper.
 - Added by the customer redesign (2026-11-03): `page-header.tsx` (`PageHeader`, `pageContainer`), `tabs.tsx` (sliding
   indicator, badges, roving focus; also used by the caregiver portal), `action-menu.tsx` ("⋯" menu), `stepper.tsx`
-  (steps with an optional deadline note), `choice-card.tsx`, `date-picker.tsx` (dd/mm/yyyy), `time-select.tsx` (24 h),
+  (steps with an optional deadline note), `choice-card.tsx`, `date-picker.tsx` and `time-select.tsx` (see pickers below),
   `drawer.tsx`, `segmented-control.tsx`, `rating.tsx`, `skeleton.tsx`, `copy-button.tsx`, `search-input.tsx`
   (debounced), `filter-chips.tsx`, `filter-menu-chip.tsx`, `image-viewer.tsx` (`ImageViewer`, `ViewableImage`: zoom
   with buttons, wheel or + / − / 0, drag to pan, gallery arrows) and `file-drop-zone.tsx` (click or drop to pick files,
@@ -394,6 +394,23 @@ targets and keyboard focus rings:
   `dismissOnBackdrop={false}` for forms and bounds its height to the screen. `shared/lib/format.ts` (`useFormat`) gives
   money "100.000 ₫", dates dd/mm/yyyy and 24-hour times in both languages; `use-clock.ts` and `fold-text.ts` support
   countdowns and diacritic-insensitive search.
+
+- Pickers and dropdowns (redesigned 2026-11-05). `use-anchored-popover.ts` places a panel next to its field in the
+  browser top layer (`popover="manual"` + `showPopover()`), so dialogs and `overflow` containers never clip it; it opens
+  below, flips above when there is more room there, stays inside the viewport, follows scroll/resize and closes on a
+  press outside. `date-picker.tsx` (`DatePicker`) keeps the typed dd/mm/yyyy input (never auto-corrected; an unreadable
+  value gets a note) and opens `calendar-panel.tsx` from the icon or a click in the input: today and the chosen day
+  marked, min/max days disabled with their tooltip, a "Today" shortcut, month → year jump from the title, and grid
+  keys (arrows, Home/End, PageUp/PageDown, Shift+PageUp/PageDown for a year, Enter, Esc). `time-select.tsx`
+  (`TimeSelect`, same `value`/`onChange`/`step` contract, 24 h) is a select-only combobox whose listbox shows one hour
+  per row grouped night / morning / afternoon / evening, opens scrolled to the value, takes `min`/`max`/`isTimeDisabled`
+  to mark times that cannot be picked, and moves with ←/→ (one step), ↑/↓ (one hour), PageUp/PageDown, Home/End.
+  `Select` and every raw `<select>` stay native and are styled in `app.css` with the CSS customizable select
+  (`appearance: base-select`, `::picker(select)`): a rounded raised panel, 44 px options, hover/focus fills, a check mark
+  on the chosen option and a bounded scrolling height, positioned and flipped by the browser. Native was chosen over a
+  custom listbox so the ~50 feature selects, keyboard type-ahead, forms and Testing Library `change` events keep working
+  untouched; browsers without support keep the styled native control. Tests pick a time with `shared/test/pickers.ts`
+  (`pickTime`) and type dates as dd/mm/yyyy.
 
 Domain-specific status mapping lives in `app/entities/` (`booking/booking-status-badge.tsx`
 and `provider/provider-status-badge.tsx`), mapping backend booking, occurrence, center,

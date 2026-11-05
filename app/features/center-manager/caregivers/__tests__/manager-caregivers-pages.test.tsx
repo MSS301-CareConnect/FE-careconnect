@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -20,6 +20,7 @@ import {
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
+import { pickTime } from '~/shared/test/pickers'
 import { ManagerCaregiverDetailPage } from '../manager-caregiver-detail-page'
 import { ManagerCaregiversPage } from '../manager-caregivers-page'
 import { provisionCaregiverAccount } from '../caregiver-onboarding-api'
@@ -265,8 +266,9 @@ describe('Center Manager Provider caregivers', () => {
 
     const add = await screen.findByRole('button', { name: 'Add time off' })
     expect(add).toBeDisabled()
-    fireEvent.change(screen.getByLabelText('Start'), { target: { value: '2026-12-01T08:00' } })
-    fireEvent.change(screen.getByLabelText('End'), { target: { value: '2026-12-02T08:00' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Start' }), { target: { value: '01/12/2026' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'End' }), { target: { value: '02/12/2026' } })
+    pickTime(within(screen.getByRole('group', { name: 'End' })).getByRole('combobox'), '08:00')
     fireEvent.click(add)
     await waitFor(() =>
       expect(createTimeOff).toHaveBeenCalledWith('caregiver-1', {

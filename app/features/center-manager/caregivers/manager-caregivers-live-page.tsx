@@ -8,6 +8,7 @@ import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { provisionCaregiverAccount } from './caregiver-onboarding-api'
+import { DatePicker } from '~/shared/ui/date-picker'
 
 const key = 'centerManager.provider' as const
 const inputClass =
@@ -122,12 +123,7 @@ export function CreateCaregiver({ centerId, onDone }: { centerId: string; onDone
         </label>
         <label className='text-sm'>
           {t(`${key}.birthDate`)}
-          <input
-            className={inputClass}
-            onChange={(event) => setDateOfBirth(event.target.value)}
-            type='date'
-            value={dateOfBirth}
-          />
+          <DatePicker className='mt-1' defaultMonth='1990-01-01' onChange={setDateOfBirth} value={dateOfBirth} />
         </label>
         <label className='text-sm sm:col-span-2'>
           {t(`${key}.bio`)}

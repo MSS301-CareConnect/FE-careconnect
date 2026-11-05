@@ -3,6 +3,8 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
+import { DatePicker } from '~/shared/ui/date-picker'
+import { TimeSelect } from '~/shared/ui/time-select'
 
 import { createTimeOff, fetchTimeOffs, providerKeys, removeTimeOff } from './provider-api'
 
@@ -17,8 +19,12 @@ export function CaregiverTimeOffs({ caregiverId, copy }: { caregiverId: string; 
   const key = copy
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
-  const [startAt, setStartAt] = useState('')
-  const [endAt, setEndAt] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [startTime, setStartTime] = useState('08:00')
+  const [endDate, setEndDate] = useState('')
+  const [endTime, setEndTime] = useState('17:00')
+  const startAt = startDate ? `${startDate}T${startTime}` : ''
+  const endAt = endDate ? `${endDate}T${endTime}` : ''
   const [reason, setReason] = useState('')
   const timeOffs = useQuery({
     queryKey: providerKeys.timeOffs(caregiverId),
@@ -34,8 +40,8 @@ export function CaregiverTimeOffs({ caregiverId, copy }: { caregiverId: string; 
         reason: reason.trim() || undefined
       }),
     onSuccess: async () => {
-      setStartAt('')
-      setEndAt('')
+      setStartDate('')
+      setEndDate('')
       setReason('')
       await refresh()
     }
@@ -83,24 +89,37 @@ export function CaregiverTimeOffs({ caregiverId, copy }: { caregiverId: string; 
         </ul>
       ) : null}
       <form className='flex flex-wrap items-end gap-2' onSubmit={submit}>
-        <label className='flex flex-col text-sm font-medium'>
-          {t(`${key}.start`)}
-          <input
-            className={inputClass}
-            onChange={(event) => setStartAt(event.target.value)}
-            type='datetime-local'
-            value={startAt}
-          />
-        </label>
-        <label className='flex flex-col text-sm font-medium'>
-          {t(`${key}.end`)}
-          <input
-            className={inputClass}
-            onChange={(event) => setEndAt(event.target.value)}
-            type='datetime-local'
-            value={endAt}
-          />
-        </label>
+        <fieldset className='flex flex-col text-sm font-medium'>
+          <legend>{t(`${key}.start`)}</legend>
+          <span className='mt-1 flex gap-2'>
+            <DatePicker aria-label={t(`${key}.start`)} className='w-40' onChange={setStartDate} value={startDate} />
+            <TimeSelect
+              aria-label={t('common.kit.chooseTime')}
+              className='w-28'
+              onChange={setStartTime}
+              value={startTime}
+            />
+          </span>
+        </fieldset>
+        <fieldset className='flex flex-col text-sm font-medium'>
+          <legend>{t(`${key}.end`)}</legend>
+          <span className='mt-1 flex gap-2'>
+            <DatePicker
+              aria-label={t(`${key}.end`)}
+              className='w-40'
+              defaultMonth={startDate || undefined}
+              min={startDate || undefined}
+              onChange={setEndDate}
+              value={endDate}
+            />
+            <TimeSelect
+              aria-label={t('common.kit.chooseTime')}
+              className='w-28'
+              onChange={setEndTime}
+              value={endTime}
+            />
+          </span>
+        </fieldset>
         <label className='flex min-w-40 flex-1 flex-col text-sm font-medium'>
           {t(`${key}.reason`)}
           <input

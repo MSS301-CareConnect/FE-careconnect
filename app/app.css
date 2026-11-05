@@ -485,3 +485,135 @@ dialog[open] {
     break-inside: avoid;
   }
 }
+
+/*
+ * Dropdowns: every single-choice <select> (the shared `Select` and the raw ones in features) opens a styled listbox
+ * through the CSS customizable select (`appearance: base-select`, Chromium 135+): rounded panel with the raised
+ * shadow, 44 px options, hover and focus fills, a check mark on the chosen option and a bounded, scrolling height. It
+ * stays a native <select>, so keyboard, type-ahead, forms, screen readers and tests behave as before; the browser
+ * places the panel in the top layer and flips it above the field when there is no room below. Browsers without
+ * support keep the styled native control. Kept in the base layer so a field's own utility classes still win.
+ */
+@layer base {
+  @supports (appearance: base-select) {
+    select:not([multiple], [size]),
+    select:not([multiple], [size])::picker(select) {
+      appearance: base-select;
+    }
+
+    select:not([multiple], [size]) {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    select:not([multiple], [size]):disabled {
+      cursor: not-allowed;
+    }
+
+    select:not([multiple], [size])::picker-icon {
+      margin-inline-start: auto;
+      color: var(--color-on-surface-variant);
+      transition: rotate 180ms var(--ease-out-soft);
+    }
+
+    select:not([multiple], [size]):open::picker-icon {
+      rotate: 180deg;
+      color: var(--color-primary);
+    }
+
+    select:not([multiple], [size]):open {
+      border-color: var(--color-primary);
+    }
+
+    select:not([multiple], [size])::picker(select) {
+      margin-block: 6px;
+      padding: 0.375rem;
+      max-block-size: min(20rem, 60dvh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border: 1px solid var(--color-outline-variant);
+      border-radius: 1rem;
+      background: var(--color-surface-container-lowest);
+      color: var(--color-on-surface);
+      box-shadow: var(--shadow-raised);
+      opacity: 0;
+      translate: 0 -4px;
+      transition:
+        opacity 160ms var(--ease-out-soft),
+        translate 160ms var(--ease-out-soft),
+        display 160ms allow-discrete,
+        overlay 160ms allow-discrete;
+    }
+
+    select:not([multiple], [size]):open::picker(select) {
+      opacity: 1;
+      translate: 0 0;
+    }
+
+    @starting-style {
+      select:not([multiple], [size]):open::picker(select) {
+        opacity: 0;
+        translate: 0 -4px;
+      }
+    }
+
+    select:not([multiple], [size]) option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-block-size: 2.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      line-height: 1.3;
+      color: var(--color-on-surface);
+      cursor: pointer;
+      transition: background-color 120ms ease-out;
+    }
+
+    select:not([multiple], [size]) option:hover,
+    select:not([multiple], [size]) option:focus-visible {
+      background: var(--color-surface-container-low);
+    }
+
+    select:not([multiple], [size]) option:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: -2px;
+    }
+
+    select:not([multiple], [size]) option:checked {
+      background: var(--color-brand-50);
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    select:not([multiple], [size]) option::checkmark {
+      order: 1;
+      margin-inline-start: auto;
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    select:not([multiple], [size]) option:disabled {
+      color: var(--color-outline);
+      cursor: not-allowed;
+      background: transparent;
+    }
+
+    select:not([multiple], [size]) optgroup {
+      padding-block-start: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-on-surface-variant);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  select::picker(select),
+  select::picker-icon {
+    transition: none;
+  }
+}

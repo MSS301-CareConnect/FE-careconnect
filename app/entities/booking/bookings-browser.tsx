@@ -17,6 +17,7 @@ import { BOOKING_STATUSES, bookingDay, bookingTypeKey, formatDate, formatMoney, 
 import { BookingMonthCalendar } from './booking-month-calendar'
 import { monthRange, planVisits, shiftMonth } from './booking-month'
 import { BookingStatusBadge } from './booking-status-badge'
+import { DatePicker } from '~/shared/ui/date-picker'
 
 const key = 'booking.browser' as const
 const PAGE_SIZE = 20
@@ -220,22 +221,20 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
             <>
               <label className='flex flex-col gap-1 text-xs font-semibold text-on-surface-variant'>
                 {t(`${key}.from`)}
-                <input
+                <DatePicker
                   aria-describedby={rangeReversed ? `${id}-range` : undefined}
-                  className={baseControlClass}
-                  onChange={(event) => update({ from: event.target.value || undefined })}
-                  type='date'
+                  max={to || undefined}
+                  onChange={(value) => update({ from: value || undefined })}
                   value={from}
                 />
               </label>
               <label className='flex flex-col gap-1 text-xs font-semibold text-on-surface-variant'>
                 {t(`${key}.to`)}
-                <input
+                <DatePicker
                   aria-describedby={rangeReversed ? `${id}-range` : undefined}
                   aria-invalid={rangeReversed || undefined}
-                  className={baseControlClass}
-                  onChange={(event) => update({ to: event.target.value || undefined })}
-                  type='date'
+                  defaultMonth={from || undefined}
+                  onChange={(value) => update({ to: value || undefined })}
                   value={to}
                 />
               </label>

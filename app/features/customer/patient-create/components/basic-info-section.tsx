@@ -7,6 +7,7 @@ import { CareRecipientCreateRequestBloodType, CareRecipientCreateRequestGender }
 import { localIsoDate, type PatientCreateErrors } from '../patient-create-request'
 import type { BmiResult, PatientCreateFormData, Relationship } from '../types'
 import { FieldError, fieldErrorProps, invalidClassName } from './field-error'
+import { DatePicker } from '~/shared/ui/date-picker'
 
 export interface BasicInfoSectionProps {
   formData: PatientCreateFormData
@@ -87,7 +88,7 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
               value={formData.relationship}
               onChange={(e) => onUpdate('relationship', e.target.value as Relationship)}
               {...fieldErrorProps('relationship', errors)}
-              className={`min-h-11 py-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-container-low px-4 pr-10 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
+              className={`min-h-11 py-2 w-full cursor-pointer rounded-lg bg-surface-container-low px-4 pr-10 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
             >
               <option value='' disabled>
                 {t('customer.patientCreate.section1.relationshipPlaceholder')}
@@ -111,14 +112,13 @@ export function BasicInfoSection({ formData, bmi, errors, onUpdate }: BasicInfoS
           <label htmlFor='birthDateInput' className='text-xs font-semibold text-on-surface'>
             {t('customer.patientCreate.section1.birthDateLabel')} <span className='text-error'>*</span>
           </label>
-          <input
+          <DatePicker
             id='birthDateInput'
-            type='date'
+            defaultMonth='1950-01-01'
             max={localIsoDate()}
             value={formData.birthDate}
-            onChange={(e) => onUpdate('birthDate', e.target.value)}
+            onChange={(value) => onUpdate('birthDate', value)}
             {...fieldErrorProps('birthDate', errors)}
-            className={`min-h-11 py-2 rounded-lg bg-surface-container-low px-4 text-xs text-on-surface transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none ${invalidClassName}`}
           />
           <FieldError field='birthDate' errors={errors} />
         </div>

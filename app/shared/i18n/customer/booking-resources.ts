@@ -125,6 +125,7 @@ export const bookingEn = {
     choose: 'Choose this caregiver',
     chosen: 'Chosen',
     noBio: 'No introduction yet.',
+    about: 'About',
     certificates: '{{count}} verified certificates',
     centerName: 'Center: {{name}}'
   },
@@ -443,6 +444,7 @@ export const bookingVi = {
     choose: 'Chọn người này',
     chosen: 'Đã chọn',
     noBio: 'Chưa có lời giới thiệu.',
+    about: 'Giới thiệu',
     certificates: '{{count}} chứng chỉ đã xác minh',
     centerName: 'Trung tâm: {{name}}'
   },

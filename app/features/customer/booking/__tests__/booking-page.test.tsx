@@ -21,6 +21,7 @@ import {
   searchCaregiversByService
 } from '~/entities/provider/provider-api'
 import { setAppLanguage } from '~/shared/i18n/i18n'
+import { pickTime } from '~/shared/test/pickers'
 
 import { CustomerBookingPage } from '../booking-page'
 
@@ -359,14 +360,14 @@ describe('CustomerBookingPage', () => {
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '02/01/2030' } })
     fireEvent.click(screen.getByRole('button', { name: 'Thêm buổi' }))
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '02/01/2030' } })
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[1], { target: { value: '09:00' } })
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Kết thúc' })[1], { target: { value: '11:00' } })
+    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[1], '09:00')
+    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[1], '11:00')
 
     expect(await screen.findByText('Trùng giờ với buổi khác.')).toBeInTheDocument()
     expect(continueButton()).toBeDisabled()
 
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[1], { target: { value: '14:00' } })
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Kết thúc' })[1], { target: { value: '17:30' } })
+    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[1], '14:00')
+    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[1], '17:30')
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toEqual([
         { startAt: '2030-01-02T01:00:00.000Z', endAt: '2030-01-02T03:00:00.000Z' },
@@ -416,8 +417,8 @@ describe('CustomerBookingPage', () => {
     expect(await screen.findByText('2/60 buổi')).toBeInTheDocument()
 
     // Pattern fields come first (start, end), then one start / end pair per visit.
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[2], { target: { value: '14:00' } })
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], { target: { value: '16:00' } })
+    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[2], '14:00')
+    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], '16:00')
     expect(await screen.findByRole('button', { name: 'Tạo lại theo lịch lặp' })).toBeInTheDocument()
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toMatchObject({
@@ -441,7 +442,7 @@ describe('CustomerBookingPage', () => {
     expect(await screen.findByText('3/60 buổi')).toBeInTheDocument()
 
     // Visit 2 ends an hour later than the others: the list says so and offers to bring it back to 2 hours.
-    fireEvent.change(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], { target: { value: '11:00' } })
+    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], '11:00')
     expect(await screen.findByText(/Phần lớn các buổi dài 2 giờ, nhưng có 1 buổi dài khác/)).toBeInTheDocument()
     expect(screen.getByText('Dài 3 giờ, các buổi khác 2 giờ.')).toBeInTheDocument()
 
@@ -449,8 +450,8 @@ describe('CustomerBookingPage', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn buổi 1' }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn buổi 3' }))
     const bulk = screen.getByRole('group', { name: 'Sửa các buổi đã chọn' })
-    fireEvent.change(within(bulk).getByRole('combobox', { name: 'Bắt đầu' }), { target: { value: '13:00' } })
-    fireEvent.change(within(bulk).getByRole('combobox', { name: 'Kết thúc' }), { target: { value: '16:00' } })
+    pickTime(within(bulk).getByRole('combobox', { name: 'Bắt đầu' }), '13:00')
+    pickTime(within(bulk).getByRole('combobox', { name: 'Kết thúc' }), '16:00')
     fireEvent.click(within(bulk).getByRole('button', { name: 'Đặt giờ cho 2 buổi' }))
 
     await waitFor(() =>

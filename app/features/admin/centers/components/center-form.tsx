@@ -13,6 +13,7 @@ import { useActionToast } from '~/shared/ui/use-action-toast'
 
 import { describeHours, formatCenterHours, parseCenterHours } from '../center-hours'
 import { CENTER_BUSINESS_ERRORS, type CenterBusinessKey } from '../center-errors'
+import { TimeSelect } from '~/shared/ui/time-select'
 
 const key = 'admin.centersPage.form' as const
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -216,16 +217,16 @@ export function CenterForm({ center, onSaved, onCancel }: CenterFormProps) {
           {(['opensAt', 'closesAt'] as const).map((part) => (
             <label className='text-xs font-medium text-on-surface-variant' key={part}>
               {t(`${key}.${part}`)}
-              <input
+              <TimeSelect
                 aria-invalid={errors.fieldErrors.hours && !(part === 'opensAt' ? opensAt : closesAt) ? true : undefined}
-                className={`${baseControlClass} mt-1`}
+                className='mt-1'
                 id={part === 'opensAt' ? `${id}-hours` : undefined}
-                onChange={(event) => {
-                  if (part === 'opensAt') setOpensAt(event.target.value)
-                  else setClosesAt(event.target.value)
+                onChange={(value) => {
+                  if (part === 'opensAt') setOpensAt(value)
+                  else setClosesAt(value)
                   errors.clearField('hours')
                 }}
-                type='time'
+                step={30}
                 value={part === 'opensAt' ? opensAt : closesAt}
               />
             </label>

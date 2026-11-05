@@ -7,9 +7,8 @@ import { toast } from 'sonner'
 import { providerKeys, updateCaregiverSchedule } from '~/entities/provider/provider-api'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Button } from '~/shared/ui/button'
-import { Drawer } from '~/shared/ui/drawer'
 import { Icon } from '~/shared/ui/icon'
-import { ConfirmDialog } from '~/shared/ui/modal'
+import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
 import { minutesOfTimes, useCaregiverFormat } from '../../ui/caregiver-format'
@@ -19,10 +18,10 @@ import { clockOf, type CalendarItem } from './calendar-model'
 const STATE_TONE = { open: 'info', past: 'neutral', cancelled: 'error' } as const
 
 /**
- * Details of a calendar item in a side drawer (a bottom sheet on phones). An open future availability slot can be
+ * Details of a calendar item in a centred dialog. An open future availability slot can be
  * cancelled here with a reason, sending the slot's version as before.
  */
-export function CalendarItemDrawer({ item, onClose }: { item: CalendarItem | null; onClose: () => void }) {
+export function CalendarItemDialog({ item, onClose }: { item: CalendarItem | null; onClose: () => void }) {
   const { t } = useTranslation()
   const format = useCaregiverFormat()
   const queryClient = useQueryClient()
@@ -67,7 +66,7 @@ export function CalendarItemDrawer({ item, onClose }: { item: CalendarItem | nul
 
   return (
     <>
-      <Drawer
+      <Modal
         description={`${format.weekdayLong(item.day)}, ${format.date(item.day)}`}
         footer={
           canCancel ? (
@@ -101,6 +100,7 @@ export function CalendarItemDrawer({ item, onClose }: { item: CalendarItem | nul
         }
         onClose={onClose}
         open
+        size='md'
         title={title}
       >
         <dl className='flex flex-col gap-4 text-[15px]'>
@@ -162,7 +162,7 @@ export function CalendarItemDrawer({ item, onClose }: { item: CalendarItem | nul
             </div>
           ) : null}
         </dl>
-      </Drawer>
+      </Modal>
 
       {item.kind === 'availability' ? (
         <ConfirmDialog

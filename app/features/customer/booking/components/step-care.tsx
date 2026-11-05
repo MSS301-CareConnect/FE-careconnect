@@ -12,7 +12,7 @@ import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { ErrorState } from '~/shared/ui/state-panels'
 
 import { MAX_SERVICES, type BookingCaregiverOption, type BookingForm } from '../hooks/use-booking-form'
-import { CaregiverProfileDrawer } from './caregiver-profile-drawer'
+import { CaregiverProfileDialog } from './caregiver-profile-dialog'
 import { WizardSection } from './wizard-parts'
 import { planPrice } from '~/entities/care-catalog/price-plan-price'
 import { PlanDiscount } from '~/entities/care-catalog/plan-discount'
@@ -353,7 +353,7 @@ function CaregiverList({ form }: { form: BookingForm }) {
           ) : null}
         </fieldset>
       )}
-      <CaregiverProfileDrawer
+      <CaregiverProfileDialog
         caregiver={profile}
         chosen={profile?.id === form.selectedCaregiverId}
         onChoose={(id) => {
