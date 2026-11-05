@@ -20,4 +20,9 @@ export interface ServiceAddressRequest {
    * @maxLength 500
    */
   note?: string
+  /**
+   * Visits that get the new address; empty = every visit still editable. A customer only changes visits starting at least 24 hours from now (409 5117)
+   * @maxItems 366
+   */
+  occurrenceIds?: string[]
 }

@@ -5,10 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { TimeSlotRequest } from '../timeSlotRequest'
+import type { BookingType } from '../bookingType'
 import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
 import type { BookingServiceRequest } from './bookingServiceRequest'
-import type { BookingType } from './bookingType'
+import type { BookingSlotRequest } from './bookingSlotRequest'
 
 export interface BookingQuoteRequest {
   recipientId?: string
@@ -37,7 +37,7 @@ export interface BookingQuoteRequest {
    * CUSTOM only — each occurrence with its own start and end, must not overlap
    * @maxItems 366
    */
-  slots?: TimeSlotRequest[]
+  slots?: BookingSlotRequest[]
   /**
    * @minLength 0
    * @maxLength 2000

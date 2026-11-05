@@ -45,6 +45,9 @@ import type {
   MedicationRequest,
   MedicationResponse,
   MyInvitationListResponse,
+  RecipientAddressListResponse,
+  RecipientAddressRequest,
+  RecipientAddressResponse,
   RecipientBatchRequest,
   RecipientManagerListResponse,
   RecipientManagerResponse,
@@ -2549,6 +2552,646 @@ export const useSetCareRecipientMedicationActive = <
   TContext
 > => {
   return useMutation(getSetCareRecipientMedicationActiveMutationOptions(options), queryClient)
+}
+export type listCareRecipientAddressesResponse200 = {
+  data: RecipientAddressListResponse
+  status: 200
+}
+
+export type listCareRecipientAddressesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listCareRecipientAddressesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listCareRecipientAddressesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listCareRecipientAddressesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listCareRecipientAddressesResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listCareRecipientAddressesResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listCareRecipientAddressesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listCareRecipientAddressesResponseSuccess = listCareRecipientAddressesResponse200 & {
+  headers: Headers
+}
+export type listCareRecipientAddressesResponseError = (
+  | listCareRecipientAddressesResponse400
+  | listCareRecipientAddressesResponse401
+  | listCareRecipientAddressesResponse403
+  | listCareRecipientAddressesResponse404
+  | listCareRecipientAddressesResponse409
+  | listCareRecipientAddressesResponse500
+  | listCareRecipientAddressesResponse503
+) & {
+  headers: Headers
+}
+
+export const getListCareRecipientAddressesUrl = (recipientId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/addresses`
+}
+
+/**
+ * @summary Saved addresses of a care recipient (VIEWER+), oldest first
+ */
+export const listCareRecipientAddresses = async (
+  recipientId: string,
+  options?: RequestInit
+): Promise<listCareRecipientAddressesResponseSuccess> => {
+  const res = await fetch(getListCareRecipientAddressesUrl(recipientId), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listCareRecipientAddressesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listCareRecipientAddressesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listCareRecipientAddressesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listCareRecipientAddressesResponseSuccess
+}
+
+export const getListCareRecipientAddressesQueryKey = (recipientId: string) => {
+  return [`${env.API_BASE_URL}/v1/care-recipients/${recipientId}/addresses`] as const
+}
+
+export const getListCareRecipientAddressesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientAddresses>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListCareRecipientAddressesQueryKey(recipientId)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listCareRecipientAddresses>>> = ({ signal }) =>
+    listCareRecipientAddresses(recipientId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: recipientId !== null && recipientId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientAddresses>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type ListCareRecipientAddressesQueryResult = NonNullable<Awaited<ReturnType<typeof listCareRecipientAddresses>>>
+export type ListCareRecipientAddressesQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListCareRecipientAddresses<
+  TData = Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientAddresses>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+          TError,
+          Awaited<ReturnType<typeof listCareRecipientAddresses>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCareRecipientAddresses<
+  TData = Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientAddresses>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+          TError,
+          Awaited<ReturnType<typeof listCareRecipientAddresses>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCareRecipientAddresses<
+  TData = Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientAddresses>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Saved addresses of a care recipient (VIEWER+), oldest first
+ */
+
+export function useListCareRecipientAddresses<
+  TData = Awaited<ReturnType<typeof listCareRecipientAddresses>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  recipientId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareRecipientAddresses>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListCareRecipientAddressesQueryOptions(recipientId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type createCareRecipientAddressResponse200 = {
+  data: RecipientAddressResponse
+  status: 200
+}
+
+export type createCareRecipientAddressResponse400 = {
+  data: void
+  status: 400
+}
+
+export type createCareRecipientAddressResponse401 = {
+  data: void
+  status: 401
+}
+
+export type createCareRecipientAddressResponse403 = {
+  data: void
+  status: 403
+}
+
+export type createCareRecipientAddressResponse404 = {
+  data: void
+  status: 404
+}
+
+export type createCareRecipientAddressResponse409 = {
+  data: void
+  status: 409
+}
+
+export type createCareRecipientAddressResponse500 = {
+  data: void
+  status: 500
+}
+
+export type createCareRecipientAddressResponse503 = {
+  data: void
+  status: 503
+}
+
+export type createCareRecipientAddressResponseSuccess = createCareRecipientAddressResponse200 & {
+  headers: Headers
+}
+export type createCareRecipientAddressResponseError = (
+  | createCareRecipientAddressResponse400
+  | createCareRecipientAddressResponse401
+  | createCareRecipientAddressResponse403
+  | createCareRecipientAddressResponse404
+  | createCareRecipientAddressResponse409
+  | createCareRecipientAddressResponse500
+  | createCareRecipientAddressResponse503
+) & {
+  headers: Headers
+}
+
+export const getCreateCareRecipientAddressUrl = (recipientId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/addresses`
+}
+
+/**
+ * @summary Save an address for the care recipient (EDITOR+, at most 20)
+ */
+export const createCareRecipientAddress = async (
+  recipientId: string,
+  recipientAddressRequest: RecipientAddressRequest,
+  options?: RequestInit
+): Promise<createCareRecipientAddressResponseSuccess> => {
+  const res = await fetch(getCreateCareRecipientAddressUrl(recipientId), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(recipientAddressRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: createCareRecipientAddressResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: createCareRecipientAddressResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: createCareRecipientAddressResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createCareRecipientAddressResponseSuccess
+}
+
+export const getCreateCareRecipientAddressMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCareRecipientAddress>>,
+    TError,
+    { recipientId: string; data: RecipientAddressRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCareRecipientAddress>>,
+  TError,
+  { recipientId: string; data: RecipientAddressRequest },
+  TContext
+> => {
+  const mutationKey = ['createCareRecipientAddress']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCareRecipientAddress>>,
+    { recipientId: string; data: RecipientAddressRequest }
+  > = (props) => {
+    const { recipientId, data } = props ?? {}
+
+    return createCareRecipientAddress(recipientId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CreateCareRecipientAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCareRecipientAddress>>
+>
+export type CreateCareRecipientAddressMutationBody = RecipientAddressRequest
+export type CreateCareRecipientAddressMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Save an address for the care recipient (EDITOR+, at most 20)
+ */
+export const useCreateCareRecipientAddress = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createCareRecipientAddress>>,
+      TError,
+      { recipientId: string; data: RecipientAddressRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof createCareRecipientAddress>>,
+  TError,
+  { recipientId: string; data: RecipientAddressRequest },
+  TContext
+> => {
+  return useMutation(getCreateCareRecipientAddressMutationOptions(options), queryClient)
+}
+export type updateCareRecipientAddressResponse200 = {
+  data: RecipientAddressResponse
+  status: 200
+}
+
+export type updateCareRecipientAddressResponse400 = {
+  data: void
+  status: 400
+}
+
+export type updateCareRecipientAddressResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updateCareRecipientAddressResponse403 = {
+  data: void
+  status: 403
+}
+
+export type updateCareRecipientAddressResponse404 = {
+  data: void
+  status: 404
+}
+
+export type updateCareRecipientAddressResponse409 = {
+  data: void
+  status: 409
+}
+
+export type updateCareRecipientAddressResponse500 = {
+  data: void
+  status: 500
+}
+
+export type updateCareRecipientAddressResponse503 = {
+  data: void
+  status: 503
+}
+
+export type updateCareRecipientAddressResponseSuccess = updateCareRecipientAddressResponse200 & {
+  headers: Headers
+}
+export type updateCareRecipientAddressResponseError = (
+  | updateCareRecipientAddressResponse400
+  | updateCareRecipientAddressResponse401
+  | updateCareRecipientAddressResponse403
+  | updateCareRecipientAddressResponse404
+  | updateCareRecipientAddressResponse409
+  | updateCareRecipientAddressResponse500
+  | updateCareRecipientAddressResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateCareRecipientAddressUrl = (recipientId: string, addressId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/addresses/${addressId}`
+}
+
+export const updateCareRecipientAddress = async (
+  recipientId: string,
+  addressId: string,
+  recipientAddressRequest: RecipientAddressRequest,
+  options?: RequestInit
+): Promise<updateCareRecipientAddressResponseSuccess> => {
+  const res = await fetch(getUpdateCareRecipientAddressUrl(recipientId, addressId), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(recipientAddressRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateCareRecipientAddressResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateCareRecipientAddressResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateCareRecipientAddressResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateCareRecipientAddressResponseSuccess
+}
+
+export const getUpdateCareRecipientAddressMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCareRecipientAddress>>,
+    TError,
+    { recipientId: string; addressId: string; data: RecipientAddressRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCareRecipientAddress>>,
+  TError,
+  { recipientId: string; addressId: string; data: RecipientAddressRequest },
+  TContext
+> => {
+  const mutationKey = ['updateCareRecipientAddress']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCareRecipientAddress>>,
+    { recipientId: string; addressId: string; data: RecipientAddressRequest }
+  > = (props) => {
+    const { recipientId, addressId, data } = props ?? {}
+
+    return updateCareRecipientAddress(recipientId, addressId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateCareRecipientAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCareRecipientAddress>>
+>
+export type UpdateCareRecipientAddressMutationBody = RecipientAddressRequest
+export type UpdateCareRecipientAddressMutationError = globalThis.Error & { info?: void; status?: number }
+
+export const useUpdateCareRecipientAddress = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateCareRecipientAddress>>,
+      TError,
+      { recipientId: string; addressId: string; data: RecipientAddressRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateCareRecipientAddress>>,
+  TError,
+  { recipientId: string; addressId: string; data: RecipientAddressRequest },
+  TContext
+> => {
+  return useMutation(getUpdateCareRecipientAddressMutationOptions(options), queryClient)
+}
+export type deleteCareRecipientAddressResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type deleteCareRecipientAddressResponse400 = {
+  data: void
+  status: 400
+}
+
+export type deleteCareRecipientAddressResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteCareRecipientAddressResponse403 = {
+  data: void
+  status: 403
+}
+
+export type deleteCareRecipientAddressResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteCareRecipientAddressResponse409 = {
+  data: void
+  status: 409
+}
+
+export type deleteCareRecipientAddressResponse500 = {
+  data: void
+  status: 500
+}
+
+export type deleteCareRecipientAddressResponse503 = {
+  data: void
+  status: 503
+}
+
+export type deleteCareRecipientAddressResponseSuccess = deleteCareRecipientAddressResponse200 & {
+  headers: Headers
+}
+export type deleteCareRecipientAddressResponseError = (
+  | deleteCareRecipientAddressResponse400
+  | deleteCareRecipientAddressResponse401
+  | deleteCareRecipientAddressResponse403
+  | deleteCareRecipientAddressResponse404
+  | deleteCareRecipientAddressResponse409
+  | deleteCareRecipientAddressResponse500
+  | deleteCareRecipientAddressResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeleteCareRecipientAddressUrl = (recipientId: string, addressId: string) => {
+  return `${env.API_BASE_URL}/v1/care-recipients/${recipientId}/addresses/${addressId}`
+}
+
+export const deleteCareRecipientAddress = async (
+  recipientId: string,
+  addressId: string,
+  options?: RequestInit
+): Promise<deleteCareRecipientAddressResponseSuccess> => {
+  const res = await fetch(getDeleteCareRecipientAddressUrl(recipientId, addressId), {
+    ...options,
+    method: 'DELETE'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: deleteCareRecipientAddressResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: deleteCareRecipientAddressResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: deleteCareRecipientAddressResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as deleteCareRecipientAddressResponseSuccess
+}
+
+export const getDeleteCareRecipientAddressMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCareRecipientAddress>>,
+    TError,
+    { recipientId: string; addressId: string },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCareRecipientAddress>>,
+  TError,
+  { recipientId: string; addressId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteCareRecipientAddress']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCareRecipientAddress>>,
+    { recipientId: string; addressId: string }
+  > = (props) => {
+    const { recipientId, addressId } = props ?? {}
+
+    return deleteCareRecipientAddress(recipientId, addressId, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteCareRecipientAddressMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCareRecipientAddress>>
+>
+
+export type DeleteCareRecipientAddressMutationError = globalThis.Error & { info?: void; status?: number }
+
+export const useDeleteCareRecipientAddress = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteCareRecipientAddress>>,
+      TError,
+      { recipientId: string; addressId: string },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCareRecipientAddress>>,
+  TError,
+  { recipientId: string; addressId: string },
+  TContext
+> => {
+  return useMutation(getDeleteCareRecipientAddressMutationOptions(options), queryClient)
 }
 export type listCareRecipientEmergencyContactsResponse200 = {
   data: EmergencyContactListResponse

@@ -30,4 +30,10 @@ export interface WorkShiftBatchRequest {
   registrationLeadMinutes?: number
   /** @maxLength 500 */
   note?: string
+  /**
+   * Bookings one caregiver can take within this shift (default 2)
+   * @minimum 1
+   * @maximum 20
+   */
+  maxBookings?: number
 }

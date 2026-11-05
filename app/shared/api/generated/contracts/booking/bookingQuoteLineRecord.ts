@@ -11,6 +11,10 @@ import type { BookingQuoteUnitGroupRecord } from './bookingQuoteUnitGroupRecord'
 export interface BookingQuoteLineRecord {
   careServiceId?: string
   serviceName?: string
+  /** Name of the chosen price plan at booking time */
+  planName?: string
+  /** Standard length of one unit of the plan, in minutes */
+  planDurationMinutes?: number
   pricingUnit?: BookingUnitType
   unitPrice?: number
   /** Units of one visit; absent when the visits last differently (HOUR plans) */

@@ -16,4 +16,6 @@ export interface ProviderBookableScheduleRecord {
   startTime: string
   /** Vietnam local time HH:mm:ss */
   endTime: string
+  /** Bookings one caregiver can take within this shift */
+  maxBookings?: number
 }

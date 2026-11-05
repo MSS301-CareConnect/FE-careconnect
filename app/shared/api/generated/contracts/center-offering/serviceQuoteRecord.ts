@@ -12,6 +12,7 @@ export interface ServiceQuoteRecord {
   centerServiceId?: string
   pricePlanId?: string
   serviceName?: string
+  planName?: string
   pricingUnit?: ServiceQuoteRecordPricingUnit
   durationMinutes?: number
   basePrice?: number

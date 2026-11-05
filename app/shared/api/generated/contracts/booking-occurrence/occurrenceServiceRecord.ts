@@ -11,4 +11,8 @@ export interface OccurrenceServiceRecord {
   careServiceId?: string
   serviceName?: string
   unitType?: BookingUnitType
+  /** Price plan chosen at booking time */
+  planName?: string
+  /** Standard length of one unit of the plan, in minutes */
+  planDurationMinutes?: number
 }

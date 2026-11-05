@@ -22,6 +22,12 @@ export interface WorkShiftRequest {
    * @maximum 1000
    */
   capacity: number
+  /**
+   * Bookings one caregiver can take within this shift (default 2)
+   * @minimum 1
+   * @maximum 20
+   */
+  maxBookings?: number
   registrationDeadline?: string
   /**
    * @minLength 0

@@ -5,8 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { BookingOccurrenceRecord } from '../bookingOccurrenceRecord'
 import type { BookingRecipientSnapshotRecord } from '../bookingRecipientSnapshotRecord'
 import type { BookingStatus } from '../bookingStatus'
+import type { BookingType } from '../bookingType'
 import type { OccurrenceStatus } from '../occurrenceStatus'
 import type { CaregiverOccurrenceRecordMissedReason } from './caregiverOccurrenceRecordMissedReason'
 import type { OccurrenceServiceRecord } from './occurrenceServiceRecord'
@@ -20,12 +22,19 @@ export interface CaregiverOccurrenceRecord {
   checkInOpensAt?: string
   checkInClosesAt?: string
   durationMinutes?: number
+  /** Service done in this visit; absent when the visit covers every service of the booking */
+  careServiceId?: string
   status: OccurrenceStatus
   caregiverId?: string
   caregiverUserId?: string
   bookingId: string
   bookingCode?: string
   bookingStatus?: BookingStatus
+  bookingType?: BookingType
+  /** SHIFT — the caregiver's work-shift schedule this visit holds */
+  caregiverScheduleId?: string
+  /** Price of this visit at booking time */
+  priceAmount?: number
   centerId?: string
   recipientId?: string
   recipientName?: string
@@ -42,4 +51,8 @@ export interface CaregiverOccurrenceRecord {
   customerPhone?: string
   sessionId?: string
   reportStatus?: string
+  /** Detail only — full name of the customer who booked */
+  customerName?: string
+  /** Detail only — the visits of the same caregiver in this booking, by start time */
+  bookingVisits?: BookingOccurrenceRecord[]
 }

@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { BookingStatus } from '../bookingStatus'
+import type { BookingType } from '../bookingType'
 import type { BookingCustomerRecord } from './bookingCustomerRecord'
 import type { BookingDeadlineType } from './bookingDeadlineType'
 import type { BookingExpiredReason } from './bookingExpiredReason'
 import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
-import type { BookingType } from './bookingType'
 
 export interface BookingSummaryRecord {
   id: string

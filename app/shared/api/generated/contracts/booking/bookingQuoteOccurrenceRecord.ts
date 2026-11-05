@@ -11,4 +11,7 @@ export interface BookingQuoteOccurrenceRecord {
   startAt?: string
   endAt?: string
   priceAmount?: number
+  /** Service done in this visit; absent when the visit covers every service of the booking */
+  careServiceId?: string
+  caregiverScheduleId?: string
 }

@@ -22,6 +22,8 @@ import type {
   MedicationListResponse,
   MedicationResponse,
   MyInvitationListResponse,
+  RecipientAddressListResponse,
+  RecipientAddressResponse,
   RecipientManagerListResponse,
   RecipientManagerResponse
 } from '../../contracts'
@@ -37,6 +39,7 @@ import {
   getManagerInvitationRecordMock,
   getMedicationRecordMock,
   getMyInvitationRecordMock,
+  getRecipientAddressRecordMock,
   getRecipientManagerRecordMock
 } from '../../contracts/index.faker'
 
@@ -176,6 +179,44 @@ export const getSetCareRecipientMedicationActiveResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getMedicationRecordMock() },
+  ...overrideResponse
+})
+
+export const getListCareRecipientAddressesResponseMock = (
+  overrideResponse: Partial<Extract<RecipientAddressListResponse, object>> = {}
+): RecipientAddressListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getRecipientAddressRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getCreateCareRecipientAddressResponseMock = (
+  overrideResponse: Partial<Extract<RecipientAddressResponse, object>> = {}
+): RecipientAddressResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getRecipientAddressRecordMock() },
+  ...overrideResponse
+})
+
+export const getUpdateCareRecipientAddressResponseMock = (
+  overrideResponse: Partial<Extract<RecipientAddressResponse, object>> = {}
+): RecipientAddressResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getRecipientAddressRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeleteCareRecipientAddressResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
   ...overrideResponse
 })
 

@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './catalogImageRecord'
+export * from './catalogImageResponse'
+export * from './catalogImageUploadRequest'
 export * from './catalogItemPage'
 export * from './catalogItemPageResponse'
 export * from './catalogItemRequest'

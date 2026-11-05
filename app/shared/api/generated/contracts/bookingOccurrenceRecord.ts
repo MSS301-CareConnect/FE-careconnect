@@ -5,11 +5,13 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { OccurrenceStatus } from '../occurrenceStatus'
 import type { BookingOccurrenceRecordCancelledByParty } from './bookingOccurrenceRecordCancelledByParty'
+import type { OccurrenceStatus } from './occurrenceStatus'
 
 export interface BookingOccurrenceRecord {
   id: string
+  /** Address of this visit when it differs from the booking address */
+  serviceAddress?: string
   occurrenceNo: number
   startAt: string
   endAt: string
@@ -25,4 +27,6 @@ export interface BookingOccurrenceRecord {
   cancelledByParty?: BookingOccurrenceRecordCancelledByParty
   needsReassignment?: boolean
   note?: string
+  /** Service done in this visit; absent when the visit covers every service of the booking */
+  careServiceId?: string
 }

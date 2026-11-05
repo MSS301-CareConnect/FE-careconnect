@@ -5,11 +5,11 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { BookingOccurrenceRecord } from '../bookingOccurrenceRecord'
 import type { BookingStatus } from '../bookingStatus'
+import type { BookingType } from '../bookingType'
 import type { BookingItemRecord } from './bookingItemRecord'
-import type { BookingOccurrenceRecord } from './bookingOccurrenceRecord'
 import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
-import type { BookingType } from './bookingType'
 
 export interface CaregiverBookingRequestRecord {
   id: string
@@ -25,6 +25,18 @@ export interface CaregiverBookingRequestRecord {
   daysOfWeek?: number[]
   recipientAge?: number
   recipientGender?: string
+  recipientName?: string
+  mobilityLevel?: string
+  independenceLevel?: string
+  chronicConditions?: string
+  allergies?: string
+  careRequirements?: string
+  dietaryNotes?: string
+  behaviorNotes?: string
+  /** Number of active medications; names and doses open once the booking is paid */
+  medicationCount?: number
+  /** Full name of the customer who booked */
+  customerName?: string
   ward?: string
   district?: string
   province?: string

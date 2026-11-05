@@ -8,19 +8,26 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { CatalogItemPageResponse, CatalogItemResponse, EmptyActionResponse } from '../../contracts'
+import type {
+  CatalogImageResponse,
+  CatalogItemPageResponse,
+  CatalogItemResponse,
+  EmptyActionResponse
+} from '../../contracts'
 
 import {
   getCreateCatalogItemResponseMock,
   getDeleteCatalogItemResponseMock,
   getGetCatalogItemResponseMock,
   getListCatalogItemsResponseMock,
-  getUpdateCatalogItemResponseMock
+  getUpdateCatalogItemResponseMock,
+  getUploadCatalogItemImageResponseMock
 } from './catalog-item.faker'
 
 export {
   getListCatalogItemsResponseMock,
   getCreateCatalogItemResponseMock,
+  getUploadCatalogItemImageResponseMock,
   getGetCatalogItemResponseMock,
   getUpdateCatalogItemResponseMock,
   getDeleteCatalogItemResponseMock
@@ -69,6 +76,30 @@ export const getCreateCatalogItemMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getCreateCatalogItemResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUploadCatalogItemImageMockHandler = (
+  overrideResponse?:
+    | CatalogImageResponse
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CatalogImageResponse> | CatalogImageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/catalog-items/images',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUploadCatalogItemImageResponseMock(),
         { status: 200 }
       )
     },
@@ -150,6 +181,7 @@ export const getDeleteCatalogItemMockHandler = (
 export const getCatalogItemMock = () => [
   getListCatalogItemsMockHandler(),
   getCreateCatalogItemMockHandler(),
+  getUploadCatalogItemImageMockHandler(),
   getGetCatalogItemMockHandler(),
   getUpdateCatalogItemMockHandler(),
   getDeleteCatalogItemMockHandler()

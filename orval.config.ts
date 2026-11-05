@@ -53,6 +53,11 @@ export default defineConfig({
               properties: {
                 files: () => [new Blob([new Uint8Array(8)])]
               }
+            },
+            CatalogImageUploadRequest: {
+              properties: {
+                file: () => new Blob([new Uint8Array(8)])
+              }
             }
           }
         }

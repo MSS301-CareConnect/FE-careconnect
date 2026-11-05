@@ -23,6 +23,8 @@ import type {
   MedicationListResponse,
   MedicationResponse,
   MyInvitationListResponse,
+  RecipientAddressListResponse,
+  RecipientAddressResponse,
   RecipientManagerListResponse,
   RecipientManagerResponse
 } from '../../contracts'
@@ -32,10 +34,12 @@ import {
   getAssignPrimaryCareRecipientEmergencyContactResponseMock,
   getAssignPrimaryCareRecipientManagerResponseMock,
   getCheckCareRecipientAccessResponseMock,
+  getCreateCareRecipientAddressResponseMock,
   getCreateCareRecipientEmergencyContactResponseMock,
   getCreateCareRecipientMedicationResponseMock,
   getCreateCareRecipientResponseMock,
   getDeclineCareRecipientInvitationResponseMock,
+  getDeleteCareRecipientAddressResponseMock,
   getDeleteCareRecipientEmergencyContactResponseMock,
   getDeleteCareRecipientManagerResponseMock,
   getDeleteCareRecipientMedicationResponseMock,
@@ -45,6 +49,7 @@ import {
   getGetCareRecipientResponseMock,
   getGetCareRecipientSnapshotResponseMock,
   getInviteCareRecipientManagerResponseMock,
+  getListCareRecipientAddressesResponseMock,
   getListCareRecipientEmergencyContactsResponseMock,
   getListCareRecipientInvitationsResponseMock,
   getListCareRecipientManagersResponseMock,
@@ -55,6 +60,7 @@ import {
   getRevokeCareRecipientInvitationResponseMock,
   getSetCareRecipientMedicationActiveResponseMock,
   getSetCareRecipientStatusResponseMock,
+  getUpdateCareRecipientAddressResponseMock,
   getUpdateCareRecipientEmergencyContactResponseMock,
   getUpdateCareRecipientManagerResponseMock,
   getUpdateCareRecipientMedicationResponseMock,
@@ -77,6 +83,10 @@ export {
   getUpdateCareRecipientMedicationResponseMock,
   getDeleteCareRecipientMedicationResponseMock,
   getSetCareRecipientMedicationActiveResponseMock,
+  getListCareRecipientAddressesResponseMock,
+  getCreateCareRecipientAddressResponseMock,
+  getUpdateCareRecipientAddressResponseMock,
+  getDeleteCareRecipientAddressResponseMock,
   getListCareRecipientEmergencyContactsResponseMock,
   getCreateCareRecipientEmergencyContactResponseMock,
   getGetCareRecipientEmergencyContactResponseMock,
@@ -464,6 +474,108 @@ export const getSetCareRecipientMedicationActiveMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getSetCareRecipientMedicationActiveResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListCareRecipientAddressesMockHandler = (
+  overrideResponse?:
+    | RecipientAddressListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<RecipientAddressListResponse> | RecipientAddressListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-recipients/:recipientId/addresses',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListCareRecipientAddressesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getCreateCareRecipientAddressMockHandler = (
+  overrideResponse?:
+    | RecipientAddressResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<RecipientAddressResponse> | RecipientAddressResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/care-recipients/:recipientId/addresses',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getCreateCareRecipientAddressResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdateCareRecipientAddressMockHandler = (
+  overrideResponse?:
+    | RecipientAddressResponse
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0]
+      ) => Promise<RecipientAddressResponse> | RecipientAddressResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/v1/care-recipients/:recipientId/addresses/:addressId',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateCareRecipientAddressResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeleteCareRecipientAddressMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    '*/v1/care-recipients/:recipientId/addresses/:addressId',
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeleteCareRecipientAddressResponseMock(),
         { status: 200 }
       )
     },
@@ -894,6 +1006,10 @@ export const getCareRecipientMock = () => [
   getUpdateCareRecipientMedicationMockHandler(),
   getDeleteCareRecipientMedicationMockHandler(),
   getSetCareRecipientMedicationActiveMockHandler(),
+  getListCareRecipientAddressesMockHandler(),
+  getCreateCareRecipientAddressMockHandler(),
+  getUpdateCareRecipientAddressMockHandler(),
+  getDeleteCareRecipientAddressMockHandler(),
   getListCareRecipientEmergencyContactsMockHandler(),
   getCreateCareRecipientEmergencyContactMockHandler(),
   getGetCareRecipientEmergencyContactMockHandler(),

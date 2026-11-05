@@ -2587,6 +2587,43 @@ paths:
           description: CareCatalogService error
         '503':
           description: CareCatalogService error
+  /v1/catalog-items/images:
+    post:
+      tags:
+        - CatalogItem
+      summary: ADMIN tải ảnh minh họa dịch vụ chuẩn (JPG / PNG / WebP ≤ 5 MB)
+      description: >-
+        Lưu ảnh ở MediaService (purpose CATALOG_ITEM_IMAGE) và trả imageUrl cố định
+        /api/v1/catalog-items/images/{mediaFileId} để gửi trong CatalogItemRequest. GET đường dẫn đó là public và
+        trả 302 tới URL tải có hạn (dùng thẳng trong thẻ img). Lỗi 3111 thiếu file, 3112 sai loại, 3113 quá 5 MB.
+      operationId: uploadCatalogItemImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CatalogImageUploadRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImageResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '404':
+          description: CareCatalogService error
+        '409':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
   /v1/catalog-items/{id}:
     get:
       tags:
@@ -3703,6 +3740,162 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MedicationResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/addresses:
+    get:
+      tags:
+        - CareRecipient
+      summary: Saved addresses of a care recipient (VIEWER+), oldest first
+      operationId: listCareRecipientAddresses
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientAddressListResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    post:
+      tags:
+        - CareRecipient
+      summary: Save an address for the care recipient (EDITOR+, at most 20)
+      operationId: createCareRecipientAddress
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipientAddressRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientAddressResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+  /v1/care-recipients/{recipientId}/addresses/{addressId}:
+    put:
+      tags:
+        - CareRecipient
+      operationId: updateCareRecipientAddress
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipientAddressRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientAddressResponse'
+        '400':
+          description: CareRecipientService error
+        '401':
+          description: CareRecipientService error
+        '403':
+          description: CareRecipientService error
+        '404':
+          description: CareRecipientService error
+        '409':
+          description: CareRecipientService error
+        '500':
+          description: CareRecipientService error
+        '503':
+          description: CareRecipientService error
+    delete:
+      tags:
+        - CareRecipient
+      operationId: deleteCareRecipientAddress
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
         '400':
           description: CareRecipientService error
         '401':
@@ -4855,7 +5048,7 @@ paths:
     get:
       tags:
         - Booking
-      summary: CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area only, no care profile)
+      summary: CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area and health summary, no street address, phone or medication list)
       operationId: listCaregiverBookingRequests
       parameters:
         - name: page
@@ -4886,6 +5079,36 @@ paths:
         '404':
           description: BookingService error
         '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/bookings/caregiver-requests/{id}:
+    get:
+      tags:
+        - Booking
+      summary: CAREGIVER reads one booking still waiting for their answer (same data as the list); answered, expired or someone else's → 404
+      operationId: getCaregiverBookingRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverBookingRequestResponse'
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
           description: BookingService error
         '500':
           description: BookingService error
@@ -8657,6 +8880,9 @@ components:
         updatedAt:
           type: string
           format: date-time
+        maxBookings:
+          type: integer
+          description: Bookings one caregiver can take within this shift
     ProviderShiftRegistrationRecord:
       type: object
       required:
@@ -9021,6 +9247,26 @@ components:
         endAt:
           type: string
           format: date-time
+    BookingSlotRequest:
+      type: object
+      required:
+        - startAt
+        - endAt
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        careServiceId:
+          type: string
+          format: uuid
+          description: Service done in this visit; absent = every chosen service. Either every slot names its service or none does
+        caregiverScheduleId:
+          type: string
+          format: uuid
+          description: SHIFT only — caregiver schedule that contains this slot; absent = the booking's caregiverScheduleId
     AvailabilityCheckRequest:
       type: object
       required:
@@ -9415,6 +9661,9 @@ components:
         endTime:
           type: string
           description: Vietnam local time HH:mm:ss
+        maxBookings:
+          type: integer
+          description: Bookings one caregiver can take within this shift
     ProviderBookableScheduleListResponse:
       type: object
       required:
@@ -9869,6 +10118,12 @@ components:
           format: int32
           maximum: 1000
           minimum: 1
+        maxBookings:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 20
+          description: Bookings one caregiver can take within this shift (default 2)
         registrationDeadline:
           type: string
           format: date-time
@@ -9952,6 +10207,12 @@ components:
         note:
           type: string
           maxLength: 500
+        maxBookings:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 20
+          description: Bookings one caregiver can take within this shift (default 2)
     WorkShiftCancelRequest:
       type: object
       required:
@@ -10590,6 +10851,9 @@ components:
           type: integer
         createdAt: *a2
         updatedAt: *a2
+        maxBookings:
+          type: integer
+          description: Bookings one caregiver can take within this shift
     ProviderSchedulePage:
       type: object
       required:
@@ -10702,6 +10966,10 @@ components:
           enum:
             - ACTIVE
             - INACTIVE
+        imageUrl:
+          type: string
+          maxLength: 1000
+          description: Cover image. An uploaded image is /api/v1/catalog-items/images/{mediaFileId}; an external https link is kept as is.
     CenterOfferingRecord:
       type: object
       required:
@@ -10794,6 +11062,8 @@ components:
           format: uuid
         serviceName:
           type: string
+        planName:
+          type: string
         pricingUnit:
           type: string
           enum:
@@ -10812,6 +11082,44 @@ components:
           type: number
         active:
           type: boolean
+    CatalogImageUploadRequest:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+    CatalogImageRecord:
+      type: object
+      required:
+        - mediaFileId
+        - imageUrl
+      properties:
+        mediaFileId:
+          type: string
+          format: uuid
+        imageUrl:
+          type: string
+          description: Đường dẫn cố định của Catalog (không hết hạn) để lưu vào CatalogItemRequest.imageUrl.
+        contentType:
+          type: string
+        fileSize:
+          type: integer
+          format: int64
+    CatalogImageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CatalogImageRecord'
     CatalogItemResponse:
       type: object
       required:
@@ -10961,6 +11269,10 @@ components:
           enum:
             - ACTIVE
             - INACTIVE
+        imageUrl:
+          type: string
+          maxLength: 1000
+          description: Cover image. An uploaded image is /api/v1/catalog-items/images/{mediaFileId}; an external https link is kept as is.
       required:
         - category
         - name
@@ -11651,6 +11963,88 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MedicationRecord'
+    RecipientAddressRecord:
+      type: object
+      required:
+        - id
+        - label
+        - addressLine
+        - province
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        addressLine:
+          type: string
+        ward:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RecipientAddressRequest:
+      type: object
+      required:
+        - label
+        - addressLine
+        - province
+      properties:
+        label:
+          type: string
+          maxLength: 100
+        addressLine:
+          type: string
+          maxLength: 255
+        ward:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        province:
+          type: string
+          maxLength: 100
+        note:
+          type: string
+          maxLength: 500
+    RecipientAddressResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/RecipientAddressRecord'
+    RecipientAddressListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipientAddressRecord'
     EmergencyContactResponse:
       type: object
       required:
@@ -12574,13 +12968,16 @@ components:
         slots:
           type: array
           items:
-            $ref: '#/components/schemas/TimeSlotRequest'
+            $ref: '#/components/schemas/BookingSlotRequest'
           maxItems: 366
           description: CUSTOM only — each occurrence with its own start and end, must not overlap
         customerNote:
           type: string
           maxLength: 2000
           minLength: 0
+        serviceAddress:
+          $ref: '#/components/schemas/ServiceAddressRequest'
+          description: Care address chosen at booking time (a saved address); omitted = the profile address
         services:
           type: array
           items:
@@ -12636,7 +13033,7 @@ components:
         slots:
           type: array
           items:
-            $ref: '#/components/schemas/TimeSlotRequest'
+            $ref: '#/components/schemas/BookingSlotRequest'
           maxItems: 366
           description: CUSTOM only — each occurrence with its own start and end, must not overlap
         customerNote:
@@ -13004,6 +13401,12 @@ components:
           type: number
         totalPrice:
           type: number
+        planName:
+          type: string
+          description: Name of the chosen price plan at booking time
+        planDurationMinutes:
+          type: integer
+          description: Standard length of one unit of the plan, in minutes
     BookingOccurrenceRecord:
       type: object
       required:
@@ -13016,6 +13419,9 @@ components:
         id:
           type: string
           format: uuid
+        serviceAddress:
+          type: string
+          description: Address of this visit when it differs from the booking address
         occurrenceNo:
           type: integer
         startAt:
@@ -13058,6 +13464,10 @@ components:
           type: boolean
         note:
           type: string
+        careServiceId:
+          type: string
+          format: uuid
+          description: Service done in this visit; absent when the visit covers every service of the booking
     BookingRefundRecord:
       type: object
       properties:
@@ -13425,6 +13835,12 @@ components:
           format: uuid
         serviceName:
           type: string
+        planName:
+          type: string
+          description: Name of the chosen price plan at booking time
+        planDurationMinutes:
+          type: integer
+          description: Standard length of one unit of the plan, in minutes
         pricingUnit:
           $ref: '#/components/schemas/BookingUnitType'
         unitPrice:
@@ -13466,6 +13882,13 @@ components:
           format: date-time
         priceAmount:
           type: number
+        careServiceId:
+          type: string
+          format: uuid
+          description: Service done in this visit; absent when the visit covers every service of the booking
+        caregiverScheduleId:
+          type: string
+          format: uuid
     BookingHeldScheduleBusySlotRecord:
       type: object
       required:
@@ -13478,6 +13901,9 @@ components:
         endAt:
           type: string
           format: date-time
+        caregiverScheduleId:
+          type: string
+          format: uuid
     BookingHeldScheduleRecord:
       type: object
       required:
@@ -13497,6 +13923,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BookingHeldScheduleBusySlotRecord'
+        travelBufferMinutes:
+          type: integer
+          description: Minutes kept free before and after another booking of the caregiver (travel / rest)
+        scheduleBookingCounts:
+          type: object
+          description: Number of different bookings already holding each caregiver schedule, by schedule ID
+          additionalProperties:
+            type: integer
     BookingHeldScheduleResponse:
       type: object
       required:
@@ -13749,6 +14183,12 @@ components:
           type: string
         unitType:
           $ref: '#/components/schemas/BookingUnitType'
+        planName:
+          type: string
+          description: Price plan chosen at booking time
+        planDurationMinutes:
+          type: integer
+          description: Standard length of one unit of the plan, in minutes
     SpecialNotesRecord:
       type: object
       properties:
@@ -13791,6 +14231,10 @@ components:
           format: date-time
         durationMinutes:
           type: integer
+        careServiceId:
+          type: string
+          format: uuid
+          description: Service done in this visit; absent when the visit covers every service of the booking
         status:
           $ref: '#/components/schemas/OccurrenceStatus'
         caregiverId:
@@ -13806,6 +14250,15 @@ components:
           type: string
         bookingStatus:
           $ref: '#/components/schemas/BookingStatus'
+        bookingType:
+          $ref: '#/components/schemas/BookingType'
+        caregiverScheduleId:
+          type: string
+          format: uuid
+          description: SHIFT — the caregiver's work-shift schedule this visit holds
+        priceAmount:
+          type: number
+          description: Price of this visit at booking time
         centerId:
           type: string
           format: uuid
@@ -13848,6 +14301,14 @@ components:
           format: uuid
         reportStatus:
           type: string
+        customerName:
+          type: string
+          description: Detail only — full name of the customer who booked
+        bookingVisits:
+          type: array
+          description: Detail only — the visits of the same caregiver in this booking, by start time
+          items:
+            $ref: '#/components/schemas/BookingOccurrenceRecord'
     CareTaskRecord:
       type: object
       required:
@@ -15316,6 +15777,13 @@ components:
           type: string
           maxLength: 500
           description: Optional note for the center and caregiver
+        occurrenceIds:
+          type: array
+          maxItems: 366
+          description: Visits that get the new address; empty = every visit still editable. A customer only changes visits starting at least 24 hours from now (409 5117)
+          items:
+            type: string
+            format: uuid
     CaregiverBookingRequestRecord:
       type: object
       required:
@@ -15361,6 +15829,28 @@ components:
           type: integer
         recipientGender:
           type: string
+        recipientName:
+          type: string
+        mobilityLevel:
+          type: string
+        independenceLevel:
+          type: string
+        chronicConditions:
+          type: string
+        allergies:
+          type: string
+        careRequirements:
+          type: string
+        dietaryNotes:
+          type: string
+        behaviorNotes:
+          type: string
+        medicationCount:
+          type: integer
+          description: Number of active medications; names and doses open once the booking is paid
+        customerName:
+          type: string
+          description: Full name of the customer who booked
         ward:
           type: string
         district:

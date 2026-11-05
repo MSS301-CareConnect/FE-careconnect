@@ -5,16 +5,16 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { BookingOccurrenceRecord } from '../bookingOccurrenceRecord'
 import type { BookingRecipientSnapshotRecord } from '../bookingRecipientSnapshotRecord'
 import type { BookingStatus } from '../bookingStatus'
+import type { BookingType } from '../bookingType'
 import type { BookingCustomerRecord } from './bookingCustomerRecord'
 import type { BookingDeadlineType } from './bookingDeadlineType'
 import type { BookingExpiredReason } from './bookingExpiredReason'
 import type { BookingItemRecord } from './bookingItemRecord'
-import type { BookingOccurrenceRecord } from './bookingOccurrenceRecord'
 import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
 import type { BookingRefundRecord } from './bookingRefundRecord'
-import type { BookingType } from './bookingType'
 
 export interface BookingDetailRecord {
   id: string

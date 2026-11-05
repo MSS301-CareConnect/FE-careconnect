@@ -22,6 +22,8 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
+  CatalogImageResponse,
+  CatalogImageUploadRequest,
   CatalogItemPageResponse,
   CatalogItemRequest,
   CatalogItemResponse,
@@ -381,6 +383,160 @@ export const useCreateCatalogItem = <TError = globalThis.Error & { info?: void; 
   queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof createCatalogItem>>, TError, { data: CatalogItemRequest }, TContext> => {
   return useMutation(getCreateCatalogItemMutationOptions(options), queryClient)
+}
+export type uploadCatalogItemImageResponse200 = {
+  data: CatalogImageResponse
+  status: 200
+}
+
+export type uploadCatalogItemImageResponse400 = {
+  data: void
+  status: 400
+}
+
+export type uploadCatalogItemImageResponse401 = {
+  data: void
+  status: 401
+}
+
+export type uploadCatalogItemImageResponse403 = {
+  data: void
+  status: 403
+}
+
+export type uploadCatalogItemImageResponse404 = {
+  data: void
+  status: 404
+}
+
+export type uploadCatalogItemImageResponse409 = {
+  data: void
+  status: 409
+}
+
+export type uploadCatalogItemImageResponse500 = {
+  data: void
+  status: 500
+}
+
+export type uploadCatalogItemImageResponse503 = {
+  data: void
+  status: 503
+}
+
+export type uploadCatalogItemImageResponseSuccess = uploadCatalogItemImageResponse200 & {
+  headers: Headers
+}
+export type uploadCatalogItemImageResponseError = (
+  | uploadCatalogItemImageResponse400
+  | uploadCatalogItemImageResponse401
+  | uploadCatalogItemImageResponse403
+  | uploadCatalogItemImageResponse404
+  | uploadCatalogItemImageResponse409
+  | uploadCatalogItemImageResponse500
+  | uploadCatalogItemImageResponse503
+) & {
+  headers: Headers
+}
+
+export const getUploadCatalogItemImageUrl = () => {
+  return `${env.API_BASE_URL}/v1/catalog-items/images`
+}
+
+/**
+ * Lưu ảnh ở MediaService (purpose CATALOG_ITEM_IMAGE) và trả imageUrl cố định /api/v1/catalog-items/images/{mediaFileId} để gửi trong CatalogItemRequest. GET đường dẫn đó là public và trả 302 tới URL tải có hạn (dùng thẳng trong thẻ img). Lỗi 3111 thiếu file, 3112 sai loại, 3113 quá 5 MB.
+ * @summary ADMIN tải ảnh minh họa dịch vụ chuẩn (JPG / PNG / WebP ≤ 5 MB)
+ */
+export const uploadCatalogItemImage = async (
+  catalogImageUploadRequest: CatalogImageUploadRequest,
+  options?: RequestInit
+): Promise<uploadCatalogItemImageResponseSuccess> => {
+  const formData = new FormData()
+  formData.append(`file`, catalogImageUploadRequest.file)
+
+  const res = await fetch(getUploadCatalogItemImageUrl(), {
+    ...options,
+    method: 'POST',
+    body: formData
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: uploadCatalogItemImageResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: uploadCatalogItemImageResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: uploadCatalogItemImageResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as uploadCatalogItemImageResponseSuccess
+}
+
+export const getUploadCatalogItemImageMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadCatalogItemImage>>,
+    TError,
+    { data: CatalogImageUploadRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadCatalogItemImage>>,
+  TError,
+  { data: CatalogImageUploadRequest },
+  TContext
+> => {
+  const mutationKey = ['uploadCatalogItemImage']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadCatalogItemImage>>,
+    { data: CatalogImageUploadRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return uploadCatalogItemImage(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UploadCatalogItemImageMutationResult = NonNullable<Awaited<ReturnType<typeof uploadCatalogItemImage>>>
+export type UploadCatalogItemImageMutationBody = CatalogImageUploadRequest
+export type UploadCatalogItemImageMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary ADMIN tải ảnh minh họa dịch vụ chuẩn (JPG / PNG / WebP ≤ 5 MB)
+ */
+export const useUploadCatalogItemImage = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof uploadCatalogItemImage>>,
+      TError,
+      { data: CatalogImageUploadRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof uploadCatalogItemImage>>,
+  TError,
+  { data: CatalogImageUploadRequest },
+  TContext
+> => {
+  return useMutation(getUploadCatalogItemImageMutationOptions(options), queryClient)
 }
 export type getCatalogItemResponse200 = {
   data: CatalogItemResponse

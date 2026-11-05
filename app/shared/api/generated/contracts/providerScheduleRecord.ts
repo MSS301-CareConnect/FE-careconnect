@@ -26,4 +26,6 @@ export interface ProviderScheduleRecord {
   version: number
   createdAt?: string
   updatedAt?: string
+  /** Bookings one caregiver can take within this shift */
+  maxBookings?: number
 }

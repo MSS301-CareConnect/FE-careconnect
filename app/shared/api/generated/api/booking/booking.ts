@@ -1900,7 +1900,7 @@ export const getListCaregiverBookingRequestsUrl = (params?: ListCaregiverBooking
 }
 
 /**
- * @summary CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area only, no care profile)
+ * @summary CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area and health summary, no street address, phone or medication list)
  */
 export const listCaregiverBookingRequests = async (
   params?: ListCaregiverBookingRequestsParams,
@@ -2007,7 +2007,7 @@ export function useListCaregiverBookingRequests<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area only, no care profile)
+ * @summary CAREGIVER lists bookings the customer sent straight to them, still waiting for an answer (CR-3; area and health summary, no street address, phone or medication list)
  */
 
 export function useListCaregiverBookingRequests<
@@ -2022,6 +2022,182 @@ export function useListCaregiverBookingRequests<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getListCaregiverBookingRequestsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getCaregiverBookingRequestResponse200 = {
+  data: CaregiverBookingRequestResponse
+  status: 200
+}
+
+export type getCaregiverBookingRequestResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getCaregiverBookingRequestResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getCaregiverBookingRequestResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getCaregiverBookingRequestResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getCaregiverBookingRequestResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getCaregiverBookingRequestResponseSuccess = getCaregiverBookingRequestResponse200 & {
+  headers: Headers
+}
+export type getCaregiverBookingRequestResponseError = (
+  | getCaregiverBookingRequestResponse401
+  | getCaregiverBookingRequestResponse403
+  | getCaregiverBookingRequestResponse404
+  | getCaregiverBookingRequestResponse500
+  | getCaregiverBookingRequestResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetCaregiverBookingRequestUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/bookings/caregiver-requests/${id}`
+}
+
+/**
+ * @summary CAREGIVER reads one booking still waiting for their answer (same data as the list); answered, expired or someone else's → 404
+ */
+export const getCaregiverBookingRequest = async (
+  id: string,
+  options?: RequestInit
+): Promise<getCaregiverBookingRequestResponseSuccess> => {
+  const res = await fetch(getGetCaregiverBookingRequestUrl(id), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getCaregiverBookingRequestResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getCaregiverBookingRequestResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getCaregiverBookingRequestResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getCaregiverBookingRequestResponseSuccess
+}
+
+export const getGetCaregiverBookingRequestQueryKey = (id: string) => {
+  return [`${env.API_BASE_URL}/v1/bookings/caregiver-requests/${id}`] as const
+}
+
+export const getGetCaregiverBookingRequestQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverBookingRequest>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetCaregiverBookingRequestQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCaregiverBookingRequest>>> = ({ signal }) =>
+    getCaregiverBookingRequest(id, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCaregiverBookingRequestQueryResult = NonNullable<Awaited<ReturnType<typeof getCaregiverBookingRequest>>>
+export type GetCaregiverBookingRequestQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetCaregiverBookingRequest<
+  TData = Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverBookingRequest>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+          TError,
+          Awaited<ReturnType<typeof getCaregiverBookingRequest>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCaregiverBookingRequest<
+  TData = Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverBookingRequest>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+          TError,
+          Awaited<ReturnType<typeof getCaregiverBookingRequest>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCaregiverBookingRequest<
+  TData = Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverBookingRequest>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CAREGIVER reads one booking still waiting for their answer (same data as the list); answered, expired or someone else's → 404
+ */
+
+export function useGetCaregiverBookingRequest<
+  TData = Awaited<ReturnType<typeof getCaregiverBookingRequest>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverBookingRequest>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCaregiverBookingRequestQueryOptions(id, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

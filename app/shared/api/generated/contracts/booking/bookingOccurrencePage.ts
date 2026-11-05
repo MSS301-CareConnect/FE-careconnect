@@ -5,7 +5,7 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { BookingOccurrenceRecord } from './bookingOccurrenceRecord'
+import type { BookingOccurrenceRecord } from '../bookingOccurrenceRecord'
 
 export interface BookingOccurrencePage {
   items: BookingOccurrenceRecord[]

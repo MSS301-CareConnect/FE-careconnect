@@ -9,4 +9,5 @@
 export interface BookingHeldScheduleBusySlotRecord {
   startAt: string
   endAt: string
+  caregiverScheduleId?: string
 }

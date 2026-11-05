@@ -30,6 +30,7 @@ import {
   getDeclineBookingAsCaregiverResponseMock,
   getGetBookingResponseMock,
   getGetBookingStatusCountsResponseMock,
+  getGetCaregiverBookingRequestResponseMock,
   getListBookingHeldSchedulesResponseMock,
   getListBookingHistoryResponseMock,
   getListBookingOccurrencesResponseMock,
@@ -55,6 +56,7 @@ export {
   getPreviewBookingCancellationResponseMock,
   getCancelBookingResponseMock,
   getListCaregiverBookingRequestsResponseMock,
+  getGetCaregiverBookingRequestResponseMock,
   getAcceptBookingAsCaregiverResponseMock,
   getDeclineBookingAsCaregiverResponseMock,
   getUpdateBookingServiceAddressResponseMock,
@@ -346,6 +348,32 @@ export const getListCaregiverBookingRequestsMockHandler = (
   )
 }
 
+export const getGetCaregiverBookingRequestMockHandler = (
+  overrideResponse?:
+    | CaregiverBookingRequestResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<CaregiverBookingRequestResponse> | CaregiverBookingRequestResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/bookings/caregiver-requests/:id',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetCaregiverBookingRequestResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getAcceptBookingAsCaregiverMockHandler = (
   overrideResponse?:
     | CaregiverBookingRequestResponse
@@ -539,6 +567,7 @@ export const getBookingMock = () => [
   getPreviewBookingCancellationMockHandler(),
   getCancelBookingMockHandler(),
   getListCaregiverBookingRequestsMockHandler(),
+  getGetCaregiverBookingRequestMockHandler(),
   getAcceptBookingAsCaregiverMockHandler(),
   getDeclineBookingAsCaregiverMockHandler(),
   getUpdateBookingServiceAddressMockHandler(),

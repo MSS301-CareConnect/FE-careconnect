@@ -134,6 +134,15 @@ export const getListCaregiverBookingRequestsResponseMock = (
   ...overrideResponse
 })
 
+export const getGetCaregiverBookingRequestResponseMock = (
+  overrideResponse: Partial<Extract<CaregiverBookingRequestResponse, object>> = {}
+): CaregiverBookingRequestResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverBookingRequestRecordMock() },
+  ...overrideResponse
+})
+
 export const getAcceptBookingAsCaregiverResponseMock = (
   overrideResponse: Partial<Extract<CaregiverBookingRequestResponse, object>> = {}
 ): CaregiverBookingRequestResponse => ({

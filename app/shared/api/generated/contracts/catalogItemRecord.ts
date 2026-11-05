@@ -15,4 +15,9 @@ export interface CatalogItemRecord {
   description?: string
   category: string
   status: CatalogItemRecordStatus
+  /**
+   * Cover image. An uploaded image is /api/v1/catalog-items/images/{mediaFileId}; an external https link is kept as is.
+   * @maxLength 1000
+   */
+  imageUrl?: string
 }

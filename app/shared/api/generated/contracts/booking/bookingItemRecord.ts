@@ -18,4 +18,8 @@ export interface BookingItemRecord {
   quantity?: number
   unitsPerOccurrence?: number
   totalPrice?: number
+  /** Name of the chosen price plan at booking time */
+  planName?: string
+  /** Standard length of one unit of the plan, in minutes */
+  planDurationMinutes?: number
 }
