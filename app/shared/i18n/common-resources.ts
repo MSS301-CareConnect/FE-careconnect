@@ -122,6 +122,12 @@ export const commonEn = {
       unknownName: 'Unknown',
       loadingName: 'Loading…',
       Dismiss: 'Dismiss notification',
+      decrease: 'Decrease',
+      increase: 'Increase',
+      unsavedTitle: 'Discard your changes?',
+      unsavedDescription: 'What you entered has not been saved and will be lost.',
+      discard: 'Discard',
+      keepEditing: 'Keep editing',
       offlineTitle: 'No internet connection',
       offlineDescription: 'Check your network connection. Actions will resume automatically when you are back online.',
       forbiddenTitle: 'Access denied',
@@ -141,10 +147,22 @@ export const commonEn = {
         REJECTED: 'Rejected'
       },
       shift: {
+        DRAFT: 'Draft',
         OPEN: 'Open',
         CLOSED: 'Closed',
         CANCELLED: 'Cancelled',
         COMPLETED: 'Completed'
+      },
+      shiftType: {
+        MORNING: 'Morning',
+        AFTERNOON: 'Afternoon',
+        EVENING: 'Evening',
+        NIGHT: 'Night',
+        FULL_DAY: 'Full day',
+        CUSTOM: 'Custom',
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly',
+        OTHER: 'Other'
       },
       registration: {
         PENDING: 'Pending approval',
@@ -316,6 +334,12 @@ export const commonVi = {
       unknownName: 'Không xác định',
       loadingName: 'Đang tải…',
       Dismiss: 'Đóng thông báo',
+      decrease: 'Giảm',
+      increase: 'Tăng',
+      unsavedTitle: 'Bỏ các thay đổi?',
+      unsavedDescription: 'Những gì bạn vừa nhập chưa được lưu và sẽ mất.',
+      discard: 'Bỏ thay đổi',
+      keepEditing: 'Tiếp tục sửa',
       offlineTitle: 'Mất kết nối mạng',
       offlineDescription: 'Vui lòng kiểm tra kết nối Internet. Các thao tác sẽ hoạt động trở lại khi có mạng.',
       forbiddenTitle: 'Không có quyền truy cập',
@@ -335,10 +359,22 @@ export const commonVi = {
         REJECTED: 'Bị từ chối'
       },
       shift: {
+        DRAFT: 'Bản nháp',
         OPEN: 'Đang mở',
         CLOSED: 'Đã đóng',
         CANCELLED: 'Đã hủy',
         COMPLETED: 'Hoàn thành'
+      },
+      shiftType: {
+        MORNING: 'Ca sáng',
+        AFTERNOON: 'Ca chiều',
+        EVENING: 'Ca tối',
+        NIGHT: 'Ca đêm',
+        FULL_DAY: 'Cả ngày',
+        CUSTOM: 'Tùy chỉnh',
+        DAILY: 'Theo ngày',
+        WEEKLY: 'Theo tuần',
+        OTHER: 'Khác'
       },
       registration: {
         PENDING: 'Chờ duyệt',

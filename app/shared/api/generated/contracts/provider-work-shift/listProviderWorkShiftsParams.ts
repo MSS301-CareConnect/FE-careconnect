@@ -12,6 +12,9 @@ export type ListProviderWorkShiftsParams = {
   status?: ListProviderWorkShiftsStatus
   fromDate?: string
   toDate?: string
+  shiftType?: string
+  hasVacancy?: boolean
+  hasPending?: boolean
   page?: number
   size?: number
 }

@@ -15,6 +15,7 @@ import type {
   BookingOccurrencePageResponse,
   BookingOccurrenceResponse,
   BookingQuoteResponse,
+  BookingStatusCountsResponse,
   BookingSummaryPageResponse,
   CancellationPreviewResponse,
   CaregiverBookingRequestPageResponse,
@@ -28,6 +29,7 @@ import {
   getCreateBookingResponseMock,
   getDeclineBookingAsCaregiverResponseMock,
   getGetBookingResponseMock,
+  getGetBookingStatusCountsResponseMock,
   getListBookingHeldSchedulesResponseMock,
   getListBookingHistoryResponseMock,
   getListBookingOccurrencesResponseMock,
@@ -42,6 +44,7 @@ import {
 } from './booking.faker'
 
 export {
+  getGetBookingStatusCountsResponseMock,
   getListBookingsResponseMock,
   getCreateBookingResponseMock,
   getQuoteBookingResponseMock,
@@ -60,6 +63,32 @@ export {
   getUpdateBookingCaregiverResponseMock,
   getUpdateBookingOccurrenceCaregiverResponseMock
 } from './booking.faker'
+
+export const getGetBookingStatusCountsMockHandler = (
+  overrideResponse?:
+    | BookingStatusCountsResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<BookingStatusCountsResponse> | BookingStatusCountsResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/bookings/status-counts',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetBookingStatusCountsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 
 export const getListBookingsMockHandler = (
   overrideResponse?:
@@ -499,6 +528,7 @@ export const getUpdateBookingOccurrenceCaregiverMockHandler = (
   )
 }
 export const getBookingMock = () => [
+  getGetBookingStatusCountsMockHandler(),
   getListBookingsMockHandler(),
   getCreateBookingMockHandler(),
   getQuoteBookingMockHandler(),

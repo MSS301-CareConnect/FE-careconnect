@@ -8,6 +8,8 @@
 import type { BookingRecipientSnapshotRecord } from '../bookingRecipientSnapshotRecord'
 import type { BookingStatus } from '../bookingStatus'
 import type { BookingCustomerRecord } from './bookingCustomerRecord'
+import type { BookingDeadlineType } from './bookingDeadlineType'
+import type { BookingExpiredReason } from './bookingExpiredReason'
 import type { BookingItemRecord } from './bookingItemRecord'
 import type { BookingOccurrenceRecord } from './bookingOccurrenceRecord'
 import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
@@ -63,4 +65,7 @@ export interface BookingDetailRecord {
   services?: BookingItemRecord[]
   occurrences?: BookingOccurrenceRecord[]
   refund?: BookingRefundRecord
+  deadlineType?: BookingDeadlineType
+  deadlineAt?: string
+  expiredReason?: BookingExpiredReason
 }

@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { ProviderShiftRegistrationRecordRegistrationStatus } from './providerShiftRegistrationRecordRegistrationStatus'
+import type { ProviderShiftRegistrationRecordScheduleStatus } from './providerShiftRegistrationRecordScheduleStatus'
+import type { ProviderShiftRegistrationRecordShiftStatus } from './providerShiftRegistrationRecordShiftStatus'
 
 export interface ProviderShiftRegistrationRecord {
   id: string
@@ -15,6 +17,17 @@ export interface ProviderShiftRegistrationRecord {
   registrationStatus: ProviderShiftRegistrationRecordRegistrationStatus
   caregiverNote?: string
   rejectionReason?: string
+  reviewedAt?: string
+  workDate?: string
+  startTime?: string
+  endTime?: string
+  shiftType?: string
+  shiftStatus?: ProviderShiftRegistrationRecordShiftStatus
+  shiftCancellationReason?: string
+  scheduleId?: string
+  scheduleStatus?: ProviderShiftRegistrationRecordScheduleStatus
+  scheduleVersion?: number
   version: number
   createdAt?: string
+  updatedAt?: string
 }

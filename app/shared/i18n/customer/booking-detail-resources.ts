@@ -95,8 +95,17 @@ export const bookingDetailEn = {
     },
     EXPIRED: {
       title: 'Booking expired',
-      body: 'The center did not confirm or assign a caregiver in time, or the payment was not made by the due time.'
-    }
+      body: 'The center did not confirm or assign a caregiver in time, or the payment was not made by the due time.',
+      bodyUnpaid:
+        '{{reason}}. You were not charged for this booking and its time is free again, so you can book again right away.',
+      bodyPaid: '{{reason}}. What you paid is kept or refunded under the center’s policy (see Payments & refunds).'
+    },
+    closing: {
+      title: 'Confirmation deadline passed',
+      body: 'The request was not handled in time, so the booking is being closed. You were not charged; book again or choose another center.'
+    },
+    rebook: 'Book the same again',
+    otherCenter: 'Choose another center'
   },
   cancel: {
     open: 'Cancel booking',
@@ -213,8 +222,18 @@ export const bookingDetailVi = {
     },
     EXPIRED: {
       title: 'Lịch đặt đã hết hạn',
-      body: 'Trung tâm không xác nhận hoặc không phân người chăm sóc kịp, hoặc chưa thanh toán đúng hạn.'
-    }
+      body: 'Trung tâm không xác nhận hoặc không phân người chăm sóc kịp, hoặc chưa thanh toán đúng hạn.',
+      bodyUnpaid:
+        '{{reason}}. Bạn chưa bị trừ tiền cho lịch này và khung giờ đã được giải phóng, bạn có thể đặt lại ngay.',
+      bodyPaid:
+        '{{reason}}. Khoản đã thanh toán được giữ hoặc hoàn theo chính sách của trung tâm (xem Thanh toán & hoàn tiền).'
+    },
+    closing: {
+      title: 'Đã quá hạn xác nhận',
+      body: 'Yêu cầu chưa được xử lý kịp hạn nên hệ thống đang đóng lịch này. Bạn chưa bị trừ tiền; hãy đặt lại hoặc chọn trung tâm khác.'
+    },
+    rebook: 'Đặt lại lịch tương tự',
+    otherCenter: 'Chọn trung tâm khác'
   },
   cancel: {
     open: 'Hủy lịch đặt',

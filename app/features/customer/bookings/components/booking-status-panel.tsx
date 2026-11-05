@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { isPastDeadline } from '~/entities/booking/booking-deadline'
 import { formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import {
   fetchOpenInvoiceOfBooking,
@@ -12,6 +13,7 @@ import {
   startInvoiceCheckout
 } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
+import { useClock } from '~/shared/lib/use-clock'
 import { Icon } from '~/shared/ui/icon'
 
 import { awaitsRemaining } from '../booking-lifecycle'
@@ -52,6 +54,12 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   // Without a known amount the copy still asks for the payment, just without a figure.
   const depositKnown = deposit.amount !== undefined
   const awaitingRemaining = awaitsRemaining(booking)
+  const now = useClock(30_000)
+  // Past its deadline but not closed by BookingService yet: say it is closing instead of "still waiting".
+  const closing = isPastDeadline(booking, now)
+  const firstService = booking.services?.[0]
+  const rebook = new URLSearchParams({ center: booking.centerId ?? '', patient: booking.recipientId ?? '' })
+  if (firstService?.careServiceId) rebook.set('service', firstService.careServiceId)
   const invoice = useQuery({
     queryKey: paymentKeys.bookingInvoice(booking.id),
     queryFn: () => fetchOpenInvoiceOfBooking(booking.id),
@@ -69,31 +77,59 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
     depositDue: formatDateTime(booking.depositDueAt, language),
     remaining: formatMoney(invoice.data?.amount ?? deposit.remaining, language),
     remainingDue: formatDateTime(booking.remainingPaymentDueAt, language),
-    reason: booking.rejectedReason ?? booking.cancelReason ?? '',
+    reason: booking.expiredReason
+      ? t(`booking.expiredReason.${booking.expiredReason}`)
+      : (booking.rejectedReason ?? booking.cancelReason ?? ''),
     refund: formatMoney(booking.refund?.totalRefund, language)
   }
 
   return (
     <section
       aria-labelledby='booking-next-title'
-      className={`rounded-2xl border p-5 shadow-[var(--shadow-card)] ${TONES[booking.status] ?? (awaitingRemaining ? 'border-caution/40 bg-caution-container/40' : 'border-outline-variant bg-surface-container-lowest')}`}
+      className={`rounded-2xl border p-5 shadow-[var(--shadow-card)] ${closing ? 'border-outline-variant bg-surface-container-low' : (TONES[booking.status] ?? (awaitingRemaining ? 'border-caution/40 bg-caution-container/40' : 'border-outline-variant bg-surface-container-lowest'))}`}
     >
       <div className='flex items-start gap-3'>
         <span className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-primary'>
-          <Icon className='text-xl' name={ICONS[booking.status]} />
+          <Icon className='text-xl' name={closing ? 'timer_off' : ICONS[booking.status]} />
         </span>
         <h2 className='pt-1.5 text-base leading-snug font-semibold text-on-surface' id='booking-next-title'>
-          {t(`customer.bookingDetail.next.${booking.status}.title`)}
+          {closing
+            ? t('customer.bookingDetail.next.closing.title')
+            : t(`customer.bookingDetail.next.${booking.status}.title`)}
         </h2>
       </div>
       <div>
         <p className='mt-2 text-sm leading-6 text-on-surface-variant'>
-          {booking.status === 'AWAITING_INITIAL_PAYMENT' && !depositKnown
-            ? t('customer.bookingDetail.next.AWAITING_INITIAL_PAYMENT.bodyNoAmount', values)
-            : awaitingRemaining
-              ? t('customer.bookingDetail.next.CONFIRMED.bodyRemaining', values)
-              : t(`customer.bookingDetail.next.${booking.status}.body`, values)}
+          {closing
+            ? t('customer.bookingDetail.next.closing.body')
+            : booking.status === 'EXPIRED' && booking.expiredReason
+              ? t(
+                  booking.expiredReason === 'PAYMENT_OVERDUE'
+                    ? 'customer.bookingDetail.next.EXPIRED.bodyPaid'
+                    : 'customer.bookingDetail.next.EXPIRED.bodyUnpaid',
+                  values
+                )
+              : booking.status === 'AWAITING_INITIAL_PAYMENT' && !depositKnown
+                ? t('customer.bookingDetail.next.AWAITING_INITIAL_PAYMENT.bodyNoAmount', values)
+                : awaitingRemaining
+                  ? t('customer.bookingDetail.next.CONFIRMED.bodyRemaining', values)
+                  : t(`customer.bookingDetail.next.${booking.status}.body`, values)}
         </p>
+        {booking.status === 'EXPIRED' || booking.status === 'REJECTED' || closing ? (
+          <div className='mt-4 flex flex-col gap-2'>
+            <Link className={primaryAction.replace('mt-4 ', '')} to={`/customer/booking?${rebook.toString()}`}>
+              <Icon className='text-lg' name='event_repeat' />
+              {t('customer.bookingDetail.next.rebook')}
+            </Link>
+            <Link
+              className='flex min-h-11 items-center justify-center gap-2 rounded-xl border border-outline-variant px-5 text-sm font-semibold text-on-surface hover:bg-surface-container-low'
+              to='/customer/centers'
+            >
+              <Icon className='text-lg' name='storefront' />
+              {t('customer.bookingDetail.next.otherCenter')}
+            </Link>
+          </div>
+        ) : null}
         {booking.refund?.totalRefund !== undefined ? (
           <p className='mt-2 text-sm font-semibold text-primary tabular-nums'>
             {t('customer.bookingDetail.refunded', values)}

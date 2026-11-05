@@ -4,6 +4,8 @@ export interface ChipOption {
   value: string
   label: string
   icon?: string
+  /** Number shown in a small pill after the label (e.g. how many shifts have this status). */
+  count?: number
 }
 
 /**
@@ -41,6 +43,13 @@ export function FilterChips({
           >
             {option.icon ? <Icon className='text-lg' name={option.icon} /> : null}
             {option.label}
+            {option.count !== undefined ? (
+              <span
+                className={`min-w-6 rounded-full px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums ${active ? 'bg-on-primary/20 text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}
+              >
+                {option.count}
+              </span>
+            ) : null}
           </button>
         )
       })}

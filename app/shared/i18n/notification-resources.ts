@@ -5,7 +5,58 @@ export const notificationVi = {
   readAll: 'Đánh dấu đã đọc tất cả',
   loading: 'Đang tải thông báo…',
   error: 'Không tải được thông báo.',
-  empty: 'Bạn chưa có thông báo nào.'
+  empty: 'Bạn chưa có thông báo nào.',
+  viewAll: 'Xem tất cả thông báo',
+  open: 'Mở',
+  delete: 'Xóa thông báo',
+  deleteNamed: 'Xóa thông báo “{{title}}”',
+  center: {
+    documentTitle: 'Thông báo | CareConnect',
+    subtitle: 'Mọi thông báo về lịch đặt, buổi chăm sóc, thanh toán và khiếu nại của bạn.',
+    unreadSummary: '{{count}} thông báo chưa đọc',
+    allRead: 'Bạn đã đọc hết thông báo',
+    filters: {
+      label: 'Lọc thông báo',
+      all: 'Tất cả',
+      unread: 'Chưa đọc'
+    },
+    emptyUnread: 'Không còn thông báo chưa đọc',
+    emptyHint: 'Thông báo mới sẽ hiện ở đây ngay khi có thay đổi.',
+    selectAll: 'Chọn tất cả thông báo trên trang',
+    select: 'Chọn thông báo “{{title}}”',
+    selected: 'Đã chọn {{count}}',
+    deleteSelected: 'Xóa đã chọn',
+    deleteRead: 'Xóa thông báo đã đọc',
+    markRead: 'Đánh dấu đã đọc',
+    markUnread: 'Đánh dấu chưa đọc',
+    markReadNamed: 'Đánh dấu đã đọc “{{title}}”',
+    markUnreadNamed: 'Đánh dấu chưa đọc “{{title}}”',
+    selectionLabel: 'Thao tác với thông báo đã chọn',
+    clearSelection: 'Bỏ chọn',
+    more: 'Thao tác khác',
+    justNow: 'Vừa xong',
+    itemActions: 'Thao tác với thông báo “{{title}}”',
+    noTarget: 'Thông báo này không có trang liên quan.',
+    confirmSelectedTitle: 'Xóa {{count}} thông báo?',
+    confirmReadTitle: 'Xóa mọi thông báo đã đọc?',
+    confirmDescription: 'Thông báo đã xóa không hiện lại trong danh sách.',
+    confirm: 'Xóa',
+    cancel: 'Hủy',
+    deleted: 'Đã xóa {{count}} thông báo',
+    deletedOne: 'Đã xóa thông báo',
+    actionError: 'Không thực hiện được, vui lòng thử lại.',
+    groups: {
+      today: 'Hôm nay',
+      yesterday: 'Hôm qua',
+      earlier: 'Trước đó'
+    },
+    pagination: {
+      label: 'Trang thông báo',
+      previous: 'Trước',
+      next: 'Sau',
+      pageOf: 'Trang {{page}} / {{total}}'
+    }
+  }
 }
 
 export const notificationEn = {
@@ -15,5 +66,56 @@ export const notificationEn = {
   readAll: 'Mark all as read',
   loading: 'Loading notifications…',
   error: 'Notifications could not be loaded.',
-  empty: 'You have no notifications yet.'
+  empty: 'You have no notifications yet.',
+  viewAll: 'View all notifications',
+  open: 'Open',
+  delete: 'Delete notification',
+  deleteNamed: 'Delete notification “{{title}}”',
+  center: {
+    documentTitle: 'Notifications | CareConnect',
+    subtitle: 'Every notice about your bookings, care visits, payments and complaints.',
+    unreadSummary: '{{count}} unread notifications',
+    allRead: 'You have read every notification',
+    filters: {
+      label: 'Filter notifications',
+      all: 'All',
+      unread: 'Unread'
+    },
+    emptyUnread: 'No unread notifications left',
+    emptyHint: 'New notifications appear here as soon as something changes.',
+    selectAll: 'Select every notification on this page',
+    select: 'Select notification “{{title}}”',
+    selected: '{{count}} selected',
+    deleteSelected: 'Delete selected',
+    deleteRead: 'Delete read notifications',
+    markRead: 'Mark as read',
+    markUnread: 'Mark as unread',
+    markReadNamed: 'Mark “{{title}}” as read',
+    markUnreadNamed: 'Mark “{{title}}” as unread',
+    selectionLabel: 'Actions for the selected notifications',
+    clearSelection: 'Clear selection',
+    more: 'More actions',
+    justNow: 'Just now',
+    itemActions: 'Actions for notification “{{title}}”',
+    noTarget: 'This notification has no related page.',
+    confirmSelectedTitle: 'Delete {{count}} notifications?',
+    confirmReadTitle: 'Delete every read notification?',
+    confirmDescription: 'Deleted notifications no longer appear in the list.',
+    confirm: 'Delete',
+    cancel: 'Cancel',
+    deleted: '{{count}} notifications deleted',
+    deletedOne: 'Notification deleted',
+    actionError: 'That did not work. Try again.',
+    groups: {
+      today: 'Today',
+      yesterday: 'Yesterday',
+      earlier: 'Earlier'
+    },
+    pagination: {
+      label: 'Notification pages',
+      previous: 'Previous',
+      next: 'Next',
+      pageOf: 'Page {{page}} of {{total}}'
+    }
+  }
 }

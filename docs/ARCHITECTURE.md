@@ -337,7 +337,10 @@ account menu (profile, security, language, sign-out). Its theme is scoped by `.t
 UI lives in `features/caregiver/ui` and shared queries in `features/caregiver/data`; only screens backed by the API exist
 (D25). `/caregiver` opens `/caregiver/today` (login lands there too): the next visit with a countdown, directions and
 call, today's timeline, items that need action (visits to accept, sign-ups closing within a day, missing or expiring
-certificates) and the week's counts. `/caregiver/visits` has Upcoming / To accept / Done / Cancelled tabs (`?tab=`;
+certificates, booking requests; on a day without visits, two or three open shifts) and the week's counts.
+`/caregiver/visits` has Needs your answer / Upcoming / In progress / Done / Cancelled tabs (`?tab=`; "Needs your answer"
+lists bookings families sent straight to the caregiver and visits the center assigned, each under its source, and one
+sidebar badge counts both; `?tab=toAccept` still opens it;
 history tabs read one period, `?range=week|month|custom&from&to`) grouped by day; BookingService takes one status per
 request and at most 100 rows, so status groups are filtered on loaded pages with "load more". `/caregiver/visits/:id`
 runs the visit — accept, check-in, tasks, no-show report and check-out — with an allergy callout, the care profile and a
@@ -345,7 +348,7 @@ sticky action bar on phones; check-in follows the booking's window (Q12, default
 report states its 24-hour deadline (D27). `/caregiver/schedule`, `/caregiver/work-shifts` and `/caregiver/time-off` are
 the three tabs of one Work schedule page: a week/month calendar (phones: day strip and agenda) layering availability
 slots (D11; ProviderService has no date filter, so up to five pages of 100 are read), assigned visits and time off,
-where an open future slot is cancelled with a reason and its version; shift sign-up with each shift's state on its card
+where an open future slot is cancelled with a reason and its version; shift sign-up as a card grid whose "Open shifts" chip lists only shifts still open that the caregiver has not signed up for (each registration carries its shift's date, hours, type and the availability slot created on approval, so approved sign-ups can be withdrawn with a reason through the slot), a confirmation dialog warning about same-day overlaps and time off, with each shift's state on its card
 (registrations carry only the shift ID, so the shift is read through `GET /work-shifts/{id}`); and time off with
 dd/mm/yyyy dates in Vietnam time and a warning when it overlaps assigned visits or open slots. `/caregiver/profile` has
 Information / Certificates / Security tabs (`?tab=`): only the phone is editable (`PUT /users/me`) because
@@ -410,11 +413,21 @@ accepts only a caregiver who covers every chosen service, so a caregiver without
 Time off for a caregiver is shared by the manager detail and the caregiver profile through
 `entities/provider/caregiver-time-offs.tsx`, which takes the copy namespace of the portal that renders it.
 
-`/center-manager/work-shifts` lists and creates ProviderService work shifts for the
-assigned center. Its detail route edits or archives a shift and reviews registration
-requests. The displayed rows come from ProviderService; no assignment or booking
-data is inferred from them. Both list and detail show loading, empty, error, and
-access-denied states. No Provider mutation runs from sample fixtures.
+`/center-manager/work-shifts` (reworked 2026-11-05, `docs/2026-11-05-WORK_SHIFT_FLOW_PROGRESS.md`) shows four numbers for
+the whole filter from `GET /work-shifts/statistics` (next 7 days; understaffed shifts of the next 7 days with the
+places still missing — a click filters next 7 days + `hasVacancy`; sign-ups to review — a click filters `hasPending`;
+fill rate), then one compact filter card: status chips with counts and a single toolbar row (date range and type as
+dropdown chips, custom dates inline only when picked, "places left" and "to review" toggles, clear, total and the list /
+week switch), all in URL search parameters and sent to ProviderService, and a list or week calendar
+(`?view=week&week=`). Statuses are the effective ones the backend returns (a past shift is never "open"); types go
+through `entities/provider/work-shift.ts` (unknown legacy codes read "Other"). Create / edit / duplicate is a two-column
+dialog (form + live summary with same-day overlap warnings), with the status chosen by the button (save draft / open
+sign-up), an optional repeat over a date range and weekdays (`POST /work-shifts/centers/{id}/batch`, all or nothing) and a
+confirmation before discarding unsaved changes. `?shift=<id>` or `/center-manager/work-shifts/:id` opens the detail dialog:
+info, open / close sign-up (`PATCH /work-shifts/{id}/status`), cancel with a required reason (`POST /work-shifts/{id}/cancel`,
+cascades to sign-ups and availability), a history built from the shift and its sign-ups, and sign-ups by state with
+single or bulk approve / reject (`PATCH /work-shifts/{id}/registrations/review`). Results are sonner toasts (the center
+manager layout mounts the shared `Toaster`). No Provider mutation runs from sample fixtures.
 
 `/center-manager/schedules` reads the assigned center's ProviderService schedules.
 The manager status mutation is unavailable in the current backend, so this page is
@@ -450,6 +463,19 @@ BookingService for the manager's center (list filters in URL search parameters).
 cancels and reassigns through `entities/booking`; the caregiver picker marks who is free for every upcoming visit
 using ProviderService `/caregivers/search` with the booking's services and visit slots (M-16, Đợt 5), and the
 backend checks again on save. No-show reports are decided per visit.
+Since 2026-11-05 (`BE/docs/2026-11-05-CENTER_QUEUE_EXPIRY_NOTIFICATIONS.md`) the list is a work queue: four queue
+cards from `GET /bookings/status-counts` (count, nearest deadline, due soon / past due), group tabs (to handle, waiting on
+others, active, closed, all → `statuses=`), a toolbar (code, `DatePicker` range, sort `deadlineAt,asc` by default for the
+waiting groups) and rows with a deadline countdown (`entities/booking/booking-deadline-chip.tsx`) and the center's answer
+on the row (`ManagerBookingActionDialog`, shared with the detail page). List, counts and waiting bookings refresh every
+30 seconds. A booking past its deadline that BookingService has not closed yet shows "closing" and no actions on both
+the manager and customer screens (`isPastDeadline`); BookingService itself closes it when someone acts (409 `5116`).
+The customer's expired booking names the reason (`expiredReason`) and offers "book the same again" and another center.
+Notifications: every portal has `/<portal>/notifications` (`features/shared/notifications`: all / unread, by day,
+a selection bar that marks read / unread or deletes the selected ones via `PATCH /notifications/read-state` and
+`POST /notifications/deletions`, delete read ones; opening a notification always marks it read); the bells open a notification's page through
+`entities/notification/notification-target.ts` (BookingService adds `bookingId` / `occurrenceId` to each notification),
+delete single items and link to the full list. The SSE stream also refreshes booking queries.
 
 The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts` groups the
 menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue and
@@ -785,7 +811,7 @@ Contract update workflow:
   `schedule-slot-list`); once edited it sends `slots` with the pattern and a pattern change no longer rebuilds it.
   CUSTOM has a collapsible quick add that appends a daily / weekly pattern, skipping overlapping visits. Switching the
   header center while the form is open moves the form to that center and clears its choices. A booking with a chosen
-  caregiver waits in `PENDING_CAREGIVER_CONFIRMATION`: the caregiver answers on `/caregiver/requests` (accept, or decline
+  caregiver waits in `PENDING_CAREGIVER_CONFIRMATION`: the caregiver answers in the visits tab "Needs your answer" (`/caregiver/visits?tab=respond`; `/caregiver/requests` redirects there since 2026-11-05) (accept, or decline
   with a reason — RECURRING / CUSTOM then go to the center); the manager only sees the deadline and can reject.
   `entities/booking/service-address-dialog.tsx` (customer "⋯" menu and manager detail) changes the care address of the
   upcoming visits (`PATCH /bookings/{id}/service-address`). Kept deposits belong to the visit caregiver

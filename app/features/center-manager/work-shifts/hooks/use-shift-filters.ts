@@ -67,6 +67,8 @@ export function useShiftFilters(today: string) {
   }
 
   const active = Boolean(status || type || vacancy || pending || range !== 'upcoming')
+  // "Understaffed" card = shifts of the next 7 days that still have places left.
+  const understaffed = range === 'next7' && vacancy && !status && !pending
 
   return {
     status,
@@ -83,13 +85,24 @@ export function useShiftFilters(today: string) {
     week,
     page,
     active,
+    understaffed,
     setStatus: (value?: ShiftStatusCode) => update({ status: value }),
-    setRange: (value: RangePreset) => update({ range: value === 'upcoming' ? undefined : value }),
+    // "Pick dates" starts from the dates of the preset in use, so choosing it never widens the list by surprise.
+    setRange: (value: RangePreset) =>
+      value === 'custom'
+        ? update({ range: 'custom', from: from || fromDate, to: to || toDate })
+        : update({ range: value === 'upcoming' ? undefined : value, from: undefined, to: undefined }),
     setCustomRange: (nextFrom: string, nextTo: string) =>
       update({ range: 'custom', from: nextFrom || undefined, to: nextTo || undefined }),
     setType: (value: string) => update({ type: value || undefined }),
     setVacancy: (value: boolean) => update({ vacancy: value ? '1' : undefined }),
     setPending: (value: boolean) => update({ pending: value ? '1' : undefined }),
+    toggleUnderstaffed: () =>
+      update(
+        understaffed
+          ? { range: undefined, vacancy: undefined }
+          : { range: 'next7', from: undefined, to: undefined, vacancy: '1', status: undefined, pending: undefined }
+      ),
     setView: (value: ShiftView) => update({ view: value === 'week' ? 'week' : undefined }, true),
     setWeek: (monday: string) => update({ week: monday === mondayOf(today) ? undefined : monday }, true),
     setPage: (value: number) => update({ page: value > 0 ? String(value) : undefined }, true),

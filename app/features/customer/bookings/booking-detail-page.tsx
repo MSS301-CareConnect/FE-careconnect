@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { bookingErrorStatus, bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
+import { EXPIRING_STATUSES } from '~/entities/booking/booking-deadline'
 import { bookingErrorKey, bookingTypeKey } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
@@ -50,7 +51,13 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
   const [editingAddress, setEditingAddress] = useState(false)
   // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
   const [now] = useState(() => Date.now())
-  const booking = useQuery({ queryKey: bookingKeys.detail(id), queryFn: () => fetchBooking(id), retry: false })
+  const booking = useQuery({
+    queryKey: bookingKeys.detail(id),
+    queryFn: () => fetchBooking(id),
+    // A waiting booking can be answered or expire at any time: refresh while its deadline runs.
+    refetchInterval: (query) => (query.state.data && EXPIRING_STATUSES.has(query.state.data.status) ? 30_000 : false),
+    retry: false
+  })
   useDocumentTitle(t(`${key}.documentTitle`, { code: booking.data?.bookingCode ?? '' }))
 
   if (booking.isPending) return <DetailSkeleton label={t(`${key}.loading`)} />

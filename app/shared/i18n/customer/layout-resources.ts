@@ -39,6 +39,7 @@ export const customerLayoutEn = {
     relatives: 'Family profiles',
     payments: 'Payments & refunds',
     invitations: 'Invitations',
+    notifications: 'Notifications',
     pendingInvitations: '{{count}} pending invitations',
     invitationsNotice: 'You have {{count}} invitation(s) to manage a family profile',
     invitationsOpen: 'View invitations'
@@ -93,6 +94,7 @@ export const customerLayoutVi = {
     relatives: 'Hồ sơ người thân',
     payments: 'Thanh toán & hoàn tiền',
     invitations: 'Lời mời',
+    notifications: 'Thông báo',
     pendingInvitations: '{{count}} lời mời đang chờ',
     invitationsNotice: 'Bạn có {{count}} lời mời quản lý hồ sơ người thân',
     invitationsOpen: 'Xem lời mời'

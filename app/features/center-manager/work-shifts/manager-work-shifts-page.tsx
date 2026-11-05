@@ -158,24 +158,31 @@ export function ManagerWorkShiftsPage() {
           filters.setPending(!filters.pending)
         }}
         pendingActive={filters.pending}
+        onShowUnderstaffed={filters.toggleUnderstaffed}
+        understaffedActive={filters.understaffed}
         stats={stats.data}
       />
-      <ShiftFiltersBar filters={filters} stats={stats.data} />
+      <ShiftFiltersBar
+        filters={filters}
+        stats={stats.data}
+        trailing={
+          <>
+            <p aria-live='polite' className='text-sm whitespace-nowrap text-on-surface-variant tabular-nums'>
+              {shifts.data && !weekView ? t(`${k}.table.total`, { count: shifts.data.totalElements }) : null}
+            </p>
+            <SegmentedControl
+              legend={t(`${k}.view.label`)}
+              onChange={filters.setView}
+              options={[
+                { value: 'table', label: t(`${k}.view.table`) },
+                { value: 'week', label: t(`${k}.view.week`) }
+              ]}
+              value={filters.view}
+            />
+          </>
+        }
+      />
       <section className='overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest'>
-        <div className='flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/40 px-4 py-3'>
-          <p aria-live='polite' className='text-sm text-on-surface-variant'>
-            {shifts.data && !weekView ? t(`${k}.table.total`, { count: shifts.data.totalElements }) : null}
-          </p>
-          <SegmentedControl
-            legend={t(`${k}.view.label`)}
-            onChange={filters.setView}
-            options={[
-              { value: 'table', label: t(`${k}.view.table`) },
-              { value: 'week', label: t(`${k}.view.week`) }
-            ]}
-            value={filters.view}
-          />
-        </div>
         {shifts.isPending && !filters.rangeInvalid ? (
           <SkeletonBlock className='m-4 border-0 shadow-none' label={t('common.ui.loadingName')} rows={6} />
         ) : shifts.isError ? (

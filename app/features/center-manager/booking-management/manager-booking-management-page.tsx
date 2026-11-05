@@ -1,180 +1,120 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
-import {
-  bookingErrorKey,
-  bookingTypeKey,
-  formatDateTime,
-  formatDay,
-  formatMoney,
-  shortTime
-} from '~/entities/booking/booking-format'
-import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import { bookingErrorKey, formatClock } from '~/entities/booking/booking-format'
+import type { BookingSummaryRecord } from '~/shared/api/generated/contracts'
+import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { Pagination } from '~/shared/ui/pagination'
+import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
+import { tabId, tabPanelId } from '~/shared/ui/tabs'
 
-import { ManagerBookingFilters } from './components/manager-booking-filters'
+import { ManagerBookingQuickAction, type ManagerBookingAction } from './components/manager-booking-action-dialog'
+import { BOOKING_LIST_TABS, ManagerBookingFilters } from './components/manager-booking-filters'
+import { ManagerBookingQueue } from './components/manager-booking-queue'
+import { ManagerBookingTable } from './components/manager-booking-table'
 import { useManagerBookings } from './hooks/use-manager-bookings'
 
-const COLUMNS = ['booking', 'customer', 'schedule', 'next', 'total', 'status'] as const
-
+/**
+ * The center's booking work queue: queue cards, group tabs, a toolbar, then the bookings with their running deadline
+ * and the center's answer (confirm, assign, reject) right on the row. The list and counts refresh every 30 seconds.
+ */
 export function ManagerBookingManagementPage() {
   const { t, i18n } = useTranslation()
-  const language = i18n.language
+  const key = 'centerManager.bookingManagement' as const
   const list = useManagerBookings()
   const { bookings } = list
-  useDocumentTitle(t('centerManager.bookingManagement.documentTitle'))
+  const now = useClock(30_000)
+  const [quick, setQuick] = useState<{ id: string; action: ManagerBookingAction } | null>(null)
+  useDocumentTitle(t(`${key}.documentTitle`))
+  const actionCount = list.groupCount('action')
 
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
       <header className='flex flex-wrap items-end justify-between gap-4'>
         <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
-            {t('centerManager.bookingManagement.title')}
-          </h1>
+          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
           <p className='mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant'>
-            {list.pendingCount
-              ? t('centerManager.bookingManagement.pendingSubtitle', { count: list.pendingCount })
-              : t('centerManager.bookingManagement.subtitle')}
+            {actionCount ? t(`${key}.pendingSubtitle`, { count: actionCount }) : t(`${key}.subtitle`)}
           </p>
         </div>
-        {list.pendingCount && list.status !== 'PENDING_CENTER_CONFIRMATION' ? (
-          <button
-            className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
-            onClick={() => list.setStatus('PENDING_CENTER_CONFIRMATION')}
-            type='button'
+        <div className='flex items-center gap-3'>
+          {bookings.dataUpdatedAt ? (
+            <span className='hidden text-xs text-on-surface-variant sm:inline'>
+              {t(`${key}.updatedAt`, {
+                time: formatClock(new Date(bookings.dataUpdatedAt).toISOString(), i18n.language)
+              })}
+            </span>
+          ) : null}
+          <Button
+            leftIcon={<Icon className='text-lg' name='refresh' />}
+            loading={bookings.isFetching}
+            onClick={() => {
+              void bookings.refetch()
+              void list.counts.refetch()
+            }}
+            size='sm'
+            variant='secondary'
           >
-            <Icon className='text-lg' name='pending_actions' />
-            {t('centerManager.bookingManagement.reviewQueue')}
-          </button>
-        ) : null}
+            {t(`${key}.refresh`)}
+          </Button>
+        </div>
       </header>
 
-      <ManagerBookingFilters key={`${list.keyword}|${list.from}|${list.to}`} list={list} />
+      <ManagerBookingQueue list={list} />
+      <ManagerBookingFilters key={list.keyword} list={list} />
 
-      {bookings.isPending ? (
-        <p className='rounded-xl bg-white p-6 text-sm text-on-surface-variant shadow-sm' role='status'>
-          {t('centerManager.bookingManagement.loading')}
-        </p>
-      ) : null}
-      {bookings.isError ? (
-        <div className='rounded-xl bg-white p-6 shadow-sm' role='alert'>
-          <p className='text-sm text-error'>{t(bookingErrorKey(bookings.error))}</p>
-          <button
-            className='mt-2 text-sm font-semibold text-primary underline'
-            onClick={() => void bookings.refetch()}
-            type='button'
-          >
-            {t('booking.actions.retry')}
-          </button>
-        </div>
-      ) : null}
-      {bookings.isSuccess && bookings.data.items.length === 0 ? (
-        <div className='flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-12 text-center shadow-sm'>
-          <Icon className='text-4xl text-primary' name='event_busy' />
-          <h2 className='text-lg font-bold'>{t('centerManager.bookingManagement.empty')}</h2>
-          {list.hasFilters ? (
-            <button className='text-sm font-semibold text-primary underline' onClick={list.reset} type='button'>
-              {t('centerManager.bookingManagement.filters.reset')}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-      {bookings.isSuccess && bookings.data.items.length > 0 ? (
-        <div className='overflow-x-auto rounded-2xl border border-outline-variant/20 bg-white shadow-sm'>
-          <table className='w-full min-w-[880px] text-left text-sm'>
-            <caption className='sr-only'>{t('centerManager.bookingManagement.title')}</caption>
-            <thead className='sticky top-0 z-10 border-b border-outline-variant/25 bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant'>
-              <tr>
-                {COLUMNS.map((column) => (
-                  <th className='px-4 py-3.5 font-semibold' key={column} scope='col'>
-                    {t(`centerManager.bookingManagement.columns.${column}`)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-outline-variant/15'>
-              {bookings.data.items.map((booking) => (
-                <tr className='transition-colors hover:bg-surface-container-low/50' key={booking.id}>
-                  <td className='px-4 py-3.5'>
-                    <Link
-                      className='font-semibold text-primary hover:underline tabular-nums'
-                      to={`/center-manager/bookings/${booking.id}`}
-                    >
-                      #{booking.bookingCode}
-                    </Link>
-                    <p className='text-xs text-on-surface-variant'>{booking.recipientName}</p>
-                  </td>
-                  <td className='px-4 py-3.5'>
-                    <p className='font-semibold text-on-surface'>{booking.customer?.fullName ?? '—'}</p>
-                    <p className='text-xs text-on-surface-variant tabular-nums'>{booking.customer?.phoneNumber}</p>
-                  </td>
-                  <td className='px-4 py-3.5 tabular-nums'>
-                    <p>
-                      {formatDay(booking.startDate, language)}
-                      {booking.endDate && booking.endDate !== booking.startDate
-                        ? ` – ${formatDay(booking.endDate, language)}`
-                        : ''}
-                    </p>
-                    <p className='text-xs text-on-surface-variant'>
-                      {t(bookingTypeKey(booking))}
-                      {booking.startTime ? ` · ${shortTime(booking.startTime)}–${shortTime(booking.endTime)}` : ''}
-                    </p>
-                  </td>
-                  <td className='px-4 py-3.5 tabular-nums'>
-                    {booking.nextOccurrenceAt ? formatDateTime(booking.nextOccurrenceAt, language) : '—'}
-                    <p className='text-xs text-on-surface-variant'>
-                      {t('centerManager.bookingManagement.progress', {
-                        done: booking.completedCount ?? 0,
-                        total: booking.totalCount ?? 0
-                      })}
-                    </p>
-                  </td>
-                  <td className='px-4 py-3.5 font-semibold text-on-surface tabular-nums'>
-                    {formatMoney(booking.totalAmount, language)}
-                  </td>
-                  <td className='px-4 py-3.5'>
-                    <BookingStatusBadge status={booking.status} />
-                    {booking.caregiverId ? null : (
-                      <p className='mt-1 text-xs font-medium text-on-warning-container'>
-                        {t('centerManager.bookingManagement.noCaregiver')}
-                      </p>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
+      <div aria-labelledby={tabId(BOOKING_LIST_TABS, list.group)} id={tabPanelId(BOOKING_LIST_TABS)} role='tabpanel'>
+        {bookings.isPending ? <SkeletonBlock label={t(`${key}.loading`)} rows={5} /> : null}
+        {bookings.isError ? (
+          <ErrorState
+            message={t(bookingErrorKey(bookings.error))}
+            onRetry={() => void bookings.refetch()}
+            retryLabel={t('booking.actions.retry')}
+          />
+        ) : null}
+        {bookings.isSuccess && bookings.data.items.length === 0 ? (
+          <EmptyState
+            action={
+              list.hasFilters ? (
+                <Button onClick={list.reset} size='sm' variant='secondary'>
+                  {t(`${key}.filters.reset`)}
+                </Button>
+              ) : undefined
+            }
+            description={list.group === 'action' && !list.hasFilters ? t(`${key}.emptyGroup.actionHint`) : undefined}
+            icon={list.group === 'action' ? 'task_alt' : 'event_busy'}
+            title={list.hasFilters ? t(`${key}.empty`) : t(`${key}.emptyGroup.${list.group}`)}
+          />
+        ) : null}
+        {bookings.isSuccess && bookings.data.items.length > 0 ? (
+          <ManagerBookingTable
+            bookings={bookings.data.items}
+            now={now}
+            onAction={(booking: BookingSummaryRecord, action) => setQuick({ id: booking.id, action })}
+          />
+        ) : null}
+      </div>
+
       {bookings.isSuccess && bookings.data.totalPages > 1 ? (
-        <nav
-          aria-label={t('centerManager.bookingManagement.pagination.label')}
-          className='flex items-center justify-between rounded-xl border border-outline-variant/20 bg-white p-3 text-sm shadow-sm'
-        >
-          <button
-            className='rounded-lg px-3 py-2 font-semibold text-primary disabled:text-outline'
-            disabled={bookings.data.page <= 0}
-            onClick={() => list.setPage(bookings.data.page - 1)}
-            type='button'
-          >
-            {t('centerManager.bookingManagement.pagination.previous')}
-          </button>
-          <span className='text-on-surface-variant tabular-nums'>
-            {t('centerManager.bookingManagement.pagination.pageOf', {
-              page: bookings.data.page + 1,
-              total: bookings.data.totalPages
-            })}
-          </span>
-          <button
-            className='rounded-lg px-3 py-2 font-semibold text-primary disabled:text-outline'
-            disabled={bookings.data.page + 1 >= bookings.data.totalPages}
-            onClick={() => list.setPage(bookings.data.page + 1)}
-            type='button'
-          >
-            {t('centerManager.bookingManagement.pagination.next')}
-          </button>
-        </nav>
+        <Pagination
+          ariaLabel={t(`${key}.pagination.label`)}
+          nextLabel={t(`${key}.pagination.next`)}
+          onPageChange={list.setPage}
+          page={bookings.data.page}
+          pageOfLabel={t(`${key}.pagination.pageOf`, {
+            page: bookings.data.page + 1,
+            total: bookings.data.totalPages
+          })}
+          previousLabel={t(`${key}.pagination.previous`)}
+          totalPages={bookings.data.totalPages}
+        />
+      ) : null}
+
+      {quick ? (
+        <ManagerBookingQuickAction action={quick.action} bookingId={quick.id} onClose={() => setQuick(null)} />
       ) : null}
     </div>
   )

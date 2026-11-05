@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 
 import {
-  acceptBookingRequest,
   assignBookingCaregiver,
   bookingErrorStatus,
   bookingKeys,
   cancelBookingRequest,
-  fetchBooking,
-  rejectBookingRequest
+  fetchBooking
 } from '~/entities/booking/booking-api'
+import { EXPIRING_STATUSES, isPastDeadline } from '~/entities/booking/booking-deadline'
+import { BookingDeadlineChip } from '~/entities/booking/booking-deadline-chip'
 import { bookingErrorKey, formatDateTime, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
@@ -20,11 +20,13 @@ import { BookingRecipientSnapshot } from '~/entities/booking/booking-recipient-s
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { ServiceAddressDialog, canChangeServiceAddress } from '~/entities/booking/service-address-dialog'
 import type { BookingDetailRecord, BookingStatus } from '~/shared/api/generated/contracts'
+import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { SectionCard } from '~/shared/ui/section-card'
 
 import { CaregiverAssignDialog } from './components/caregiver-assign-dialog'
+import { ManagerBookingActionDialog } from './components/manager-booking-action-dialog'
 import { ManagerBookingSummary } from './components/manager-booking-summary'
 import { ManagerOccurrenceActions } from './components/manager-occurrence-actions'
 import { useCenterCaregivers } from './hooks/use-center-caregivers'
@@ -44,26 +46,24 @@ export function ManagerBookingDetailPage() {
   const [dialog, setDialog] = useState<Dialog>(null)
   // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
   const [openedAt] = useState(() => Date.now())
+  const now = useClock(30_000)
   const caregivers = useCenterCaregivers()
   const booking = useQuery({
     queryKey: bookingKeys.detail(id),
     queryFn: () => fetchBooking(id),
     enabled: Boolean(id),
+    // A waiting booking can expire on its own: refresh while its deadline runs.
+    refetchInterval: (query) => (query.state.data && EXPIRING_STATUSES.has(query.state.data.status) ? 30_000 : false),
     retry: false
   })
   useDocumentTitle(t('centerManager.bookingDetail.documentTitle', { code: booking.data?.bookingCode ?? '' }))
-  const free = useFreeCaregivers(booking.data, dialog === 'accept' || dialog === 'reassign' || dialog === 'assign')
+  const free = useFreeCaregivers(booking.data, dialog === 'reassign')
 
   function done(updated: BookingDetailRecord) {
     queryClient.setQueryData(bookingKeys.detail(id), updated)
     void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
     setDialog(null)
   }
-  const accept = useMutation({
-    mutationFn: (caregiverId?: string) => acceptBookingRequest(id, caregiverId),
-    onSuccess: done
-  })
-  const reject = useMutation({ mutationFn: (reason: string) => rejectBookingRequest(id, reason), onSuccess: done })
   const cancel = useMutation({ mutationFn: (reason: string) => cancelBookingRequest(id, { reason }), onSuccess: done })
   const reassign = useMutation({
     mutationFn: (caregiverId: string) => assignBookingCaregiver(id, caregiverId),
@@ -94,6 +94,7 @@ export function ManagerBookingDetailPage() {
   const data = booking.data
   const hasUpcoming = (data.occurrences ?? []).some((occurrence) => isUpcomingOccurrence(occurrence))
   const caregiverName = data.caregiverId ? caregivers.nameOf(data.caregiverId) : undefined
+  const past = isPastDeadline(data, now)
 
   return (
     <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
@@ -115,29 +116,48 @@ export function ManagerBookingDetailPage() {
                 : t('centerManager.bookingDetail.noCaregiver')}
             </span>
           </p>
-          {data.status === 'PENDING_CENTER_CONFIRMATION' && data.acceptanceDueAt ? (
-            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-warning-container px-3 py-1.5 text-xs font-semibold text-on-warning-container tabular-nums'>
-              <Icon className='text-base' name='schedule' />
-              {t('centerManager.bookingDetail.acceptBy', { time: formatDateTime(data.acceptanceDueAt, i18n.language) })}
+          {data.deadlineAt && data.deadlineType && EXPIRING_STATUSES.has(data.status) ? (
+            <div className='mt-3 flex flex-wrap items-center gap-2 text-xs text-on-surface-variant tabular-nums'>
+              <BookingDeadlineChip
+                dueAt={data.deadlineAt}
+                now={now}
+                prefix={t(`booking.deadline.types.${data.deadlineType}`)}
+              />
+              <span>
+                {data.status === 'PENDING_CAREGIVER_CONFIRMATION'
+                  ? t('centerManager.bookingDetail.caregiverAnswersBy', {
+                      time: formatDateTime(data.deadlineAt, i18n.language)
+                    })
+                  : data.status === 'PENDING_CAREGIVER_ASSIGNMENT'
+                    ? t('centerManager.bookingDetail.assignBy', {
+                        time: formatDateTime(data.deadlineAt, i18n.language)
+                      })
+                    : data.status === 'PENDING_CENTER_CONFIRMATION'
+                      ? t('centerManager.bookingDetail.acceptBy', {
+                          time: formatDateTime(data.deadlineAt, i18n.language)
+                        })
+                      : formatDateTime(data.deadlineAt, i18n.language)}
+              </span>
+            </div>
+          ) : null}
+          {past ? (
+            <p
+              className='mt-2 flex max-w-xl items-start gap-1.5 rounded-lg bg-surface-container px-3 py-2 text-xs text-on-surface-variant'
+              role='status'
+            >
+              <Icon className='text-base' name='timer_off' />
+              {t('booking.deadline.pastHint')}
             </p>
           ) : null}
-          {data.status === 'PENDING_CAREGIVER_CONFIRMATION' && data.acceptanceDueAt ? (
-            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-info-container px-3 py-1.5 text-xs font-semibold text-on-info-container tabular-nums'>
-              <Icon className='text-base' name='how_to_reg' />
-              {t('centerManager.bookingDetail.caregiverAnswersBy', {
-                time: formatDateTime(data.acceptanceDueAt, i18n.language)
-              })}
-            </p>
-          ) : null}
-          {data.status === 'PENDING_CAREGIVER_ASSIGNMENT' && data.assignmentDueAt ? (
-            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-warning-container px-3 py-1.5 text-xs font-semibold text-on-warning-container tabular-nums'>
-              <Icon className='text-base' name='schedule' />
-              {t('centerManager.bookingDetail.assignBy', { time: formatDateTime(data.assignmentDueAt, i18n.language) })}
+          {data.status === 'EXPIRED' && data.expiredReason ? (
+            <p className='mt-2 inline-flex items-center gap-1.5 rounded-lg bg-surface-container px-3 py-1.5 text-xs font-semibold text-on-surface-variant'>
+              <Icon className='text-base' name='timer_off' />
+              {t(`booking.expiredReason.${data.expiredReason}`)}
             </p>
           ) : null}
         </div>
         <div className='flex flex-wrap gap-2'>
-          {data.status === 'PENDING_CAREGIVER_ASSIGNMENT' ? (
+          {data.status === 'PENDING_CAREGIVER_ASSIGNMENT' && !past ? (
             <>
               <button
                 className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
@@ -153,19 +173,19 @@ export function ManagerBookingDetailPage() {
               </button>
             </>
           ) : null}
-          {data.status === 'PENDING_CAREGIVER_CONFIRMATION' ? (
+          {data.status === 'PENDING_CAREGIVER_CONFIRMATION' && !past ? (
             <button className={`${secondary} text-error`} onClick={() => setDialog('reject')} type='button'>
               <Icon className='text-lg' name='block' />
               {t('centerManager.bookingDetail.reject')}
             </button>
           ) : null}
-          {canChangeServiceAddress(data, openedAt) ? (
+          {canChangeServiceAddress(data, openedAt) && !past ? (
             <button className={`${secondary} text-primary`} onClick={() => setDialog('address')} type='button'>
               <Icon className='text-lg' name='home_pin' />
               {t('booking.address.action')}
             </button>
           ) : null}
-          {data.status === 'PENDING_CENTER_CONFIRMATION' ? (
+          {data.status === 'PENDING_CENTER_CONFIRMATION' && !past ? (
             <>
               <button
                 className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-container'
@@ -230,46 +250,10 @@ export function ManagerBookingDetailPage() {
         <ManagerBookingSummary booking={data} />
       </div>
 
-      {dialog === 'accept' ? (
-        <CaregiverAssignDialog
-          confirmLabel={t('centerManager.bookingDetail.accept')}
-          currentId={data.caregiverId}
-          description={
-            data.caregiverId
-              ? t('centerManager.bookingDetail.acceptKeepDescription', { name: caregiverName ?? '' })
-              : data.bookingType === 'SHIFT'
-                ? t('centerManager.bookingDetail.acceptDescription')
-                : t('centerManager.bookingDetail.acceptAssignLaterDescription')
-          }
-          emptyLabel={data.caregiverId ? undefined : t('centerManager.bookingDetail.assign.later')}
-          error={accept.error ? t(bookingErrorKey(accept.error)) : undefined}
-          loading={caregivers.caregivers.isPending}
-          onClose={() => setDialog(null)}
-          onConfirm={(caregiverId) => accept.mutate(caregiverId)}
-          optional={Boolean(data.caregiverId) || data.bookingType !== 'SHIFT'}
-          checking={free.checking}
-          freeIds={free.freeIds}
-          options={caregivers.options}
-          pending={accept.isPending}
-          title={t('centerManager.bookingDetail.acceptTitle', { code: data.bookingCode })}
-        />
+      {dialog === 'accept' || dialog === 'assign' || dialog === 'reject' ? (
+        <ManagerBookingActionDialog action={dialog} booking={data} onClose={() => setDialog(null)} />
       ) : null}
       {dialog === 'address' ? <ServiceAddressDialog booking={data} onClose={() => setDialog(null)} open /> : null}
-      {dialog === 'assign' ? (
-        <CaregiverAssignDialog
-          confirmLabel={t('centerManager.bookingDetail.assignCaregiver')}
-          description={t('centerManager.bookingDetail.assign.assignDescription')}
-          error={reassign.error ? t(bookingErrorKey(reassign.error)) : undefined}
-          loading={caregivers.caregivers.isPending}
-          onClose={() => setDialog(null)}
-          onConfirm={(caregiverId) => caregiverId && reassign.mutate(caregiverId)}
-          checking={free.checking}
-          freeIds={free.freeIds}
-          options={caregivers.options}
-          pending={reassign.isPending}
-          title={t('centerManager.bookingDetail.assignTitle', { code: data.bookingCode })}
-        />
-      ) : null}
       {dialog === 'reassign' ? (
         <CaregiverAssignDialog
           confirmLabel={t('centerManager.bookingDetail.assign.confirm')}
@@ -284,19 +268,6 @@ export function ManagerBookingDetailPage() {
           options={caregivers.options}
           pending={reassign.isPending}
           title={t('centerManager.bookingDetail.reassignAll')}
-        />
-      ) : null}
-      {dialog === 'reject' ? (
-        <BookingReasonDialog
-          confirmLabel={t('centerManager.bookingDetail.reject')}
-          danger
-          description={t('centerManager.bookingDetail.rejectHint')}
-          error={reject.error ? t(bookingErrorKey(reject.error)) : undefined}
-          label={t('centerManager.bookingDetail.reason')}
-          onClose={() => setDialog(null)}
-          onConfirm={(reason) => reject.mutate(reason)}
-          pending={reject.isPending}
-          title={t('centerManager.bookingDetail.rejectTitle', { code: data.bookingCode })}
         />
       ) : null}
       {dialog === 'cancel' ? (

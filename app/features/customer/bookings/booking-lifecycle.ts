@@ -54,8 +54,4 @@ function firstUpcomingVisit(booking: BookingDetailRecord) {
 }
 
 /** Whole days, hours and minutes left until an instant; null once it has passed. */
-export function timeLeft(dueAt: string, now: number) {
-  const minutes = Math.ceil((new Date(dueAt).getTime() - now) / 60_000)
-  if (Number.isNaN(minutes) || minutes <= 0) return null
-  return { days: Math.floor(minutes / 1440), hours: Math.floor((minutes % 1440) / 60), minutes: minutes % 60 }
-}
+export { timeLeft } from '~/entities/booking/booking-deadline'

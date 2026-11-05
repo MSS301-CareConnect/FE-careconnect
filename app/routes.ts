@@ -26,7 +26,8 @@ export default [
       route('incidents', 'routes/admin/incidents.tsx'),
       route('bookings', 'routes/admin/bookings.tsx'),
       route('bookings/:id', 'routes/admin/booking-detail.tsx'),
-      route('caregivers', 'routes/admin/caregivers.tsx')
+      route('caregivers', 'routes/admin/caregivers.tsx'),
+      route('notifications', 'routes/admin/notifications.tsx')
     ])
   ]),
   ...prefix('center-manager', [
@@ -42,7 +43,8 @@ export default [
       route('bookings', 'routes/center-manager/bookings.tsx'),
       route('bookings/:id', 'routes/center-manager/booking-detail.tsx'),
       route('policy', 'routes/center-manager/policy.tsx'),
-      route('complaints', 'routes/center-manager/complaints.tsx')
+      route('complaints', 'routes/center-manager/complaints.tsx'),
+      route('notifications', 'routes/center-manager/notifications.tsx')
     ])
   ]),
   ...prefix('caregiver', [
@@ -57,7 +59,8 @@ export default [
       route('requests', 'routes/caregiver/requests.tsx'),
       route('earnings', 'routes/caregiver/earnings.tsx'),
       route('profile', 'routes/caregiver/profile.tsx'),
-      route('security', 'routes/caregiver/security.tsx')
+      route('security', 'routes/caregiver/security.tsx'),
+      route('notifications', 'routes/caregiver/notifications.tsx')
     ])
   ]),
   ...prefix('customer', [
@@ -85,7 +88,8 @@ export default [
         route('patient-profiles', 'routes/customer/patient-profiles.tsx'),
         route('patient-profiles/:id', 'routes/customer/patient-detail.tsx'),
         route('payments', 'routes/customer/payments.tsx'),
-        route('invitations', 'routes/customer/invitations.tsx')
+        route('invitations', 'routes/customer/invitations.tsx'),
+        route('notifications', 'routes/customer/notifications.tsx')
       ])
     ])
   ]),

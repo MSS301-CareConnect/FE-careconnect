@@ -5,8 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { ProviderRegistrationStatus } from './providerRegistrationStatus'
 
 export type ListMyProviderShiftRegistrationsParams = {
+  status?: ProviderRegistrationStatus
   page?: number
   size?: number
 }

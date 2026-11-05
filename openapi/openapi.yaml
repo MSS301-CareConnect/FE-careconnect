@@ -1447,6 +1447,7 @@ paths:
       tags:
         - ProviderWorkShift
       operationId: listProviderWorkShifts
+      description: status filters on the effective state (a shift past its start or registration deadline is never OPEN).
       parameters:
         - name: centerId
           in: query
@@ -1477,6 +1478,23 @@ paths:
           schema:
             type: string
             format: date
+        - name: shiftType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: hasVacancy
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: hasPending
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
         - name: page
           in: query
           required: false
@@ -1662,6 +1680,11 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ProviderRegistrationStatus'
         - name: page
           in: query
           required: false
@@ -1779,6 +1802,11 @@ paths:
       summary: Danh sách đăng ký ca của tôi (Caregiver)
       operationId: listMyProviderShiftRegistrations
       parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ProviderRegistrationStatus'
         - name: page
           in: query
           required: false
@@ -1848,6 +1876,217 @@ paths:
           description: Not found
         '409':
           description: Conflict
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/work-shifts/statistics:
+    get:
+      tags:
+        - ProviderWorkShift
+      summary: Số liệu ca của một trung tâm theo bộ lọc (không theo trang)
+      operationId: getProviderWorkShiftStatistics
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: shiftType
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftStatisticsResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+  /v1/work-shifts/centers/{centerId}/batch:
+    post:
+      tags:
+        - ProviderWorkShift
+      summary: Tạo cùng một ca cho 1–31 ngày (tất cả hoặc không)
+      operationId: createProviderWorkShiftBatch
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkShiftBatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/work-shifts/{id}/cancel:
+    post:
+      tags:
+        - ProviderWorkShift
+      summary: Hủy ca trước giờ bắt đầu (bắt buộc lý do); đăng ký và lịch của ca được hủy theo
+      operationId: cancelProviderWorkShift
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkShiftCancelRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/work-shifts/{id}/status:
+    patch:
+      tags:
+        - ProviderWorkShift
+      summary: Mở hoặc đóng đăng ký thủ công (OPEN | CLOSED)
+      operationId: changeProviderWorkShiftStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkShiftStatusRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkShiftResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+      security:
+        - bearerAuth: []
+          csrf: []
+  /v1/work-shifts/{id}/registrations/review:
+    patch:
+      tags:
+        - ProviderWorkShift
+      summary: Duyệt / từ chối nhiều đăng ký của một ca (tất cả hoặc không)
+      operationId: bulkReviewProviderShiftRegistrations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationBulkReviewRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderShiftRegistrationListResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '409':
+          description: ProviderService error
         '500':
           description: ProviderService error
       security:
@@ -4145,6 +4384,40 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/bookings/status-counts:
+    get:
+      tags:
+        - Booking
+      summary: CENTER_MANAGER (own center) or ADMIN (centerId, all when omitted) sees booking counts and deadlines per status
+      operationId: getBookingStatusCounts
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingStatusCountsResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
   /v1/bookings:
     get:
       tags:
@@ -4157,6 +4430,16 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/BookingStatus'
+        - name: statuses
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            maxItems: 10
+            items:
+              $ref: '#/components/schemas/BookingStatus'
         - name: recipientId
           in: query
           required: false
@@ -4205,7 +4488,7 @@ paths:
           required: false
           schema:
             type: string
-            description: createdAt|startDate , asc|desc
+            description: createdAt|startDate|deadlineAt , asc|desc
         - name: page
           in: query
           required: false
@@ -6562,6 +6845,165 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/notifications/{id}/unread:
+    patch:
+      tags:
+        - Notification
+      operationId: markNotificationUnread
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/notifications/{id}:
+    delete:
+      tags:
+        - Notification
+      operationId: deleteNotification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/notifications/read-state:
+    patch:
+      tags:
+        - Notification
+      summary: Marks the caller's selected notifications read or unread; ids of other users are ignored
+      operationId: updateNotificationsReadState
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationReadStateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsUpdatedResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/notifications/deletions:
+    post:
+      tags:
+        - Notification
+      summary: Deletes the caller's selected notifications; ids of other users are ignored
+      operationId: deleteNotifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationDeletionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsDeletedResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/notifications/read:
+    delete:
+      tags:
+        - Notification
+      summary: Deletes every notification the caller has already read
+      operationId: deleteReadNotifications
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsDeletedResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
   /v1/notifications/read-all:
     patch:
       tags:
@@ -8195,14 +8637,24 @@ components:
           type: integer
         approvedCount:
           type: integer
+        pendingCount:
+          type: integer
         registrationDeadline:
           type: string
           format: date-time
         note:
           type: string
+        cancellationReason:
+          type: string
+        cancelledAt:
+          type: string
+          format: date-time
         version:
           type: integer
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
     ProviderShiftRegistrationRecord:
@@ -8234,11 +8686,95 @@ components:
           type: string
         rejectionReason:
           type: string
+        reviewedAt:
+          type: string
+          format: date-time
+        workDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        shiftType:
+          type: string
+        shiftStatus:
+          type: string
+          enum:
+            - DRAFT
+            - OPEN
+            - CLOSED
+            - CANCELLED
+            - COMPLETED
+        shiftCancellationReason:
+          type: string
+        scheduleId:
+          type: string
+          format: uuid
+        scheduleStatus:
+          type: string
+          enum:
+            - SCHEDULED
+            - CANCELLED
+        scheduleVersion:
+          type: integer
         version:
           type: integer
         createdAt:
           type: string
           format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProviderRegistrationStatus:
+      type: string
+      enum:
+        - PENDING
+        - APPROVED
+        - REJECTED
+        - CANCELLED
+    ProviderWorkShiftStatisticsRecord:
+      type: object
+      required:
+        - total
+        - draft
+        - open
+        - closed
+        - completed
+        - cancelled
+        - upcoming7Days
+        - understaffed7Days
+        - missingStaff7Days
+        - pendingRegistrations
+        - capacityTotal
+        - approvedTotal
+      properties:
+        total:
+          type: integer
+        draft:
+          type: integer
+        open:
+          type: integer
+        closed:
+          type: integer
+        completed:
+          type: integer
+        cancelled:
+          type: integer
+        upcoming7Days:
+          type: integer
+        understaffed7Days:
+          type: integer
+          description: Shifts starting within 7 days (drafts included) with fewer approved sign-ups than places.
+        missingStaff7Days:
+          type: integer
+          description: Places still unfilled across those shifts.
+        pendingRegistrations:
+          type: integer
+        capacityTotal:
+          type: integer
+        approvedTotal:
+          type: integer
     ProviderCenterPage:
       type: object
       required:
@@ -9039,6 +9575,49 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/ProviderShiftRegistrationRecord'
+    ProviderShiftRegistrationListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderShiftRegistrationRecord'
+    ProviderWorkShiftListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkShiftRecord'
+    ProviderWorkShiftStatisticsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/ProviderWorkShiftStatisticsRecord'
     ProviderCertificateListResponse:
       type: object
       required:
@@ -9331,6 +9910,107 @@ components:
       required:
         - status
         - version
+    WorkShiftBatchRequest:
+      type: object
+      required:
+        - workDates
+        - startTime
+        - endTime
+        - shiftType
+        - shiftStatus
+        - capacity
+      properties:
+        workDates:
+          type: array
+          minItems: 1
+          maxItems: 31
+          items:
+            type: string
+            format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        shiftType:
+          type: string
+          maxLength: 50
+        shiftStatus:
+          type: string
+          enum:
+            - DRAFT
+            - OPEN
+        capacity:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 50
+        registrationLeadMinutes:
+          type: integer
+          format: int32
+          minimum: 60
+          maximum: 10080
+        note:
+          type: string
+          maxLength: 500
+    WorkShiftCancelRequest:
+      type: object
+      required:
+        - reason
+        - version
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        version:
+          type: integer
+          format: int64
+    WorkShiftStatusRequest:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSED
+        version:
+          type: integer
+          format: int64
+    RegistrationBulkReviewRequest:
+      type: object
+      required:
+        - status
+        - items
+      properties:
+        status:
+          type: string
+          enum:
+            - APPROVED
+            - REJECTED
+        reason:
+          type: string
+          maxLength: 500
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/RegistrationBulkReviewItem'
+    RegistrationBulkReviewItem:
+      type: object
+      required:
+        - registrationId
+        - version
+      properties:
+        registrationId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
     ChangePasswordRequest:
       type: object
       required: [currentPassword, newPassword]
@@ -11666,6 +12346,7 @@ components:
         - CAREGIVER_REQUEST
         - BOOKING_HANDED_OVER
         - BOOKING_ADDRESS_CHANGED
+        - CENTER_ACTION_DUE
     OutboxStatus:
       type: string
       enum:
@@ -12621,6 +13302,13 @@ components:
             $ref: '#/components/schemas/BookingOccurrenceRecord'
         refund:
           $ref: '#/components/schemas/BookingRefundRecord'
+        deadlineType:
+          $ref: '#/components/schemas/BookingDeadlineType'
+        deadlineAt:
+          type: string
+          format: date-time
+        expiredReason:
+          $ref: '#/components/schemas/BookingExpiredReason'
     BookingSummaryRecord:
       type: object
       required:
@@ -12683,6 +13371,17 @@ components:
           type: integer
         totalCount:
           type: integer
+        deadlineType:
+          $ref: '#/components/schemas/BookingDeadlineType'
+        deadlineAt:
+          type: string
+          format: date-time
+        expiredReason:
+          $ref: '#/components/schemas/BookingExpiredReason'
+        serviceNames:
+          type: array
+          items:
+            type: string
     BookingHistoryRecord:
       type: object
       required:
@@ -13476,6 +14175,13 @@ components:
         createdAt:
           type: string
           format: date-time
+        bookingId:
+          type: string
+          format: uuid
+          description: Booking the notification's ref belongs to (navigation target)
+        occurrenceId:
+          type: string
+          format: uuid
     UnreadCountRecord:
       type: object
       required:
@@ -13494,6 +14200,144 @@ components:
           type: integer
         customerNoShow:
           type: integer
+    ResponsivenessStatisticsRecord:
+      type: object
+      properties:
+        answeredCount:
+          type: integer
+        avgResponseMinutes:
+          type: integer
+        expiredCount:
+          type: integer
+    BookingDeadlineType:
+      type: string
+      enum:
+        - CENTER_CONFIRMATION
+        - CAREGIVER_CONFIRMATION
+        - CAREGIVER_ASSIGNMENT
+        - INITIAL_PAYMENT
+        - REMAINING_PAYMENT
+    BookingExpiredReason:
+      type: string
+      enum:
+        - CENTER_CONFIRMATION_TIMEOUT
+        - CAREGIVER_CONFIRMATION_TIMEOUT
+        - ASSIGNMENT_TIMEOUT
+        - INITIAL_PAYMENT_TIMEOUT
+        - PAYMENT_OVERDUE
+    BookingStatusCountRecord:
+      type: object
+      required:
+        - status
+        - count
+        - dueSoonCount
+        - overdueCount
+      properties:
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        count:
+          type: integer
+        nearestDueAt:
+          type: string
+          format: date-time
+        dueSoonCount:
+          type: integer
+        overdueCount:
+          type: integer
+    BookingStatusCountsRecord:
+      type: object
+      required:
+        - statuses
+      properties:
+        statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingStatusCountRecord'
+        dueSoonMinutes:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+    BookingStatusCountsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/BookingStatusCountsRecord'
+    NotificationDeletionRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
+    NotificationReadStateRequest:
+      type: object
+      required:
+        - ids
+        - read
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
+        read:
+          type: boolean
+    NotificationsUpdatedRecord:
+      type: object
+      required:
+        - updated
+      properties:
+        updated:
+          type: integer
+    NotificationsUpdatedResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/NotificationsUpdatedRecord'
+    NotificationsDeletedRecord:
+      type: object
+      required:
+        - deleted
+      properties:
+        deleted:
+          type: integer
+    NotificationsDeletedResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/NotificationsDeletedRecord'
     ComplaintStatisticsRecord:
       type: object
       properties:
@@ -13750,6 +14594,8 @@ components:
             $ref: '#/components/schemas/TopCaregiverRecord'
         byCenter:
           $ref: '#/components/schemas/CenterOperationalStatsPage'
+        responsiveness:
+          $ref: '#/components/schemas/ResponsivenessStatisticsRecord'
     BookingDetailResponse:
       type: object
       required:

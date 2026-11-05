@@ -223,12 +223,36 @@ export const bookingSharedVi = {
       remindersTooMany: 'Tối đa 5 mốc nhắc.'
     }
   },
+  deadline: {
+    leftDays: 'Còn {{days}} ngày {{hours}} giờ',
+    leftHours: 'Còn {{hours}} giờ {{minutes}} phút',
+    leftDaysOnly: 'Còn {{days}} ngày',
+    leftHoursOnly: 'Còn {{hours}} giờ',
+    leftMinutes: 'Còn {{minutes}} phút',
+    closing: 'Quá hạn · đang đóng',
+    pastHint: 'Đã quá hạn. Hệ thống đang đóng lịch đặt này, không thể xác nhận, từ chối hay phân công nữa.',
+    types: {
+      CENTER_CONFIRMATION: 'Xác nhận',
+      CAREGIVER_CONFIRMATION: 'Chờ người chăm sóc',
+      CAREGIVER_ASSIGNMENT: 'Phân công',
+      INITIAL_PAYMENT: 'Khách thanh toán',
+      REMAINING_PAYMENT: 'Trả phần còn lại'
+    }
+  },
+  expiredReason: {
+    CENTER_CONFIRMATION_TIMEOUT: 'Trung tâm không xác nhận kịp hạn',
+    CAREGIVER_CONFIRMATION_TIMEOUT: 'Người chăm sóc không trả lời kịp hạn',
+    ASSIGNMENT_TIMEOUT: 'Trung tâm không phân người chăm sóc kịp hạn',
+    INITIAL_PAYMENT_TIMEOUT: 'Khách chưa thanh toán khoản đầu đúng hạn',
+    PAYMENT_OVERDUE: 'Khách chưa thanh toán phần còn lại đúng hạn'
+  },
   errors: {
     e5004: 'Hệ thống đặt lịch đang tạm gián đoạn, vui lòng thử lại sau ít phút.',
     e5006: 'Thông tin vừa được người khác cập nhật, vui lòng tải lại trang rồi thử lại.',
     e5007: 'Tài khoản chưa được gắn với trung tâm chăm sóc.',
     e5100: 'Không tìm thấy lịch đặt.',
     e5101: 'Không thể thực hiện thao tác này với lịch đặt ở tình trạng hiện tại.',
+    e5116: 'Lịch đặt đã quá hạn và vừa được đóng. Tải lại trang để xem trạng thái mới.',
     e5102: 'Yêu cầu đặt lịch này đã được gửi trước đó với thông tin khác, vui lòng tải lại trang.',
     e5107: 'Đã tới giờ buổi chăm sóc đầu tiên nên không thể hủy lịch đặt.',
     e5110: 'Mỗi dịch vụ chỉ được chọn một lần.',
@@ -521,12 +545,37 @@ export const bookingSharedEn = {
       remindersTooMany: 'At most 5 reminders.'
     }
   },
+  deadline: {
+    leftDays: '{{days}} d {{hours}} h left',
+    leftHours: '{{hours}} h {{minutes}} min left',
+    leftDaysOnly: '{{days}} d left',
+    leftHoursOnly: '{{hours}} h left',
+    leftMinutes: '{{minutes}} min left',
+    closing: 'Past due · closing',
+    pastHint:
+      'The deadline has passed. The booking is being closed and can no longer be confirmed, rejected or assigned.',
+    types: {
+      CENTER_CONFIRMATION: 'Confirm',
+      CAREGIVER_CONFIRMATION: 'Caregiver reply',
+      CAREGIVER_ASSIGNMENT: 'Assign',
+      INITIAL_PAYMENT: 'Customer payment',
+      REMAINING_PAYMENT: 'Remaining balance'
+    }
+  },
+  expiredReason: {
+    CENTER_CONFIRMATION_TIMEOUT: 'The center did not confirm in time',
+    CAREGIVER_CONFIRMATION_TIMEOUT: 'The caregiver did not answer in time',
+    ASSIGNMENT_TIMEOUT: 'The center did not assign a caregiver in time',
+    INITIAL_PAYMENT_TIMEOUT: 'The initial payment was not made in time',
+    PAYMENT_OVERDUE: 'The remaining balance was not paid in time'
+  },
   errors: {
     e5004: 'Booking is temporarily unavailable. Please try again in a few minutes.',
     e5006: 'Someone else just changed this data. Reload and try again.',
     e5007: 'This account is not linked to a care center.',
     e5100: 'Booking not found.',
     e5101: 'This action is not allowed in the booking’s current status.',
+    e5116: 'The booking passed its deadline and has just been closed. Reload to see its new status.',
     e5102: 'This booking request was already sent with different details. Reload the page.',
     e5107: 'The first visit has already started, so the booking cannot be cancelled.',
     e5110: 'Each service can be selected only once.',

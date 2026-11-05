@@ -16,4 +16,7 @@ export interface NotificationRecord {
   refId?: string
   readAt?: string
   createdAt?: string
+  /** Booking the notification's ref belongs to (navigation target) */
+  bookingId?: string
+  occurrenceId?: string
 }

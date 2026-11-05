@@ -14,6 +14,16 @@ export const statisticsVi = {
   occurrences: 'Kết quả các buổi chăm sóc',
   rating: 'Đánh giá trung bình',
   complaints: 'Khiếu nại đang mở',
+  responsiveness: {
+    title: 'Phản hồi lịch đặt',
+    hint: 'Booking tạo trong kỳ: trung tâm xác nhận / từ chối nhanh đến đâu và bao nhiêu lịch hết hạn vì chưa xử lý kịp.',
+    answered: 'Đã trả lời',
+    average: 'Thời gian trả lời trung bình',
+    expired: 'Hết hạn do trung tâm',
+    minutes: '{{count}} phút',
+    hours: '{{hours}} giờ {{minutes}} phút',
+    none: 'Chưa có'
+  },
   providerTitle: 'Trung tâm và người chăm sóc',
   centers: 'Trung tâm',
   caregivers: 'Người chăm sóc',
@@ -45,6 +55,16 @@ export const statisticsEn = {
   occurrences: 'Care session outcomes',
   rating: 'Average rating',
   complaints: 'Open complaints',
+  responsiveness: {
+    title: 'Booking responsiveness',
+    hint: 'Bookings created in this period: how fast the center confirms or rejects and how many expired before it acted.',
+    answered: 'Answered',
+    average: 'Average response time',
+    expired: 'Expired by the center',
+    minutes: '{{count}} min',
+    hours: '{{hours}} h {{minutes}} min',
+    none: 'None yet'
+  },
   providerTitle: 'Centers and caregivers',
   centers: 'Centers',
   caregivers: 'Caregivers',

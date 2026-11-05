@@ -14,6 +14,7 @@ import type {
   BookingOccurrencePageResponse,
   BookingOccurrenceResponse,
   BookingQuoteResponse,
+  BookingStatusCountsResponse,
   BookingSummaryPageResponse,
   CancellationPreviewResponse,
   CaregiverBookingRequestPageResponse,
@@ -27,11 +28,21 @@ import {
   getBookingOccurrencePageMock,
   getBookingOccurrenceRecordMock,
   getBookingQuoteRecordMock,
+  getBookingStatusCountsRecordMock,
   getBookingSummaryPageMock,
   getCancellationPreviewRecordMock,
   getCaregiverBookingRequestPageMock,
   getCaregiverBookingRequestRecordMock
 } from '../../contracts/index.faker'
+
+export const getGetBookingStatusCountsResponseMock = (
+  overrideResponse: Partial<Extract<BookingStatusCountsResponse, object>> = {}
+): BookingStatusCountsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingStatusCountsRecordMock() },
+  ...overrideResponse
+})
 
 export const getListBookingsResponseMock = (
   overrideResponse: Partial<Extract<BookingSummaryPageResponse, object>> = {}

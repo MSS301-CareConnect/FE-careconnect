@@ -17,7 +17,8 @@ export function FilterMenuChip({
   value,
   defaultValue = '',
   onChange,
-  icon
+  icon,
+  showValue = false
 }: {
   label: string
   options: FilterMenuOption[]
@@ -25,6 +26,8 @@ export function FilterMenuChip({
   defaultValue?: string
   onChange: (value: string) => void
   icon?: string
+  /** Show "Label: choice" even when the default is chosen (e.g. a date range that always applies). */
+  showValue?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -67,7 +70,7 @@ export function FilterMenuChip({
         {icon ? <Icon className='text-lg' name={icon} /> : null}
         <span>
           {label}
-          {active && current ? `: ${current.label}` : ''}
+          {(active || showValue) && current ? `: ${current.label}` : ''}
         </span>
         <Icon className={`text-lg transition-transform duration-200 ${open ? 'rotate-180' : ''}`} name='expand_more' />
       </button>

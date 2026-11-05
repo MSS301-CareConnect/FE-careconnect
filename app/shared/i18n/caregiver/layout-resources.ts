@@ -18,6 +18,7 @@ export const caregiverLayoutEn = {
     toAccept: '{{count}} visits to accept',
     requests: 'Requests',
     requestsWaiting: '{{count}} booking requests waiting',
+    needsResponse: '{{count}} need your answer',
     earnings: 'Kept deposits'
   },
   identity: {
@@ -50,6 +51,7 @@ export const caregiverLayoutVi = {
     toAccept: '{{count}} buổi cần nhận',
     requests: 'Yêu cầu',
     requestsWaiting: '{{count}} yêu cầu đặt lịch đang chờ',
+    needsResponse: '{{count}} việc cần phản hồi',
     earnings: 'Tiền cọc được hưởng'
   },
   identity: {

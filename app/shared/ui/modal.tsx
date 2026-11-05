@@ -11,9 +11,29 @@ export interface ModalProps {
   children?: ReactNode
   footer?: ReactNode
   maxWidthClass?: string
+  /**
+   * Standard widths (take precedence over maxWidthClass): sm 28rem, md 32rem, lg 42rem, xl 56rem (forms laid out in
+   * two columns), 2xl 72rem.
+   */
+  size?: ModalSize
   /** Forms pass false so a stray click outside does not throw away what was typed. */
   dismissOnBackdrop?: boolean
+  /**
+   * Called before the dialog closes from the close button, Escape or the backdrop; return false to keep it open (for
+   * example to ask before throwing away unsaved changes).
+   */
+  beforeClose?: () => boolean
   onClose: () => void
+}
+
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+
+const SIZE_CLASSES: Record<ModalSize, string> = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  '2xl': 'max-w-6xl'
 }
 
 export function Modal({
@@ -23,7 +43,9 @@ export function Modal({
   children,
   footer,
   maxWidthClass = 'max-w-lg',
+  size,
   dismissOnBackdrop = true,
+  beforeClose,
   onClose
 }: ModalProps) {
   const { t } = useTranslation()
@@ -43,20 +65,29 @@ export function Modal({
 
   if (!open) return null
 
+  const requestClose = () => {
+    if (beforeClose && !beforeClose()) return
+    dialogRef.current?.close()
+  }
+
   return (
     <dialog
       aria-describedby={description ? descriptionId : undefined}
       aria-labelledby={titleId}
-      className={`m-auto w-[calc(100%_-_2rem)] ${maxWidthClass} rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-0 text-on-surface shadow-xl backdrop:bg-on-surface/55`}
+      className={`m-auto w-[calc(100%_-_2rem)] ${size ? SIZE_CLASSES[size] : maxWidthClass} rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-0 text-on-surface shadow-xl backdrop:bg-on-surface/55`}
+      onCancel={(event) => {
+        // Escape: the browser closes the dialog unless the guard keeps it open.
+        if (beforeClose && !beforeClose()) event.preventDefault()
+      }}
       onClose={onClose}
       onMouseDown={(event) => {
         if (dismissOnBackdrop && event.target === event.currentTarget) {
-          dialogRef.current?.close()
+          requestClose()
         }
       }}
       ref={dialogRef}
     >
-      <div className='flex max-h-[calc(100dvh-2rem)] flex-col'>
+      <div className='flex max-h-[min(90dvh,calc(100dvh-2rem))] flex-col'>
         <div className='flex shrink-0 items-start justify-between gap-3 border-b border-outline-variant/40 px-5 py-4 sm:px-6'>
           <div>
             <h2 className='text-lg font-bold text-on-surface' id={titleId}>
@@ -71,7 +102,7 @@ export function Modal({
           <button
             aria-label={t('common.ui.closeDialog')}
             className='grid h-9 w-9 shrink-0 place-items-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary'
-            onClick={() => dialogRef.current?.close()}
+            onClick={requestClose}
             type='button'
           >
             <Icon name='close' />
@@ -85,6 +116,27 @@ export function Modal({
         ) : null}
       </div>
     </dialog>
+  )
+}
+
+/**
+ * Two columns inside a Modal body from `lg` (main content, then a side column such as a live summary); one column on
+ * smaller screens with the side column after the main one.
+ */
+export function ModalColumns({
+  children,
+  side,
+  sideClassName = 'lg:w-80'
+}: {
+  children: ReactNode
+  side: ReactNode
+  sideClassName?: string
+}) {
+  return (
+    <div className='flex flex-col gap-6 lg:flex-row lg:items-start'>
+      <div className='min-w-0 flex-1'>{children}</div>
+      <div className={`min-w-0 shrink-0 lg:sticky lg:top-0 ${sideClassName}`}>{side}</div>
+    </div>
   )
 }
 

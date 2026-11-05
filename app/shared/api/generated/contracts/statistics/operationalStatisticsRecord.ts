@@ -9,6 +9,7 @@ import type { CenterOperationalStatsPage } from './centerOperationalStatsPage'
 import type { ComplaintStatisticsRecord } from './complaintStatisticsRecord'
 import type { OccurrenceStatisticsRecord } from './occurrenceStatisticsRecord'
 import type { OperationalStatisticsRecordBookingsByStatus } from './operationalStatisticsRecordBookingsByStatus'
+import type { ResponsivenessStatisticsRecord } from './responsivenessStatisticsRecord'
 import type { TopCaregiverRecord } from './topCaregiverRecord'
 
 export interface OperationalStatisticsRecord {
@@ -18,4 +19,5 @@ export interface OperationalStatisticsRecord {
   complaints?: ComplaintStatisticsRecord
   topCaregivers?: TopCaregiverRecord[]
   byCenter?: CenterOperationalStatsPage
+  responsiveness?: ResponsivenessStatisticsRecord
 }

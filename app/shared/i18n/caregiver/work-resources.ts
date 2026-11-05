@@ -53,7 +53,7 @@ export const caregiverWorkEn = {
       available: 'Becomes your availability'
     },
     filterLabel: 'Shift filter',
-    filters: { open: 'Open shifts', pending: 'Signed up', approved: 'Approved', history: 'History' },
+    filters: { open: 'Open shifts', pending: 'Awaiting review', approved: 'Approved', history: 'History' },
     type: { DAILY: 'Daily', WEEKLY: 'Weekly' },
     capacity: '{{approved}}/{{capacity}} caregivers',
     capacityOnly: 'Needs {{capacity}} caregivers',
@@ -89,7 +89,32 @@ export const caregiverWorkEn = {
       history: 'No past sign-ups'
     },
     loadError: 'Could not load shifts.',
-    noCenter: 'Your profile is not linked to a center yet.'
+    noCenter: 'Your profile is not linked to a center yet.',
+    full: 'Full',
+    cancelledShift: 'The center cancelled this shift: {{reason}}',
+    withdraw: 'Withdraw',
+    withdrawTitle: 'Withdraw from this approved shift?',
+    withdrawDescription:
+      '{{date}} · {{start}}–{{end}}. This time slot stops being your availability. It is not possible once a family has booked a visit in it — then ask your center.',
+    withdrawReason: 'Reason',
+    withdrawReasonPlaceholder: 'e.g. Family matter',
+    withdrawReasonRequired: 'Enter a reason (500 characters at most).',
+    withdrawn: 'You withdrew from the shift',
+    warnings: {
+      overlap: 'You already signed up for {{time}} on this day; the center cannot approve both.',
+      timeOff: 'This shift falls in your time off. Delete the time off first or pick another shift.'
+    },
+    errors: {
+      e4401: 'You already have an approved shift at this time.',
+      e4355: 'This shift falls in your time off.',
+      e4305: 'The shift is full.',
+      e4304: 'The shift is no longer open for sign-up.',
+      e4354: 'The sign-up deadline has passed.',
+      e4308: 'The shift has already started.',
+      e4351: 'You have already signed up for this shift.',
+      e4415: 'A family has already booked a visit in this time slot. Ask your center to reassign it.',
+      fallback: 'Something went wrong. Try again.'
+    }
   },
   timeOff: {
     intro: 'Families cannot book you during time off. Time off cannot overlap a visit already assigned.',
@@ -181,7 +206,7 @@ export const caregiverWorkVi = {
       available: 'Thành khung rảnh để khách đặt'
     },
     filterLabel: 'Lọc ca',
-    filters: { open: 'Ca mở', pending: 'Đã đăng ký', approved: 'Đã duyệt', history: 'Lịch sử' },
+    filters: { open: 'Ca mở', pending: 'Chờ duyệt', approved: 'Đã duyệt', history: 'Lịch sử' },
     type: { DAILY: 'Theo ngày', WEEKLY: 'Theo tuần' },
     capacity: '{{approved}}/{{capacity}} người',
     capacityOnly: 'Cần {{capacity}} người',
@@ -217,7 +242,32 @@ export const caregiverWorkVi = {
       history: 'Chưa có đăng ký nào trước đây'
     },
     loadError: 'Không tải được danh sách ca.',
-    noCenter: 'Hồ sơ của bạn chưa gắn với trung tâm nào.'
+    noCenter: 'Hồ sơ của bạn chưa gắn với trung tâm nào.',
+    full: 'Đã đủ người',
+    cancelledShift: 'Trung tâm đã hủy ca này: {{reason}}',
+    withdraw: 'Rút khỏi ca',
+    withdrawTitle: 'Rút khỏi ca đã được duyệt?',
+    withdrawDescription:
+      '{{date}} · {{start}}–{{end}}. Khung giờ này sẽ không còn là khung rảnh của bạn. Không rút được khi khách đã đặt buổi trong khung này — khi đó hãy báo trung tâm.',
+    withdrawReason: 'Lý do',
+    withdrawReasonPlaceholder: 'VD: Việc gia đình',
+    withdrawReasonRequired: 'Nhập lý do (tối đa 500 ký tự).',
+    withdrawn: 'Bạn đã rút khỏi ca',
+    warnings: {
+      overlap: 'Bạn đã đăng ký khung {{time}} trong ngày này; trung tâm không duyệt được cả hai.',
+      timeOff: 'Ca này rơi vào ngày nghỉ của bạn. Xóa ngày nghỉ trước hoặc chọn ca khác.'
+    },
+    errors: {
+      e4401: 'Bạn đã có ca được duyệt trùng giờ này.',
+      e4355: 'Ca này rơi vào ngày nghỉ của bạn.',
+      e4305: 'Ca đã đủ người.',
+      e4304: 'Ca không còn mở đăng ký.',
+      e4354: 'Đã hết hạn đăng ký.',
+      e4308: 'Ca đã bắt đầu.',
+      e4351: 'Bạn đã đăng ký ca này rồi.',
+      e4415: 'Khách đã đặt buổi trong khung giờ này. Hãy báo trung tâm để đổi người.',
+      fallback: 'Có lỗi xảy ra. Thử lại nhé.'
+    }
   },
   timeOff: {
     intro: 'Khách không đặt được bạn trong ngày nghỉ. Ngày nghỉ không được trùng buổi đã giao.',

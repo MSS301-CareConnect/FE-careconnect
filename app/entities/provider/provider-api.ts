@@ -52,7 +52,12 @@ import {
   updateProviderWorkShift,
   registerProviderShift,
   listMyProviderShiftRegistrations,
-  cancelProviderShiftRegistration
+  cancelProviderShiftRegistration,
+  getProviderWorkShiftStatistics,
+  createProviderWorkShiftBatch,
+  cancelProviderWorkShift,
+  changeProviderWorkShiftStatus,
+  bulkReviewProviderShiftRegistrations
 } from '~/shared/api/generated/api/provider-work-shift/provider-work-shift'
 import {
   listProviderMedia,
@@ -86,7 +91,13 @@ import type {
   ListProviderCenterSchedulesParams,
   ScheduleStatusRequest,
   SearchProviderCaregiversParams,
-  ShiftRegistrationRequest
+  ShiftRegistrationRequest,
+  GetProviderWorkShiftStatisticsParams,
+  ListProviderShiftRegistrationsParams,
+  RegistrationBulkReviewRequest,
+  WorkShiftBatchRequest,
+  WorkShiftCancelRequest,
+  WorkShiftStatusRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 
@@ -117,6 +128,7 @@ export const providerKeys = {
   certificates: (id: string) => ['provider', 'certificates', id] as const,
   verifiedCertificates: (id: string) => ['provider', 'verified-certificates', id] as const,
   shifts: (centerId: string) => ['provider', 'shifts', centerId] as const,
+  shiftStatistics: (centerId: string) => ['provider', 'shifts', centerId, 'statistics'] as const,
   shift: (id: string) => ['provider', 'shift', id] as const,
   registrations: (id: string) => ['provider', 'registrations', id] as const,
   catalog: ['provider', 'catalog'] as const,
@@ -241,8 +253,23 @@ export async function saveWorkShift(id: string, request: WorkShiftRequest) {
 export async function removeWorkShift(id: string, version: number) {
   success(await archiveProviderWorkShift(id, { version }, await writeOptions()))
 }
-export async function fetchShiftRegistrations(id: string, page = 0) {
-  return result(await listProviderShiftRegistrations(id, { page }, readOptions))
+export async function fetchShiftRegistrations(id: string, page = 0, params: ListProviderShiftRegistrationsParams = {}) {
+  return result(await listProviderShiftRegistrations(id, { page, ...params }, readOptions))
+}
+export async function fetchWorkShiftStatistics(params: GetProviderWorkShiftStatisticsParams = {}) {
+  return result(await getProviderWorkShiftStatistics(params, readOptions))
+}
+export async function createWorkShiftBatch(centerId: string, request: WorkShiftBatchRequest) {
+  return result(await createProviderWorkShiftBatch(centerId, request, await writeOptions()))
+}
+export async function cancelWorkShift(id: string, request: WorkShiftCancelRequest) {
+  return result(await cancelProviderWorkShift(id, request, await writeOptions()))
+}
+export async function changeWorkShiftStatus(id: string, request: WorkShiftStatusRequest) {
+  return result(await changeProviderWorkShiftStatus(id, request, await writeOptions()))
+}
+export async function reviewShiftRegistrations(shiftId: string, request: RegistrationBulkReviewRequest) {
+  return result(await bulkReviewProviderShiftRegistrations(shiftId, request, await writeOptions()))
 }
 export async function reviewShiftRegistration(id: string, request: RegistrationReviewRequest) {
   return result(await reviewProviderShiftRegistration(id, request, await writeOptions()))

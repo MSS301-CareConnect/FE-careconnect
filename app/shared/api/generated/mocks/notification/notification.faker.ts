@@ -7,9 +7,20 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { EmptyActionResponse, NotificationPageResponse, UnreadCountResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  NotificationPageResponse,
+  NotificationsDeletedResponse,
+  NotificationsUpdatedResponse,
+  UnreadCountResponse
+} from '../../contracts'
 
-import { getNotificationPageMock, getUnreadCountRecordMock } from '../../contracts/index.faker'
+import {
+  getNotificationPageMock,
+  getNotificationsDeletedRecordMock,
+  getNotificationsUpdatedRecordMock,
+  getUnreadCountRecordMock
+} from '../../contracts/index.faker'
 
 export const getListNotificationsResponseMock = (
   overrideResponse: Partial<Extract<NotificationPageResponse, object>> = {}
@@ -35,6 +46,51 @@ export const getMarkNotificationReadResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getMarkNotificationUnreadResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getDeleteNotificationResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getUpdateNotificationsReadStateResponseMock = (
+  overrideResponse: Partial<Extract<NotificationsUpdatedResponse, object>> = {}
+): NotificationsUpdatedResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getNotificationsUpdatedRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeleteNotificationsResponseMock = (
+  overrideResponse: Partial<Extract<NotificationsDeletedResponse, object>> = {}
+): NotificationsDeletedResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getNotificationsDeletedRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeleteReadNotificationsResponseMock = (
+  overrideResponse: Partial<Extract<NotificationsDeletedResponse, object>> = {}
+): NotificationsDeletedResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getNotificationsDeletedRecordMock() },
   ...overrideResponse
 })
 

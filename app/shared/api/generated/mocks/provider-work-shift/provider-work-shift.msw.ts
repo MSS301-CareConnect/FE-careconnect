@@ -10,17 +10,25 @@ import type { RequestHandlerOptions } from 'msw'
 
 import type {
   EmptyActionResponse,
+  ProviderShiftRegistrationListResponse,
   ProviderShiftRegistrationPageResponse,
   ProviderShiftRegistrationResponse,
+  ProviderWorkShiftListResponse,
   ProviderWorkShiftPageResponse,
-  ProviderWorkShiftResponse
+  ProviderWorkShiftResponse,
+  ProviderWorkShiftStatisticsResponse
 } from '../../contracts'
 
 import {
   getArchiveProviderWorkShiftResponseMock,
+  getBulkReviewProviderShiftRegistrationsResponseMock,
   getCancelProviderShiftRegistrationResponseMock,
+  getCancelProviderWorkShiftResponseMock,
+  getChangeProviderWorkShiftStatusResponseMock,
+  getCreateProviderWorkShiftBatchResponseMock,
   getCreateProviderWorkShiftResponseMock,
   getGetProviderWorkShiftResponseMock,
+  getGetProviderWorkShiftStatisticsResponseMock,
   getListMyProviderShiftRegistrationsResponseMock,
   getListProviderShiftRegistrationsResponseMock,
   getListProviderWorkShiftsResponseMock,
@@ -39,7 +47,12 @@ export {
   getRegisterProviderShiftResponseMock,
   getReviewProviderShiftRegistrationResponseMock,
   getListMyProviderShiftRegistrationsResponseMock,
-  getCancelProviderShiftRegistrationResponseMock
+  getCancelProviderShiftRegistrationResponseMock,
+  getGetProviderWorkShiftStatisticsResponseMock,
+  getCreateProviderWorkShiftBatchResponseMock,
+  getCancelProviderWorkShiftResponseMock,
+  getChangeProviderWorkShiftStatusResponseMock,
+  getBulkReviewProviderShiftRegistrationsResponseMock
 } from './provider-work-shift.faker'
 
 export const getListProviderWorkShiftsMockHandler = (
@@ -297,6 +310,136 @@ export const getCancelProviderShiftRegistrationMockHandler = (
     options
   )
 }
+
+export const getGetProviderWorkShiftStatisticsMockHandler = (
+  overrideResponse?:
+    | ProviderWorkShiftStatisticsResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderWorkShiftStatisticsResponse> | ProviderWorkShiftStatisticsResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/work-shifts/statistics',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetProviderWorkShiftStatisticsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getCreateProviderWorkShiftBatchMockHandler = (
+  overrideResponse?:
+    | ProviderWorkShiftListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<ProviderWorkShiftListResponse> | ProviderWorkShiftListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/work-shifts/centers/:centerId/batch',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getCreateProviderWorkShiftBatchResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getCancelProviderWorkShiftMockHandler = (
+  overrideResponse?:
+    | ProviderWorkShiftResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<ProviderWorkShiftResponse> | ProviderWorkShiftResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/work-shifts/:id/cancel',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getCancelProviderWorkShiftResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getChangeProviderWorkShiftStatusMockHandler = (
+  overrideResponse?:
+    | ProviderWorkShiftResponse
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<ProviderWorkShiftResponse> | ProviderWorkShiftResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/work-shifts/:id/status',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getChangeProviderWorkShiftStatusResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getBulkReviewProviderShiftRegistrationsMockHandler = (
+  overrideResponse?:
+    | ProviderShiftRegistrationListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<ProviderShiftRegistrationListResponse> | ProviderShiftRegistrationListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/work-shifts/:id/registrations/review',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getBulkReviewProviderShiftRegistrationsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 export const getProviderWorkShiftMock = () => [
   getListProviderWorkShiftsMockHandler(),
   getGetProviderWorkShiftMockHandler(),
@@ -307,5 +450,10 @@ export const getProviderWorkShiftMock = () => [
   getRegisterProviderShiftMockHandler(),
   getReviewProviderShiftRegistrationMockHandler(),
   getListMyProviderShiftRegistrationsMockHandler(),
-  getCancelProviderShiftRegistrationMockHandler()
+  getCancelProviderShiftRegistrationMockHandler(),
+  getGetProviderWorkShiftStatisticsMockHandler(),
+  getCreateProviderWorkShiftBatchMockHandler(),
+  getCancelProviderWorkShiftMockHandler(),
+  getChangeProviderWorkShiftStatusMockHandler(),
+  getBulkReviewProviderShiftRegistrationsMockHandler()
 ]

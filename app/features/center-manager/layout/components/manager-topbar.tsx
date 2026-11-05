@@ -26,7 +26,7 @@ export function ManagerTopbar({ menuOpen, onToggleMenu }: { menuOpen: boolean; o
           <div className='[&_button]:px-2'>
             <LanguageSwitch />
           </div>
-          <NotificationBell />
+          <NotificationBell portal='center-manager' />
           <PortalAccountMenu fallbackName={t('centerManager.manager')} roleLabel={t('centerManager.role')} />
         </div>
       </div>

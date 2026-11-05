@@ -9,6 +9,10 @@ import type { BookingStatus } from '../bookingStatus'
 
 export type ListBookingsParams = {
   status?: BookingStatus
+  /**
+   * @maxItems 10
+   */
+  statuses?: BookingStatus[]
   recipientId?: string
   centerId?: string
   customerId?: string
@@ -21,7 +25,7 @@ export type ListBookingsParams = {
    */
   keyword?: string
   /**
-   * createdAt|startDate , asc|desc
+   * createdAt|startDate|deadlineAt , asc|desc
    */
   sort?: string
   page?: number

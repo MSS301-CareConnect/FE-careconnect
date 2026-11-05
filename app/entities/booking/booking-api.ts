@@ -7,6 +7,7 @@ import {
   cancelBooking,
   createBooking,
   getBooking,
+  getBookingStatusCounts,
   listBookingHeldSchedules,
   listBookingHistory,
   listBookings,
@@ -90,11 +91,17 @@ export const bookingKeys = {
   session: (id: string) => ['booking', 'session', id] as const,
   heldSchedules: (params: ListBookingHeldSchedulesParams) => ['booking', 'held-schedules', params] as const,
   centerPolicy: (centerId: string) => ['booking', 'center-policy', centerId] as const,
-  caregiverRequests: (page: number) => ['booking', 'caregiver-requests', page] as const
+  caregiverRequests: (page: number) => ['booking', 'caregiver-requests', page] as const,
+  statusCounts: (centerId?: string) => ['booking', 'status-counts', centerId ?? 'own'] as const
 }
 
 export async function fetchBookings(params: ListBookingsParams = {}) {
   return result(await listBookings(params, readOptions))
+}
+
+/** Center queue: bookings per status with the nearest deadline and how many are due soon or already overdue. */
+export async function fetchBookingStatusCounts(centerId?: string) {
+  return result(await getBookingStatusCounts(centerId ? { centerId } : undefined, readOptions))
 }
 
 const COLLECTION_PAGE_SIZE = 100

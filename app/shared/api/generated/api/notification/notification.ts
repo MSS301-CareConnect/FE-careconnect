@@ -24,7 +24,11 @@ import type {
 import type {
   EmptyActionResponse,
   ListNotificationsParams,
+  NotificationDeletionRequest,
   NotificationPageResponse,
+  NotificationReadStateRequest,
+  NotificationsDeletedResponse,
+  NotificationsUpdatedResponse,
   UnreadCountResponse
 } from '../../contracts'
 
@@ -532,6 +536,670 @@ export const useMarkNotificationRead = <
   queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof markNotificationRead>>, TError, { id: string }, TContext> => {
   return useMutation(getMarkNotificationReadMutationOptions(options), queryClient)
+}
+export type markNotificationUnreadResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type markNotificationUnreadResponse400 = {
+  data: void
+  status: 400
+}
+
+export type markNotificationUnreadResponse401 = {
+  data: void
+  status: 401
+}
+
+export type markNotificationUnreadResponse403 = {
+  data: void
+  status: 403
+}
+
+export type markNotificationUnreadResponse404 = {
+  data: void
+  status: 404
+}
+
+export type markNotificationUnreadResponse409 = {
+  data: void
+  status: 409
+}
+
+export type markNotificationUnreadResponse500 = {
+  data: void
+  status: 500
+}
+
+export type markNotificationUnreadResponse503 = {
+  data: void
+  status: 503
+}
+
+export type markNotificationUnreadResponseSuccess = markNotificationUnreadResponse200 & {
+  headers: Headers
+}
+export type markNotificationUnreadResponseError = (
+  | markNotificationUnreadResponse400
+  | markNotificationUnreadResponse401
+  | markNotificationUnreadResponse403
+  | markNotificationUnreadResponse404
+  | markNotificationUnreadResponse409
+  | markNotificationUnreadResponse500
+  | markNotificationUnreadResponse503
+) & {
+  headers: Headers
+}
+
+export const getMarkNotificationUnreadUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/notifications/${id}/unread`
+}
+
+export const markNotificationUnread = async (
+  id: string,
+  options?: RequestInit
+): Promise<markNotificationUnreadResponseSuccess> => {
+  const res = await fetch(getMarkNotificationUnreadUrl(id), {
+    ...options,
+    method: 'PATCH'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: markNotificationUnreadResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: markNotificationUnreadResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: markNotificationUnreadResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as markNotificationUnreadResponseSuccess
+}
+
+export const getMarkNotificationUnreadMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof markNotificationUnread>>, TError, { id: string }, TContext>
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof markNotificationUnread>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['markNotificationUnread']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof markNotificationUnread>>, { id: string }> = (props) => {
+    const { id } = props ?? {}
+
+    return markNotificationUnread(id, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type MarkNotificationUnreadMutationResult = NonNullable<Awaited<ReturnType<typeof markNotificationUnread>>>
+
+export type MarkNotificationUnreadMutationError = globalThis.Error & { info?: void; status?: number }
+
+export const useMarkNotificationUnread = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof markNotificationUnread>>, TError, { id: string }, TContext>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof markNotificationUnread>>, TError, { id: string }, TContext> => {
+  return useMutation(getMarkNotificationUnreadMutationOptions(options), queryClient)
+}
+export type deleteNotificationResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type deleteNotificationResponse400 = {
+  data: void
+  status: 400
+}
+
+export type deleteNotificationResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteNotificationResponse403 = {
+  data: void
+  status: 403
+}
+
+export type deleteNotificationResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteNotificationResponse409 = {
+  data: void
+  status: 409
+}
+
+export type deleteNotificationResponse500 = {
+  data: void
+  status: 500
+}
+
+export type deleteNotificationResponse503 = {
+  data: void
+  status: 503
+}
+
+export type deleteNotificationResponseSuccess = deleteNotificationResponse200 & {
+  headers: Headers
+}
+export type deleteNotificationResponseError = (
+  | deleteNotificationResponse400
+  | deleteNotificationResponse401
+  | deleteNotificationResponse403
+  | deleteNotificationResponse404
+  | deleteNotificationResponse409
+  | deleteNotificationResponse500
+  | deleteNotificationResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeleteNotificationUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/notifications/${id}`
+}
+
+export const deleteNotification = async (
+  id: string,
+  options?: RequestInit
+): Promise<deleteNotificationResponseSuccess> => {
+  const res = await fetch(getDeleteNotificationUrl(id), {
+    ...options,
+    method: 'DELETE'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: deleteNotificationResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: deleteNotificationResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: deleteNotificationResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as deleteNotificationResponseSuccess
+}
+
+export const getDeleteNotificationMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteNotification>>, TError, { id: string }, TContext>
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof deleteNotification>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['deleteNotification']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteNotification>>, { id: string }> = (props) => {
+    const { id } = props ?? {}
+
+    return deleteNotification(id, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteNotificationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteNotification>>>
+
+export type DeleteNotificationMutationError = globalThis.Error & { info?: void; status?: number }
+
+export const useDeleteNotification = <TError = globalThis.Error & { info?: void; status?: number }, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteNotification>>, TError, { id: string }, TContext>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof deleteNotification>>, TError, { id: string }, TContext> => {
+  return useMutation(getDeleteNotificationMutationOptions(options), queryClient)
+}
+export type updateNotificationsReadStateResponse200 = {
+  data: NotificationsUpdatedResponse
+  status: 200
+}
+
+export type updateNotificationsReadStateResponse400 = {
+  data: void
+  status: 400
+}
+
+export type updateNotificationsReadStateResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updateNotificationsReadStateResponse403 = {
+  data: void
+  status: 403
+}
+
+export type updateNotificationsReadStateResponse404 = {
+  data: void
+  status: 404
+}
+
+export type updateNotificationsReadStateResponse409 = {
+  data: void
+  status: 409
+}
+
+export type updateNotificationsReadStateResponse500 = {
+  data: void
+  status: 500
+}
+
+export type updateNotificationsReadStateResponse503 = {
+  data: void
+  status: 503
+}
+
+export type updateNotificationsReadStateResponseSuccess = updateNotificationsReadStateResponse200 & {
+  headers: Headers
+}
+export type updateNotificationsReadStateResponseError = (
+  | updateNotificationsReadStateResponse400
+  | updateNotificationsReadStateResponse401
+  | updateNotificationsReadStateResponse403
+  | updateNotificationsReadStateResponse404
+  | updateNotificationsReadStateResponse409
+  | updateNotificationsReadStateResponse500
+  | updateNotificationsReadStateResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateNotificationsReadStateUrl = () => {
+  return `${env.API_BASE_URL}/v1/notifications/read-state`
+}
+
+/**
+ * @summary Marks the caller's selected notifications read or unread; ids of other users are ignored
+ */
+export const updateNotificationsReadState = async (
+  notificationReadStateRequest: NotificationReadStateRequest,
+  options?: RequestInit
+): Promise<updateNotificationsReadStateResponseSuccess> => {
+  const res = await fetch(getUpdateNotificationsReadStateUrl(), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(notificationReadStateRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateNotificationsReadStateResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateNotificationsReadStateResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateNotificationsReadStateResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateNotificationsReadStateResponseSuccess
+}
+
+export const getUpdateNotificationsReadStateMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateNotificationsReadState>>,
+    TError,
+    { data: NotificationReadStateRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateNotificationsReadState>>,
+  TError,
+  { data: NotificationReadStateRequest },
+  TContext
+> => {
+  const mutationKey = ['updateNotificationsReadState']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateNotificationsReadState>>,
+    { data: NotificationReadStateRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return updateNotificationsReadState(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateNotificationsReadStateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateNotificationsReadState>>
+>
+export type UpdateNotificationsReadStateMutationBody = NotificationReadStateRequest
+export type UpdateNotificationsReadStateMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Marks the caller's selected notifications read or unread; ids of other users are ignored
+ */
+export const useUpdateNotificationsReadState = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateNotificationsReadState>>,
+      TError,
+      { data: NotificationReadStateRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateNotificationsReadState>>,
+  TError,
+  { data: NotificationReadStateRequest },
+  TContext
+> => {
+  return useMutation(getUpdateNotificationsReadStateMutationOptions(options), queryClient)
+}
+export type deleteNotificationsResponse200 = {
+  data: NotificationsDeletedResponse
+  status: 200
+}
+
+export type deleteNotificationsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type deleteNotificationsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteNotificationsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type deleteNotificationsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteNotificationsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type deleteNotificationsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type deleteNotificationsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type deleteNotificationsResponseSuccess = deleteNotificationsResponse200 & {
+  headers: Headers
+}
+export type deleteNotificationsResponseError = (
+  | deleteNotificationsResponse400
+  | deleteNotificationsResponse401
+  | deleteNotificationsResponse403
+  | deleteNotificationsResponse404
+  | deleteNotificationsResponse409
+  | deleteNotificationsResponse500
+  | deleteNotificationsResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeleteNotificationsUrl = () => {
+  return `${env.API_BASE_URL}/v1/notifications/deletions`
+}
+
+/**
+ * @summary Deletes the caller's selected notifications; ids of other users are ignored
+ */
+export const deleteNotifications = async (
+  notificationDeletionRequest: NotificationDeletionRequest,
+  options?: RequestInit
+): Promise<deleteNotificationsResponseSuccess> => {
+  const res = await fetch(getDeleteNotificationsUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(notificationDeletionRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: deleteNotificationsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: deleteNotificationsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: deleteNotificationsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as deleteNotificationsResponseSuccess
+}
+
+export const getDeleteNotificationsMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteNotifications>>,
+    TError,
+    { data: NotificationDeletionRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteNotifications>>,
+  TError,
+  { data: NotificationDeletionRequest },
+  TContext
+> => {
+  const mutationKey = ['deleteNotifications']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteNotifications>>,
+    { data: NotificationDeletionRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return deleteNotifications(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteNotificationsMutationResult = NonNullable<Awaited<ReturnType<typeof deleteNotifications>>>
+export type DeleteNotificationsMutationBody = NotificationDeletionRequest
+export type DeleteNotificationsMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Deletes the caller's selected notifications; ids of other users are ignored
+ */
+export const useDeleteNotifications = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteNotifications>>,
+      TError,
+      { data: NotificationDeletionRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteNotifications>>,
+  TError,
+  { data: NotificationDeletionRequest },
+  TContext
+> => {
+  return useMutation(getDeleteNotificationsMutationOptions(options), queryClient)
+}
+export type deleteReadNotificationsResponse200 = {
+  data: NotificationsDeletedResponse
+  status: 200
+}
+
+export type deleteReadNotificationsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type deleteReadNotificationsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteReadNotificationsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type deleteReadNotificationsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteReadNotificationsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type deleteReadNotificationsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type deleteReadNotificationsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type deleteReadNotificationsResponseSuccess = deleteReadNotificationsResponse200 & {
+  headers: Headers
+}
+export type deleteReadNotificationsResponseError = (
+  | deleteReadNotificationsResponse400
+  | deleteReadNotificationsResponse401
+  | deleteReadNotificationsResponse403
+  | deleteReadNotificationsResponse404
+  | deleteReadNotificationsResponse409
+  | deleteReadNotificationsResponse500
+  | deleteReadNotificationsResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeleteReadNotificationsUrl = () => {
+  return `${env.API_BASE_URL}/v1/notifications/read`
+}
+
+/**
+ * @summary Deletes every notification the caller has already read
+ */
+export const deleteReadNotifications = async (
+  options?: RequestInit
+): Promise<deleteReadNotificationsResponseSuccess> => {
+  const res = await fetch(getDeleteReadNotificationsUrl(), {
+    ...options,
+    method: 'DELETE'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: deleteReadNotificationsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: deleteReadNotificationsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: deleteReadNotificationsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as deleteReadNotificationsResponseSuccess
+}
+
+export const getDeleteReadNotificationsMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteReadNotifications>>, TError, void, TContext>
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof deleteReadNotifications>>, TError, void, TContext> => {
+  const mutationKey = ['deleteReadNotifications']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteReadNotifications>>, void> = () => {
+    return deleteReadNotifications(fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteReadNotificationsMutationResult = NonNullable<Awaited<ReturnType<typeof deleteReadNotifications>>>
+
+export type DeleteReadNotificationsMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Deletes every notification the caller has already read
+ */
+export const useDeleteReadNotifications = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteReadNotifications>>, TError, void, TContext>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof deleteReadNotifications>>, TError, void, TContext> => {
+  return useMutation(getDeleteReadNotificationsMutationOptions(options), queryClient)
 }
 export type markAllNotificationsReadResponse200 = {
   data: EmptyActionResponse

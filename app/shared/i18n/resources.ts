@@ -64,6 +64,7 @@ import { managerScheduleEn, managerScheduleVi } from './center-manager/schedule-
 import { managerServicesEn, managerServicesVi } from './center-manager/services-resources'
 import { managerStatisticsEn, managerStatisticsVi } from './center-manager/statistics-resources'
 import { managerPolicyEn, managerPolicyVi } from './center-manager/policy-resources'
+import { managerWorkShiftsEn, managerWorkShiftsVi } from './center-manager/work-shifts-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
 import { adminCentersEn, adminCentersVi } from './admin/centers-resources'
@@ -137,7 +138,8 @@ export const resources = {
         schedules: managerScheduleEn,
         services: managerServicesEn,
         statisticsPage: managerStatisticsEn,
-        policyPage: managerPolicyEn
+        policyPage: managerPolicyEn,
+        workShifts: managerWorkShiftsEn
       },
       admin: {
         ...adminLayoutEn,
@@ -214,7 +216,8 @@ export const resources = {
         schedules: managerScheduleVi,
         services: managerServicesVi,
         statisticsPage: managerStatisticsVi,
-        policyPage: managerPolicyVi
+        policyPage: managerPolicyVi,
+        workShifts: managerWorkShiftsVi
       },
       admin: {
         ...adminLayoutVi,

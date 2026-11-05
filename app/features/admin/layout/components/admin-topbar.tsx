@@ -31,7 +31,7 @@ export function AdminTopbar({ menuOpen, onToggleMenu }: AdminTopbarProps) {
           <div className='[&_button]:px-2'>
             <LanguageSwitch />
           </div>
-          <NotificationBell />
+          <NotificationBell portal='admin' />
           <PortalAccountMenu fallbackName={t('admin.manager')} roleLabel={t('admin.role')} />
         </div>
       </div>

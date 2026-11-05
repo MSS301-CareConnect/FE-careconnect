@@ -25,16 +25,24 @@ import type {
   ArchiveProviderWorkShiftParams,
   CancelProviderShiftRegistrationParams,
   EmptyActionResponse,
+  GetProviderWorkShiftStatisticsParams,
   ListMyProviderShiftRegistrationsParams,
   ListProviderShiftRegistrationsParams,
   ListProviderWorkShiftsParams,
+  ProviderShiftRegistrationListResponse,
   ProviderShiftRegistrationPageResponse,
   ProviderShiftRegistrationResponse,
+  ProviderWorkShiftListResponse,
   ProviderWorkShiftPageResponse,
   ProviderWorkShiftResponse,
+  ProviderWorkShiftStatisticsResponse,
+  RegistrationBulkReviewRequest,
   RegistrationReviewRequest,
   ShiftRegistrationRequest,
-  WorkShiftRequest
+  WorkShiftBatchRequest,
+  WorkShiftCancelRequest,
+  WorkShiftRequest,
+  WorkShiftStatusRequest
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -119,6 +127,9 @@ export const getListProviderWorkShiftsUrl = (params?: ListProviderWorkShiftsPara
     : `${env.API_BASE_URL}/v1/work-shifts`
 }
 
+/**
+ * status filters on the effective state (a shift past its start or registration deadline is never OPEN).
+ */
 export const listProviderWorkShifts = async (
   params?: ListProviderWorkShiftsParams,
   options?: RequestInit
@@ -1688,4 +1699,786 @@ export const useCancelProviderShiftRegistration = <
   TContext
 > => {
   return useMutation(getCancelProviderShiftRegistrationMutationOptions(options), queryClient)
+}
+export type getProviderWorkShiftStatisticsResponse200 = {
+  data: ProviderWorkShiftStatisticsResponse
+  status: 200
+}
+
+export type getProviderWorkShiftStatisticsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getProviderWorkShiftStatisticsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getProviderWorkShiftStatisticsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getProviderWorkShiftStatisticsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getProviderWorkShiftStatisticsResponseSuccess = getProviderWorkShiftStatisticsResponse200 & {
+  headers: Headers
+}
+export type getProviderWorkShiftStatisticsResponseError = (
+  | getProviderWorkShiftStatisticsResponse400
+  | getProviderWorkShiftStatisticsResponse401
+  | getProviderWorkShiftStatisticsResponse403
+  | getProviderWorkShiftStatisticsResponse500
+) & {
+  headers: Headers
+}
+
+export const getGetProviderWorkShiftStatisticsUrl = (params?: GetProviderWorkShiftStatisticsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/work-shifts/statistics?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/work-shifts/statistics`
+}
+
+/**
+ * @summary Số liệu ca của một trung tâm theo bộ lọc (không theo trang)
+ */
+export const getProviderWorkShiftStatistics = async (
+  params?: GetProviderWorkShiftStatisticsParams,
+  options?: RequestInit
+): Promise<getProviderWorkShiftStatisticsResponseSuccess> => {
+  const res = await fetch(getGetProviderWorkShiftStatisticsUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getProviderWorkShiftStatisticsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getProviderWorkShiftStatisticsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getProviderWorkShiftStatisticsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getProviderWorkShiftStatisticsResponseSuccess
+}
+
+export const getGetProviderWorkShiftStatisticsQueryKey = (params?: GetProviderWorkShiftStatisticsParams) => {
+  return [`${env.API_BASE_URL}/v1/work-shifts/statistics`, ...(params ? [params] : [])] as const
+}
+
+export const getGetProviderWorkShiftStatisticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetProviderWorkShiftStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProviderWorkShiftStatisticsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>> = ({ signal }) =>
+    getProviderWorkShiftStatistics(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProviderWorkShiftStatisticsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>
+>
+export type GetProviderWorkShiftStatisticsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetProviderWorkShiftStatistics<
+  TData = Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | GetProviderWorkShiftStatisticsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProviderWorkShiftStatistics<
+  TData = Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetProviderWorkShiftStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProviderWorkShiftStatistics<
+  TData = Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetProviderWorkShiftStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Số liệu ca của một trung tâm theo bộ lọc (không theo trang)
+ */
+
+export function useGetProviderWorkShiftStatistics<
+  TData = Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetProviderWorkShiftStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProviderWorkShiftStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetProviderWorkShiftStatisticsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type createProviderWorkShiftBatchResponse200 = {
+  data: ProviderWorkShiftListResponse
+  status: 200
+}
+
+export type createProviderWorkShiftBatchResponse400 = {
+  data: void
+  status: 400
+}
+
+export type createProviderWorkShiftBatchResponse401 = {
+  data: void
+  status: 401
+}
+
+export type createProviderWorkShiftBatchResponse403 = {
+  data: void
+  status: 403
+}
+
+export type createProviderWorkShiftBatchResponse404 = {
+  data: void
+  status: 404
+}
+
+export type createProviderWorkShiftBatchResponse409 = {
+  data: void
+  status: 409
+}
+
+export type createProviderWorkShiftBatchResponse500 = {
+  data: void
+  status: 500
+}
+
+export type createProviderWorkShiftBatchResponseSuccess = createProviderWorkShiftBatchResponse200 & {
+  headers: Headers
+}
+export type createProviderWorkShiftBatchResponseError = (
+  | createProviderWorkShiftBatchResponse400
+  | createProviderWorkShiftBatchResponse401
+  | createProviderWorkShiftBatchResponse403
+  | createProviderWorkShiftBatchResponse404
+  | createProviderWorkShiftBatchResponse409
+  | createProviderWorkShiftBatchResponse500
+) & {
+  headers: Headers
+}
+
+export const getCreateProviderWorkShiftBatchUrl = (centerId: string) => {
+  return `${env.API_BASE_URL}/v1/work-shifts/centers/${centerId}/batch`
+}
+
+/**
+ * @summary Tạo cùng một ca cho 1–31 ngày (tất cả hoặc không)
+ */
+export const createProviderWorkShiftBatch = async (
+  centerId: string,
+  workShiftBatchRequest: WorkShiftBatchRequest,
+  options?: RequestInit
+): Promise<createProviderWorkShiftBatchResponseSuccess> => {
+  const res = await fetch(getCreateProviderWorkShiftBatchUrl(centerId), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(workShiftBatchRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: createProviderWorkShiftBatchResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: createProviderWorkShiftBatchResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: createProviderWorkShiftBatchResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createProviderWorkShiftBatchResponseSuccess
+}
+
+export const getCreateProviderWorkShiftBatchMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProviderWorkShiftBatch>>,
+    TError,
+    { centerId: string; data: WorkShiftBatchRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProviderWorkShiftBatch>>,
+  TError,
+  { centerId: string; data: WorkShiftBatchRequest },
+  TContext
+> => {
+  const mutationKey = ['createProviderWorkShiftBatch']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProviderWorkShiftBatch>>,
+    { centerId: string; data: WorkShiftBatchRequest }
+  > = (props) => {
+    const { centerId, data } = props ?? {}
+
+    return createProviderWorkShiftBatch(centerId, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CreateProviderWorkShiftBatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProviderWorkShiftBatch>>
+>
+export type CreateProviderWorkShiftBatchMutationBody = WorkShiftBatchRequest
+export type CreateProviderWorkShiftBatchMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Tạo cùng một ca cho 1–31 ngày (tất cả hoặc không)
+ */
+export const useCreateProviderWorkShiftBatch = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createProviderWorkShiftBatch>>,
+      TError,
+      { centerId: string; data: WorkShiftBatchRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof createProviderWorkShiftBatch>>,
+  TError,
+  { centerId: string; data: WorkShiftBatchRequest },
+  TContext
+> => {
+  return useMutation(getCreateProviderWorkShiftBatchMutationOptions(options), queryClient)
+}
+export type cancelProviderWorkShiftResponse200 = {
+  data: ProviderWorkShiftResponse
+  status: 200
+}
+
+export type cancelProviderWorkShiftResponse400 = {
+  data: void
+  status: 400
+}
+
+export type cancelProviderWorkShiftResponse401 = {
+  data: void
+  status: 401
+}
+
+export type cancelProviderWorkShiftResponse403 = {
+  data: void
+  status: 403
+}
+
+export type cancelProviderWorkShiftResponse404 = {
+  data: void
+  status: 404
+}
+
+export type cancelProviderWorkShiftResponse409 = {
+  data: void
+  status: 409
+}
+
+export type cancelProviderWorkShiftResponse500 = {
+  data: void
+  status: 500
+}
+
+export type cancelProviderWorkShiftResponse503 = {
+  data: void
+  status: 503
+}
+
+export type cancelProviderWorkShiftResponseSuccess = cancelProviderWorkShiftResponse200 & {
+  headers: Headers
+}
+export type cancelProviderWorkShiftResponseError = (
+  | cancelProviderWorkShiftResponse400
+  | cancelProviderWorkShiftResponse401
+  | cancelProviderWorkShiftResponse403
+  | cancelProviderWorkShiftResponse404
+  | cancelProviderWorkShiftResponse409
+  | cancelProviderWorkShiftResponse500
+  | cancelProviderWorkShiftResponse503
+) & {
+  headers: Headers
+}
+
+export const getCancelProviderWorkShiftUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/work-shifts/${id}/cancel`
+}
+
+/**
+ * @summary Hủy ca trước giờ bắt đầu (bắt buộc lý do); đăng ký và lịch của ca được hủy theo
+ */
+export const cancelProviderWorkShift = async (
+  id: string,
+  workShiftCancelRequest: WorkShiftCancelRequest,
+  options?: RequestInit
+): Promise<cancelProviderWorkShiftResponseSuccess> => {
+  const res = await fetch(getCancelProviderWorkShiftUrl(id), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(workShiftCancelRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: cancelProviderWorkShiftResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: cancelProviderWorkShiftResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: cancelProviderWorkShiftResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as cancelProviderWorkShiftResponseSuccess
+}
+
+export const getCancelProviderWorkShiftMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelProviderWorkShift>>,
+    TError,
+    { id: string; data: WorkShiftCancelRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelProviderWorkShift>>,
+  TError,
+  { id: string; data: WorkShiftCancelRequest },
+  TContext
+> => {
+  const mutationKey = ['cancelProviderWorkShift']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelProviderWorkShift>>,
+    { id: string; data: WorkShiftCancelRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return cancelProviderWorkShift(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CancelProviderWorkShiftMutationResult = NonNullable<Awaited<ReturnType<typeof cancelProviderWorkShift>>>
+export type CancelProviderWorkShiftMutationBody = WorkShiftCancelRequest
+export type CancelProviderWorkShiftMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Hủy ca trước giờ bắt đầu (bắt buộc lý do); đăng ký và lịch của ca được hủy theo
+ */
+export const useCancelProviderWorkShift = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cancelProviderWorkShift>>,
+      TError,
+      { id: string; data: WorkShiftCancelRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof cancelProviderWorkShift>>,
+  TError,
+  { id: string; data: WorkShiftCancelRequest },
+  TContext
+> => {
+  return useMutation(getCancelProviderWorkShiftMutationOptions(options), queryClient)
+}
+export type changeProviderWorkShiftStatusResponse200 = {
+  data: ProviderWorkShiftResponse
+  status: 200
+}
+
+export type changeProviderWorkShiftStatusResponse400 = {
+  data: void
+  status: 400
+}
+
+export type changeProviderWorkShiftStatusResponse401 = {
+  data: void
+  status: 401
+}
+
+export type changeProviderWorkShiftStatusResponse403 = {
+  data: void
+  status: 403
+}
+
+export type changeProviderWorkShiftStatusResponse404 = {
+  data: void
+  status: 404
+}
+
+export type changeProviderWorkShiftStatusResponse409 = {
+  data: void
+  status: 409
+}
+
+export type changeProviderWorkShiftStatusResponse500 = {
+  data: void
+  status: 500
+}
+
+export type changeProviderWorkShiftStatusResponseSuccess = changeProviderWorkShiftStatusResponse200 & {
+  headers: Headers
+}
+export type changeProviderWorkShiftStatusResponseError = (
+  | changeProviderWorkShiftStatusResponse400
+  | changeProviderWorkShiftStatusResponse401
+  | changeProviderWorkShiftStatusResponse403
+  | changeProviderWorkShiftStatusResponse404
+  | changeProviderWorkShiftStatusResponse409
+  | changeProviderWorkShiftStatusResponse500
+) & {
+  headers: Headers
+}
+
+export const getChangeProviderWorkShiftStatusUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/work-shifts/${id}/status`
+}
+
+/**
+ * @summary Mở hoặc đóng đăng ký thủ công (OPEN | CLOSED)
+ */
+export const changeProviderWorkShiftStatus = async (
+  id: string,
+  workShiftStatusRequest: WorkShiftStatusRequest,
+  options?: RequestInit
+): Promise<changeProviderWorkShiftStatusResponseSuccess> => {
+  const res = await fetch(getChangeProviderWorkShiftStatusUrl(id), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(workShiftStatusRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: changeProviderWorkShiftStatusResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: changeProviderWorkShiftStatusResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: changeProviderWorkShiftStatusResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as changeProviderWorkShiftStatusResponseSuccess
+}
+
+export const getChangeProviderWorkShiftStatusMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof changeProviderWorkShiftStatus>>,
+    TError,
+    { id: string; data: WorkShiftStatusRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof changeProviderWorkShiftStatus>>,
+  TError,
+  { id: string; data: WorkShiftStatusRequest },
+  TContext
+> => {
+  const mutationKey = ['changeProviderWorkShiftStatus']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof changeProviderWorkShiftStatus>>,
+    { id: string; data: WorkShiftStatusRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return changeProviderWorkShiftStatus(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ChangeProviderWorkShiftStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof changeProviderWorkShiftStatus>>
+>
+export type ChangeProviderWorkShiftStatusMutationBody = WorkShiftStatusRequest
+export type ChangeProviderWorkShiftStatusMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Mở hoặc đóng đăng ký thủ công (OPEN | CLOSED)
+ */
+export const useChangeProviderWorkShiftStatus = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof changeProviderWorkShiftStatus>>,
+      TError,
+      { id: string; data: WorkShiftStatusRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof changeProviderWorkShiftStatus>>,
+  TError,
+  { id: string; data: WorkShiftStatusRequest },
+  TContext
+> => {
+  return useMutation(getChangeProviderWorkShiftStatusMutationOptions(options), queryClient)
+}
+export type bulkReviewProviderShiftRegistrationsResponse200 = {
+  data: ProviderShiftRegistrationListResponse
+  status: 200
+}
+
+export type bulkReviewProviderShiftRegistrationsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type bulkReviewProviderShiftRegistrationsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type bulkReviewProviderShiftRegistrationsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type bulkReviewProviderShiftRegistrationsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type bulkReviewProviderShiftRegistrationsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type bulkReviewProviderShiftRegistrationsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type bulkReviewProviderShiftRegistrationsResponseSuccess = bulkReviewProviderShiftRegistrationsResponse200 & {
+  headers: Headers
+}
+export type bulkReviewProviderShiftRegistrationsResponseError = (
+  | bulkReviewProviderShiftRegistrationsResponse400
+  | bulkReviewProviderShiftRegistrationsResponse401
+  | bulkReviewProviderShiftRegistrationsResponse403
+  | bulkReviewProviderShiftRegistrationsResponse404
+  | bulkReviewProviderShiftRegistrationsResponse409
+  | bulkReviewProviderShiftRegistrationsResponse500
+) & {
+  headers: Headers
+}
+
+export const getBulkReviewProviderShiftRegistrationsUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/work-shifts/${id}/registrations/review`
+}
+
+/**
+ * @summary Duyệt / từ chối nhiều đăng ký của một ca (tất cả hoặc không)
+ */
+export const bulkReviewProviderShiftRegistrations = async (
+  id: string,
+  registrationBulkReviewRequest: RegistrationBulkReviewRequest,
+  options?: RequestInit
+): Promise<bulkReviewProviderShiftRegistrationsResponseSuccess> => {
+  const res = await fetch(getBulkReviewProviderShiftRegistrationsUrl(id), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(registrationBulkReviewRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & {
+      info?: bulkReviewProviderShiftRegistrationsResponseError['data']
+      status?: number
+    } = new globalThis.Error()
+    const data: bulkReviewProviderShiftRegistrationsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: bulkReviewProviderShiftRegistrationsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as bulkReviewProviderShiftRegistrationsResponseSuccess
+}
+
+export const getBulkReviewProviderShiftRegistrationsMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof bulkReviewProviderShiftRegistrations>>,
+    TError,
+    { id: string; data: RegistrationBulkReviewRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof bulkReviewProviderShiftRegistrations>>,
+  TError,
+  { id: string; data: RegistrationBulkReviewRequest },
+  TContext
+> => {
+  const mutationKey = ['bulkReviewProviderShiftRegistrations']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof bulkReviewProviderShiftRegistrations>>,
+    { id: string; data: RegistrationBulkReviewRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return bulkReviewProviderShiftRegistrations(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type BulkReviewProviderShiftRegistrationsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof bulkReviewProviderShiftRegistrations>>
+>
+export type BulkReviewProviderShiftRegistrationsMutationBody = RegistrationBulkReviewRequest
+export type BulkReviewProviderShiftRegistrationsMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary Duyệt / từ chối nhiều đăng ký của một ca (tất cả hoặc không)
+ */
+export const useBulkReviewProviderShiftRegistrations = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof bulkReviewProviderShiftRegistrations>>,
+      TError,
+      { id: string; data: RegistrationBulkReviewRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof bulkReviewProviderShiftRegistrations>>,
+  TError,
+  { id: string; data: RegistrationBulkReviewRequest },
+  TContext
+> => {
+  return useMutation(getBulkReviewProviderShiftRegistrationsMutationOptions(options), queryClient)
 }

@@ -8,19 +8,35 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { EmptyActionResponse, NotificationPageResponse, UnreadCountResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  NotificationPageResponse,
+  NotificationsDeletedResponse,
+  NotificationsUpdatedResponse,
+  UnreadCountResponse
+} from '../../contracts'
 
 import {
+  getDeleteNotificationResponseMock,
+  getDeleteNotificationsResponseMock,
+  getDeleteReadNotificationsResponseMock,
   getGetUnreadNotificationCountResponseMock,
   getListNotificationsResponseMock,
   getMarkAllNotificationsReadResponseMock,
-  getMarkNotificationReadResponseMock
+  getMarkNotificationReadResponseMock,
+  getMarkNotificationUnreadResponseMock,
+  getUpdateNotificationsReadStateResponseMock
 } from './notification.faker'
 
 export {
   getListNotificationsResponseMock,
   getGetUnreadNotificationCountResponseMock,
   getMarkNotificationReadResponseMock,
+  getMarkNotificationUnreadResponseMock,
+  getDeleteNotificationResponseMock,
+  getUpdateNotificationsReadStateResponseMock,
+  getDeleteNotificationsResponseMock,
+  getDeleteReadNotificationsResponseMock,
   getMarkAllNotificationsReadResponseMock
 } from './notification.faker'
 
@@ -98,6 +114,132 @@ export const getMarkNotificationReadMockHandler = (
   )
 }
 
+export const getMarkNotificationUnreadMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/notifications/:id/unread',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getMarkNotificationUnreadResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeleteNotificationMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    '*/v1/notifications/:id',
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeleteNotificationResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getUpdateNotificationsReadStateMockHandler = (
+  overrideResponse?:
+    | NotificationsUpdatedResponse
+    | ((
+        info: Parameters<Parameters<typeof http.patch>[1]>[0]
+      ) => Promise<NotificationsUpdatedResponse> | NotificationsUpdatedResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.patch(
+    '*/v1/notifications/read-state',
+    async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateNotificationsReadStateResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeleteNotificationsMockHandler = (
+  overrideResponse?:
+    | NotificationsDeletedResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<NotificationsDeletedResponse> | NotificationsDeletedResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/notifications/deletions',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeleteNotificationsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeleteReadNotificationsMockHandler = (
+  overrideResponse?:
+    | NotificationsDeletedResponse
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0]
+      ) => Promise<NotificationsDeletedResponse> | NotificationsDeletedResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    '*/v1/notifications/read',
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeleteReadNotificationsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getMarkAllNotificationsReadMockHandler = (
   overrideResponse?:
     | EmptyActionResponse
@@ -125,5 +267,10 @@ export const getNotificationMock = () => [
   getListNotificationsMockHandler(),
   getGetUnreadNotificationCountMockHandler(),
   getMarkNotificationReadMockHandler(),
+  getMarkNotificationUnreadMockHandler(),
+  getDeleteNotificationMockHandler(),
+  getUpdateNotificationsReadStateMockHandler(),
+  getDeleteNotificationsMockHandler(),
+  getDeleteReadNotificationsMockHandler(),
   getMarkAllNotificationsReadMockHandler()
 ]

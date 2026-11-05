@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -9,12 +10,13 @@ import {
 import type { ProviderWorkShiftStatisticsRecord } from '~/shared/api/generated/contracts'
 import { DatePicker } from '~/shared/ui/date-picker'
 import { FilterChips } from '~/shared/ui/filter-chips'
-import { Select } from '~/shared/ui/form-field'
+import { FilterMenuChip } from '~/shared/ui/filter-menu-chip'
+import { Icon } from '~/shared/ui/icon'
 
 import type { RangePreset, ShiftFilters } from '../hooks/use-shift-filters'
 
 const k = 'centerManager.workShifts.filters' as const
-const PRESETS: Exclude<RangePreset, 'custom'>[] = ['upcoming', 'next7', 'thisMonth', 'all']
+const RANGE_OPTIONS: RangePreset[] = ['upcoming', 'next7', 'thisMonth', 'all', 'custom']
 
 const STAT_OF = {
   DRAFT: 'draft',
@@ -24,23 +26,31 @@ const STAT_OF = {
   CANCELLED: 'cancelled'
 } as const
 
+/**
+ * One compact card: status chips (with counts) on top, then a single toolbar row — date range and shift type as
+ * dropdown chips, two toggles and "clear" — with the list / week switch (`trailing`) on the right. Custom dates show
+ * two date inputs inline only when "Pick dates" is chosen.
+ */
 export function ShiftFiltersBar({
   filters,
-  stats
+  stats,
+  trailing
 }: {
   filters: ShiftFilters
   stats?: ProviderWorkShiftStatisticsRecord
+  trailing?: ReactNode
 }) {
   const { t } = useTranslation()
   const toggle =
-    'inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+    'inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
   const on = 'border-primary bg-brand-50 text-primary'
   const off = 'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-brand-300'
+  const custom = filters.range === 'custom'
 
   return (
     <section
       aria-label={t(`${k}.label`)}
-      className='space-y-4 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-4'
+      className='space-y-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-3 sm:p-4'
     >
       <FilterChips
         label={t(`${k}.status`)}
@@ -57,84 +67,80 @@ export function ShiftFiltersBar({
         ]}
         value={filters.status ?? 'all'}
       />
-      <div className='flex flex-wrap items-end gap-x-4 gap-y-3'>
-        <div className='min-w-0'>
-          <span className='mb-1.5 block text-xs font-semibold text-on-surface-variant'>{t(`${k}.range`)}</span>
-          <div aria-label={t(`${k}.range`)} className='flex flex-wrap gap-1.5' role='group'>
-            {PRESETS.map((preset) => (
-              <button
-                aria-pressed={filters.range === preset}
-                className={`${toggle} ${filters.range === preset ? on : off}`}
-                key={preset}
-                onClick={() => filters.setRange(preset)}
-                type='button'
-              >
-                {t(`${k}.rangeOptions.${preset}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className='flex flex-wrap items-end gap-2'>
-          <label className='block'>
-            <span className='mb-1.5 block text-xs font-semibold text-on-surface-variant'>{t(`${k}.from`)}</span>
-            <DatePicker
-              aria-invalid={filters.rangeInvalid || undefined}
-              className='w-40'
-              onChange={(value) => filters.setCustomRange(value, filters.range === 'custom' ? filters.to : '')}
-              value={filters.range === 'custom' ? filters.from : (filters.fromDate ?? '')}
-            />
-          </label>
-          <label className='block'>
-            <span className='mb-1.5 block text-xs font-semibold text-on-surface-variant'>{t(`${k}.to`)}</span>
+      <div className='flex flex-wrap items-center gap-2 border-t border-outline-variant/40 pt-3'>
+        <FilterMenuChip
+          defaultValue='upcoming'
+          icon='date_range'
+          label={t(`${k}.range`)}
+          onChange={(value) => filters.setRange(value as RangePreset)}
+          options={RANGE_OPTIONS.map((preset) => ({ value: preset, label: t(`${k}.rangeOptions.${preset}`) }))}
+          showValue
+          value={filters.range}
+        />
+        {custom ? (
+          <div aria-label={t(`${k}.range`)} className='flex items-center gap-1.5' role='group'>
             <DatePicker
               aria-describedby={filters.rangeInvalid ? 'shift-range-error' : undefined}
               aria-invalid={filters.rangeInvalid || undefined}
-              className='w-40'
-              onChange={(value) =>
-                filters.setCustomRange(filters.range === 'custom' ? filters.from : (filters.fromDate ?? ''), value)
-              }
-              value={filters.range === 'custom' ? filters.to : (filters.toDate ?? '')}
+              className='w-36'
+              onChange={(value) => filters.setCustomRange(value, filters.to)}
+              value={filters.from}
             />
-          </label>
-        </div>
-        <label className='block w-44'>
-          <span className='mb-1.5 block text-xs font-semibold text-on-surface-variant'>{t(`${k}.type`)}</span>
-          <Select onChange={(event) => filters.setType(event.target.value)} value={filters.type}>
-            <option value=''>{t(`${k}.anyType`)}</option>
-            {SHIFT_TYPE_CODES.map((code) => (
-              <option key={code} value={code}>
-                {t(shiftTypeLabelKey(code))}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <div className='flex flex-wrap gap-2'>
-          <button
-            aria-pressed={filters.vacancy}
-            className={`${toggle} ${filters.vacancy ? on : off}`}
-            onClick={() => filters.setVacancy(!filters.vacancy)}
-            type='button'
-          >
-            {t(`${k}.vacancy`)}
-          </button>
-          <button
-            aria-pressed={filters.pending}
-            className={`${toggle} ${filters.pending ? on : off}`}
-            onClick={() => filters.setPending(!filters.pending)}
-            type='button'
-          >
-            {t(`${k}.pending`)}
-          </button>
-        </div>
+            <span className='text-sm text-on-surface-variant'>{t(`${k}.rangeSeparator`)}</span>
+            <DatePicker
+              aria-describedby={filters.rangeInvalid ? 'shift-range-error' : undefined}
+              aria-invalid={filters.rangeInvalid || undefined}
+              className='w-36'
+              min={filters.from || undefined}
+              onChange={(value) => filters.setCustomRange(filters.from, value)}
+              value={filters.to}
+            />
+          </div>
+        ) : null}
+        <FilterMenuChip
+          icon='category'
+          label={t(`${k}.type`)}
+          onChange={filters.setType}
+          options={[
+            { value: '', label: t(`${k}.anyType`) },
+            ...SHIFT_TYPE_CODES.map((code) => ({ value: code, label: t(shiftTypeLabelKey(code)) }))
+          ]}
+          value={filters.type}
+        />
+        <button
+          aria-pressed={filters.vacancy}
+          className={`${toggle} ${filters.vacancy ? on : off}`}
+          onClick={() => filters.setVacancy(!filters.vacancy)}
+          type='button'
+        >
+          <Icon className='text-lg' name={filters.vacancy ? 'check' : 'group_add'} />
+          {t(`${k}.vacancy`)}
+        </button>
+        <button
+          aria-pressed={filters.pending}
+          className={`${toggle} ${filters.pending ? on : off}`}
+          onClick={() => filters.setPending(!filters.pending)}
+          type='button'
+        >
+          <Icon className='text-lg' name={filters.pending ? 'check' : 'pending_actions'} />
+          {t(`${k}.pending`)}
+          {stats?.pendingRegistrations ? (
+            <span className='min-w-6 rounded-full bg-warning-container px-1.5 py-0.5 text-center text-xs font-semibold text-on-warning-container tabular-nums'>
+              {stats.pendingRegistrations}
+            </span>
+          ) : null}
+        </button>
         {filters.active ? (
           <button
-            className='ml-auto min-h-10 rounded-lg px-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+            className='inline-flex min-h-10 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary'
             onClick={filters.clear}
             type='button'
           >
+            <Icon className='text-lg' name='filter_alt_off' />
             {t(`${k}.clear`)}
           </button>
         ) : null}
+        {trailing ? <div className='ml-auto flex items-center gap-3'>{trailing}</div> : null}
       </div>
       {filters.rangeInvalid ? (
         <p className='text-sm text-error' id='shift-range-error'>

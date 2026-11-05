@@ -7,9 +7,15 @@
  */
 
 export * from './listNotificationsParams'
+export * from './notificationDeletionRequest'
 export * from './notificationPage'
 export * from './notificationPageResponse'
+export * from './notificationReadStateRequest'
 export * from './notificationRecord'
+export * from './notificationsDeletedRecord'
+export * from './notificationsDeletedResponse'
+export * from './notificationsUpdatedRecord'
+export * from './notificationsUpdatedResponse'
 export * from './notificationType'
 export * from './unreadCountRecord'
 export * from './unreadCountResponse'

@@ -7,6 +7,8 @@
  */
 import type { BookingStatus } from '../bookingStatus'
 import type { BookingCustomerRecord } from './bookingCustomerRecord'
+import type { BookingDeadlineType } from './bookingDeadlineType'
+import type { BookingExpiredReason } from './bookingExpiredReason'
 import type { BookingRecurrenceFrequency } from './bookingRecurrenceFrequency'
 import type { BookingType } from './bookingType'
 
@@ -32,4 +34,8 @@ export interface BookingSummaryRecord {
   nextOccurrenceAt?: string
   completedCount?: number
   totalCount?: number
+  deadlineType?: BookingDeadlineType
+  deadlineAt?: string
+  expiredReason?: BookingExpiredReason
+  serviceNames?: string[]
 }

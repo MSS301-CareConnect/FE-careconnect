@@ -39,6 +39,8 @@ export const caregiverMeEn = {
     servicesError: 'Could not load your services.',
     managedByCenter: 'Managed by your center',
     managedHint: 'Your center keeps this up to date. Contact them to change it.',
+    managedBanner:
+      'Your birth date, experience, email, introduction and services are kept by your center; contact them to change these. You can edit your phone number here.',
     phoneLabel: 'Phone number',
     phoneInvalid: 'Enter 9–15 digits.',
     phoneSaved: 'Phone number saved',
@@ -173,6 +175,8 @@ export const caregiverMeVi = {
     servicesError: 'Không tải được danh sách dịch vụ.',
     managedByCenter: 'Do trung tâm quản lý',
     managedHint: 'Trung tâm cập nhật thông tin này. Liên hệ trung tâm nếu cần sửa.',
+    managedBanner:
+      'Ngày sinh, kinh nghiệm, email, phần giới thiệu và dịch vụ do trung tâm cập nhật; liên hệ trung tâm nếu cần sửa. Số điện thoại bạn tự sửa được ở đây.',
     phoneLabel: 'Số điện thoại',
     phoneInvalid: 'Nhập 9–15 chữ số.',
     phoneSaved: 'Đã lưu số điện thoại',

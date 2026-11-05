@@ -9,17 +9,21 @@ import { faker } from '@faker-js/faker'
 
 import type {
   EmptyActionResponse,
+  ProviderShiftRegistrationListResponse,
   ProviderShiftRegistrationPageResponse,
   ProviderShiftRegistrationResponse,
+  ProviderWorkShiftListResponse,
   ProviderWorkShiftPageResponse,
-  ProviderWorkShiftResponse
+  ProviderWorkShiftResponse,
+  ProviderWorkShiftStatisticsResponse
 } from '../../contracts'
 
 import {
   getProviderShiftRegistrationPageMock,
   getProviderShiftRegistrationRecordMock,
   getProviderWorkShiftPageMock,
-  getProviderWorkShiftRecordMock
+  getProviderWorkShiftRecordMock,
+  getProviderWorkShiftStatisticsRecordMock
 } from '../../contracts/index.faker'
 
 export const getListProviderWorkShiftsResponseMock = (
@@ -109,5 +113,54 @@ export const getCancelProviderShiftRegistrationResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: faker.helpers.arrayElement([null, undefined]),
+  ...overrideResponse
+})
+
+export const getGetProviderWorkShiftStatisticsResponseMock = (
+  overrideResponse: Partial<Extract<ProviderWorkShiftStatisticsResponse, object>> = {}
+): ProviderWorkShiftStatisticsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderWorkShiftStatisticsRecordMock() },
+  ...overrideResponse
+})
+
+export const getCreateProviderWorkShiftBatchResponseMock = (
+  overrideResponse: Partial<Extract<ProviderWorkShiftListResponse, object>> = {}
+): ProviderWorkShiftListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderWorkShiftRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getCancelProviderWorkShiftResponseMock = (
+  overrideResponse: Partial<Extract<ProviderWorkShiftResponse, object>> = {}
+): ProviderWorkShiftResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderWorkShiftRecordMock() },
+  ...overrideResponse
+})
+
+export const getChangeProviderWorkShiftStatusResponseMock = (
+  overrideResponse: Partial<Extract<ProviderWorkShiftResponse, object>> = {}
+): ProviderWorkShiftResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderWorkShiftRecordMock() },
+  ...overrideResponse
+})
+
+export const getBulkReviewProviderShiftRegistrationsResponseMock = (
+  overrideResponse: Partial<Extract<ProviderShiftRegistrationListResponse, object>> = {}
+): ProviderShiftRegistrationListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderShiftRegistrationRecordMock()
+  })),
   ...overrideResponse
 })

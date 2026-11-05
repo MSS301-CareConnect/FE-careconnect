@@ -18,8 +18,12 @@ export interface ProviderWorkShiftRecord {
   shiftStatus: ProviderWorkShiftRecordShiftStatus
   capacity: number
   approvedCount?: number
+  pendingCount?: number
   registrationDeadline?: string
   note?: string
+  cancellationReason?: string
+  cancelledAt?: string
   version: number
   createdAt?: string
+  updatedAt?: string
 }

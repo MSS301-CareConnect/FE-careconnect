@@ -114,6 +114,7 @@ export function CustomerHeader() {
               </Link>
               <CenterChip />
               <NotificationBell
+                portal='customer'
                 pinned={
                   pendingInvitations > 0
                     ? (close) => (

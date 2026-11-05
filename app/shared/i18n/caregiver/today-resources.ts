@@ -23,6 +23,9 @@ export const caregiverTodayEn = {
     title: 'Needs your attention',
     toAccept: '{{count}} visits waiting for you to accept',
     toAcceptAction: 'Review',
+    requests_one: '{{count}} family is waiting for your answer',
+    requests_other: '{{count}} families are waiting for your answer',
+    requestsAction: 'Answer',
     shiftClosing: 'Shift sign-up for {{day}} closes soon',
     shiftAction: 'Sign up',
     noCertificates: 'Your profile has no certificate yet',
@@ -40,7 +43,9 @@ export const caregiverTodayEn = {
     title: 'You have no visit today',
     hint: 'Sign up for open shifts so families can book you.',
     action: 'Sign up for shifts',
-    upcoming: 'See upcoming visits'
+    upcoming: 'See upcoming visits',
+    openShifts: 'Open shifts you can sign up for',
+    allShifts: 'See all open shifts'
   },
   loadError: 'Could not load today’s visits.'
 }
@@ -70,6 +75,9 @@ export const caregiverTodayVi = {
     title: 'Cần bạn xử lý',
     toAccept: '{{count}} buổi đang chờ bạn nhận',
     toAcceptAction: 'Xem',
+    requests_one: '{{count}} yêu cầu đặt lịch đang chờ bạn trả lời',
+    requests_other: '{{count}} yêu cầu đặt lịch đang chờ bạn trả lời',
+    requestsAction: 'Trả lời',
     shiftClosing: 'Ca ngày {{day}} sắp hết hạn đăng ký',
     shiftAction: 'Đăng ký',
     noCertificates: 'Hồ sơ của bạn chưa có chứng chỉ nào',
@@ -87,7 +95,9 @@ export const caregiverTodayVi = {
     title: 'Hôm nay bạn chưa có buổi nào',
     hint: 'Đăng ký các ca đang mở để khách đặt được bạn.',
     action: 'Đăng ký ca',
-    upcoming: 'Xem buổi sắp tới'
+    upcoming: 'Xem buổi sắp tới',
+    openShifts: 'Ca đang mở bạn có thể đăng ký',
+    allShifts: 'Xem tất cả ca mở'
   },
   loadError: 'Không tải được các buổi hôm nay.'
 }

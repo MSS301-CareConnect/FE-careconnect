@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router'
 
+import type { NotificationRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
 import {
@@ -9,25 +11,31 @@ import {
   fetchUnreadCount,
   notificationKeys,
   readAllNotifications,
-  readNotification
+  readNotification,
+  removeNotification
 } from './notification-api'
+import { notificationIcon, notificationsPath, notificationTarget, type NotificationPortal } from './notification-target'
 import { useNotificationStream } from './use-notification-stream'
 
 const MAX_BADGE = 99
 
 /**
- * Notification center shared by the four portals (H-06): unread badge, latest notifications, mark as read. A portal
- * may pin its own items above the list (`pinned`, e.g. the customer's pending invitations) and add them to the badge.
+ * Notification center shared by the portals (H-06): unread badge, latest notifications, open (marks read and goes to
+ * the related page), delete, mark all as read and a link to the full list. A portal may pin its own items above the
+ * list (`pinned`, e.g. the customer's pending invitations) and add them to the badge.
  */
 export function NotificationBell({
+  portal,
   pinned,
   pinnedCount = 0
 }: {
+  portal: NotificationPortal
   pinned?: (close: () => void) => ReactNode
   pinnedCount?: number
-} = {}) {
+}) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   useNotificationStream(true)
@@ -36,6 +44,7 @@ export function NotificationBell({
   const refresh = () => queryClient.invalidateQueries({ queryKey: notificationKeys.all })
   const readOne = useMutation({ mutationFn: readNotification, onSuccess: refresh })
   const readAll = useMutation({ mutationFn: readAllNotifications, onSuccess: refresh })
+  const remove = useMutation({ mutationFn: removeNotification, onSuccess: refresh })
   const count = (unread.data ?? 0) + pinnedCount
 
   useEffect(() => {
@@ -53,6 +62,14 @@ export function NotificationBell({
       document.removeEventListener('mousedown', onClick)
     }
   }, [open])
+
+  function openItem(item: NotificationRecord) {
+    if (!item.readAt) readOne.mutate(item.id)
+    const target = notificationTarget(item, portal)
+    if (!target) return
+    setOpen(false)
+    void navigate(target)
+  }
 
   const formatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' })
   return (
@@ -75,9 +92,9 @@ export function NotificationBell({
       {open ? (
         <section
           aria-label={t('notifications.title')}
-          className='absolute top-full right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
+          className='absolute top-full right-0 z-20 mt-2 w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-lg'
         >
-          <div className='flex items-center justify-between px-2 py-1'>
+          <div className='flex items-center justify-between border-b border-outline-variant/50 px-4 py-3'>
             <h2 className='text-sm font-bold'>{t('notifications.title')}</h2>
             <button
               className='rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-surface-container-low disabled:opacity-50'
@@ -88,41 +105,72 @@ export function NotificationBell({
               {t('notifications.readAll')}
             </button>
           </div>
-          {pinned ? pinned(() => setOpen(false)) : null}
+          {pinned ? <div className='px-2 pt-2'>{pinned(() => setOpen(false))}</div> : null}
           {list.isPending ? (
-            <p className='px-2 py-3 text-sm text-on-surface-variant' role='status'>
+            <p className='px-4 py-3 text-sm text-on-surface-variant' role='status'>
               {t('notifications.loading')}
             </p>
           ) : null}
           {list.isError ? (
-            <p className='px-2 py-3 text-sm text-error' role='alert'>
+            <p className='px-4 py-3 text-sm text-error' role='alert'>
               {t('notifications.error')}
             </p>
           ) : null}
           {list.isSuccess && list.data.items.length === 0 ? (
-            <p className='px-2 py-3 text-sm text-on-surface-variant'>{t('notifications.empty')}</p>
+            <p className='flex flex-col items-center gap-2 px-4 py-8 text-center text-sm text-on-surface-variant'>
+              <Icon className='text-3xl' name='notifications_off' />
+              {t('notifications.empty')}
+            </p>
           ) : null}
-          <ul className='max-h-96 overflow-y-auto'>
+          <ul className='max-h-96 divide-y divide-outline-variant/40 overflow-y-auto'>
             {(list.data?.items ?? []).map((item) => (
-              <li key={item.id}>
+              <li className={`group relative ${item.readAt ? '' : 'bg-primary/5'}`} key={item.id}>
                 <button
-                  className={`block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-surface-container-low ${item.readAt ? 'text-on-surface-variant' : 'font-semibold text-on-surface'}`}
-                  onClick={() => {
-                    if (!item.readAt) readOne.mutate(item.id)
-                  }}
+                  className='flex w-full items-start gap-3 py-3 pr-10 pl-4 text-left hover:bg-surface-container-low focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary'
+                  onClick={() => openItem(item)}
                   type='button'
                 >
-                  <span className='block'>{item.title}</span>
-                  {item.body ? <span className='mt-0.5 block text-xs font-normal'>{item.body}</span> : null}
-                  {item.createdAt ? (
-                    <span className='mt-0.5 block text-[11px] font-normal text-on-surface-variant'>
-                      {formatter.format(new Date(item.createdAt))}
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${item.readAt ? 'bg-surface-container text-on-surface-variant' : 'bg-primary/10 text-primary'}`}
+                  >
+                    <Icon className='text-base' name={notificationIcon(item.type)} />
+                  </span>
+                  <span className='min-w-0 flex-1 text-sm'>
+                    <span
+                      className={`block ${item.readAt ? 'text-on-surface-variant' : 'font-semibold text-on-surface'}`}
+                    >
+                      {item.title}
                     </span>
-                  ) : null}
+                    {item.body ? (
+                      <span className='mt-0.5 block text-xs text-on-surface-variant'>{item.body}</span>
+                    ) : null}
+                    {item.createdAt ? (
+                      <span className='mt-0.5 block text-[11px] text-on-surface-variant'>
+                        {formatter.format(new Date(item.createdAt))}
+                      </span>
+                    ) : null}
+                  </span>
+                </button>
+                <button
+                  aria-label={t('notifications.deleteNamed', { title: item.title })}
+                  className='absolute top-2.5 right-2 grid h-8 w-8 place-items-center rounded-full text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100 hover:bg-surface-container focus-visible:opacity-100'
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate(item.id)}
+                  type='button'
+                >
+                  <Icon className='text-base' name='close' />
                 </button>
               </li>
             ))}
           </ul>
+          <Link
+            className='flex items-center justify-center gap-1 border-t border-outline-variant/50 px-4 py-3 text-sm font-semibold text-primary hover:bg-surface-container-low'
+            onClick={() => setOpen(false)}
+            to={notificationsPath(portal)}
+          >
+            {t('notifications.viewAll')}
+            <Icon className='text-base' name='arrow_forward' />
+          </Link>
         </section>
       ) : null}
     </div>

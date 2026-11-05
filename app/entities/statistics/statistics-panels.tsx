@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import type { ResponsivenessStatisticsRecord } from '~/shared/api/generated/contracts'
 
 import { fetchCenterStatistics, fetchProviderStatistics, fetchSystemStatistics, statisticsKeys } from './statistics-api'
 
@@ -26,6 +27,44 @@ function QueryMessage({ retry, error }: { retry: () => void; error: boolean }) {
           {t('statistics.retry')}
         </button>
       ) : null}
+    </div>
+  )
+}
+
+function ResponsivenessCard({
+  data,
+  number
+}: {
+  data: ResponsivenessStatisticsRecord
+  number: (value: number) => string
+}) {
+  const { t } = useTranslation()
+  const minutes = data.avgResponseMinutes
+  const average =
+    minutes === undefined || minutes === null
+      ? t('statistics.responsiveness.none')
+      : minutes < 60
+        ? t('statistics.responsiveness.minutes', { count: minutes })
+        : t('statistics.responsiveness.hours', { hours: Math.floor(minutes / 60), minutes: minutes % 60 })
+  const items = [
+    { key: 'answered', value: number(data.answeredCount ?? 0), tone: 'text-primary' },
+    { key: 'average', value: average, tone: 'text-primary' },
+    { key: 'expired', value: number(data.expiredCount ?? 0), tone: data.expiredCount ? 'text-error' : 'text-primary' }
+  ] as const
+  return (
+    <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
+      <h3 className='font-bold text-on-surface'>{t('statistics.responsiveness.title')}</h3>
+      <p className='mt-1 text-sm text-on-surface-variant'>{t('statistics.responsiveness.hint')}</p>
+      <dl className='mt-4 grid gap-3 sm:grid-cols-3'>
+        {items.map((item) => (
+          <div className='rounded-xl bg-surface-container-low px-4 py-3' key={item.key}>
+            <dt className='text-xs font-semibold text-on-surface-variant'>
+              {t(`statistics.responsiveness.${item.key}`)}
+            </dt>
+            <dd className={`mt-1 text-xl font-extrabold tabular-nums ${item.tone}`}>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }
@@ -82,6 +121,7 @@ export function OperationalStatisticsPanel({ scope, centerId }: { scope: Operati
           </div>
         ))}
       </div>
+      {data.responsiveness ? <ResponsivenessCard data={data.responsiveness} number={number} /> : null}
       <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
         <h3 className='font-bold text-on-surface'>{t('statistics.occurrences')}</h3>
         {totalOutcomes ? (

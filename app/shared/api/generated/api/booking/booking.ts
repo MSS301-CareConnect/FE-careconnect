@@ -32,12 +32,14 @@ import type {
   BookingOccurrenceResponse,
   BookingQuoteRequest,
   BookingQuoteResponse,
+  BookingStatusCountsResponse,
   BookingSummaryPageResponse,
   CancellationPreviewRequest,
   CancellationPreviewResponse,
   CaregiverAssignRequest,
   CaregiverBookingRequestPageResponse,
   CaregiverBookingRequestResponse,
+  GetBookingStatusCountsParams,
   ListBookingHeldSchedulesParams,
   ListBookingHistoryParams,
   ListBookingOccurrencesParams,
@@ -62,6 +64,206 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
     })
   }
   return result
+}
+
+export type getBookingStatusCountsResponse200 = {
+  data: BookingStatusCountsResponse
+  status: 200
+}
+
+export type getBookingStatusCountsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getBookingStatusCountsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getBookingStatusCountsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getBookingStatusCountsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getBookingStatusCountsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type getBookingStatusCountsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getBookingStatusCountsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getBookingStatusCountsResponseSuccess = getBookingStatusCountsResponse200 & {
+  headers: Headers
+}
+export type getBookingStatusCountsResponseError = (
+  | getBookingStatusCountsResponse400
+  | getBookingStatusCountsResponse401
+  | getBookingStatusCountsResponse403
+  | getBookingStatusCountsResponse404
+  | getBookingStatusCountsResponse409
+  | getBookingStatusCountsResponse500
+  | getBookingStatusCountsResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetBookingStatusCountsUrl = (params?: GetBookingStatusCountsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/bookings/status-counts?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/bookings/status-counts`
+}
+
+/**
+ * @summary CENTER_MANAGER (own center) or ADMIN (centerId, all when omitted) sees booking counts and deadlines per status
+ */
+export const getBookingStatusCounts = async (
+  params?: GetBookingStatusCountsParams,
+  options?: RequestInit
+): Promise<getBookingStatusCountsResponseSuccess> => {
+  const res = await fetch(getGetBookingStatusCountsUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getBookingStatusCountsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getBookingStatusCountsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getBookingStatusCountsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getBookingStatusCountsResponseSuccess
+}
+
+export const getGetBookingStatusCountsQueryKey = (params?: GetBookingStatusCountsParams) => {
+  return [`${env.API_BASE_URL}/v1/bookings/status-counts`, ...(params ? [params] : [])] as const
+}
+
+export const getGetBookingStatusCountsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBookingStatusCounts>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetBookingStatusCountsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingStatusCounts>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetBookingStatusCountsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBookingStatusCounts>>> = ({ signal }) =>
+    getBookingStatusCounts(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBookingStatusCounts>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBookingStatusCountsQueryResult = NonNullable<Awaited<ReturnType<typeof getBookingStatusCounts>>>
+export type GetBookingStatusCountsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetBookingStatusCounts<
+  TData = Awaited<ReturnType<typeof getBookingStatusCounts>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | GetBookingStatusCountsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingStatusCounts>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBookingStatusCounts>>,
+          TError,
+          Awaited<ReturnType<typeof getBookingStatusCounts>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBookingStatusCounts<
+  TData = Awaited<ReturnType<typeof getBookingStatusCounts>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetBookingStatusCountsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingStatusCounts>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBookingStatusCounts>>,
+          TError,
+          Awaited<ReturnType<typeof getBookingStatusCounts>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBookingStatusCounts<
+  TData = Awaited<ReturnType<typeof getBookingStatusCounts>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetBookingStatusCountsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingStatusCounts>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CENTER_MANAGER (own center) or ADMIN (centerId, all when omitted) sees booking counts and deadlines per status
+ */
+
+export function useGetBookingStatusCounts<
+  TData = Awaited<ReturnType<typeof getBookingStatusCounts>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetBookingStatusCountsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingStatusCounts>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetBookingStatusCountsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
 }
 
 export type listBookingsResponse200 = {
@@ -123,6 +325,15 @@ export const getListBookingsUrl = (params?: ListBookingsParams) => {
   const normalizedParams = new URLSearchParams()
 
   Object.entries(params || {}).forEach(([key, value]) => {
+    const explodeParameters = ['statuses']
+
+    if (Array.isArray(value) && explodeParameters.includes(key)) {
+      value.forEach((v) => {
+        normalizedParams.append(key, v === null ? 'null' : String(v))
+      })
+      return
+    }
+
     if (value !== undefined) {
       normalizedParams.append(key, value === null ? 'null' : String(value))
     }

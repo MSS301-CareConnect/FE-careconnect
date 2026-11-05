@@ -91,6 +91,8 @@ beforeEach(async () => {
     completed: 3,
     cancelled: 1,
     upcoming7Days: 5,
+    understaffed7Days: 3,
+    missingStaff7Days: 4,
     pendingRegistrations: 2,
     capacityTotal: 20,
     approvedTotal: 15
@@ -133,6 +135,20 @@ describe('Center Manager work shifts', () => {
     await waitFor(() => expect(card).toBeEnabled())
     fireEvent.click(card)
     await waitFor(() => expect(fetchWorkShifts).toHaveBeenLastCalledWith(expect.objectContaining({ hasPending: true })))
+  })
+
+  it('shows understaffed shifts of the next 7 days when that card is clicked', async () => {
+    renderAt()
+    const card = await screen.findByRole('button', { name: /Understaffed shifts/ })
+    expect(await screen.findByText('4 places still unfilled in the next 7 days — click to see')).toBeInTheDocument()
+    await waitFor(() => expect(card).toBeEnabled())
+    fireEvent.click(card)
+    await waitFor(() =>
+      expect(fetchWorkShifts).toHaveBeenLastCalledWith(
+        expect.objectContaining({ fromDate: today, toDate: addDays(today, 6), hasVacancy: true })
+      )
+    )
+    expect(card).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('validates the form like the backend and opens sign-up with the chosen type', async () => {

@@ -11,6 +11,7 @@ import {
   decideNoShow,
   fetchBooking,
   fetchBookingHistory,
+  fetchBookingStatusCounts,
   fetchBookings,
   fetchOccurrence,
   rejectBookingRequest
@@ -26,6 +27,7 @@ import { ManagerBookingManagementPage } from '../manager-booking-management-page
 vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/booking/booking-api')>()),
   fetchBookings: vi.fn(),
+  fetchBookingStatusCounts: vi.fn(),
   fetchBooking: vi.fn(),
   fetchBookingHistory: vi.fn(),
   fetchOccurrence: vi.fn(),
@@ -110,34 +112,73 @@ beforeEach(async () => {
 })
 
 describe('Center Manager bookings', () => {
-  it('lists the center bookings and opens the pending review queue', async () => {
-    vi.mocked(fetchBookings).mockImplementation(async (params) =>
-      params?.status === 'PENDING_CENTER_CONFIRMATION' && params.size === 1
-        ? { ...emptyPage, size: 1, totalElements: 2, totalPages: 2 }
-        : {
-            ...emptyPage,
-            totalElements: 1,
-            totalPages: 1,
-            items: [{ ...booking, recipientName: 'Bà Lan', customer: booking.customer }]
-          }
-    )
+  it('shows the work queue with deadlines and answers a request from the row', async () => {
+    const dueSoon = new Date(Date.now() + 30 * 60_000).toISOString()
+    vi.mocked(fetchBookingStatusCounts).mockResolvedValue({
+      statuses: [
+        { status: 'PENDING_CENTER_CONFIRMATION', count: 2, dueSoonCount: 1, overdueCount: 0, nearestDueAt: dueSoon },
+        { status: 'PENDING_CAREGIVER_ASSIGNMENT', count: 1, dueSoonCount: 0, overdueCount: 0 }
+      ],
+      dueSoonMinutes: 120
+    })
+    vi.mocked(fetchBookings).mockResolvedValue({
+      ...emptyPage,
+      totalElements: 2,
+      totalPages: 1,
+      items: [
+        {
+          ...booking,
+          recipientName: 'Bà Lan',
+          customer: booking.customer,
+          deadlineType: 'CENTER_CONFIRMATION',
+          deadlineAt: dueSoon,
+          serviceNames: ['Chăm sóc người già tại nhà']
+        },
+        {
+          ...booking,
+          id: 'bk-2',
+          bookingCode: 'BK0002',
+          recipientName: 'Ông Hòa',
+          customer: booking.customer,
+          deadlineType: 'CENTER_CONFIRMATION',
+          deadlineAt: new Date(Date.now() - 60_000).toISOString()
+        }
+      ]
+    })
+    vi.mocked(fetchBooking).mockResolvedValue(booking)
+    vi.mocked(acceptBookingRequest).mockResolvedValue({ ...booking, status: 'PENDING_CAREGIVER_ASSIGNMENT' })
     wrap(<ManagerBookingManagementPage />, '/center-manager/bookings')
 
-    expect(await screen.findByRole('link', { name: '#BK0001' })).toHaveAttribute(
-      'href',
-      '/center-manager/bookings/bk-1'
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: 'Bà Lan' })).toHaveAttribute('href', '/center-manager/bookings/bk-1')
+    expect(within(table).getAllByText('Nguyễn Minh')).toHaveLength(2)
+    expect(within(table).getByText(/Xác nhận · Còn \d+ phút/)).toBeInTheDocument()
+    // Past its deadline: shown as closing and without the center's answers.
+    expect(within(table).getByText('Quá hạn · đang đóng', { exact: false })).toBeInTheDocument()
+    expect(await screen.findByText(/3 việc cần trung tâm xử lý/)).toBeInTheDocument()
+    expect(screen.getByText('1 sắp quá hạn')).toBeInTheDocument()
+    // The default group is the work queue, sorted by the nearest deadline; the center comes from the session.
+    expect(vi.mocked(fetchBookings).mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        statuses: ['PENDING_CENTER_CONFIRMATION', 'PENDING_CAREGIVER_ASSIGNMENT'],
+        sort: 'deadlineAt,asc'
+      })
     )
-    expect(screen.getByText('Nguyễn Minh')).toBeInTheDocument()
-    expect(await screen.findByText(/2 yêu cầu đang chờ duyệt/)).toBeInTheDocument()
-    // BookingService scopes the list from the session, so no centerId is sent.
     expect(vi.mocked(fetchBookings).mock.calls[0][0]).not.toHaveProperty('centerId')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Xem yêu cầu chờ duyệt' }))
+    fireEvent.click(screen.getByRole('button', { name: /Cần xác nhận/ }))
     await waitFor(() =>
       expect(fetchBookings).toHaveBeenLastCalledWith(
-        expect.objectContaining({ status: 'PENDING_CENTER_CONFIRMATION', size: 20 })
+        expect.objectContaining({ statuses: ['PENDING_CENTER_CONFIRMATION'], size: 20 })
       )
     )
+
+    const rows = within(await screen.findByRole('table')).getAllByRole('row')
+    expect(within(rows[2]).queryByRole('button', { name: 'Xác nhận' })).not.toBeInTheDocument()
+    fireEvent.click(within(rows[1]).getByRole('button', { name: 'Xác nhận' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Chấp nhận lịch đặt #BK0001' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Chấp nhận' }))
+    await waitFor(() => expect(acceptBookingRequest).toHaveBeenCalledWith('bk-1', undefined))
   })
 
   it('accepts a pending booking with the caregiver the manager chooses', async () => {
@@ -169,7 +210,9 @@ describe('Center Manager bookings', () => {
     const waiting: BookingDetailRecord = {
       ...booking,
       status: 'PENDING_CAREGIVER_ASSIGNMENT',
-      assignmentDueAt: '2026-10-31T10:00:00Z'
+      assignmentDueAt: new Date(Date.now() + 86_400_000).toISOString(),
+      deadlineType: 'CAREGIVER_ASSIGNMENT',
+      deadlineAt: new Date(Date.now() + 86_400_000).toISOString()
     }
     vi.mocked(fetchBooking).mockResolvedValue(waiting)
     vi.mocked(assignBookingCaregiver).mockResolvedValue({
