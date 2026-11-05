@@ -34,12 +34,17 @@ export function BookingRequestCard({
   const visits = [...(request.occurrences ?? [])].sort((a, b) => a.startAt.localeCompare(b.startAt))
   const first = visits[0]
   const area = [request.ward, request.district, request.province].filter(Boolean).join(', ')
+  // Gender is an enum: always through i18n, never the raw "FEMALE".
+  const gender =
+    request.recipientGender === 'MALE' || request.recipientGender === 'FEMALE' || request.recipientGender === 'OTHER'
+      ? t(`caregiver.ui.gender.${request.recipientGender}`)
+      : undefined
   const recipient =
-    request.recipientAge !== undefined && request.recipientGender
-      ? t('caregiver.requests.recipientValue', { age: request.recipientAge, gender: request.recipientGender })
+    request.recipientAge !== undefined && gender
+      ? t('caregiver.requests.recipientValue', { age: request.recipientAge, gender })
       : request.recipientAge !== undefined
         ? t('caregiver.requests.recipientAge', { age: request.recipientAge })
-        : request.recipientGender
+        : gender
   const dueSoon = request.acceptanceDueAt ? new Date(request.acceptanceDueAt).getTime() - now < 3 * 3_600_000 : false
 
   return (

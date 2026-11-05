@@ -27,11 +27,14 @@ interface AttentionItem {
  */
 export function NeedsAttention({
   toAccept,
+  requests = 0,
   profileId,
   centerId,
   now
 }: {
   toAccept: number
+  /** Bookings families sent straight to the caregiver (CR-3), answered in the visits tab "Needs your answer". */
+  requests?: number
   profileId?: string
   centerId?: string
   now: number
@@ -62,6 +65,18 @@ export function NeedsAttention({
   ).length
 
   const items: AttentionItem[] = [
+    ...(requests > 0
+      ? [
+          {
+            key: 'requests',
+            icon: 'pending_actions',
+            text: t('caregiver.today.attention.requests', { count: requests }),
+            action: t('caregiver.today.attention.requestsAction'),
+            to: '/caregiver/visits?tab=respond',
+            tone: 'warning' as const
+          }
+        ]
+      : []),
     ...(toAccept > 0
       ? [
           {
@@ -69,7 +84,7 @@ export function NeedsAttention({
             icon: 'assignment_late',
             text: t('caregiver.today.attention.toAccept', { count: toAccept }),
             action: t('caregiver.today.attention.toAcceptAction'),
-            to: '/caregiver/visits?tab=toAccept',
+            to: '/caregiver/visits?tab=respond',
             tone: 'warning' as const
           }
         ]

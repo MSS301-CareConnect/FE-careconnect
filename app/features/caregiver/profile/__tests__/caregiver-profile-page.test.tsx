@@ -89,7 +89,8 @@ describe('Caregiver profile — information', () => {
     expect(screen.getByText('22/10/2000')).toBeInTheDocument()
     expect(screen.getByText('0912 345 678')).toBeInTheDocument()
     expect(await screen.findByText('Hỗ trợ ăn uống')).toBeInTheDocument()
-    expect(screen.getAllByLabelText('Managed by your center').length).toBeGreaterThan(0)
+    // One banner for everything the center keeps instead of a lock on every row.
+    expect(screen.getAllByText('Managed by your center')).toHaveLength(1)
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
     expect(screen.getByText(/At least one certificate/)).toBeInTheDocument()
     expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()

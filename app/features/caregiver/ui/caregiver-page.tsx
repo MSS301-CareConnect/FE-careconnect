@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import { Icon } from '~/shared/ui/icon'
 
 /** Content width and side padding shared by every caregiver page. */
-export const cgContainer = 'mx-auto w-full max-w-[1080px] px-4 pt-5 pb-8 sm:px-6 sm:pt-7 lg:pt-8'
+export const cgContainer = 'mx-auto w-full max-w-[1240px] px-4 pt-5 pb-8 sm:px-6 sm:pt-7 lg:pt-8'
 
 /** Card surface used across the caregiver portal. */
 export const cgCard = 'rounded-xl border border-outline-variant bg-surface-container-lowest shadow-[var(--cg-shadow-1)]'

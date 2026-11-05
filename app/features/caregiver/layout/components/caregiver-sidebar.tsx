@@ -49,11 +49,8 @@ export function CaregiverSidebar({
         <ul className='space-y-1'>
           {caregiverNavigation.map((item) => {
             const current = active.key === item.key
-            const badge = item.key === 'visits' ? toAccept : item.key === 'requests' ? requests : 0
-            const badgeLabel =
-              item.key === 'requests'
-                ? t('caregiver.nav.requestsWaiting', { count: badge })
-                : t('caregiver.nav.toAccept', { count: badge })
+            const badge = item.key === 'visits' ? toAccept + requests : 0
+            const badgeLabel = t('caregiver.nav.needsResponse', { count: badge })
             const label = t(`caregiver.nav.${item.key}`)
             return (
               <li key={item.key}>

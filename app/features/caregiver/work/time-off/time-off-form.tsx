@@ -7,7 +7,7 @@ import { createTimeOff, providerKeys } from '~/entities/provider/provider-api'
 import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { Button } from '~/shared/ui/button'
 import { DatePicker } from '~/shared/ui/date-picker'
-import { Drawer } from '~/shared/ui/drawer'
+import { Modal } from '~/shared/ui/modal'
 import { Icon } from '~/shared/ui/icon'
 import { TimeSelect } from '~/shared/ui/time-select'
 
@@ -115,8 +115,10 @@ export function TimeOffForm({
       : null
 
   return (
-    <Drawer
+    <Modal
       description={t('caregiver.work.timeOff.form.description')}
+      dismissOnBackdrop={false}
+      size='md'
       footer={
         <>
           <Button onClick={onClose} variant='outline'>
@@ -261,6 +263,6 @@ export function TimeOffForm({
           {t('caregiver.work.timeOff.form.save')}
         </button>
       </form>
-    </Drawer>
+    </Modal>
   )
 }

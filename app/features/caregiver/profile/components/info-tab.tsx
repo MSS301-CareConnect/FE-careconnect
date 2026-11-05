@@ -27,48 +27,27 @@ async function savePhone(user: UserResponse, phoneNumber: string): Promise<UserR
   return response.data.result
 }
 
-function Locked() {
+/** One banner for everything the center keeps, instead of a lock label on every row (2026-11-05). */
+function ManagedBanner() {
   const { t } = useTranslation()
   return (
-    <span
-      aria-label={t('caregiver.me.info.managedByCenter')}
-      className='inline-flex items-center gap-1 text-xs text-on-surface-variant'
-      title={t('caregiver.me.info.managedHint')}
-    >
-      <Icon className='text-sm' name='lock' />
-      <span className='hidden sm:inline'>{t('caregiver.me.info.managedByCenter')}</span>
-    </span>
+    <p className='flex items-start gap-2 rounded-lg bg-surface-container-low px-3 py-2.5 text-sm text-on-surface-variant'>
+      <Icon className='mt-0.5 shrink-0 text-base' name='lock' />
+      <span>
+        <strong className='font-semibold text-on-surface'>{t('caregiver.me.info.managedByCenter')}</strong>
+        {' · '}
+        {t('caregiver.me.info.managedBanner')}
+      </span>
+    </p>
   )
 }
 
-function Field({
-  label,
-  value,
-  locked,
-  children
-}: {
-  label: string
-  value?: ReactNode
-  locked?: boolean
-  children?: ReactNode
-}) {
+function Field({ label, value, children }: { label: string; value?: ReactNode; children?: ReactNode }) {
   return (
     <div className='flex min-h-14 flex-col justify-center gap-0.5 border-b border-outline-variant py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:gap-4'>
-      <dt className='flex items-center justify-between gap-2 text-sm text-on-surface-variant sm:w-44 sm:shrink-0'>
-        {label}
-        {locked ? (
-          <span className='sm:hidden'>
-            <Locked />
-          </span>
-        ) : null}
-      </dt>
+      <dt className='text-sm text-on-surface-variant sm:w-44 sm:shrink-0'>{label}</dt>
       <dd className='flex min-w-0 flex-1 items-center justify-between gap-3 text-[15px] font-medium text-on-surface'>
         {children ?? <span className='min-w-0 break-words'>{value}</span>}
-        {locked ? (
-          <span className='hidden sm:inline'>
-            <Locked />
-          </span>
-        ) : null}
       </dd>
     </div>
   )
@@ -107,6 +86,9 @@ export function InfoTab({
 
   return (
     <div className='grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]'>
+      <div className='lg:col-span-2'>
+        <ManagedBanner />
+      </div>
       <section aria-labelledby='info-personal' className={`${cgCard} px-4 py-2 sm:px-5`}>
         <h2 className='pt-3 pb-1 text-base font-semibold text-on-surface' id='info-personal'>
           {t('caregiver.me.info.personal')}
@@ -114,20 +96,18 @@ export function InfoTab({
         <dl>
           <Field
             label={t('caregiver.me.info.birthDate')}
-            locked
             value={profile.dateOfBirth ? format.date(profile.dateOfBirth) : t('caregiver.me.info.notSet')}
           />
-          <Field label={t('caregiver.me.info.gender')} locked value={gender} />
+          <Field label={t('caregiver.me.info.gender')} value={gender} />
           <Field
             label={t('caregiver.me.info.experience')}
-            locked
             value={
               profile.experienceYears === undefined
                 ? t('caregiver.me.info.notSet')
                 : t('caregiver.ui.experience', { count: profile.experienceYears })
             }
           />
-          <Field label={t('caregiver.me.info.email')} locked value={user?.email || t('caregiver.me.info.notSet')} />
+          <Field label={t('caregiver.me.info.email')} value={user?.email || t('caregiver.me.info.notSet')} />
           <Field label={t('caregiver.me.info.phone')}>
             {editing ? (
               <form
@@ -195,7 +175,6 @@ export function InfoTab({
             <h2 className='text-base font-semibold text-on-surface' id='info-about'>
               {t('caregiver.me.info.about')}
             </h2>
-            <Locked />
           </div>
           <p className='mt-2 text-[15px] whitespace-pre-line text-on-surface'>
             {profile.bio || <span className='text-on-surface-variant'>{t('caregiver.me.info.aboutEmpty')}</span>}
@@ -207,7 +186,6 @@ export function InfoTab({
             <h2 className='text-base font-semibold text-on-surface' id='info-services'>
               {t('caregiver.me.info.services')}
             </h2>
-            <Locked />
           </div>
           <p className='mt-1 text-sm text-on-surface-variant'>{t('caregiver.me.info.servicesHint')}</p>
           {services.isError ? (

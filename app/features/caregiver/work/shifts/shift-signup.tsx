@@ -1,36 +1,30 @@
-import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import {
   cancelMyShiftRegistration,
-  fetchWorkShift,
   providerKeys,
-  registerForShift
+  registerForShift,
+  updateCaregiverSchedule
 } from '~/entities/provider/provider-api'
-import { apiRequestErrorKey } from '~/shared/api/error-details'
+import { shiftInstant } from '~/entities/provider/work-shift'
 import type { ProviderShiftRegistrationRecord, ProviderWorkShiftRecord } from '~/shared/api/generated/contracts'
-import { Button } from '~/shared/ui/button'
-import { Drawer } from '~/shared/ui/drawer'
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
-import { useMyRegistrations, useOpenShifts } from '../../data/caregiver-queries'
-import { hhmm, useCaregiverFormat } from '../../ui/caregiver-format'
+import { useMyCaregiverProfile, useMyRegistrations, useOpenShifts } from '../../data/caregiver-queries'
 import { CaregiverEmpty, CaregiverError, cgCard } from '../../ui/caregiver-page'
 import { useNow } from '../../ui/use-now'
-import { ShiftCard, type ShiftState } from './shift-card'
+import { ShiftCard, type ShiftState, type ShiftView } from './shift-card'
+import { RegisterShiftDialog, WithdrawShiftDialog, shiftErrorKey } from './shift-dialogs'
 
 const FILTERS = ['open', 'pending', 'approved', 'history'] as const
 type Filter = (typeof FILTERS)[number]
 const ACTIVE = new Set(['PENDING', 'APPROVED'])
-
-function shiftStart(shift: ProviderWorkShiftRecord) {
-  return new Date(`${shift.workDate}T${shift.startTime}`).getTime()
-}
 
 /** Three small steps explaining what a sign-up turns into. */
 function ProcessSteps() {
@@ -61,40 +55,48 @@ function ProcessSteps() {
   )
 }
 
-/** "Đăng ký ca": open shifts with the caregiver's state on each card, filtered by chips instead of two lists. */
+/** The shift part a registration carries (ProviderService 2026-11-05), so cards need no request per sign-up. */
+function shiftOf(item: ProviderShiftRegistrationRecord): ShiftView {
+  return {
+    workDate: item.workDate ?? '',
+    startTime: item.startTime ?? '',
+    endTime: item.endTime ?? '',
+    shiftType: item.shiftType ?? '',
+    cancellationReason: item.shiftCancellationReason
+  }
+}
+
+/**
+ * "Đăng ký ca": a grid of shift cards with chips. "Open shifts" lists only shifts still open (the backend returns the
+ * effective state) that the caregiver has not already signed up for; signed-up and approved ones live in their own
+ * chips with withdraw actions.
+ */
 export function ShiftSignup({ centerId, centerName }: { centerId?: string; centerName?: string }) {
   const { t } = useTranslation()
-  const format = useCaregiverFormat()
   const queryClient = useQueryClient()
   const now = useNow(60_000)
   const [filter, setFilter] = useState<Filter>('open')
   const [registering, setRegistering] = useState<ProviderWorkShiftRecord | null>(null)
-  const [note, setNote] = useState('')
   const [cancelling, setCancelling] = useState<ProviderShiftRegistrationRecord | null>(null)
+  const [withdrawing, setWithdrawing] = useState<ProviderShiftRegistrationRecord | null>(null)
+  const profile = useMyCaregiverProfile()
   const shifts = useOpenShifts(centerId)
   const registrations = useMyRegistrations()
   const items = registrations.data?.items ?? []
-  // A registration carries only the shift ID, so its date and hours come from the shift itself.
-  const registeredShifts = useQueries({
-    queries: items.map((item) => ({
-      queryKey: providerKeys.shift(item.workShiftId),
-      queryFn: () => fetchWorkShift(item.workShiftId),
-      retry: false,
-      staleTime: 5 * 60_000
-    }))
-  })
 
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: providerKeys.myRegistrations })
-    await queryClient.invalidateQueries({ queryKey: providerKeys.shifts(centerId ?? '') })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: providerKeys.myRegistrations }),
+      queryClient.invalidateQueries({ queryKey: providerKeys.shifts(centerId ?? '') }),
+      queryClient.invalidateQueries({ queryKey: providerKeys.mySchedules })
+    ])
   }
   const register = useMutation({
-    mutationFn: (shift: ProviderWorkShiftRecord) =>
-      registerForShift(shift.id, { caregiverNote: note.trim() || undefined }),
+    mutationFn: ({ shift, note }: { shift: ProviderWorkShiftRecord; note: string }) =>
+      registerForShift(shift.id, { caregiverNote: note || undefined }),
     onSuccess: async () => {
       toast.success(t('caregiver.work.shifts.registered'))
       setRegistering(null)
-      setNote('')
       await refresh()
     }
   })
@@ -106,31 +108,50 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
       await refresh()
     }
   })
+  const withdraw = useMutation({
+    mutationFn: ({ item, reason }: { item: ProviderShiftRegistrationRecord; reason: string }) =>
+      updateCaregiverSchedule(item.scheduleId!, { status: 'CANCELLED', reason, version: item.scheduleVersion! }),
+    onSuccess: async () => {
+      toast.success(t('caregiver.work.shifts.withdrawn'))
+      setWithdrawing(null)
+      await refresh()
+    }
+  })
 
-  const latestByShift = new Map<string, ProviderShiftRegistrationRecord>()
+  const activeByShift = new Map<string, ProviderShiftRegistrationRecord>()
+  for (const item of items) if (ACTIVE.has(item.registrationStatus)) activeByShift.set(item.workShiftId, item)
+  const startsLater = (workDate?: string, startTime?: string) =>
+    Boolean(workDate && startTime) && shiftInstant(workDate!, startTime!) > now
+
+  const openShifts = (shifts.data?.items ?? []).filter(
+    (shift) =>
+      shift.shiftStatus === 'OPEN' && !activeByShift.has(shift.id) && startsLater(shift.workDate, shift.startTime)
+  )
+  const lists: Record<Exclude<Filter, 'open'>, ProviderShiftRegistrationRecord[]> = {
+    pending: [],
+    approved: [],
+    history: []
+  }
   for (const item of items) {
-    const current = latestByShift.get(item.workShiftId)
-    if (!current || ACTIVE.has(item.registrationStatus) || (item.createdAt ?? '') > (current.createdAt ?? ''))
-      latestByShift.set(item.workShiftId, item)
+    const upcoming = startsLater(item.workDate, item.startTime)
+    if (item.registrationStatus === 'PENDING' && upcoming) lists.pending.push(item)
+    else if (item.registrationStatus === 'APPROVED' && upcoming) lists.approved.push(item)
+    else lists.history.push(item)
   }
-  function stateOf(shift: ProviderWorkShiftRecord): ShiftState {
-    const registration = latestByShift.get(shift.id)
-    if (registration && ACTIVE.has(registration.registrationStatus)) return registration.registrationStatus
-    if (shift.registrationDeadline && new Date(shift.registrationDeadline).getTime() <= now) return 'expired'
-    return registration?.registrationStatus ?? 'none'
+  for (const list of [lists.pending, lists.approved])
+    list.sort((a, b) => `${a.workDate}${a.startTime}`.localeCompare(`${b.workDate}${b.startTime}`))
+  const counts: Record<Filter, number | undefined> = {
+    open: shifts.isSuccess ? openShifts.length : undefined,
+    pending: registrations.isSuccess ? lists.pending.length : undefined,
+    approved: registrations.isSuccess ? lists.approved.length : undefined,
+    history: undefined
   }
-
-  const openShifts = (shifts.data?.items ?? []).filter((shift) => shiftStart(shift) > now)
-  const registered = items
-    .map((item, index) => ({ item, shift: registeredShifts[index] }))
-    .filter(({ item, shift }) => {
-      const past = shift?.data ? shiftStart(shift.data) <= now : false
-      if (filter === 'pending') return item.registrationStatus === 'PENDING' && !past
-      if (filter === 'approved') return item.registrationStatus === 'APPROVED' && !past
-      return past || item.registrationStatus === 'REJECTED' || item.registrationStatus === 'CANCELLED'
-    })
-  const pending = filter === 'open' ? shifts.isPending && Boolean(centerId) : registrations.isPending
+  const loading = filter === 'open' ? shifts.isPending && Boolean(centerId) : registrations.isPending
   const error = filter === 'open' ? shifts.isError : registrations.isError
+
+  function stateOf(item: ProviderShiftRegistrationRecord): ShiftState {
+    return item.registrationStatus
+  }
 
   return (
     <div className='flex flex-col gap-4'>
@@ -143,17 +164,22 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
       <FilterChips
         label={t('caregiver.work.shifts.filterLabel')}
         onChange={(value) => setFilter(value as Filter)}
-        options={FILTERS.map((value) => ({ value, label: t(`caregiver.work.shifts.filters.${value}`) }))}
+        options={FILTERS.map((value) => ({
+          value,
+          label: t(`caregiver.work.shifts.filters.${value}`),
+          count: counts[value]
+        }))}
         value={filter}
       />
 
       {!centerId && filter === 'open' ? (
         <CaregiverEmpty icon='domain_disabled' title={t('caregiver.work.shifts.noCenter')} />
       ) : null}
-      {pending ? (
-        <SkeletonGroup className='grid gap-3 md:grid-cols-2' label={t('caregiver.ui.states.loading')}>
+      {loading ? (
+        <SkeletonGroup className='grid gap-3 md:grid-cols-2 xl:grid-cols-3' label={t('caregiver.ui.states.loading')}>
           <Skeleton className='h-48 rounded-xl' />
           <Skeleton className='h-48 rounded-xl' />
+          <Skeleton className='hidden h-48 rounded-xl xl:block' />
         </SkeletonGroup>
       ) : null}
       {error ? (
@@ -172,119 +198,76 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
             title={t('caregiver.work.shifts.empty.open')}
           />
         ) : (
-          <ul className='cg-stagger grid gap-3 md:grid-cols-2'>
-            {openShifts.map((shift) => {
-              const state = stateOf(shift)
-              const registration = latestByShift.get(shift.id)
-              return (
-                <li key={shift.id}>
-                  <ShiftCard
-                    now={now}
-                    onCancel={state === 'PENDING' && registration ? () => setCancelling(registration) : undefined}
-                    onRegister={
-                      state === 'none' || state === 'CANCELLED' || state === 'REJECTED'
-                        ? () => {
-                            register.reset()
-                            setNote('')
-                            setRegistering(shift)
-                          }
-                        : undefined
-                    }
-                    registration={registration}
-                    shift={shift}
-                    state={state}
-                  />
-                </li>
-              )
-            })}
+          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+            {openShifts.map((shift) => (
+              <li key={shift.id}>
+                <ShiftCard
+                  now={now}
+                  onRegister={() => {
+                    register.reset()
+                    setRegistering(shift)
+                  }}
+                  shift={shift}
+                  state='none'
+                />
+              </li>
+            ))}
           </ul>
         )
       ) : null}
 
       {filter !== 'open' && registrations.isSuccess ? (
-        registered.length === 0 ? (
+        lists[filter].length === 0 ? (
           <CaregiverEmpty icon='fact_check' title={t(`caregiver.work.shifts.empty.${filter}`)} />
         ) : (
-          <ul className='cg-stagger grid gap-3 md:grid-cols-2'>
-            {registered.map(({ item, shift }) =>
-              shift?.data ? (
-                <li key={item.id}>
-                  <ShiftCard
-                    now={now}
-                    onCancel={
-                      item.registrationStatus === 'PENDING' && filter === 'pending'
-                        ? () => setCancelling(item)
-                        : undefined
-                    }
-                    registration={item}
-                    shift={shift.data}
-                    state={item.registrationStatus}
-                  />
-                </li>
-              ) : (
-                <li className={`${cgCard} p-4 text-sm text-on-surface-variant`} key={item.id}>
-                  {shift?.isError
-                    ? t('caregiver.work.shifts.shiftUnavailable')
-                    : t('caregiver.work.shifts.shiftLoading')}
-                </li>
-              )
-            )}
+          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+            {lists[filter].map((item) => (
+              <li key={item.id}>
+                <ShiftCard
+                  now={now}
+                  onCancel={filter === 'pending' ? () => setCancelling(item) : undefined}
+                  onWithdraw={
+                    filter === 'approved' && item.scheduleId && item.scheduleStatus === 'SCHEDULED'
+                      ? () => {
+                          withdraw.reset()
+                          setWithdrawing(item)
+                        }
+                      : undefined
+                  }
+                  registration={item}
+                  shift={shiftOf(item)}
+                  state={stateOf(item)}
+                />
+              </li>
+            ))}
           </ul>
         )
       ) : null}
 
-      <Drawer
-        description={
-          registering
-            ? t('caregiver.work.shifts.registerDescription', {
-                date: format.shortDay(registering.workDate),
-                start: hhmm(registering.startTime),
-                end: hhmm(registering.endTime)
-              })
-            : undefined
-        }
-        footer={
-          <>
-            <Button onClick={() => setRegistering(null)} variant='outline'>
-              {t('caregiver.ui.actions.cancel')}
-            </Button>
-            <Button
-              loading={register.isPending}
-              onClick={() => {
-                if (registering) register.mutate(registering)
-              }}
-            >
-              {t('caregiver.work.shifts.register')}
-            </Button>
-          </>
-        }
-        onClose={() => setRegistering(null)}
-        open={registering !== null}
-        placement='bottom'
-        title={t('caregiver.work.shifts.registerTitle')}
-      >
-        <label className='block text-sm font-semibold text-on-surface' htmlFor='shift-registration-note'>
-          {t('caregiver.work.shifts.note')}
-        </label>
-        <textarea
-          className='mt-2 min-h-24 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/25'
-          id='shift-registration-note'
-          maxLength={500}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder={t('caregiver.work.shifts.notePlaceholder')}
-          value={note}
+      {registering ? (
+        <RegisterShiftDialog
+          caregiverId={profile.data?.id}
+          error={register.isError ? register.error : null}
+          myRegistrations={items}
+          onClose={() => setRegistering(null)}
+          onConfirm={(note) => register.mutate({ shift: registering, note })}
+          pending={register.isPending}
+          shift={registering}
         />
-        {register.isError ? (
-          <p className='mt-3 rounded-lg bg-error-container p-3 text-sm text-on-error-container' role='alert'>
-            {t(apiRequestErrorKey(register.error, 'caregiver.provider.actionError'))}
-          </p>
-        ) : null}
-      </Drawer>
-
+      ) : null}
+      {withdrawing ? (
+        <WithdrawShiftDialog
+          error={withdraw.isError ? withdraw.error : null}
+          onClose={() => setWithdrawing(null)}
+          onConfirm={(reason) => withdraw.mutate({ item: withdrawing, reason })}
+          pending={withdraw.isPending}
+          registration={withdrawing}
+        />
+      ) : null}
       <ConfirmDialog
         confirmLabel={t('caregiver.work.shifts.cancel')}
         description={t('caregiver.work.shifts.cancelDescription')}
-        error={cancel.isError ? t(apiRequestErrorKey(cancel.error, 'caregiver.provider.actionError')) : undefined}
+        error={cancel.isError ? t(shiftErrorKey(cancel.error)) : undefined}
         loading={cancel.isPending}
         onClose={() => setCancelling(null)}
         onConfirm={() => {

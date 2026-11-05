@@ -2,16 +2,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router'
 
 import {
   fetchNotifications,
   fetchUnreadCount,
   notificationKeys,
   readAllNotifications,
-  readNotification
+  readNotification,
+  removeNotification
 } from '~/entities/notification/notification-api'
+import { notificationIcon, notificationsPath, notificationTarget } from '~/entities/notification/notification-target'
 import { useNotificationStream } from '~/entities/notification/use-notification-stream'
-import type { NotificationType } from '~/shared/api/generated/contracts'
+import type { NotificationRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 import { Skeleton } from '~/shared/ui/skeleton'
 
@@ -19,20 +22,6 @@ import { useCaregiverFormat } from '../../ui/caregiver-format'
 import { useNow } from '../../ui/use-now'
 
 const MAX_BADGE = 99
-
-/** An icon per kind of notification a caregiver receives; anything else uses the bell. */
-function iconOf(type: NotificationType) {
-  if (type === 'CAREGIVER_ASSIGNED') return 'assignment_ind'
-  if (type === 'CAREGIVER_UNASSIGNED' || type === 'OCCURRENCE_CANCELLED' || type === 'BOOKING_CANCELLED')
-    return 'event_busy'
-  if (type === 'SHIFT_REMINDER') return 'alarm'
-  if (type === 'SESSION_STARTED' || type === 'SESSION_ENDED' || type === 'SESSION_AUTO_CLOSED')
-    return 'medical_services'
-  if (type === 'OCCURRENCE_MISSED' || type === 'NO_SHOW_REPORTED' || type === 'NO_SHOW_AUTO_ACCEPTED')
-    return 'person_off'
-  if (type === 'REVIEW_CREATED' || type === 'REVIEW_REPLIED') return 'star'
-  return 'notifications'
-}
 
 /**
  * The caregiver's notifications: a dropdown on desktop, a bottom sheet on phones. Same API as the shared bell (list,
@@ -56,6 +45,16 @@ export function CaregiverNotificationBell() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: notificationKeys.all })
   const readOne = useMutation({ mutationFn: readNotification, onSuccess: refresh })
   const readAll = useMutation({ mutationFn: readAllNotifications, onSuccess: refresh })
+  const remove = useMutation({ mutationFn: removeNotification, onSuccess: refresh })
+  const navigate = useNavigate()
+
+  function openItem(item: NotificationRecord) {
+    if (!item.readAt) readOne.mutate(item.id)
+    const target = notificationTarget(item, 'caregiver')
+    if (!target) return
+    setOpen(false)
+    void navigate(target)
+  }
   const count = unread.data ?? 0
 
   useEffect(() => {
@@ -145,18 +144,16 @@ export function CaregiverNotificationBell() {
                   ) : null}
                   <ul className='divide-y divide-outline-variant'>
                     {(list.data?.items ?? []).map((item) => (
-                      <li key={item.id}>
+                      <li className='group relative' key={item.id}>
                         <button
-                          className={`flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-surface-container-low focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${item.readAt ? '' : 'bg-brand-50/50'}`}
-                          onClick={() => {
-                            if (!item.readAt) readOne.mutate(item.id)
-                          }}
+                          className={`flex w-full items-start gap-3 py-3 pr-11 pl-4 text-left hover:bg-surface-container-low focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${item.readAt ? '' : 'bg-brand-50/50'}`}
+                          onClick={() => openItem(item)}
                           type='button'
                         >
                           <span
                             className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${item.readAt ? 'bg-surface-container-low text-on-surface-variant' : 'bg-brand-100 text-primary'}`}
                           >
-                            <Icon className='text-lg' name={iconOf(item.type)} />
+                            <Icon className='text-lg' name={notificationIcon(item.type)} />
                           </span>
                           <span className='min-w-0 flex-1'>
                             <span
@@ -177,10 +174,27 @@ export function CaregiverNotificationBell() {
                             <span aria-hidden='true' className='mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary' />
                           )}
                         </button>
+                        <button
+                          aria-label={t('notifications.deleteNamed', { title: item.title })}
+                          className='absolute top-2.5 right-2 grid h-9 w-9 place-items-center rounded-full text-on-surface-variant hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100'
+                          disabled={remove.isPending}
+                          onClick={() => remove.mutate(item.id)}
+                          type='button'
+                        >
+                          <Icon className='text-base' name='close' />
+                        </button>
                       </li>
                     ))}
                   </ul>
                 </div>
+                <Link
+                  className='flex min-h-12 items-center justify-center gap-1 border-t border-outline-variant text-sm font-semibold text-primary hover:bg-surface-container-low'
+                  onClick={() => setOpen(false)}
+                  to={notificationsPath('caregiver')}
+                >
+                  {t('notifications.viewAll')}
+                  <Icon className='text-base' name='arrow_forward' />
+                </Link>
               </section>
             </>
           )

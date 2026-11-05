@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
 
+import { Toaster } from '~/shared/ui/toaster'
+
 import { ManagerSidebar } from './components/manager-sidebar'
 import { ManagerTopbar } from './components/manager-topbar'
 
@@ -29,6 +31,8 @@ export function CenterManagerLayout() {
         <footer className='border-t border-outline-variant/20 bg-white px-6 py-5 text-center text-xs text-outline'>
           {t('centerManager.footer')}
         </footer>
+        {/* Action results (work shifts…) are sonner toasts, like the admin, customer and caregiver portals. */}
+        <Toaster />
       </div>
     </div>
   )

@@ -10,7 +10,7 @@ import {
 } from '../../data/caregiver-queries'
 import { addDays, calendarDayOf, monthEnd, monthStart, weekStart } from '../../ui/caregiver-format'
 
-export const VISIT_TABS = ['upcoming', 'toAccept', 'done', 'cancelled'] as const
+export const VISIT_TABS = ['respond', 'upcoming', 'inProgress', 'done', 'cancelled'] as const
 export type VisitTab = (typeof VISIT_TABS)[number]
 export const VISIT_RANGES = ['week', 'month', 'custom'] as const
 export type VisitRange = (typeof VISIT_RANGES)[number]
@@ -18,8 +18,11 @@ export type VisitRange = (typeof VISIT_RANGES)[number]
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 
 const TAB_STATUSES: Record<VisitTab, ReadonlySet<OccurrenceStatus>> = {
-  upcoming: ACTIVE_VISIT_STATUSES,
-  toAccept: new Set(['SCHEDULED']),
+  // "Needs your answer": visits the center assigned and the caregiver has not confirmed yet (customer requests are
+  // bookings, listed above them by the page).
+  respond: new Set(['SCHEDULED']),
+  upcoming: new Set([...ACTIVE_VISIT_STATUSES].filter((status) => status !== 'IN_PROGRESS')),
+  inProgress: new Set(['IN_PROGRESS']),
   done: DONE_VISIT_STATUSES,
   cancelled: CANCELLED_VISIT_STATUSES
 }
@@ -48,7 +51,9 @@ export function groupByDay(visits: CaregiverOccurrenceRecord[]): VisitDayGroup[]
  */
 export function useVisitList(today: string) {
   const [params, setParams] = useSearchParams()
-  const tab = VISIT_TABS.find((item) => item === params.get('tab')) ?? 'upcoming'
+  // `?tab=toAccept` links from before the merge (2026-11-05) open the same place as "respond".
+  const tabParam = params.get('tab') === 'toAccept' ? 'respond' : params.get('tab')
+  const tab = VISIT_TABS.find((item) => item === tabParam) ?? 'upcoming'
   const range = VISIT_RANGES.find((item) => item === params.get('range')) ?? 'month'
   const customFrom = DAY.test(params.get('from') ?? '') ? (params.get('from') as string) : addDays(today, -30)
   const customTo = DAY.test(params.get('to') ?? '') ? (params.get('to') as string) : today
@@ -64,9 +69,11 @@ export function useVisitList(today: string) {
 
   const request = history
     ? period
-    : tab === 'toAccept'
+    : tab === 'respond'
       ? { from: today, status: 'SCHEDULED' as const }
-      : { from: today }
+      : tab === 'inProgress'
+        ? { from: addDays(today, -1), status: 'IN_PROGRESS' as const }
+        : { from: today }
   const pages = useVisitPages(request)
   const loaded = pages.data?.pages.flatMap((page) => page.items) ?? []
   const statuses = TAB_STATUSES[tab]

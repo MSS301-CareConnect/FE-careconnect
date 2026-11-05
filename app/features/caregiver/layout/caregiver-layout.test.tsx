@@ -81,7 +81,8 @@ describe('Caregiver shell', () => {
     expect(within(sidebar).getByRole('link', { name: 'Work schedule' })).toHaveAttribute('aria-current', 'page')
     const bottom = screen.getByRole('navigation', { name: 'Main sections' })
     expect(within(bottom).getByRole('link', { name: /Work schedule/ })).toHaveAttribute('aria-current', 'page')
-    expect(await within(sidebar).findByLabelText('3 visits to accept')).toHaveTextContent('3')
+    // Visits to confirm and booking requests share one "needs your answer" badge on Care visits.
+    expect(await within(sidebar).findByLabelText(/need your answer/)).toBeInTheDocument()
     expect(fetchMyOccurrences).toHaveBeenCalledWith(expect.objectContaining({ status: 'SCHEDULED' }))
   })
 

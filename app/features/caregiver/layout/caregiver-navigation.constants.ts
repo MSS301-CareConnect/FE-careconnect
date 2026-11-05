@@ -1,8 +1,13 @@
 export const caregiverNavigation = [
   { key: 'today', to: '/caregiver/today', icon: 'today', paths: ['/caregiver/today'] },
-  { key: 'visits', to: '/caregiver/visits', icon: 'assignment_ind', paths: ['/caregiver/visits'] },
-  // CR-3: bookings customers sent straight to this caregiver.
-  { key: 'requests', to: '/caregiver/requests', icon: 'pending_actions', paths: ['/caregiver/requests'] },
+  // Requests customers sent straight to the caregiver (CR-3) live in the visits tab "Needs your answer";
+  // /caregiver/requests redirects there.
+  {
+    key: 'visits',
+    to: '/caregiver/visits',
+    icon: 'assignment_ind',
+    paths: ['/caregiver/visits', '/caregiver/requests']
+  },
   {
     key: 'work',
     to: '/caregiver/schedule',

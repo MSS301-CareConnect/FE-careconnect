@@ -120,10 +120,21 @@ describe('Work schedule — shift sign-up', () => {
     await waitFor(() => expect(registerForShift).toHaveBeenCalledWith('shift-1', { caregiverNote: 'Em tới sớm' }))
   })
 
-  it('marks a shift already signed up and withdraws a pending sign-up with its version', async () => {
+  it('keeps a shift already signed up out of "Open shifts" and withdraws the pending sign-up with its version', async () => {
     vi.mocked(fetchMyShiftRegistrations).mockResolvedValue({
       items: [
-        { id: 'reg-1', workShiftId: 'shift-1', caregiverId: 'caregiver-1', registrationStatus: 'PENDING', version: 2 }
+        {
+          id: 'reg-1',
+          workShiftId: 'shift-1',
+          caregiverId: 'caregiver-1',
+          registrationStatus: 'PENDING',
+          version: 2,
+          workDate: shift.workDate,
+          startTime: shift.startTime,
+          endTime: shift.endTime,
+          shiftType: 'MORNING',
+          shiftStatus: 'OPEN'
+        }
       ],
       page: 0,
       size: 100,
@@ -134,8 +145,11 @@ describe('Work schedule — shift sign-up', () => {
     vi.mocked(cancelMyShiftRegistration).mockResolvedValue(undefined)
     renderWork('shifts')
 
-    expect(await screen.findByText('Đã đăng ký · chờ duyệt')).toBeInTheDocument()
+    expect(await screen.findByText('Hiện chưa có ca nào đang mở')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Đăng ký' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Chờ duyệt/ }))
+    expect(await screen.findByText('Đã đăng ký · chờ duyệt')).toBeInTheDocument()
+    expect(screen.getByText('Ca sáng')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Hủy đăng ký' }))
     const dialog = screen.getByRole('dialog', { name: 'Hủy đăng ký ca này?' })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Hủy đăng ký' }))

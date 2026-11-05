@@ -11,7 +11,7 @@ import {
 import type { CaregiverBookingRequestRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
-import { CaregiverRequestsPage } from '../caregiver-requests-page'
+import { BookingRequestsList } from '../booking-requests-list'
 
 vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/booking/booking-api')>()),
@@ -54,7 +54,7 @@ function renderPage() {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <MemoryRouter>
-        <CaregiverRequestsPage />
+        <BookingRequestsList />
       </MemoryRouter>
     </QueryClientProvider>
   )
@@ -78,7 +78,7 @@ describe('Caregiver booking requests (CR-3)', () => {
     renderPage()
 
     expect(await screen.findByText('Phường Hàng Bài, Hoàn Kiếm, Hà Nội')).toBeInTheDocument()
-    expect(screen.getByText('78 tuổi · FEMALE')).toBeInTheDocument()
+    expect(screen.getByText('78 tuổi · Nữ')).toBeInTheDocument()
     expect(screen.getByText('Chăm sóc người cao tuổi')).toBeInTheDocument()
     expect(screen.getByText('Hồ sơ chăm sóc đầy đủ sẽ mở khi khách đã thanh toán.')).toBeInTheDocument()
 

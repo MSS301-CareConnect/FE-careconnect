@@ -4,9 +4,11 @@ import { Link } from 'react-router'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
+import { StatusBadge } from '~/shared/ui/status-badge'
 import { Tabs, tabPanelId } from '~/shared/ui/tabs'
 
-import { useToday, useVisitsToAccept } from '../data/caregiver-queries'
+import { useBookingRequests, useToday, useVisitsToAccept } from '../data/caregiver-queries'
+import { BookingRequestsList } from '../requests/booking-requests-list'
 import { CaregiverEmpty, CaregiverError, CaregiverPageHeader, cgContainer } from '../ui/caregiver-page'
 import { useNow } from '../ui/use-now'
 import { VisitListSkeleton } from '../ui/visit-skeleton'
@@ -15,20 +17,51 @@ import { VisitRangeFilter } from './components/visit-range-filter'
 import { VISIT_TABS, useVisitList, type VisitTab } from './hooks/use-visit-list'
 
 const EMPTY_ICON: Record<VisitTab, string> = {
+  respond: 'task_alt',
   upcoming: 'event_available',
-  toAccept: 'task_alt',
+  inProgress: 'play_circle',
   done: 'history',
   cancelled: 'event_busy'
 }
 
+function SourceHeading({
+  title,
+  hint,
+  badge,
+  tone
+}: {
+  title: string
+  hint: string
+  badge: string
+  tone: 'info' | 'active'
+}) {
+  return (
+    <div className='mb-3'>
+      <h2 className='flex flex-wrap items-center gap-2 text-base font-semibold text-on-surface'>
+        {title}
+        <StatusBadge tone={tone}>{badge}</StatusBadge>
+      </h2>
+      <p className='mt-0.5 text-sm text-on-surface-variant'>{hint}</p>
+    </div>
+  )
+}
+
+/**
+ * Care visits with five tabs. "Needs your answer" gathers everything waiting on the caregiver: bookings families sent
+ * straight to them (accept / decline) and visits the center assigned (confirm), each with its source.
+ */
 export function CaregiverVisitsPage() {
   const { t } = useTranslation()
   const today = useToday()
   const now = useNow()
   const list = useVisitList(today)
   const toAccept = useVisitsToAccept(today).data?.totalElements ?? 0
+  const requests = useBookingRequests()
+  const requestCount = requests.data?.totalElements ?? 0
   const { pages } = list
   useDocumentTitle(t('caregiver.visits.documentTitle'))
+  const respond = list.tab === 'respond'
+  const nothingToAnswer = respond && requests.isSuccess && requestCount === 0
 
   return (
     <div className={cgContainer}>
@@ -40,7 +73,7 @@ export function CaregiverVisitsPage() {
         items={VISIT_TABS.map((value) => ({
           value,
           label: t(`caregiver.visits.tabs.${value}`),
-          badge: value === 'toAccept' ? toAccept : undefined,
+          badge: value === 'respond' ? toAccept + requestCount : undefined,
           badgeTone: 'attention' as const
         }))}
         label={t('caregiver.visits.tabsLabel')}
@@ -62,6 +95,26 @@ export function CaregiverVisitsPage() {
           </div>
         ) : null}
 
+        {respond && requestCount > 0 ? (
+          <section className='mb-6'>
+            <SourceHeading
+              badge={t('caregiver.visits.respond.sourceCustomer')}
+              hint={t('caregiver.visits.respond.fromCustomerHint')}
+              title={t('caregiver.visits.respond.fromCustomer')}
+              tone='active'
+            />
+            <BookingRequestsList hideEmpty />
+          </section>
+        ) : null}
+        {respond && list.visits.length > 0 ? (
+          <SourceHeading
+            badge={t('caregiver.visits.respond.sourceCenter')}
+            hint={t('caregiver.visits.respond.fromCenterHint')}
+            title={t('caregiver.visits.respond.fromCenter')}
+            tone='info'
+          />
+        ) : null}
+
         {pages.isPending ? <VisitListSkeleton /> : null}
         {pages.isError ? (
           <CaregiverError
@@ -70,7 +123,7 @@ export function CaregiverVisitsPage() {
             retryLabel={t('caregiver.ui.actions.retry')}
           />
         ) : null}
-        {pages.isSuccess && list.visits.length === 0 && !pages.hasNextPage ? (
+        {pages.isSuccess && list.visits.length === 0 && !pages.hasNextPage && (!respond || nothingToAnswer) ? (
           <CaregiverEmpty
             action={
               list.tab === 'upcoming' ? (
@@ -85,8 +138,8 @@ export function CaregiverVisitsPage() {
             description={
               list.tab === 'upcoming'
                 ? t('caregiver.visits.empty.upcomingHint')
-                : list.tab === 'toAccept'
-                  ? t('caregiver.visits.empty.toAcceptHint')
+                : respond
+                  ? t('caregiver.visits.empty.respondHint')
                   : undefined
             }
             icon={EMPTY_ICON[list.tab]}

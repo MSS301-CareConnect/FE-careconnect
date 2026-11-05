@@ -1,65 +1,77 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getManagedUser } from '~/shared/api/generated/api/account/account'
 import {
+  cancelWorkShift,
   createWorkShift,
-  fetchCaregiver,
+  fetchCaregivers,
   fetchProviderMedia,
   fetchShiftRegistrations,
   fetchWorkShift,
+  fetchWorkShiftStatistics,
   fetchWorkShifts,
-  reviewShiftRegistration
+  reviewShiftRegistrations
 } from '~/entities/provider/provider-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
+import type { ProviderWorkShiftRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
-import { ManagerWorkShiftDetailPage, ManagerWorkShiftsPage } from './manager-work-shifts-page'
+import { addDays, calendarDayOf } from '~/shared/lib/format'
 
-vi.mock('~/shared/api/generated/api/account/account', () => ({ getManagedUser: vi.fn() }))
+import { ManagerWorkShiftDetailPage, ManagerWorkShiftsPage } from './manager-work-shifts-page'
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
   fetchWorkShifts: vi.fn(),
+  fetchWorkShiftStatistics: vi.fn(),
   createWorkShift: vi.fn(),
   fetchWorkShift: vi.fn(),
   fetchShiftRegistrations: vi.fn(),
-  fetchCaregiver: vi.fn(),
+  fetchCaregivers: vi.fn(),
   fetchProviderMedia: vi.fn(),
-  reviewShiftRegistration: vi.fn()
+  reviewShiftRegistrations: vi.fn(),
+  cancelWorkShift: vi.fn()
 }))
 
-const day = 24 * 60 * 60 * 1000
-const isoDate = (offsetDays: number) => {
-  const date = new Date(Date.now() + offsetDays * day)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-const future = isoDate(5)
-const past = isoDate(-2)
+const today = calendarDayOf(new Date())
+const future = addDays(today, 5)
 
-function renderPage() {
+function shift(overrides: Partial<ProviderWorkShiftRecord> = {}): ProviderWorkShiftRecord {
+  return {
+    id: 'shift-1',
+    centerId: 'center-1',
+    workDate: future,
+    startTime: '08:00:00',
+    endTime: '12:00:00',
+    shiftType: 'MORNING',
+    shiftStatus: 'OPEN',
+    capacity: 3,
+    approvedCount: 1,
+    pendingCount: 2,
+    version: 4,
+    createdAt: '2026-11-01T02:00:00Z',
+    ...overrides
+  }
+}
+
+const page = (items: ProviderWorkShiftRecord[]) => ({
+  items,
+  page: 0,
+  size: 20,
+  totalElements: items.length,
+  totalPages: 1
+})
+
+function renderAt(path = '/center-manager/work-shifts') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
       <AuthUserContext.Provider value={{ centerId: 'center-1', roles: ['CENTER_MANAGER'] }}>
-        <MemoryRouter>
-          <ManagerWorkShiftsPage />
-        </MemoryRouter>
-      </AuthUserContext.Provider>
-    </QueryClientProvider>
-  )
-}
-
-function renderDetailPage() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
-  render(
-    <QueryClientProvider client={client}>
-      <AuthUserContext.Provider value={{ centerId: 'center-1', roles: ['CENTER_MANAGER'] }}>
-        <MemoryRouter initialEntries={['/center-manager/work-shifts/shift-1']}>
+        <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path='/center-manager/work-shifts/:id' element={<ManagerWorkShiftDetailPage />} />
-            <Route path='/center-manager/caregivers/:id' element={<div data-testid='caregiver-detail' />} />
+            <Route element={<ManagerWorkShiftsPage />} path='/center-manager/work-shifts' />
+            <Route element={<ManagerWorkShiftDetailPage />} path='/center-manager/work-shifts/:id' />
           </Routes>
         </MemoryRouter>
       </AuthUserContext.Provider>
@@ -68,268 +80,175 @@ function renderDetailPage() {
 }
 
 beforeEach(async () => {
-  vi.mocked(fetchWorkShifts).mockReset()
+  vi.mocked(fetchWorkShifts)
+    .mockReset()
+    .mockResolvedValue(page([shift()]))
+  vi.mocked(fetchWorkShiftStatistics).mockReset().mockResolvedValue({
+    total: 12,
+    draft: 1,
+    open: 4,
+    closed: 3,
+    completed: 3,
+    cancelled: 1,
+    upcoming7Days: 5,
+    pendingRegistrations: 2,
+    capacityTotal: 20,
+    approvedTotal: 15
+  })
   vi.mocked(createWorkShift).mockReset()
-  vi.mocked(fetchWorkShift).mockReset()
+  vi.mocked(fetchWorkShift).mockReset().mockResolvedValue(shift())
   vi.mocked(fetchShiftRegistrations).mockReset()
-  vi.mocked(fetchCaregiver).mockReset()
-  vi.mocked(fetchProviderMedia).mockReset()
-  vi.mocked(reviewShiftRegistration).mockReset()
-  vi.mocked(getManagedUser).mockReset()
+  vi.mocked(fetchCaregivers)
+    .mockReset()
+    .mockResolvedValue({ items: [], page: 0, size: 1, totalElements: 7, totalPages: 7 })
+  vi.mocked(fetchProviderMedia).mockReset().mockResolvedValue([])
+  vi.mocked(reviewShiftRegistrations).mockReset()
+  vi.mocked(cancelWorkShift).mockReset()
   await setAppLanguage('en', false)
 })
 
 describe('Center Manager work shifts', () => {
-  it('shows caregiver details across the registration card and reviews without a reason field', async () => {
-    vi.mocked(fetchWorkShift).mockResolvedValue({
-      id: 'shift-1',
-      centerId: 'center-1',
-      workDate: future,
-      startTime: '08:00:00',
-      endTime: '17:00:00',
-      shiftType: 'DAILY',
-      shiftStatus: 'CLOSED',
-      capacity: 1,
-      version: 1
-    })
+  it('shows numbers for the whole filter, readable types and the pending badge', async () => {
+    vi.mocked(fetchWorkShifts).mockResolvedValue(
+      page([shift(), shift({ id: 'old', shiftType: 'DAY', pendingCount: 0 })])
+    )
+    renderAt()
+
+    expect(await screen.findByText('75%')).toBeInTheDocument()
+    expect(screen.getByText('15 of 20 places filled')).toBeInTheDocument()
+    expect(screen.getAllByText('Morning').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Other').length).toBeGreaterThan(0)
+    expect(screen.queryByText('DAY')).not.toBeInTheDocument()
+    expect(screen.getAllByText('2 to review').length).toBeGreaterThan(0)
+    expect(screen.queryByText(/current page/i)).not.toBeInTheDocument()
+    // The default list starts today and sends every filter to the backend.
+    expect(fetchWorkShifts).toHaveBeenCalledWith(
+      expect.objectContaining({ centerId: 'center-1', fromDate: today, size: 20 })
+    )
+  })
+
+  it('filters by sign-ups to review on the server when the pending card is clicked', async () => {
+    renderAt()
+    const card = await screen.findByRole('button', { name: /Sign-ups to review/ })
+    await waitFor(() => expect(card).toBeEnabled())
+    fireEvent.click(card)
+    await waitFor(() => expect(fetchWorkShifts).toHaveBeenLastCalledWith(expect.objectContaining({ hasPending: true })))
+  })
+
+  it('validates the form like the backend and opens sign-up with the chosen type', async () => {
+    vi.mocked(createWorkShift).mockResolvedValue(shift({ id: 'new' }))
+    renderAt()
+    fireEvent.click(await screen.findByRole('button', { name: 'New shift' }))
+    const dialog = await screen.findByRole('dialog', { name: 'New work shift' })
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Afternoon' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Increase' }))
+    fireEvent.change(within(dialog).getByLabelText('Note for caregivers'), { target: { value: 'x'.repeat(501) } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Open sign-up now' }))
+    expect(await within(dialog).findByText('The note can be 500 characters at most')).toBeInTheDocument()
+    expect(createWorkShift).not.toHaveBeenCalled()
+
+    fireEvent.change(within(dialog).getByLabelText('Note for caregivers'), { target: { value: '  Mang đồ bảo hộ ' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Open sign-up now' }))
+    await waitFor(() => expect(createWorkShift).toHaveBeenCalledTimes(1))
+    expect(vi.mocked(createWorkShift).mock.calls[0]).toEqual([
+      'center-1',
+      expect.objectContaining({
+        workDate: addDays(today, 1),
+        shiftType: 'AFTERNOON',
+        startTime: '13:00',
+        endTime: '17:00',
+        shiftStatus: 'OPEN',
+        capacity: 3,
+        note: 'Mang đồ bảo hộ'
+      })
+    ])
+  })
+
+  it('asks before throwing away unsaved changes', async () => {
+    renderAt()
+    fireEvent.click(await screen.findByRole('button', { name: 'New shift' }))
+    const dialog = await screen.findByRole('dialog', { name: 'New work shift' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Evening' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    expect(await screen.findByRole('dialog', { name: 'Discard your changes?' })).toBeInTheDocument()
+  })
+
+  it('opens the detail route as a dialog and approves several sign-ups at once', async () => {
     vi.mocked(fetchShiftRegistrations).mockResolvedValue({
       items: [
         {
-          id: 'registration-1',
+          id: 'r1',
           workShiftId: 'shift-1',
-          caregiverId: 'caregiver-1',
-          caregiverName: 'Quân',
+          caregiverId: 'c1',
+          caregiverName: 'Lan',
           registrationStatus: 'PENDING',
-          version: 2
-        }
-      ],
-      page: 0,
-      size: 20,
-      totalElements: 1,
-      totalPages: 1
-    })
-    vi.mocked(fetchCaregiver).mockResolvedValue({
-      id: 'caregiver-1',
-      userId: 'user-1',
-      centerId: 'center-1',
-      fullName: 'Quân',
-      gender: 'MALE',
-      dateOfBirth: '1996-08-01',
-      experienceYears: 4,
-      bio: 'Experienced home caregiver',
-      verificationStatus: 'VERIFIED',
-      caregiverStatus: 'ACTIVE',
-      version: 1
-    })
-    vi.mocked(fetchProviderMedia).mockResolvedValue([])
-    vi.mocked(getManagedUser).mockResolvedValue({
-      data: {
-        code: 200,
-        message: 'OK',
-        result: { id: 'user-1', centerId: 'center-1', email: 'quan@example.com' }
-      },
-      status: 200,
-      headers: new Headers()
-    })
-    vi.mocked(reviewShiftRegistration).mockResolvedValue({
-      id: 'registration-1',
-      workShiftId: 'shift-1',
-      caregiverId: 'caregiver-1',
-      registrationStatus: 'REJECTED',
-      version: 3
-    })
-
-    renderDetailPage()
-
-    expect(await screen.findByRole('link', { name: 'View details for Quân' })).toHaveAttribute(
-      'href',
-      '/center-manager/caregivers/caregiver-1'
-    )
-    expect(screen.queryByText('Experienced home caregiver')).not.toBeInTheDocument()
-    expect(screen.getByText('4 years')).toBeInTheDocument()
-    expect(await screen.findByText('quan@example.com')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'quan@example.com' })).not.toBeInTheDocument()
-    expect(screen.queryByText('View details for Quân')).not.toBeInTheDocument()
-    expect(getManagedUser).toHaveBeenCalledWith('user-1', { credentials: 'include' })
-    expect(screen.queryByRole('textbox', { name: 'Reason' })).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Reject' }))
-    await waitFor(() =>
-      expect(reviewShiftRegistration).toHaveBeenCalledWith('registration-1', {
-        version: 2,
-        status: 'REJECTED'
-      })
-    )
-    fireEvent.click(screen.getByRole('link', { name: 'View details for Quân' }))
-    expect(screen.getByTestId('caregiver-detail')).toBeInTheDocument()
-  })
-
-  it('shows live shifts in the management table and filters the loaded page', async () => {
-    vi.mocked(fetchWorkShifts).mockResolvedValue({
-      items: [
-        {
-          id: 'morning',
-          centerId: 'center-1',
-          workDate: '2026-11-01',
-          startTime: '08:00:00',
-          endTime: '12:00:00',
-          shiftType: 'Morning',
-          shiftStatus: 'OPEN',
-          capacity: 2,
-          version: 1
+          version: 0,
+          createdAt: '2026-11-02T01:00:00Z'
         },
         {
-          id: 'evening',
-          centerId: 'center-1',
-          workDate: '2026-11-02',
-          startTime: '17:00:00',
-          endTime: '21:00:00',
-          shiftType: 'Evening',
-          shiftStatus: 'DRAFT',
-          capacity: 3,
-          version: 1
-        }
-      ],
-      page: 0,
-      size: 20,
-      totalElements: 2,
-      totalPages: 1
-    })
-    renderPage()
-    expect(await screen.findByRole('link', { name: 'Nov 1, 2026' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Work shift overview' })).toBeInTheDocument()
-    expect(screen.getAllByRole('row')).toHaveLength(3)
-    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Evening' } })
-    expect(screen.getAllByRole('row')).toHaveLength(2)
-    expect(screen.queryByRole('link', { name: 'Nov 1, 2026' })).not.toBeInTheDocument()
-  })
-
-  it('loads the assigned center and creates a shift with contract fields', async () => {
-    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
-    vi.mocked(createWorkShift).mockResolvedValue({
-      id: 'shift-1',
-      centerId: 'center-1',
-      workDate: future,
-      startTime: '08:00:00',
-      endTime: '12:00:00',
-      shiftType: 'WEEKLY',
-      shiftStatus: 'DRAFT',
-      capacity: 2,
-      version: 1
-    })
-    renderPage()
-
-    expect(await screen.findByText('No work shifts yet.')).toBeInTheDocument()
-    expect(fetchWorkShifts).toHaveBeenCalledWith({ centerId: 'center-1', page: 0, size: 20 })
-    fireEvent.click(screen.getByRole('button', { name: 'Create work shift' }))
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
-    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
-    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
-    fireEvent.change(screen.getByLabelText('Caregivers who can register'), { target: { value: '2' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    await waitFor(() =>
-      expect(createWorkShift).toHaveBeenCalledWith(
-        'center-1',
-        expect.objectContaining({
-          workDate: future,
-          startTime: '08:00',
-          endTime: '12:00',
-          shiftType: 'WEEKLY',
-          capacity: 2,
-          shiftStatus: 'DRAFT'
-        })
-      )
-    )
-  })
-
-  it('explains a rejected shift creation without exposing the backend error code', async () => {
-    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
-    vi.mocked(createWorkShift).mockRejectedValue({ status: 403, info: { code: 3403 } })
-    renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
-    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '08:00' } })
-    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('You cannot create or edit work shifts for this center.')
-    expect(screen.getByRole('alert')).not.toHaveTextContent('3403')
-  })
-
-  it('blocks a registration deadline after the shift starts', async () => {
-    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
-    vi.mocked(createWorkShift).mockResolvedValue({
-      id: 'shift-1',
-      centerId: 'center-1',
-      workDate: future,
-      startTime: '07:00:00',
-      endTime: '18:00:00',
-      shiftType: 'WEEKLY',
-      shiftStatus: 'DRAFT',
-      capacity: 1,
-      version: 1
-    })
-    renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: future } })
-    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '07:00' } })
-    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '18:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
-    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: `${isoDate(7)}T00:00` } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'The registration deadline must be before the work shift starts.'
-    )
-    expect(screen.getByLabelText('Registration deadline')).toHaveAttribute('aria-invalid', 'true')
-    expect(createWorkShift).not.toHaveBeenCalled()
-
-    fireEvent.change(screen.getByLabelText('Registration deadline'), { target: { value: `${future}T06:00` } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await waitFor(() => expect(createWorkShift).toHaveBeenCalledOnce())
-  })
-
-  it('does not create a shift that would already have started', async () => {
-    vi.mocked(fetchWorkShifts).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
-    renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: 'Create work shift' }))
-    expect(screen.getByLabelText('Work date')).toHaveAttribute('min', isoDate(0))
-    // Today passes the date picker's minimum, but midnight has already gone by.
-    fireEvent.change(screen.getByLabelText('Work date'), { target: { value: isoDate(0) } })
-    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '00:00' } })
-    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '12:00' } })
-    fireEvent.change(screen.getByLabelText('Shift type'), { target: { value: 'WEEKLY' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    expect(screen.getByRole('alert')).toHaveTextContent('The work shift must start after the current time.')
-    expect(screen.getByLabelText('Work date')).toHaveAttribute('aria-invalid', 'true')
-    expect(createWorkShift).not.toHaveBeenCalled()
-  })
-
-  it('flags an open shift whose time has passed', async () => {
-    vi.mocked(fetchWorkShifts).mockResolvedValue({
-      items: [
+          id: 'r2',
+          workShiftId: 'shift-1',
+          caregiverId: 'c2',
+          caregiverName: 'Minh',
+          registrationStatus: 'PENDING',
+          version: 1,
+          createdAt: '2026-11-02T02:00:00Z'
+        },
         {
-          id: 'shift-old',
-          centerId: 'center-1',
-          workDate: past,
-          startTime: '08:00:00',
-          endTime: '12:00:00',
-          shiftType: 'Morning',
-          shiftStatus: 'OPEN',
-          capacity: 2,
-          version: 1
+          id: 'r3',
+          workShiftId: 'shift-1',
+          caregiverId: 'c3',
+          caregiverName: 'Hoa',
+          registrationStatus: 'APPROVED',
+          version: 2,
+          createdAt: '2026-11-01T02:00:00Z',
+          reviewedAt: '2026-11-01T03:00:00Z'
         }
       ],
       page: 0,
-      size: 20,
-      totalElements: 1,
+      size: 100,
+      totalElements: 3,
       totalPages: 1
     })
-    renderPage()
-    expect(await screen.findByText('Past')).toBeInTheDocument()
+    vi.mocked(reviewShiftRegistrations).mockResolvedValue([])
+    renderAt('/center-manager/work-shifts/shift-1')
+
+    const dialog = await screen.findByRole('dialog', { name: /Shift on/ })
+    expect(await within(dialog).findByText('Lan')).toBeInTheDocument()
+    expect(within(dialog).getByText('Hoa approved')).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByLabelText('Select all'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Approve 2' }))
+    await waitFor(() =>
+      expect(reviewShiftRegistrations).toHaveBeenCalledWith('shift-1', {
+        status: 'APPROVED',
+        reason: undefined,
+        items: [
+          { registrationId: 'r1', version: 0 },
+          { registrationId: 'r2', version: 1 }
+        ]
+      })
+    )
+  })
+
+  it('requires a reason to cancel a shift', async () => {
+    vi.mocked(fetchShiftRegistrations).mockResolvedValue({
+      items: [],
+      page: 0,
+      size: 100,
+      totalElements: 0,
+      totalPages: 0
+    })
+    vi.mocked(cancelWorkShift).mockResolvedValue(shift({ shiftStatus: 'CANCELLED' }))
+    renderAt('/center-manager/work-shifts/shift-1')
+    const detail = await screen.findByRole('dialog', { name: /Shift on/ })
+    fireEvent.click(await within(detail).findByRole('button', { name: 'Cancel shift' }))
+
+    const dialog = await screen.findByRole('dialog', { name: /Cancel the shift on/ })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel shift' }))
+    expect(await within(dialog).findByText('Enter a reason (500 characters at most)')).toBeInTheDocument()
+    fireEvent.change(within(dialog).getByLabelText('Reason'), { target: { value: 'Nghỉ lễ' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel shift' }))
+    await waitFor(() => expect(cancelWorkShift).toHaveBeenCalledWith('shift-1', { reason: 'Nghỉ lễ', version: 4 }))
   })
 })

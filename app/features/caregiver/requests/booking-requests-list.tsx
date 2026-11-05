@@ -7,25 +7,24 @@ import { acceptAsCaregiverRequest, bookingKeys, declineAsCaregiverRequest } from
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import type { CaregiverBookingRequestRecord } from '~/shared/api/generated/contracts'
-import { useDocumentTitle } from '~/shared/lib/use-document-title'
 
 import { useBookingRequests } from '../data/caregiver-queries'
-import { CaregiverEmpty, CaregiverError, CaregiverPageHeader, cgContainer } from '../ui/caregiver-page'
+import { CaregiverEmpty, CaregiverError } from '../ui/caregiver-page'
 import { useNow } from '../ui/use-now'
 import { VisitListSkeleton } from '../ui/visit-skeleton'
 import { BookingRequestCard } from './components/booking-request-card'
 
 /**
- * CR-3: bookings customers sent straight to this caregiver. Accepting moves the booking to payment without the
- * center; declining hands a RECURRING / CUSTOM booking to the center and closes a SHIFT booking.
+ * CR-3: bookings customers sent straight to this caregiver, shown in the visits tab "Needs your answer". Accepting
+ * moves the booking to payment without the center; declining hands a RECURRING / CUSTOM booking to the center and
+ * closes a SHIFT booking. `hideEmpty` lets the tab show one empty state for both sources.
  */
-export function CaregiverRequestsPage() {
+export function BookingRequestsList({ hideEmpty = false }: { hideEmpty?: boolean }) {
   const { t } = useTranslation()
   const now = useNow(60_000)
   const queryClient = useQueryClient()
   const requests = useBookingRequests()
   const [declining, setDeclining] = useState<CaregiverBookingRequestRecord | null>(null)
-  useDocumentTitle(t('caregiver.requests.documentTitle'))
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: bookingKeys.all })
   const failed = (error: unknown) => toast.error(t(bookingErrorKey(error)))
@@ -53,9 +52,7 @@ export function CaregiverRequestsPage() {
   const items = requests.data?.items ?? []
 
   return (
-    <div className={cgContainer}>
-      <CaregiverPageHeader description={t('caregiver.requests.subtitle')} title={t('caregiver.requests.title')} />
-
+    <div>
       {requests.isPending ? (
         <VisitListSkeleton />
       ) : requests.isError ? (
@@ -65,11 +62,13 @@ export function CaregiverRequestsPage() {
           retryLabel={t('caregiver.requests.retry')}
         />
       ) : items.length === 0 ? (
-        <CaregiverEmpty
-          description={t('caregiver.requests.empty')}
-          icon='inbox'
-          title={t('caregiver.requests.emptyTitle')}
-        />
+        hideEmpty ? null : (
+          <CaregiverEmpty
+            description={t('caregiver.requests.empty')}
+            icon='inbox'
+            title={t('caregiver.requests.emptyTitle')}
+          />
+        )
       ) : (
         <ul className='flex flex-col gap-4'>
           {items.map((request) => (

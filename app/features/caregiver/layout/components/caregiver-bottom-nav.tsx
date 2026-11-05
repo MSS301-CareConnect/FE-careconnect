@@ -28,11 +28,8 @@ export function CaregiverBottomNav({ toAccept, requests }: { toAccept: number; r
         <ul className='grid h-16 grid-cols-5'>
           {caregiverNavigation.map((item) => {
             const current = active.key === item.key
-            const badge = item.key === 'visits' ? toAccept : item.key === 'requests' ? requests : 0
-            const badgeLabel =
-              item.key === 'requests'
-                ? t('caregiver.nav.requestsWaiting', { count: badge })
-                : t('caregiver.nav.toAccept', { count: badge })
+            const badge = item.key === 'visits' ? toAccept + requests : 0
+            const badgeLabel = t('caregiver.nav.needsResponse', { count: badge })
             return (
               <li key={item.key}>
                 <Link

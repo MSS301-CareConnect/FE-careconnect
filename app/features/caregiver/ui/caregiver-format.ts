@@ -9,6 +9,7 @@ import {
   formatShortDate,
   isoWeekday
 } from '~/shared/lib/format'
+import { formatPhone } from '~/shared/lib/phone'
 
 export { addDays, calendarDayOf, isoWeekday }
 
@@ -48,21 +49,8 @@ export function minutesOfTimes(start: string, end: string) {
   return Math.max(0, toMinutes(end) - toMinutes(start))
 }
 
-/**
- * Vietnamese phone numbers grouped for reading aloud: "0912 345 678", "+84 912 345 678". Anything else keeps its
- * digits in groups of three so it is still easier to read than one block.
- */
-export function formatPhone(raw: string | undefined) {
-  if (!raw) return ''
-  const digits = raw.replace(/[^\d+]/g, '')
-  const international = /^\+?84(\d{9})$/.exec(digits)
-  if (international) {
-    const rest = international[1]
-    return `+84 ${rest.slice(0, 3)} ${rest.slice(3, 6)} ${rest.slice(6)}`
-  }
-  if (/^0\d{9}$/.test(digits)) return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`
-  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim()
-}
+// Phone grouping moved to shared/lib/phone (used by every portal); re-exported for the caregiver screens.
+export { formatPhone }
 
 /** A Google Maps directions link for an address the caregiver opens on their phone. */
 export function directionsUrl(address: string) {

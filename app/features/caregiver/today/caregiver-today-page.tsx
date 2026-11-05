@@ -10,6 +10,7 @@ import {
   ACTIVE_VISIT_STATUSES,
   VISIT_PAGE_SIZE,
   useMyCaregiverProfile,
+  useBookingRequests,
   useToday,
   useVisitPage,
   useVisitsToAccept
@@ -19,6 +20,7 @@ import { CaregiverEmpty, CaregiverError, cgContainer } from '../ui/caregiver-pag
 import { useNow } from '../ui/use-now'
 import { NeedsAttention } from './components/needs-attention'
 import { NextVisitCard } from './components/next-visit-card'
+import { OpenShiftSuggestions } from './components/open-shift-suggestions'
 import { TodayTimeline } from './components/today-timeline'
 import { WeekStats } from './components/week-stats'
 
@@ -38,6 +40,7 @@ export function CaregiverTodayPage() {
   const monday = weekStart(today)
   const week = useVisitPage({ from: monday, to: addDays(monday, 6), page: 0, size: VISIT_PAGE_SIZE })
   const toAccept = useVisitsToAccept(today).data?.totalElements ?? 0
+  const requests = useBookingRequests().data?.totalElements ?? 0
   useDocumentTitle(t('caregiver.today.documentTitle'))
 
   const visits = upcoming.data?.items ?? []
@@ -95,6 +98,9 @@ export function CaregiverTodayPage() {
               title={t('caregiver.today.empty.title')}
             />
           ) : null}
+          {upcoming.isSuccess && todayVisits.length === 0 ? (
+            <OpenShiftSuggestions centerId={profile.data?.centerId} now={now} />
+          ) : null}
           {upcoming.isSuccess && todayVisits.length > 0 ? (
             <TodayTimeline nextId={next?.id} now={now} visits={todayVisits} />
           ) : null}
@@ -105,6 +111,7 @@ export function CaregiverTodayPage() {
             centerId={profile.data?.centerId}
             now={now}
             profileId={profile.data?.id}
+            requests={requests}
             toAccept={toAccept}
           />
           {week.isSuccess ? <WeekStats visits={week.data.items} /> : null}
