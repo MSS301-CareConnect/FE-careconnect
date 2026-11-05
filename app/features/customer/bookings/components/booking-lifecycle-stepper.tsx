@@ -5,7 +5,7 @@ import { useFormat } from '~/shared/lib/format'
 import { useClock } from '~/shared/lib/use-clock'
 import { Stepper, type StepState } from '~/shared/ui/stepper'
 
-import { LIFECYCLE_STEPS, lifecyclePosition, timeLeft } from '../booking-lifecycle'
+import { lifecyclePosition, lifecycleStepLabel, lifecycleSteps, timeLeft } from '../booking-lifecycle'
 
 const key = 'customer.bookingDetail.lifecycle' as const
 // A deadline closer than this is drawn in the warning colour.
@@ -19,8 +19,8 @@ export function BookingLifecycleStepper({ booking }: { booking: BookingDetailRec
   const position = lifecyclePosition(booking)
   if (!position) return null
 
-  const currentIndex =
-    position.current === 'finished' ? LIFECYCLE_STEPS.length : LIFECYCLE_STEPS.indexOf(position.current)
+  const steps = lifecycleSteps(booking)
+  const currentIndex = position.current === 'finished' ? steps.length : steps.indexOf(position.current)
   const progress =
     position.current === 'care' && booking.status === 'IN_PROGRESS'
       ? t(`${key}.visitsDone`, {
@@ -55,11 +55,11 @@ export function BookingLifecycleStepper({ booking }: { booking: BookingDetailRec
     >
       <Stepper
         label={t(`${key}.label`)}
-        steps={LIFECYCLE_STEPS.map((step, index) => {
+        steps={steps.map((step, index) => {
           const state: StepState = index < currentIndex ? 'done' : index === currentIndex ? 'current' : 'todo'
           return {
             id: step,
-            label: t(`${key}.steps.${step}`),
+            label: t(`${key}.steps.${lifecycleStepLabel(booking, step)}`),
             state,
             note:
               state === 'current'

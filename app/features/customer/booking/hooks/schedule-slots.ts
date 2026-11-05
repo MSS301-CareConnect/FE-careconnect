@@ -9,6 +9,8 @@ export interface CustomSlot {
   date: string
   startTime: string
   endTime: string
+  /** The one service done in this visit (2026-11-05); absent while a single service is chosen. */
+  careServiceId?: string
 }
 
 /** A daily / weekly pattern: the RECURRING booking itself, or the quick add of a CUSTOM booking. */

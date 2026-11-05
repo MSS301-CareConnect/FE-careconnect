@@ -261,4 +261,34 @@ describe('CustomerBookingDetailPage', () => {
     renderPage()
     expect(await screen.findByRole('heading', { name: 'Không tìm thấy lịch đặt' })).toBeInTheDocument()
   })
+
+  it('opens and closes the occurrence details dialog when clicking view detail', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({
+      ...booking,
+      serviceAddress: '45 Kim Mã, Ba Đình, Hà Nội',
+      services: [
+        {
+          id: 'svc-1',
+          careServiceId: 'cs-1',
+          serviceName: 'Vật lý trị liệu phục hồi chức năng',
+          unitPrice: 200000,
+          totalPrice: 200000
+        }
+      ]
+    })
+    renderPage()
+
+    const viewDetailBtn = await screen.findByRole('button', { name: 'Xem chi tiết' })
+    fireEvent.click(viewDetailBtn)
+
+    const dialog = await screen.findByRole('dialog', { name: 'Chi tiết buổi chăm sóc #1' })
+    expect(dialog).toBeInTheDocument()
+    expect(within(dialog).getByText('Vật lý trị liệu phục hồi chức năng')).toBeInTheDocument()
+    expect(within(dialog).getByText('45 Kim Mã, Ba Đình, Hà Nội')).toBeInTheDocument()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Đóng' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Chi tiết buổi chăm sóc #1' })).not.toBeInTheDocument()
+    })
+  })
 })

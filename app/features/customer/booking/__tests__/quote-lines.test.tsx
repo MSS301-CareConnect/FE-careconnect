@@ -59,4 +59,26 @@ describe('QuoteLines', () => {
     expect(rows[3]).toHaveTextContent('Cộng 31 giờ · 15 buổi')
     expect(rows[3]).toHaveTextContent('3.100.000')
   })
+  it('names the chosen price plan and its length under the service (2026-11-05)', () => {
+    render(
+      <QuoteLines
+        lines={[
+          {
+            ...base,
+            pricingUnit: 'DAY',
+            unitPrice: 800000,
+            planName: 'Chăm sóc 8 giờ/ngày',
+            planDurationMinutes: 480,
+            unitsPerOccurrence: 1,
+            quantity: 2,
+            occurrenceCount: 2,
+            lineTotal: 1600000
+          },
+          { ...base, careServiceId: 't', serviceName: 'Tắm rửa', planName: 'Theo giờ', planDurationMinutes: 60 }
+        ]}
+      />
+    )
+    expect(screen.getByText('Gói: Chăm sóc 8 giờ/ngày · 8 giờ/ngày')).toBeInTheDocument()
+    expect(screen.getByText('Gói: Theo giờ')).toBeInTheDocument()
+  })
 })

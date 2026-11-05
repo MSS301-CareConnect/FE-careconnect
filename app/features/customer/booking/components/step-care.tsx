@@ -311,6 +311,11 @@ function CaregiverList({ form }: { form: BookingForm }) {
             {form.centerCaregivers.map((caregiver) => (
               <ChoiceCard
                 checked={form.selectedCaregiverId === caregiver.id}
+                // 2026-11-05: a caregiver without one of the chosen services stays listed but cannot be picked.
+                disabled={Boolean(caregiver.missingServiceNames?.length)}
+                disabledReason={t('customer.booking.caregiver.notProvided', {
+                  names: caregiver.missingServiceNames?.join(', ') ?? ''
+                })}
                 footer={
                   <div className='flex justify-end px-3 pb-2'>
                     <button

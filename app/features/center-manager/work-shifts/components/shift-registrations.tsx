@@ -13,6 +13,7 @@ import { toastSuccess, toastSystemError } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { FormAlert } from '~/shared/ui/form-alert'
 import { FormField, Textarea } from '~/shared/ui/form-field'
+import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 import { StatusBadge } from '~/shared/ui/status-badge'
 import { Tabs, tabPanelId } from '~/shared/ui/tabs'
@@ -127,7 +128,8 @@ export function ShiftRegistrations({
 
   return (
     <section aria-labelledby='shift-registrations-title' className='space-y-3'>
-      <h3 className='text-base font-semibold' id='shift-registrations-title'>
+      <h3 className='flex items-center gap-1.5 text-sm font-semibold text-on-surface' id='shift-registrations-title'>
+        <Icon className='text-base text-primary' name='how_to_reg' />
         {t(`${k}.registrations`)}
       </h3>
       <Tabs
@@ -145,13 +147,13 @@ export function ShiftRegistrations({
         }}
         value={tab}
       />
-      <div className='space-y-3' id={tabPanelId('shift-registrations')} role='tabpanel'>
+      <div className='space-y-2.5' id={tabPanelId('shift-registrations')} role='tabpanel'>
         {tab === 'PENDING' && canReview && pending.length > 0 ? (
-          <div className='flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-low px-3 py-2'>
-            <label className='flex min-h-10 items-center gap-2 text-sm font-medium'>
+          <div className='flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-lowest/80 px-3 py-1.5'>
+            <label className='flex min-h-9 cursor-pointer items-center gap-2 text-xs font-semibold text-on-surface'>
               <input
                 checked={chosen.length === pending.length}
-                className='h-5 w-5 accent-[var(--color-primary)]'
+                className='h-4 w-4 accent-[var(--color-primary)]'
                 onChange={(event) =>
                   setSelected(event.target.checked ? new Set(pending.map((item) => item.id)) : new Set())
                 }
@@ -173,36 +175,36 @@ export function ShiftRegistrations({
         ) : null}
         {failure ? <FormAlert tone='warning'>{t(failure as ReviewKey)}</FormAlert> : null}
         {visible.length === 0 ? (
-          <p className='rounded-xl border border-dashed border-outline-variant px-4 py-6 text-center text-sm text-on-surface-variant'>
+          <p className='rounded-xl border border-dashed border-outline-variant/60 bg-surface-container-lowest/50 px-4 py-8 text-center text-sm text-on-surface-variant'>
             {t(`${k}.empty.${tab}`)}
           </p>
         ) : (
-          <ul className='space-y-2'>
+          <ul className='max-h-72 space-y-2 overflow-y-auto pr-1'>
             {visible.map((registration) => {
               const name = registration.caregiverName || t('common.ui.unknownName')
               return (
                 <li
-                  className='flex items-start gap-3 rounded-xl border border-outline-variant/50 p-3'
+                  className='flex items-center gap-3 rounded-xl bg-surface-container-lowest p-3'
                   key={registration.id}
                 >
                   {tab === 'PENDING' && canReview ? (
                     <input
                       aria-label={t(`${k}.selectOne`, { name })}
                       checked={selected.has(registration.id)}
-                      className='mt-3 h-5 w-5 shrink-0 accent-[var(--color-primary)]'
+                      className='h-4 w-4 shrink-0 accent-[var(--color-primary)]'
                       onChange={() => toggle(registration.id)}
                       type='checkbox'
                     />
                   ) : null}
                   <CaregiverAvatar
                     caregiverId={registration.caregiverId}
-                    className='h-11 w-11 shrink-0 rounded-xl'
+                    className='h-10 w-10 shrink-0 rounded-xl'
                     name={name}
                   />
-                  <div className='min-w-0 flex-1 space-y-1 text-sm'>
+                  <div className='min-w-0 flex-1 space-y-0.5 text-sm'>
                     <div className='flex flex-wrap items-center gap-2'>
                       <Link
-                        className='font-semibold hover:text-primary hover:underline'
+                        className='font-semibold text-on-surface hover:text-primary hover:underline'
                         to={`/center-manager/caregivers/${registration.caregiverId}`}
                       >
                         {name}
@@ -211,25 +213,25 @@ export function ShiftRegistrations({
                         {t(`common.status.registration.${registration.registrationStatus}`)}
                       </StatusBadge>
                     </div>
-                    <p className='text-xs text-on-surface-variant'>
+                    <p className='text-xs text-on-surface-variant tabular-nums'>
                       {t(`${k}.registeredAt`, { value: format.dateTime(registration.createdAt) })}
                       {registration.reviewedAt
                         ? ` · ${t(`${k}.reviewedAt`, { value: format.dateTime(registration.reviewedAt) })}`
                         : ''}
                     </p>
                     {registration.caregiverNote ? (
-                      <p className='text-on-surface-variant'>
+                      <p className='text-xs text-on-surface-variant'>
                         {t(`${k}.caregiverNote`, { note: registration.caregiverNote })}
                       </p>
                     ) : null}
                     {registration.rejectionReason && registration.registrationStatus === 'REJECTED' ? (
-                      <p className='text-on-surface-variant'>
+                      <p className='text-xs text-on-surface-variant'>
                         {t(`${k}.rejectionReason`, { reason: registration.rejectionReason })}
                       </p>
                     ) : null}
                   </div>
                   {tab === 'PENDING' && canReview ? (
-                    <div className='flex shrink-0 flex-col gap-1.5 sm:flex-row'>
+                    <div className='flex shrink-0 items-center gap-1.5'>
                       <Button disabled={review.isPending} onClick={() => approve([registration])} size='sm'>
                         {t(`${k}.approve`)}
                       </Button>

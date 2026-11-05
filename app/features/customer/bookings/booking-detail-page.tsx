@@ -7,10 +7,11 @@ import { bookingErrorStatus, bookingKeys, fetchBooking } from '~/entities/bookin
 import { EXPIRING_STATUSES } from '~/entities/booking/booking-deadline'
 import { bookingErrorKey, bookingTypeKey } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
-import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
+import { BookingOccurrenceList, matchOccurrenceService } from '~/entities/booking/booking-occurrence-list'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { ServiceAddressDialog, canChangeServiceAddress } from '~/entities/booking/service-address-dialog'
-import type { OccurrenceStatus } from '~/shared/api/generated/contracts'
+import { fetchPublicCaregiver, providerKeys } from '~/entities/provider/provider-api'
+import type { BookingOccurrenceRecord, OccurrenceStatus } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ActionMenu } from '~/shared/ui/action-menu'
 import { CopyButton } from '~/shared/ui/copy-button'
@@ -24,6 +25,8 @@ import { BookingAftercare } from './components/booking-aftercare'
 import { BookingCancelDialog } from './components/booking-cancel-dialog'
 import { BookingDetailSummary } from './components/booking-detail-summary'
 import { BookingLifecycleStepper } from './components/booking-lifecycle-stepper'
+import { BookingOccurrenceDetailDialog } from './components/booking-occurrence-detail-dialog'
+import { BookingOverviewCard } from './components/booking-overview-card'
 import { BookingStatusPanel } from './components/booking-status-panel'
 
 const key = 'customer.bookingDetail' as const
@@ -37,9 +40,15 @@ function DetailSkeleton({ label }: { label: string }) {
       <Skeleton className='mt-4 h-9 w-72 rounded-lg' />
       <Skeleton className='mt-3 h-5 w-56 rounded' />
       <Skeleton className='mt-6 h-20 w-full rounded-2xl' />
-      <div className='mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]'>
-        <Skeleton className='h-80 w-full rounded-2xl' />
-        <Skeleton className='h-80 w-full rounded-2xl' />
+      <div className='mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]'>
+        <div className='flex flex-col gap-6'>
+          <Skeleton className='h-40 w-full rounded-2xl' />
+          <Skeleton className='h-72 w-full rounded-2xl' />
+        </div>
+        <div className='flex flex-col gap-4'>
+          <Skeleton className='h-44 w-full rounded-2xl' />
+          <Skeleton className='h-72 w-full rounded-2xl' />
+        </div>
       </div>
     </SkeletonGroup>
   )
@@ -49,6 +58,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
   const { t } = useTranslation()
   const [cancelling, setCancelling] = useState(false)
   const [editingAddress, setEditingAddress] = useState(false)
+  const [selectedOccurrence, setSelectedOccurrence] = useState<BookingOccurrenceRecord | null>(null)
   // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
   const [now] = useState(() => Date.now())
   const booking = useQuery({
@@ -58,6 +68,16 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
     refetchInterval: (query) => (query.state.data && EXPIRING_STATUSES.has(query.state.data.status) ? 30_000 : false),
     retry: false
   })
+
+  const caregiverId = booking.data?.caregiverId
+  const caregiverProfile = useQuery({
+    queryKey: providerKeys.publicCaregiver(caregiverId ?? ''),
+    queryFn: () => fetchPublicCaregiver(caregiverId ?? ''),
+    enabled: Boolean(caregiverId),
+    retry: false,
+    staleTime: 5 * 60_000
+  })
+
   useDocumentTitle(t(`${key}.documentTitle`, { code: booking.data?.bookingCode ?? '' }))
 
   if (booking.isPending) return <DetailSkeleton label={t(`${key}.loading`)} />
@@ -111,6 +131,18 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
         ]
       : [])
   ]
+
+  const resolveCaregiverName = (occCaregiverId: string) => {
+    if (occCaregiverId === caregiverId && caregiverProfile.data?.fullName) {
+      return caregiverProfile.data.fullName
+    }
+    return undefined
+  }
+
+  const selectedService = selectedOccurrence
+    ? matchOccurrenceService(selectedOccurrence, data.services)
+    : undefined
+
   return (
     <div className={`${pageContainer} pb-16`}>
       <PageHeader
@@ -138,17 +170,30 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
 
       <BookingLifecycleStepper booking={data} />
 
-      <div className='mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]'>
-        <div className='flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1'>
+      <div className='mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]'>
+        {/* Right column: Action & Status Panel, Caregiver, Payment Summary */}
+        <div className='flex flex-col gap-5 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1'>
           <BookingStatusPanel booking={data} />
           <BookingDetailSummary booking={data} />
         </div>
+
+        {/* Left column: Overview, Occurrences, Aftercare, History */}
         <div className='flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-start-1'>
+          <BookingOverviewCard
+            booking={data}
+            now={now}
+            onEditAddress={canChangeServiceAddress(data, now) ? () => setEditingAddress(true) : undefined}
+          />
           <SectionCard
             icon='event_note'
             title={`${t(`${key}.occurrences`)}${occurrences.length ? ` (${occurrences.length})` : ''}`}
           >
-            <BookingOccurrenceList occurrences={occurrences} />
+            <BookingOccurrenceList
+              caregiverName={resolveCaregiverName}
+              occurrences={occurrences}
+              onSelectOccurrence={(occ) => setSelectedOccurrence(occ)}
+              services={data.services}
+            />
           </SectionCard>
           <BookingAftercare
             bookingId={data.id}
@@ -160,6 +205,18 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
           </SectionCard>
         </div>
       </div>
+
+      {selectedOccurrence ? (
+        <BookingOccurrenceDetailDialog
+          booking={data}
+          caregiverName={selectedOccurrence.caregiverId ? resolveCaregiverName(selectedOccurrence.caregiverId) : undefined}
+          caregiverProfile={caregiverProfile.data}
+          occurrence={selectedOccurrence}
+          onClose={() => setSelectedOccurrence(null)}
+          service={selectedService}
+        />
+      ) : null}
+
       {cancelling ? <BookingCancelDialog booking={data} onClose={() => setCancelling(false)} /> : null}
       {editingAddress ? (
         <ServiceAddressDialog booking={data} onClose={() => setEditingAddress(false)} open={editingAddress} />

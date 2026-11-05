@@ -142,7 +142,8 @@ CareRecipientService through `entities/care-recipient`, which owns the gateway
 wrappers and query keys. The list keeps keyword (searched as the customer types), status chips and page in URL search
 parameters and uses backend pagination; cards sit in a two-column grid with "Book care" (`/customer/booking?patientId=`)
 and a "⋯" menu (edit, delete behind a confirmation dialog), and pending invitations show as a banner. The detail page
-has five tabs in `?tab=` (overview, health & medications, daily life, emergency contacts, managers), a header with the
+has six tabs in `?tab=` (overview, health & medications, daily life, emergency contacts, address book — saved places the
+person may stay, `GET/POST/PUT/DELETE /care-recipients/{id}/addresses`, since 2026-11-05 — and managers), a header with the
 profile completeness (ten caregiver-relevant items, medications excluded) and no page-wide edit mode: each section has
 its own "Edit" that opens a centred dialog laid out in two columns (`?edit=basic`, or the older `?mode=edit`, opens the
 basic section on arrival). Every section save still sends the whole profile with the
@@ -340,11 +341,18 @@ call, today's timeline, items that need action (visits to accept, sign-ups closi
 certificates, booking requests; on a day without visits, two or three open shifts) and the week's counts.
 `/caregiver/visits` has Needs your answer / Upcoming / In progress / Done / Cancelled tabs (`?tab=`; "Needs your answer"
 lists bookings families sent straight to the caregiver and visits the center assigned, each under its source, and one
-sidebar badge counts both; `?tab=toAccept` still opens it;
+sidebar badge counts both; `?tab=toAccept` still opens it; since 2026-11-05 a request card shows the person cared for
+(name, age, gender, allergy), who booked, the work shift of a SHIFT booking (the caregiver's schedule from
+`/caregivers/me/schedules` → `GET /work-shifts/{id}` for its type), each visit with its service and price, the booking value and
+"View details" → `/caregiver/requests/:id` (`GET /bookings/caregiver-requests/{id}`): schedule facts, every visit, the health
+summary BookingService releases before payment (mobility, conditions, allergies, care needs, diet, behaviour, number of
+medicines — no street address, phones or medicine names), the customer, price lines and the answer; a 404 means the request
+no longer waits;
 history tabs read one period, `?range=week|month|custom&from&to`) grouped by day; BookingService takes one status per
 request and at most 100 rows, so status groups are filtered on loaded pages with "load more". `/caregiver/visits/:id`
 runs the visit — accept, check-in, tasks, no-show report and check-out — with an allergy callout, the care profile and a
-sticky action bar on phones; check-in follows the booking's window (Q12, default 30 minutes either side, D22). The care
+sticky action bar on phones, plus the booking (who booked, type, work shift, this visit's price, services with their plan)
+and links to the caregiver's other visits of the same booking (`customerName`, `bookingVisits` on the visit detail); check-in follows the booking's window (Q12, default 30 minutes either side, D22). The care
 report states its 24-hour deadline (D27). `/caregiver/schedule`, `/caregiver/work-shifts` and `/caregiver/time-off` are
 the three tabs of one Work schedule page: a week/month calendar (phones: day strip and agenda) layering availability
 slots (D11; ProviderService has no date filter, so up to five pages of 100 are read), assigned visits and time off,
@@ -436,7 +444,7 @@ places still missing — a click filters next 7 days + `hasVacancy`; sign-ups to
 fill rate), then one compact filter card: status chips with counts and a single toolbar row (date range and type as
 dropdown chips, custom dates inline only when picked, "places left" and "to review" toggles, clear, total and the list /
 week switch), all in URL search parameters and sent to ProviderService, and a list or week calendar
-(`?view=week&week=`). Statuses are the effective ones the backend returns (a past shift is never "open"); types go
+(`?view=week&week=`). The form also sets `maxBookings` (bookings one caregiver takes in the shift, 1–20, default 2). Statuses are the effective ones the backend returns (a past shift is never "open"); types go
 through `entities/provider/work-shift.ts` (unknown legacy codes read "Other"). Create / edit / duplicate is a two-column
 dialog (form + live summary with same-day overlap warnings), with the status chosen by the button (save draft / open
 sign-up), an optional repeat over a date range and weekdays (`POST /work-shifts/centers/{id}/batch`, all or nothing) and a
@@ -527,7 +535,11 @@ the account detail; the former illustrative customer snapshot was removed (M-13)
 `entities/care-catalog`, which owns the gateway wrappers and query keys. The catalog
 endpoint returns every non-deleted item, so keyword, category, status and page live in
 URL search parameters and filter the cached list client-side. Create and edit send only
-the `CatalogItemRequest` fields (name, category, optional description, status). The
+the `CatalogItemRequest` fields (name, category, optional description, optional `imageUrl`, status). The cover image is
+uploaded from the device (button or drop on the card preview, JPG / PNG / WebP up to 5 MB, checked in the browser first)
+through `POST /catalog-items/images`, which stores it in MediaService and returns the permanent
+`/api/v1/catalog-items/images/{mediaFileId}` URL; that public GET redirects to a short-lived R2 link, so `imageUrl` works
+directly in `<img>` everywhere. A pasted link or a suggested photo is still accepted. The
 category dropdown merges `service-category.constants.ts` (stable stored values with
 translated labels) with categories already in the database, removing case-insensitive
 duplicates; its final option reveals a free-text input, and an edited item whose category
@@ -800,6 +812,10 @@ Contract update workflow:
   PENDING because the IPN, not the browser return, records the money. The page reads the payment status, not the
   return route: PENDING shows "confirming" (never a success mark), polling stops after 60 seconds with a check-again
   action and a link to the payments list, and a REMAINING payment is named as an invoice, not a deposit.
+- The deposit page (`/customer/bookings/:id/deposit`, redesigned 2026-11-05 on `PageHeader` + `pageContainer`) shows on
+  the left the person, caregiver, care address, every visit with service, price and its own address, and the price
+  lines; on the right the amount paid now with its percent, the payment plan (initial payment now, the rest by
+  `remainingPaymentDueAt` — or "paid in full"), the deadline countdown (the button locks once it passed) and VNPay.
 - Before paying, the deposit page shows the assigned caregiver (`entities/provider/assigned-caregiver-card.tsx`, public
   caregiver profile) and the refund rules of the center booking policy (`GET /center-booking-policies/{centerId}`:
   refund percent from / under the cut-off and the share kept when the remaining balance is overdue) in
@@ -807,9 +823,10 @@ Contract update workflow:
   (`BEFORE_THRESHOLD`, `AFTER_THRESHOLD`, `FULL_REFUND_*`, `PAYMENT_OVERDUE`…) as words through `refundRuleLabel`;
   codes are never shown.
 - BookingService leaves `depositAmount` empty: PaymentService computes the initial payment per visit. `initialPaymentOf`
-  shows the booking total times the `initialPaymentPercent` BookingService fixed at creation (SHIFT 100, RECURRING /
-  CUSTOM the center deposit percent) as an estimate, and what remains; the VNPay page shows the exact amount.
-- RECURRING / CUSTOM bookings are paid in full before the first visit: PaymentService opens the remaining-balance
+  shows the booking total times the `initialPaymentPercent` BookingService fixed at creation (the center deposit
+  percent, 30 % by default, for every type since 2026-11-05; 100 % when the first visit is closer than the remaining-
+  balance cut-off, which only a SHIFT can be) as an estimate, and what remains; the VNPay page shows the exact amount.
+- Bookings are paid in full before the first visit: PaymentService opens the remaining-balance
   invoice together with the initial payment. While a CONFIRMED booking has `remainingPaymentDueAt` and no `fullyPaidAt`,
   the booking detail states the amount and due time and opens the invoice checkout directly (the pending invoice of the
   booking is found among the customer's `GET /remaining-invoices?status=PENDING`); a paid booking shows "paid in
@@ -817,9 +834,13 @@ Contract update workflow:
 - The booking form reads `GET /payments/me/outstanding` and, while an overdue invoice exists, shows a banner linking to
   `/customer/payments` and disables submit, so the customer learns about the block before filling the form.
 - The Customer booking form (booking spec v1.0, 2026-11-02) sends one booking of type SHIFT, RECURRING or CUSTOM. The
-  customer picks the center, then services, then a caregiver among those who provide every chosen service
-  (`/caregivers/search`). SHIFT requires a caregiver and one of their shifts (`GET /caregivers/{id}/schedules`); shifts a
-  booking already holds (`GET /bookings/held-schedules`) are locked. CUSTOM lists visits with their own times and blocks
+  customer picks the center, then services, then a caregiver: every caregiver of the center is listed and one who does
+  not provide a chosen service (`/caregivers/search` per service) is locked with "not provided yet: …" (2026-11-05).
+  SHIFT requires a caregiver and one of their shifts (`GET /caregivers/{id}/schedules`); a shift is locked once it holds
+  its `maxBookings` bookings (`GET /bookings/held-schedules` → `scheduleBookingCounts`). The chosen shift is split into
+  time slots per service (plan length for DAY / SHIFT, chosen hours for HOUR), slots of another booking and their
+  `travelBufferMinutes` (60) are locked, and the booking sends `slots` with `careServiceId`. With several services every
+  RECURRING / CUSTOM visit names its service too (`docs/2026-11-05-BOOKING_MULTISERVICE_SHIFT_SLOTS_PLAN.md`). CUSTOM lists visits with their own times and blocks
   overlapping ones before BookingService checks again. The retried submit keeps its Idempotency-Key. The sidebar shows
   the quote's initial-payment percent and amount from the center booking policy (`GET /center-booking-policies/{id}`);
   no rate is fixed in the browser.
@@ -827,11 +848,16 @@ Contract update workflow:
   editable visit list from its pattern (`features/customer/booking/hooks/schedule-slots.ts`, `schedule-rule-fields`,
   `schedule-slot-list`); once edited it sends `slots` with the pattern and a pattern change no longer rebuilds it.
   CUSTOM has a collapsible quick add that appends a daily / weekly pattern, skipping overlapping visits. Switching the
-  header center while the form is open moves the form to that center and clears its choices. A booking with a chosen
-  caregiver waits in `PENDING_CAREGIVER_CONFIRMATION`: the caregiver answers in the visits tab "Needs your answer" (`/caregiver/visits?tab=respond`; `/caregiver/requests` redirects there since 2026-11-05) (accept, or decline
+  header center while the form is open moves the form to that center and clears its choices. A SHIFT booking is held at
+  once (2026-11-05: the caregiver signed up for that shift, so BookingService accepts it for them and the customer pays
+  straight away — the success screen offers "Pay now", the detail stepper reads request held → pay → care → done). Any
+  other booking with a chosen caregiver waits in `PENDING_CAREGIVER_CONFIRMATION`: the caregiver answers in the visits tab "Needs your answer" (`/caregiver/visits?tab=respond`; `/caregiver/requests` redirects there since 2026-11-05) (accept, or decline
   with a reason — RECURRING / CUSTOM then go to the center); the manager only sees the deadline and can reject.
-  `entities/booking/service-address-dialog.tsx` (customer "⋯" menu and manager detail) changes the care address of the
-  upcoming visits (`PATCH /bookings/{id}/service-address`). Kept deposits belong to the visit caregiver
+  `entities/booking/service-address-dialog.tsx` (customer "⋯" menu and manager detail) moves chosen visits to another
+  care address (`PATCH /bookings/{id}/service-address` with `occurrenceIds`, 2026-11-05): a customer only ticks visits at
+  least 24 hours away (409 `5117`), the center any visit not started; the address comes from the person's address book or
+  is typed and optionally saved there. A visit at another address carries `serviceAddress`; the booking form also picks
+  the care address from the address book (`serviceAddress` on create). Kept deposits belong to the visit caregiver
   (`/caregiver/earnings`, `GET /deposit-forfeitures`); the manager revenue panel splits them from center revenue.
 - The Center Manager booking detail confirms a RECURRING / CUSTOM booking without a caregiver
   (PENDING_CAREGIVER_ASSIGNMENT) and assigns one later before the policy deadline; the customer pays only after that.

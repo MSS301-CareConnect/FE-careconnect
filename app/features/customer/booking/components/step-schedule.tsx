@@ -76,11 +76,9 @@ export function StepSchedule({ form }: { form: BookingForm }) {
                     </span>
                     <span className='inline-flex items-center gap-1 rounded-full bg-surface-container-low px-2 py-1 text-on-surface-variant'>
                       <Icon className='text-sm' name='payments' />
-                      {type === 'SHIFT'
-                        ? t('customer.booking.schedule.payFull')
-                        : deposit !== undefined
-                          ? t('customer.booking.schedule.payDeposit', { percent: deposit })
-                          : t('customer.booking.schedule.payDepositGeneric')}
+                      {deposit !== undefined
+                        ? t('customer.booking.schedule.payDeposit', { percent: deposit })
+                        : t('customer.booking.schedule.payDepositGeneric')}
                     </span>
                   </span>
                 </ChoiceCard>

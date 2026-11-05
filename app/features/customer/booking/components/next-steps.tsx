@@ -3,19 +3,36 @@ import { useTranslation } from 'react-i18next'
 import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
 
-/** "What happens next": confirm → (assign) → pay → care begins. */
-export function NextSteps({ assign, confirmMinutes }: { assign: boolean; confirmMinutes?: number }) {
+/**
+ * "What happens next": confirm → (assign) → pay → care begins. A SHIFT booking (`held`, 2026-11-05) is held at once on
+ * the caregiver's own shift, so it starts with "held" and goes straight to paying.
+ */
+export function NextSteps({
+  assign,
+  confirmMinutes,
+  held = false
+}: {
+  assign: boolean
+  confirmMinutes?: number
+  held?: boolean
+}) {
   const { t } = useTranslation()
   const format = useFormat()
   const steps = [
-    {
-      icon: 'fact_check',
-      title: t('customer.booking.review.next.confirm'),
-      hint: confirmMinutes
-        ? t('customer.booking.review.next.confirmHint', { duration: format.duration(confirmMinutes) })
-        : ''
-    },
-    ...(assign
+    held
+      ? {
+          icon: 'event_available',
+          title: t('customer.booking.review.next.held'),
+          hint: t('customer.booking.review.next.heldHint')
+        }
+      : {
+          icon: 'fact_check',
+          title: t('customer.booking.review.next.confirm'),
+          hint: confirmMinutes
+            ? t('customer.booking.review.next.confirmHint', { duration: format.duration(confirmMinutes) })
+            : ''
+        },
+    ...(assign && !held
       ? [
           {
             icon: 'person_check',

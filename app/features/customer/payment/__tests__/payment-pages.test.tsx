@@ -45,8 +45,8 @@ const booking: BookingDetailRecord = {
   endTime: '10:00',
   totalAmount: 200000,
   initialPaymentPercent: 30,
-  depositDueAt: '2026-11-01T00:00:00Z',
-  remainingPaymentDueAt: '2026-11-02T00:00:00Z',
+  depositDueAt: '2030-11-01T00:00:00Z',
+  remainingPaymentDueAt: '2030-11-02T00:00:00Z',
   recipientSnapshot: { fullName: 'Bà Lan' },
   occurrences: []
 }
@@ -127,11 +127,13 @@ describe('Deposit payment flow', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Thanh toán khoản đầu' })).toBeInTheDocument()
     expect(await screen.findByText('Bà Lan')).toBeInTheDocument()
     // The percent BookingService fixed from the center policy (30%); the rest is due before the first visit.
-    expect(await screen.findByRole('heading', { name: 'Số tiền thanh toán đầu dự kiến' })).toBeInTheDocument()
-    expect(screen.getByText('30% tổng giá trị lịch đặt')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Thanh toán lần này' })).toBeInTheDocument()
+    expect(screen.getByText('Cọc 30%')).toBeInTheDocument()
+    expect(screen.getAllByText(/60\.000/).length).toBeGreaterThan(0)
     expect(screen.getByText(/140\.000/)).toBeInTheDocument()
-    expect(screen.getByText(/^Trả trước /)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Thanh toán qua VNPay' })).toBeInTheDocument()
+    expect(screen.getByText('Phần còn lại 70%')).toBeInTheDocument()
+    expect(screen.getByText(/trước buổi đầu$/)).toBeInTheDocument()
+    expect(screen.getByText('Thanh toán qua VNPay')).toBeInTheDocument()
     const payButton = await screen.findByRole('button', { name: 'Tiếp tục thanh toán qua VNPay' })
     await waitFor(() => expect(payButton).toBeEnabled())
     fireEvent.click(payButton)
@@ -168,7 +170,7 @@ describe('Deposit payment flow', () => {
     expect(screen.queryByText(/thời gian cân nhắc/)).not.toBeInTheDocument()
   })
 
-  it('asks a SHIFT booking for the whole amount at once', async () => {
+  it('asks for the whole amount at once when no remaining balance is left for later', async () => {
     vi.mocked(fetchBooking).mockResolvedValue({
       ...booking,
       bookingType: 'SHIFT',
@@ -177,11 +179,9 @@ describe('Deposit payment flow', () => {
     })
     renderAt(`/customer/bookings/${BOOKING_ID}/deposit`)
 
-    expect(await screen.findByText('100% tổng giá trị lịch đặt')).toBeInTheDocument()
-    expect(
-      screen.getByText('Khoản này là toàn bộ giá trị lịch đặt, không phát sinh thanh toán thêm.')
-    ).toBeInTheDocument()
-    expect(screen.queryByText(/^Trả trước /)).not.toBeInTheDocument()
+    expect(await screen.findByText('Thanh toán toàn bộ')).toBeInTheDocument()
+    expect(screen.queryByText(/^Phần còn lại/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/trước buổi đầu$/)).not.toBeInTheDocument()
   })
 
   it('says the caregiver is not assigned yet instead of leaving a blank', async () => {

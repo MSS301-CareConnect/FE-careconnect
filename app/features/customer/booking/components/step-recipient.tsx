@@ -3,7 +3,11 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { careRecipientKeys, fetchCareRecipient } from '~/entities/care-recipient/care-recipient-api'
+import {
+  careRecipientKeys,
+  fetchCareRecipient,
+  formatRecipientAddress
+} from '~/entities/care-recipient/care-recipient-api'
 import { Avatar } from '~/shared/ui/avatar'
 import { Button } from '~/shared/ui/button'
 import { ChoiceCard } from '~/shared/ui/choice-card'
@@ -108,7 +112,7 @@ export function StepRecipient({ form }: { form: BookingForm }) {
         ) : null}
       </WizardSection>
 
-      {form.recipientId ? <CareAddress recipientId={form.recipientId} /> : null}
+      {form.recipientId ? <CareAddress form={form} recipientId={form.recipientId} /> : null}
 
       <RecipientQuickCreate
         onClose={() => setCreating(false)}
@@ -122,8 +126,11 @@ export function StepRecipient({ form }: { form: BookingForm }) {
   )
 }
 
-/** The care address comes from the profile; the booking contract has no per-booking address, so it is edited there. */
-function CareAddress({ recipientId }: { recipientId: string }) {
+/**
+ * Where the visits take place: the profile address by default, or one of the person's saved addresses (2026-11-05),
+ * e.g. while they stay at another child's home. New addresses are added in the profile's address book.
+ */
+function CareAddress({ recipientId, form }: { recipientId: string; form: BookingForm }) {
   const { t } = useTranslation()
   const detail = useQuery({
     queryKey: careRecipientKeys.detail(recipientId),
@@ -157,12 +164,56 @@ function CareAddress({ recipientId }: { recipientId: string }) {
             <SkeletonGroup className='mt-2' label={t('customer.booking.recipient.addressLoading')}>
               <Skeleton className='h-4 w-3/4 rounded' />
             </SkeletonGroup>
-          ) : address ? (
-            <p className='mt-1 text-on-surface'>{address}</p>
           ) : (
-            <p className='mt-1 text-sm text-warning'>{t('customer.booking.recipient.noAddress')}</p>
+            <div aria-labelledby='booking-address' className='mt-3 grid gap-2 sm:grid-cols-2' role='radiogroup'>
+              {[
+                {
+                  id: '',
+                  icon: 'home',
+                  title: t('customer.booking.recipient.profileAddress'),
+                  text: address || t('customer.booking.recipient.noAddress')
+                },
+                ...(form.savedAddresses.data ?? []).map((saved) => ({
+                  id: saved.id,
+                  icon: 'bookmark',
+                  title: saved.label,
+                  text: formatRecipientAddress(saved)
+                }))
+              ].map((option) => {
+                const active = form.chosenAddressId === option.id
+                return (
+                  <button
+                    aria-checked={active}
+                    className={`flex items-start gap-2.5 rounded-xl border p-3 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-primary ${active ? 'border-primary bg-brand-50' : 'border-outline-variant hover:bg-surface-container-low'}`}
+                    key={option.id || 'profile'}
+                    onClick={() => form.chooseAddress(option.id)}
+                    role='radio'
+                    type='button'
+                  >
+                    <Icon
+                      className={`mt-0.5 text-lg ${active ? 'text-primary' : 'text-on-surface-variant'}`}
+                      name={option.icon}
+                    />
+                    <span className='min-w-0'>
+                      <span className='block font-semibold text-on-surface'>{option.title}</span>
+                      <span className={`block ${!address && !option.id ? 'text-warning' : 'text-on-surface-variant'}`}>
+                        {option.text}
+                      </span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           )}
-          <p className='mt-1 text-xs text-on-surface-variant'>{t('customer.booking.recipient.addressHint')}</p>
+          <p className='mt-2 text-xs text-on-surface-variant'>
+            {t('customer.booking.recipient.addressHint')}{' '}
+            <Link
+              className='font-semibold text-primary underline-offset-2 hover:underline'
+              to={`${profileLink}?tab=addresses`}
+            >
+              {t('customer.booking.recipient.manageAddresses')}
+            </Link>
+          </p>
           {missingHealth ? (
             <p className='mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg bg-warning-container px-3 py-2 text-sm text-on-warning-container'>
               <Icon className='text-base' name='health_and_safety' />

@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { bookingErrorKey } from '~/entities/booking/booking-format'
+import { formatRecipientAddress } from '~/entities/care-recipient/care-recipient-api'
 import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
@@ -35,6 +36,14 @@ export function StepReview({ form }: { form: BookingForm }) {
       <dl className='divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container-lowest'>
         <ReviewRow label={t('customer.booking.steps.recipient')} onEdit={() => form.goTo(1)} step={1}>
           {form.recipient?.fullName}
+          {form.chosenAddress ? (
+            <span className='block text-sm font-normal text-on-surface-variant'>
+              {t('customer.booking.recipient.atSaved', {
+                label: form.chosenAddress.label,
+                address: formatRecipientAddress(form.chosenAddress)
+              })}
+            </span>
+          ) : null}
         </ReviewRow>
         <ReviewRow label={t('customer.booking.summary.services')} onEdit={() => form.goTo(2)} step={2}>
           <ul className='flex flex-col gap-1'>
@@ -69,7 +78,13 @@ export function StepReview({ form }: { form: BookingForm }) {
           {visits.length > 0 ? (
             <ul className='mt-2 flex flex-col gap-1 text-sm text-on-surface-variant tabular-nums'>
               {visits.map((visit, index) => (
-                <li key={`${visit.startAt}-${index}`}>{format.visitRange(visit.startAt, visit.endAt)}</li>
+                <li key={`${visit.startAt}-${index}`}>
+                  {format.visitRange(visit.startAt, visit.endAt)}
+                  {/* Several services: each visit does one of them (2026-11-05). */}
+                  {form.multiService && visit.careServiceId
+                    ? ` · ${form.serviceOfSlot(visit.careServiceId)?.name ?? ''}`
+                    : ''}
+                </li>
               ))}
             </ul>
           ) : null}
@@ -160,7 +175,11 @@ export function StepReview({ form }: { form: BookingForm }) {
         <h3 className='font-semibold text-on-surface' id='review-next'>
           {t('customer.booking.review.nextTitle')}
         </h3>
-        <NextSteps assign={!form.selectedCaregiverId} confirmMinutes={policy?.confirmationTimeoutMinutes} />
+        <NextSteps
+          assign={!form.selectedCaregiverId}
+          confirmMinutes={policy?.confirmationTimeoutMinutes}
+          held={form.schedule.bookingType === 'SHIFT'}
+        />
       </section>
 
       <label className='flex cursor-pointer items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary'>

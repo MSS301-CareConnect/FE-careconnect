@@ -8,6 +8,7 @@ import { Icon } from '~/shared/ui/icon'
 import { TimeSelect } from '~/shared/ui/time-select'
 
 import { MAX_CUSTOM_SLOTS, durationOutliers, type CustomSlot } from '../hooks/schedule-slots'
+import { isFixedPlan, planEndTime } from '../hooks/service-slots'
 import type { BookingForm, SlotIssue, SlotList } from '../hooks/use-booking-form'
 import { ScheduleBulkBar } from './schedule-bulk-bar'
 import { minimumVisitMinutes } from './visit-duration'
@@ -51,8 +52,12 @@ export function ScheduleSlotList({
     invalidTime: t('customer.booking.schedule.invalidTime'),
     overlap: t('customer.booking.schedule.custom.overlap'),
     missingDate: t('customer.booking.schedule.custom.missingDate'),
-    outsideRange: t('customer.booking.schedule.recurring.outsideRange')
+    outsideRange: t('customer.booking.schedule.recurring.outsideRange'),
+    noService: t('customer.booking.schedule.custom.noService'),
+    // Depends on the visit's plan: written per row below.
+    planLength: null
   }
+  const withoutVisit = form.servicesWithoutVisit(slots)
   const [chosen, setChosen] = useState<ReadonlySet<number>>(() => new Set())
   // Rows can disappear (removed, rebuilt from the pattern): only indices still in the list count.
   const selected = [...chosen].filter((index) => index < slots.length).sort((a, b) => a - b)
@@ -78,6 +83,23 @@ export function ScheduleSlotList({
         </span>
       </div>
       {hint ? <p className='mb-3 text-xs text-on-surface-variant'>{hint}</p> : <div className='mb-2' />}
+      {form.multiService ? (
+        <p className='mb-3 flex items-start gap-1.5 text-xs text-on-surface-variant'>
+          <Icon className='text-sm' name='info' />
+          {t('customer.booking.schedule.custom.multiHint')}
+        </p>
+      ) : null}
+      {withoutVisit.length > 0 && slots.length > 0 ? (
+        <p
+          className='mb-3 flex items-start gap-2 rounded-xl border border-warning/40 bg-warning-container/60 p-3 text-sm text-on-warning-container'
+          role='status'
+        >
+          <Icon className='text-lg' name='warning' />
+          {t('customer.booking.schedule.custom.withoutVisit', {
+            names: withoutVisit.map((option) => option.name).join(', ')
+          })}
+        </p>
+      ) : null}
       {slots.length > 1 ? (
         <label className='mb-2 inline-flex min-h-10 cursor-pointer items-center gap-2 text-sm font-medium text-on-surface'>
           <input
@@ -117,6 +139,25 @@ export function ScheduleSlotList({
           total={slots.length}
         />
       ) : null}
+      {selected.length > 0 && form.multiService ? (
+        <label className='mb-3 flex flex-wrap items-center gap-2 text-sm font-medium text-on-surface'>
+          {t('customer.booking.schedule.custom.assignService', { count: selected.length })}
+          <select
+            className='min-h-11 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm'
+            onChange={(event) => {
+              if (event.target.value) form.updateSlots(selected, { careServiceId: event.target.value }, list)
+            }}
+            value=''
+          >
+            <option value=''>{t('customer.booking.schedule.custom.servicePlaceholder')}</option>
+            {form.serviceOptions.map((option) => (
+              <option key={option.careServiceId} value={option.careServiceId}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {slots.length === 0 ? (
         <p className='rounded-xl border border-dashed border-outline-variant p-4 text-sm text-on-surface-variant'>
           {t('customer.booking.schedule.custom.empty')}
@@ -127,7 +168,17 @@ export function ScheduleSlotList({
           const issue = issues[index]
           const errorId = `${list}-${index}-error`
           const number = index + 1
-          const message = issue ? messages[issue] : null
+          const option = form.serviceOfSlot(slot.careServiceId)
+          const planMessage =
+            issue === 'planLength' && option?.plan?.durationMinutes
+              ? t(
+                  isFixedPlan(option.plan)
+                    ? 'customer.booking.schedule.custom.planFixed'
+                    : 'customer.booking.schedule.custom.planMinimum',
+                  { plan: option.plan.planName, duration: format.duration(option.plan.durationMinutes) }
+                )
+              : null
+          const message = issue ? (planMessage ?? messages[issue]) : null
           const dateInvalid = issue === 'tooEarly' || issue === 'overlap' || issue === 'outsideRange'
           const length = minutesBetween(slot.startTime, slot.endTime)
           const odd = !issue && outliers.has(index) && usualMinutes !== null
@@ -191,6 +242,27 @@ export function ScheduleSlotList({
                     value={slot.endTime}
                   />
                 </label>
+                {form.multiService ? (
+                  <label className='min-w-44 flex-1 text-xs font-medium text-on-surface-variant'>
+                    {t('customer.booking.schedule.custom.service')}
+                    <select
+                      aria-describedby={message ? errorId : undefined}
+                      aria-invalid={issue === 'noService' || undefined}
+                      className='mt-1 block min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-on-surface'
+                      onChange={(event) =>
+                        form.updateSlot(index, { careServiceId: event.target.value || undefined }, list)
+                      }
+                      value={option ? option.careServiceId : ''}
+                    >
+                      <option value=''>{t('customer.booking.schedule.custom.servicePlaceholder')}</option>
+                      {form.serviceOptions.map((item) => (
+                        <option key={item.careServiceId} value={item.careServiceId}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
                 <span
                   className={`min-w-16 pb-3 text-sm tabular-nums ${odd ? 'font-semibold text-on-warning-container' : 'text-on-surface-variant'}`}
                 >
@@ -241,9 +313,24 @@ export function ScheduleSlotList({
                 </p>
               ) : null}
               {message ? (
-                <p className='mt-2 flex items-center gap-1.5 text-sm text-error' id={errorId}>
-                  <Icon className='text-base' name='error' />
-                  {message}
+                <p className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-error' id={errorId}>
+                  <span className='flex items-center gap-1.5'>
+                    <Icon className='text-base' name='error' />
+                    {message}
+                  </span>
+                  {planMessage && option?.plan && isFixedPlan(option.plan) ? (
+                    <button
+                      className='font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+                      onClick={() =>
+                        form.updateSlot(index, { endTime: planEndTime(option.plan, slot.startTime) }, list)
+                      }
+                      type='button'
+                    >
+                      {t('customer.booking.schedule.custom.planFix', {
+                        time: planEndTime(option.plan, slot.startTime)
+                      })}
+                    </button>
+                  ) : null}
                 </p>
               ) : null}
             </li>

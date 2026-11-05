@@ -179,7 +179,7 @@ export function ManagerBookingDetailPage() {
               {t('centerManager.bookingDetail.reject')}
             </button>
           ) : null}
-          {canChangeServiceAddress(data, openedAt) && !past ? (
+          {canChangeServiceAddress(data, openedAt, false) && !past ? (
             <button className={`${secondary} text-primary`} onClick={() => setDialog('address')} type='button'>
               <Icon className='text-lg' name='home_pin' />
               {t('booking.address.action')}
@@ -253,7 +253,9 @@ export function ManagerBookingDetailPage() {
       {dialog === 'accept' || dialog === 'assign' || dialog === 'reject' ? (
         <ManagerBookingActionDialog action={dialog} booking={data} onClose={() => setDialog(null)} />
       ) : null}
-      {dialog === 'address' ? <ServiceAddressDialog booking={data} onClose={() => setDialog(null)} open /> : null}
+      {dialog === 'address' ? (
+        <ServiceAddressDialog booking={data} customer={false} onClose={() => setDialog(null)} open />
+      ) : null}
       {dialog === 'reassign' ? (
         <CaregiverAssignDialog
           confirmLabel={t('centerManager.bookingDetail.assign.confirm')}

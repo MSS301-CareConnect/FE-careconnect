@@ -80,8 +80,8 @@ export function CenterReminder({ title, text }: { title: string; text: string })
 }
 
 /**
- * One small line under a page title — "At TT An Tâm · Change" — replacing the old banner. It appears only when the
- * customer can actually choose between several centers; with a single center there is nothing to say.
+ * Prominent context badge under a page title showing which center is active (or "all centers")
+ * and quick-switch action.
  */
 export function CenterContextLine() {
   const { t } = useTranslation()
@@ -90,17 +90,27 @@ export function CenterContextLine() {
   if ((centers.data?.length ?? 0) < 2) return null
 
   return (
-    <span className='inline-flex flex-wrap items-center gap-x-1.5 text-sm text-on-surface-variant'>
-      <Icon aria-hidden='true' className='text-base text-primary' name='home_health' />
-      {center ? t(`${key}.context.at`, { name: center.name }) : t(`${key}.context.none`)}
-      <span aria-hidden='true'>·</span>
+    <div className='inline-flex flex-wrap items-center gap-2 rounded-full border border-primary/25 bg-secondary-container/70 py-1 pl-1.5 pr-2.5 text-sm shadow-xs transition-colors hover:border-primary/40'>
+      <span
+        aria-hidden='true'
+        className='grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary text-white shadow-xs'
+      >
+        <Icon className='text-sm' name={center ? 'home_health' : 'domain'} />
+      </span>
+      <span className='font-semibold text-on-surface'>
+        {center ? t(`${key}.context.at`, { name: center.name }) : t(`${key}.context.none`)}
+      </span>
+      <span aria-hidden='true' className='text-outline-variant'>
+        ·
+      </span>
       <button
-        className='rounded font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-primary'
+        className='inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 text-xs font-bold text-primary shadow-xs ring-1 ring-outline-variant/50 transition-all hover:bg-primary hover:text-white focus-visible:outline-2 focus-visible:outline-primary'
         onClick={openCenterPicker}
         type='button'
       >
+        <Icon aria-hidden='true' className='text-sm' name={center ? 'swap_horiz' : 'add_business'} />
         {center ? t(`${key}.context.change`) : t(`${key}.context.choose`)}
       </button>
-    </span>
+    </div>
   )
 }

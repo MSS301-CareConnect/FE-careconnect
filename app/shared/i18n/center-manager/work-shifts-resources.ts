@@ -96,6 +96,9 @@ export const managerWorkShiftsVi = {
     duration: 'Thời lượng: {{value}}',
     capacity: 'Số người cần',
     capacityHint: 'Từ 1 đến 50 người.',
+    maxBookings: 'Số booking tối đa mỗi người / ca',
+    maxBookingsHint:
+      'Khách chia ca thành các khung giờ; mỗi người chăm sóc nhận tối đa từ 1 đến 20 booking trong ca, cách nhau ít nhất 60 phút.',
     activeCaregivers: 'Trung tâm có {{count}} người chăm sóc đang hoạt động.',
     deadline: 'Hạn đăng ký',
     deadlineOptions: { h24: '24 giờ trước ca', h12: '12 giờ trước ca', custom: 'Tùy chỉnh' },
@@ -128,7 +131,10 @@ export const managerWorkShiftsVi = {
       overlapHint: 'Chỉ là cảnh báo, bạn vẫn lưu được.',
       noOverlap: 'Không trùng giờ với ca nào cùng ngày.',
       lockedSchedule: 'Đã có người được duyệt nên không đổi được ngày giờ.',
-      people: '{{count}} người'
+      people: '{{count}} người',
+      maxBookings: 'Booking / người',
+      bookings_one: '{{count}} booking',
+      bookings_other: '{{count}} booking'
     },
     actions: {
       cancel: 'Hủy',
@@ -146,6 +152,7 @@ export const managerWorkShiftsVi = {
       end: 'Giờ kết thúc phải sau giờ bắt đầu',
       duration: 'Ca dài từ 1 đến 24 giờ',
       capacity: 'Số người là số nguyên từ 1 đến 50',
+      maxBookings: 'Số booking tối đa là số nguyên từ 1 đến 20',
       type: 'Chọn loại ca',
       deadline: 'Hạn đăng ký phải sau hiện tại và trước giờ bắt đầu ít nhất 1 giờ',
       note: 'Ghi chú tối đa 500 ký tự',
@@ -202,6 +209,9 @@ export const managerWorkShiftsVi = {
     capacity: 'Nhân sự',
     approvedOf: '{{approved}}/{{capacity}} người đã duyệt',
     pendingCount: '{{count}} đang chờ',
+    maxBookings: 'Booking mỗi người',
+    maxBookingsValue_one: 'Tối đa {{count}} booking',
+    maxBookingsValue_other: 'Tối đa {{count}} booking',
     deadline: 'Hạn đăng ký',
     noDeadline: 'Đến giờ bắt đầu',
     note: 'Ghi chú',
@@ -349,6 +359,9 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
     duration: 'Length: {{value}}',
     capacity: 'People needed',
     capacityHint: 'From 1 to 50 people.',
+    maxBookings: 'Max bookings per caregiver in this shift',
+    maxBookingsHint:
+      'Customers split the shift into time slots; each caregiver takes 1 to 20 bookings in it, at least 60 minutes apart.',
     activeCaregivers: 'The center has {{count}} active caregivers.',
     deadline: 'Sign-up deadline',
     deadlineOptions: { h24: '24 hours before', h12: '12 hours before', custom: 'Custom' },
@@ -381,7 +394,10 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
       overlapHint: 'Just a warning; you can still save.',
       noOverlap: 'No other shift overlaps on that day.',
       lockedSchedule: 'Someone is already approved, so the date and time cannot change.',
-      people: '{{count}} people'
+      people: '{{count}} people',
+      maxBookings: 'Bookings / caregiver',
+      bookings_one: '{{count}} booking',
+      bookings_other: '{{count}} bookings'
     },
     actions: {
       cancel: 'Cancel',
@@ -399,6 +415,7 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
       end: 'The end must be after the start',
       duration: 'A shift lasts between 1 and 24 hours',
       capacity: 'People needed is a whole number from 1 to 50',
+      maxBookings: 'Max bookings is a whole number from 1 to 20',
       type: 'Choose a shift type',
       deadline: 'The deadline must be after now and at least 1 hour before the start',
       note: 'The note can be 500 characters at most',
@@ -455,6 +472,9 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
     capacity: 'Staffing',
     approvedOf: '{{approved}}/{{capacity}} approved',
     pendingCount: '{{count}} waiting',
+    maxBookings: 'Bookings per caregiver',
+    maxBookingsValue_one: 'Up to {{count}} booking',
+    maxBookingsValue_other: 'Up to {{count}} bookings',
     deadline: 'Sign-up deadline',
     noDeadline: 'Until the shift starts',
     note: 'Note',

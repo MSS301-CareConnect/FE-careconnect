@@ -216,6 +216,49 @@ beforeEach(async () => {
 
 const SERVICES = [{ careServiceId: 'svc-1', centerServiceId: 'offer-1', pricePlanId: 'plan-1' }]
 
+/** A second service (bathing) priced per 4-hour shift, next to the hourly elderly care. */
+function withTwoServices() {
+  vi.mocked(fetchCenterOfferings).mockResolvedValue([
+    {
+      id: 'offer-1',
+      centerId: 'center-1',
+      status: 'ACTIVE',
+      catalogItem: { id: 'svc-1', name: 'Chăm sóc người già tại nhà', category: 'ELDERLY_CARE', status: 'ACTIVE' }
+    },
+    {
+      id: 'offer-2',
+      centerId: 'center-1',
+      status: 'ACTIVE',
+      catalogItem: { id: 'svc-2', name: 'Tắm rửa', category: 'ELDERLY_CARE', status: 'ACTIVE' }
+    }
+  ])
+  vi.mocked(fetchPricePlans).mockImplementation(async (offeringId) =>
+    offeringId === 'offer-2'
+      ? [
+          {
+            id: 'plan-2',
+            centerOfferingId: 'offer-2',
+            planName: 'Ca 4 giờ',
+            pricingUnit: 'SHIFT',
+            durationMinutes: 240,
+            basePrice: 400000,
+            isActive: true
+          }
+        ]
+      : [
+          {
+            id: 'plan-1',
+            centerOfferingId: 'offer-1',
+            planName: 'Theo giờ',
+            pricingUnit: 'HOUR',
+            durationMinutes: 60,
+            basePrice: 100000,
+            isActive: true
+          }
+        ]
+  )
+}
+
 /** The step's primary action; the phone bottom bar repeats it, so the first match is the step footer. */
 function continueButton() {
   return screen.getAllByRole('button', { name: 'Tiếp tục' })[0]
@@ -480,7 +523,7 @@ describe('CustomerBookingPage', () => {
     expect(screen.getByText('3/60 buổi')).toBeInTheDocument()
   })
 
-  it('disables SHIFT while the center assigns, and books a free shift of the chosen caregiver', async () => {
+  it('disables SHIFT while the center assigns, and books a time slot in a free shift of the chosen caregiver', async () => {
     vi.mocked(fetchBookingQuote).mockResolvedValue({
       lines: [],
       occurrences: [
@@ -489,6 +532,13 @@ describe('CustomerBookingPage', () => {
       totalAmount: 400000,
       depositPercent: 100,
       estimatedDepositAmount: 400000
+    })
+    vi.mocked(fetchHeldSchedules).mockResolvedValue({
+      caregiverId: 'cg-1',
+      heldScheduleIds: ['sch-held'],
+      busySlots: [],
+      travelBufferMinutes: 60,
+      scheduleBookingCounts: { 'sch-held': 1 }
     })
     renderPage('/customer/booking')
     await toSchedule()
@@ -500,9 +550,13 @@ describe('CustomerBookingPage', () => {
     fireEvent.click(await screen.findByRole('radio', { name: /Theo ca/ }))
     fireEvent.click(await screen.findByRole('button', { name: /03\/01/ }))
     fireEvent.click(await screen.findByRole('radio', { name: /13:00–17:00/ }))
+    // The hourly plan suggests 4-hour slots: the whole 13:00–17:00 shift is one slot.
+    fireEvent.click(await screen.findByRole('button', { name: /^13:00–17:00$/ }))
+    expect(screen.getByRole('button', { name: /Bỏ 13:00–17:00/ })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /02\/01/ }))
+    // The shift without maxBookings takes one booking and already holds one.
     expect(await screen.findByRole('radio', { name: /08:00–12:00/ })).toBeDisabled()
-    expect(screen.getByText('Đã có người đặt')).toBeInTheDocument()
+    expect(screen.getByText('Đã đủ số lượng booking')).toBeInTheDocument()
 
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toEqual({
@@ -511,10 +565,111 @@ describe('CustomerBookingPage', () => {
         bookingType: 'SHIFT',
         caregiverId: 'cg-1',
         caregiverScheduleId: 'sch-free',
+        slots: [{ startAt: '2030-01-03T06:00:00.000Z', endAt: '2030-01-03T10:00:00.000Z', careServiceId: 'svc-1' }],
         services: SERVICES
       })
     )
     expect(fetchHeldSchedules).toHaveBeenCalledWith({ caregiverId: 'cg-1' })
+  })
+
+  it('keeps every caregiver listed and locks one who lacks a chosen service (2026-11-05)', async () => {
+    const mai = { ...hoa, caregiverId: 'cg-3', fullName: 'Cô Mai' }
+    withTwoServices()
+    vi.mocked(fetchCaregiverCatalog).mockResolvedValue({
+      items: [hoa, mai],
+      page: 0,
+      size: 100,
+      totalElements: 2,
+      totalPages: 1
+    })
+    vi.mocked(searchCaregiversByService).mockImplementation(async ({ careServiceIds }) => {
+      const items = careServiceIds?.includes('svc-2') ? [hoa] : [hoa, mai]
+      return { items, page: 0, size: 50, totalElements: items.length, totalPages: 1 }
+    })
+    renderPage('/customer/booking')
+    await screen.findByRole('radio', { name: /Bà Lan/ })
+    await next()
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Tắm rửa/ }))
+
+    const maiCard = await screen.findByRole('radio', { name: /Cô Mai/ })
+    await waitFor(() => expect(maiCard).toBeDisabled())
+    expect(maiCard.closest('label')).toHaveTextContent('Chưa đảm nhận: Tắm rửa')
+    expect(screen.getByRole('radio', { name: /Chị Hoa/ })).toBeEnabled()
+  })
+
+  it('splits a shift into slots per service, keeping the travel buffer around another booking', async () => {
+    withTwoServices()
+    vi.mocked(fetchBookableSchedules).mockResolvedValue([
+      {
+        id: 'sch-day',
+        caregiverId: 'cg-1',
+        centerId: 'center-1',
+        workDate: '2030-01-04',
+        startTime: '08:00:00',
+        endTime: '20:00:00',
+        maxBookings: 2
+      }
+    ])
+    // Another booking holds 08:00–10:00 of the shift (01:00–03:00 UTC).
+    vi.mocked(fetchHeldSchedules).mockResolvedValue({
+      caregiverId: 'cg-1',
+      heldScheduleIds: ['sch-day'],
+      busySlots: [{ startAt: '2030-01-04T01:00:00Z', endAt: '2030-01-04T03:00:00Z', caregiverScheduleId: 'sch-day' }],
+      travelBufferMinutes: 60,
+      scheduleBookingCounts: { 'sch-day': 1 }
+    })
+    renderPage('/customer/booking?caregiver=cg-1')
+    await screen.findByRole('radio', { name: /Bà Lan/ })
+    await next()
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Tắm rửa/ }))
+    await next()
+    fireEvent.click(await screen.findByRole('radio', { name: /Theo ca/ }))
+    fireEvent.click(await screen.findByRole('radio', { name: /08:00–20:00/ }))
+    expect(screen.getByText('Còn nhận 1 booking')).toBeInTheDocument()
+
+    // Hourly service, 4-hour slots: 09:00 overlaps the other booking, 10:00 is inside its 60-minute buffer.
+    expect(await screen.findByRole('button', { name: /^09:00–13:00/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^10:00–14:00/ })).toHaveTextContent('Trừ hao di chuyển (1 giờ)')
+    fireEvent.click(screen.getByRole('button', { name: /^11:00–15:00$/ }))
+
+    // The per-shift plan fixes 4 hours; the next slot may follow right after the first one.
+    fireEvent.click(screen.getByRole('button', { name: /Tắm rửa/ }))
+    expect(screen.getByText('Ca 4 giờ: mỗi khung giờ dài 4 giờ')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^12:00–16:00/ })).toHaveTextContent('Trùng khung bạn đã chọn')
+    fireEvent.click(screen.getByRole('button', { name: /^15:00–19:00$/ }))
+
+    await waitFor(() =>
+      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toMatchObject({
+        bookingType: 'SHIFT',
+        caregiverScheduleId: 'sch-day',
+        slots: [
+          { startAt: '2030-01-04T04:00:00.000Z', endAt: '2030-01-04T08:00:00.000Z', careServiceId: 'svc-1' },
+          { startAt: '2030-01-04T08:00:00.000Z', endAt: '2030-01-04T12:00:00.000Z', careServiceId: 'svc-2' }
+        ]
+      })
+    )
+  })
+
+  it('asks for the service of each custom visit once several services are chosen', async () => {
+    withTwoServices()
+    renderPage('/customer/booking')
+    await screen.findByRole('radio', { name: /Bà Lan/ })
+    await next()
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Chăm sóc người già tại nhà/ }))
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Tắm rửa/ }))
+    await next()
+    await screen.findByRole('radio', { name: /Tự chọn buổi/ })
+
+    expect(await screen.findByText('Chọn dịch vụ cho buổi này.')).toBeInTheDocument()
+    expect(continueButton()).toBeDisabled()
+    fireEvent.change(screen.getByRole('combobox', { name: 'Dịch vụ' }), { target: { value: 'svc-2' } })
+    // The per-shift plan needs exactly 4 hours; the default visit lasts 2.
+    expect(await screen.findByText('Ca 4 giờ cần buổi dài đúng 4 giờ.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Kết thúc lúc 12:00' }))
+    expect(await screen.findByText('Chưa có buổi cho: Chăm sóc người già tại nhà')).toBeInTheDocument()
+    expect(continueButton()).toBeDisabled()
   })
 
   it('shows a translated backend quote error on the review step', async () => {

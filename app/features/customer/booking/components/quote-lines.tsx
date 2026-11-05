@@ -15,8 +15,8 @@ function groupsOf(line: BookingQuoteLineRecord): BookingQuoteUnitGroupRecord[] {
 /**
  * The quote, one service per block: unit price ("100.000 ₫ / giờ"), then one row per visit length with its own amount
  * ("2 giờ × 14 buổi · 2.800.000 ₫", "3 giờ × 1 buổi · 300.000 ₫") and the service total when there are several lengths.
- * Every number comes from BookingService's quote — nothing is recomputed in the browser. `compact` fits the 360 px
- * summary column.
+ * Every number comes from BookingService's quote — nothing is recomputed in the browser; the chosen plan's name and
+ * length show under the service (2026-11-05). `compact` fits the 360 px summary column.
  */
 export function QuoteLines({ lines, compact = false }: { lines: BookingQuoteLineRecord[]; compact?: boolean }) {
   const { t, i18n } = useTranslation()
@@ -34,7 +34,20 @@ export function QuoteLines({ lines, compact = false }: { lines: BookingQuoteLine
         return (
           <li className='py-3 first:pt-0 last:pb-0' key={line.careServiceId}>
             <div className={`flex gap-3 ${compact ? 'flex-col gap-0.5' : 'items-baseline justify-between'}`}>
-              <p className='text-sm font-medium text-on-surface'>{line.serviceName}</p>
+              <div className='min-w-0'>
+                <p className='text-sm font-medium text-on-surface'>{line.serviceName}</p>
+                {line.planName ? (
+                  <p className='text-xs text-on-surface-variant'>
+                    {line.planDurationMinutes && line.pricingUnit !== 'HOUR'
+                      ? t('customer.booking.quote.planWithDuration', {
+                          name: line.planName,
+                          duration: format.duration(line.planDurationMinutes),
+                          unit
+                        })
+                      : t('customer.booking.quote.plan', { name: line.planName })}
+                  </p>
+                ) : null}
+              </div>
               <p className='text-xs text-on-surface-variant tabular-nums'>
                 {t('customer.booking.quote.unitPrice')}:{' '}
                 {t('customer.booking.quote.unitPriceValue', { price: format.money(line.unitPrice), unit })}
@@ -44,10 +57,14 @@ export function QuoteLines({ lines, compact = false }: { lines: BookingQuoteLine
               <caption className='sr-only'>
                 {t('customer.booking.quote.groupsCaption', { name: line.serviceName })}
               </caption>
-              <thead className='sr-only'>
+              <thead className='border-b border-outline-variant/40 text-xs font-medium text-on-surface-variant'>
                 <tr>
-                  <th scope='col'>{t('customer.booking.quote.quantity')}</th>
-                  <th scope='col'>{t('customer.booking.quote.amount')}</th>
+                  <th className='pb-1 text-left font-medium' scope='col'>
+                    {t('customer.booking.quote.quantity')}
+                  </th>
+                  <th className='pb-1 text-right font-medium' scope='col'>
+                    {t('customer.booking.quote.amount')}
+                  </th>
                 </tr>
               </thead>
               <tbody>

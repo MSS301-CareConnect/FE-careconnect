@@ -9,6 +9,9 @@ import { addDays, calendarDayOf, isoWeekday, minutesBetween } from '~/shared/lib
  */
 
 export const MAX_CAPACITY = 50
+/** Bookings one caregiver can take within the shift (work_shifts.max_bookings, 2026-11-05). */
+export const MAX_BOOKINGS = 20
+export const DEFAULT_MAX_BOOKINGS = 2
 export const MAX_NOTE = 500
 export const MAX_BATCH = 31
 const HOUR = 3_600_000
@@ -22,6 +25,7 @@ export interface ShiftFormValues {
   startTime: string
   endTime: string
   capacity: number | ''
+  maxBookings: number | ''
   deadlineMode: DeadlineMode
   deadlineDate: string
   deadlineTime: string
@@ -32,7 +36,7 @@ export interface ShiftFormValues {
 }
 
 export type ShiftField =
-  'workDate' | 'shiftType' | 'startTime' | 'endTime' | 'capacity' | 'deadline' | 'note' | 'repeat'
+  'workDate' | 'shiftType' | 'startTime' | 'endTime' | 'capacity' | 'maxBookings' | 'deadline' | 'note' | 'repeat'
 export type ShiftErrorKey =
   | 'date'
   | 'past'
@@ -40,6 +44,7 @@ export type ShiftErrorKey =
   | 'end'
   | 'duration'
   | 'capacity'
+  | 'maxBookings'
   | 'type'
   | 'deadline'
   | 'note'
@@ -96,6 +101,7 @@ export function emptyShiftForm(today: string): ShiftFormValues {
     startTime: '07:00',
     endTime: '11:30',
     capacity: 2,
+    maxBookings: DEFAULT_MAX_BOOKINGS,
     deadlineMode: 'h24',
     deadlineDate: '',
     deadlineTime: '',
@@ -123,6 +129,7 @@ export function shiftFormFromRecord(
     startTime: shift.startTime.slice(0, 5),
     endTime: shift.endTime.slice(0, 5),
     capacity: shift.capacity,
+    maxBookings: shift.maxBookings ?? DEFAULT_MAX_BOOKINGS,
     deadlineMode: keepDeadline ? 'custom' : 'h24',
     deadlineDate: keepDeadline ? calendarDayOf(shift.registrationDeadline!) : '',
     deadlineTime: keepDeadline ? vnClock(shift.registrationDeadline!) : '',
@@ -195,6 +202,13 @@ export function validateShiftForm(
   if (values.capacity === '' || (capacityChanged && (values.capacity < 1 || values.capacity > MAX_CAPACITY)))
     errors.capacity = 'capacity'
 
+  const maxBookingsChanged = !editing || (original.maxBookings ?? DEFAULT_MAX_BOOKINGS) !== values.maxBookings
+  if (
+    values.maxBookings === '' ||
+    (maxBookingsChanged && (values.maxBookings < 1 || values.maxBookings > MAX_BOOKINGS))
+  )
+    errors.maxBookings = 'maxBookings'
+
   const noteChanged = !editing || (original.note ?? '') !== values.note.trim()
   if (noteChanged && values.note.trim().length > MAX_NOTE) errors.note = 'note'
 
@@ -237,6 +251,7 @@ export function toShiftRequest(
     shiftType: values.shiftType,
     shiftStatus: status,
     capacity: Number(values.capacity),
+    maxBookings: values.maxBookings === '' ? undefined : Number(values.maxBookings),
     registrationDeadline: deadline?.toISOString(),
     note: values.note.trim() || undefined,
     version
@@ -269,6 +284,7 @@ export function toBatchRequest(values: ShiftFormValues, status: 'DRAFT' | 'OPEN'
     shiftType: values.shiftType,
     shiftStatus: status,
     capacity: Number(values.capacity),
+    maxBookings: values.maxBookings === '' ? undefined : Number(values.maxBookings),
     registrationLeadMinutes: lead,
     note: values.note.trim() || undefined
   }

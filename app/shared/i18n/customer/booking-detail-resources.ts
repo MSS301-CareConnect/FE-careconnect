@@ -15,7 +15,9 @@ export const bookingDetailEn = {
     label: 'Booking progress',
     steps: {
       request: 'Request sent',
+      requestHeld: 'Shift held',
       confirm: 'Center confirms',
+      confirmCaregiver: 'Caregiver accepts',
       assign: 'Caregiver assigned',
       pay: 'Payment',
       care: 'In care',
@@ -122,6 +124,40 @@ export const bookingDetailEn = {
     policyToggle: 'How refunds are calculated',
     reason: 'Reason for cancelling',
     confirm: 'Cancel booking'
+  },
+  occurrenceDetail: {
+    title: 'Visit #{{number}} details',
+    service: 'Service details',
+    defaultService: 'Care service',
+    schedule: 'Schedule & Duration',
+    plannedTime: 'Planned schedule',
+    actualTime: 'Actual time',
+    duration: 'Duration',
+    caregiver: 'Assigned caregiver',
+    caregiverAssigned: 'Assigned',
+    caregiverUnassigned: 'The center is currently assigning a caregiver for this visit.',
+    needsReassignment: 'Reassignment needed: the center is arranging a replacement caregiver.',
+    recipientAndLocation: 'Patient & Location',
+    patient: 'Patient',
+    address: 'Service address',
+    note: 'Special notes',
+    noNote: 'No special notes',
+    price: 'Session price',
+    cancellation: 'Cancellation information',
+    cancelReason: 'Reason: {{reason}}',
+    cancelledAt: 'Cancelled at: {{time}}',
+    cancelledBy: 'Cancelled by: {{party}}',
+    close: 'Close'
+  },
+  overview: {
+    title: 'Booking overview',
+    patient: 'Patient',
+    age: '({{count}} years old)',
+    time: 'Schedule & Time',
+    address: 'Service address',
+    editAddress: 'Change address',
+    note: 'Your notes',
+    noNote: 'No special notes'
   }
 }
 
@@ -142,7 +178,9 @@ export const bookingDetailVi = {
     label: 'Tiến trình lịch đặt',
     steps: {
       request: 'Gửi yêu cầu',
+      requestHeld: 'Giữ ca',
       confirm: 'Trung tâm xác nhận',
+      confirmCaregiver: 'Người chăm sóc nhận lịch',
       assign: 'Phân công',
       pay: 'Thanh toán',
       care: 'Đang chăm sóc',
@@ -250,5 +288,39 @@ export const bookingDetailVi = {
     policyToggle: 'Cách tính tiền hoàn',
     reason: 'Lý do hủy',
     confirm: 'Hủy lịch đặt'
+  },
+  occurrenceDetail: {
+    title: 'Chi tiết buổi chăm sóc #{{number}}',
+    service: 'Dịch vụ thực hiện',
+    defaultService: 'Dịch vụ chăm sóc',
+    schedule: 'Thời gian & Thời lượng',
+    plannedTime: 'Kế hoạch',
+    actualTime: 'Thời gian thực tế',
+    duration: 'Thời lượng',
+    caregiver: 'Người chăm sóc phụ trách',
+    caregiverAssigned: 'Đã phân công',
+    caregiverUnassigned: 'Trung tâm đang phân công người chăm sóc cho buổi này.',
+    needsReassignment: 'Cần đổi người chăm sóc: Trung tâm đang tìm người thay thế.',
+    recipientAndLocation: 'Người nhận chăm sóc & Địa điểm',
+    patient: 'Người được chăm sóc',
+    address: 'Địa chỉ chăm sóc',
+    note: 'Ghi chú',
+    noNote: 'Không có ghi chú thêm',
+    price: 'Chi phí buổi này',
+    cancellation: 'Thông tin hủy',
+    cancelReason: 'Lý do: {{reason}}',
+    cancelledAt: 'Thời gian hủy: {{time}}',
+    cancelledBy: 'Bên hủy: {{party}}',
+    close: 'Đóng'
+  },
+  overview: {
+    title: 'Thông tin lịch chăm sóc',
+    patient: 'Người nhận chăm sóc',
+    age: '({{count}} tuổi)',
+    time: 'Thời gian thực hiện',
+    address: 'Địa chỉ chăm sóc',
+    editAddress: 'Đổi địa chỉ',
+    note: 'Ghi chú của bạn',
+    noNote: 'Không có ghi chú thêm'
   }
 }

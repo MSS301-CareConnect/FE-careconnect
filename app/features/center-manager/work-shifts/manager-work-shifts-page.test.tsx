@@ -158,7 +158,11 @@ describe('Center Manager work shifts', () => {
     const dialog = await screen.findByRole('dialog', { name: 'New work shift' })
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Afternoon' }))
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Increase' }))
+    // Steppers in order: people needed, then max bookings per caregiver (2026-11-05).
+    const [capacityUp, maxBookingsUp] = within(dialog).getAllByRole('button', { name: 'Increase' })
+    fireEvent.click(capacityUp)
+    fireEvent.click(maxBookingsUp)
+    expect(within(dialog).getByText('Bookings / caregiver').nextElementSibling).toHaveTextContent('3 bookings')
     fireEvent.change(within(dialog).getByLabelText('Note for caregivers'), { target: { value: 'x'.repeat(501) } })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Open sign-up now' }))
     expect(await within(dialog).findByText('The note can be 500 characters at most')).toBeInTheDocument()
@@ -176,6 +180,7 @@ describe('Center Manager work shifts', () => {
         endTime: '17:00',
         shiftStatus: 'OPEN',
         capacity: 3,
+        maxBookings: 3,
         note: 'Mang đồ bảo hộ'
       })
     ])

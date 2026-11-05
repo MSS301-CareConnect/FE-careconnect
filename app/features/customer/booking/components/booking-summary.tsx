@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useAnimatedNumber } from '~/shared/lib/use-animated-number'
 import { useFormat } from '~/shared/lib/format'
 import { Button } from '~/shared/ui/button'
@@ -24,6 +25,8 @@ function Total({ form, large = false }: { form: BookingForm; large?: boolean }) 
     return (
       <span className='text-sm text-error'>
         {t('customer.booking.summary.quoteError')}{' '}
+        {/* The reason from BookingService (e.g. a slot outside the shift), not only "could not calculate". */}
+        <span className='block'>{t(bookingErrorKey(form.quote.error))}</span>
         <button className='font-semibold underline' onClick={() => void form.quote.refetch()} type='button'>
           {t('customer.booking.summary.retry')}
         </button>

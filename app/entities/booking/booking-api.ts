@@ -2,6 +2,7 @@ import {
   acceptBooking,
   acceptBookingAsCaregiver,
   declineBookingAsCaregiver,
+  getCaregiverBookingRequest,
   listCaregiverBookingRequests,
   updateBookingServiceAddress,
   cancelBooking,
@@ -92,6 +93,7 @@ export const bookingKeys = {
   heldSchedules: (params: ListBookingHeldSchedulesParams) => ['booking', 'held-schedules', params] as const,
   centerPolicy: (centerId: string) => ['booking', 'center-policy', centerId] as const,
   caregiverRequests: (page: number) => ['booking', 'caregiver-requests', page] as const,
+  caregiverRequest: (id: string) => ['booking', 'caregiver-request', id] as const,
   statusCounts: (centerId?: string) => ['booking', 'status-counts', centerId ?? 'own'] as const
 }
 
@@ -174,6 +176,9 @@ export async function updateServiceAddressRequest(id: string, request: ServiceAd
 /** CR-3: bookings a customer sent straight to this caregiver, waiting for an answer (area only, no care profile). */
 export async function fetchCaregiverBookingRequests(page = 0) {
   return result(await listCaregiverBookingRequests({ page, size: 50 }, readOptions))
+}
+export async function fetchCaregiverBookingRequest(id: string) {
+  return result(await getCaregiverBookingRequest(id, readOptions))
 }
 export async function acceptAsCaregiverRequest(id: string) {
   return result(await acceptBookingAsCaregiver(id, await writeOptions()))

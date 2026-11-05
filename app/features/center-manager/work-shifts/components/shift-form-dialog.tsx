@@ -17,7 +17,7 @@ import { useFormErrors } from '~/shared/lib/use-form-errors'
 import { toastSuccess, toastSystemError } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { FormAlert } from '~/shared/ui/form-alert'
-import { ConfirmDialog, Modal, ModalColumns } from '~/shared/ui/modal'
+import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 
 import {
   SHIFT_ERROR_MAP,
@@ -205,9 +205,9 @@ export function ShiftFormDialog({
         description={t(`${k}.description`)}
         dismissOnBackdrop={false}
         footer={footer}
+        maxWidthClass='max-w-5xl'
         onClose={onClose}
         open
-        size='xl'
         title={t(
           mode === 'edit' ? `${k}.editTitle` : mode === 'duplicate' ? `${k}.duplicateTitle` : `${k}.createTitle`
         )}
@@ -220,8 +220,14 @@ export function ShiftFormDialog({
           }}
           ref={formRef}
         >
-          <ModalColumns
-            side={
+          <ShiftFormFields
+            activeCaregivers={activeCaregivers.data?.totalElements}
+            allowRepeat={allowRepeat}
+            deadlineText={deadlineText}
+            errors={fieldErrors}
+            onChange={change}
+            scheduleLocked={scheduleLocked}
+            summary={
               <ShiftFormSummary
                 dates={dates}
                 deadline={deadline}
@@ -231,18 +237,9 @@ export function ShiftFormDialog({
                 values={values}
               />
             }
-          >
-            <ShiftFormFields
-              activeCaregivers={activeCaregivers.data?.totalElements}
-              allowRepeat={allowRepeat}
-              deadlineText={deadlineText}
-              errors={fieldErrors}
-              onChange={change}
-              scheduleLocked={scheduleLocked}
-              today={today}
-              values={values}
-            />
-          </ModalColumns>
+            today={today}
+            values={values}
+          />
         </form>
       </Modal>
       <ConfirmDialog
