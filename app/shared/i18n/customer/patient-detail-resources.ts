@@ -31,6 +31,7 @@ export const patientDetailEn = {
     medical: 'Health & medications',
     daily: 'Daily life',
     contacts: 'Emergency contacts',
+    addresses: 'Address book',
     managers: 'Managers'
   },
   overview: {
@@ -97,6 +98,33 @@ export const patientDetailEn = {
     heightLabel: 'Height (cm)',
     weightLabel: 'Weight (kg)',
     selectPlaceholder: 'Not selected'
+  },
+  addressBook: {
+    title: 'Address book',
+    hint: "Places the person may stay besides the profile address, e.g. another child's home. Pick one when booking or when moving some visits.",
+    add: 'Add address',
+    profileAddress: 'Profile address',
+    defaultBadge: 'Default',
+    noProfileAddress: 'No address in the profile yet.',
+    loading: 'Loading saved addresses…',
+    error: 'Could not load the saved addresses.',
+    empty: 'No other address saved yet.',
+    edit: 'Edit',
+    delete: 'Delete',
+    more: 'More actions for {{name}}',
+    addTitle: 'Add an address',
+    editTitle: 'Edit the address',
+    label: 'Name',
+    labelHint: "e.g. Daughter's home",
+    labelRequired: 'Give the address a name.',
+    lineRequired: 'Enter the house number and street.',
+    provinceRequired: 'Enter the province or city.',
+    noteHint: 'e.g. Ring the back gate; ask for Ms Hoa.',
+    save: 'Save address',
+    saved: 'Address saved.',
+    deleteTitle: 'Delete "{{name}}"?',
+    deleteHint: 'Bookings already made keep their address.',
+    actionError: 'Could not save the address. Please try again.'
   },
   emergencySection: {
     title: 'Emergency contacts',
@@ -230,6 +258,7 @@ export const patientDetailVi = {
     medical: 'Y tế & thuốc',
     daily: 'Sinh hoạt hằng ngày',
     contacts: 'Liên hệ khẩn cấp',
+    addresses: 'Sổ địa chỉ',
     managers: 'Người quản lý'
   },
   overview: {
@@ -296,6 +325,33 @@ export const patientDetailVi = {
     heightLabel: 'Chiều cao (cm)',
     weightLabel: 'Cân nặng (kg)',
     selectPlaceholder: 'Chưa chọn'
+  },
+  addressBook: {
+    title: 'Sổ địa chỉ',
+    hint: 'Những nơi người thân có thể ở ngoài địa chỉ hồ sơ, vd nhà con thứ hai. Chọn khi đặt lịch hoặc khi đổi địa chỉ một số buổi.',
+    add: 'Thêm địa chỉ',
+    profileAddress: 'Địa chỉ trong hồ sơ',
+    defaultBadge: 'Mặc định',
+    noProfileAddress: 'Hồ sơ chưa có địa chỉ.',
+    loading: 'Đang tải sổ địa chỉ…',
+    error: 'Không tải được sổ địa chỉ.',
+    empty: 'Chưa lưu địa chỉ nào khác.',
+    edit: 'Sửa',
+    delete: 'Xóa',
+    more: 'Thao tác khác cho {{name}}',
+    addTitle: 'Thêm địa chỉ',
+    editTitle: 'Sửa địa chỉ',
+    label: 'Tên gợi nhớ',
+    labelHint: 'VD: Nhà con gái, Nhà anh Minh',
+    labelRequired: 'Nhập tên gợi nhớ.',
+    lineRequired: 'Nhập số nhà, tên đường.',
+    provinceRequired: 'Nhập tỉnh / thành phố.',
+    noteHint: 'VD: Bấm chuông cổng sau, gặp chị Hoa.',
+    save: 'Lưu địa chỉ',
+    saved: 'Đã lưu địa chỉ.',
+    deleteTitle: 'Xóa "{{name}}"?',
+    deleteHint: 'Lịch đặt đã tạo vẫn giữ địa chỉ của chúng.',
+    actionError: 'Không lưu được địa chỉ. Vui lòng thử lại.'
   },
   emergencySection: {
     title: 'Liên hệ khẩn cấp',

@@ -19,6 +19,7 @@ import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { ErrorState } from '~/shared/ui/state-panels'
 import { Tabs, tabId, tabPanelId } from '~/shared/ui/tabs'
 
+import { AddressesCard } from './components/addresses-card'
 import { EmergencyContactsCard } from './components/emergency-contacts-card'
 import { ManagersCard } from './components/managers-card'
 import { MedicationsSection } from './components/medications-section'
@@ -29,7 +30,7 @@ import { useProfileEditor, type EditSection } from './hooks/use-profile-editor'
 import { profileCompleteness, type DetailTab } from './profile-completeness'
 
 const key = 'customer.patientDetail' as const
-const TABS: DetailTab[] = ['overview', 'medical', 'daily', 'contacts', 'managers']
+const TABS: DetailTab[] = ['overview', 'medical', 'daily', 'contacts', 'addresses', 'managers']
 const EDIT_SECTIONS: EditSection[] = ['basic', 'address', 'medical', 'daily']
 const TABS_ID = 'patient-detail'
 const LOAD_ERROR_KEYS = { 403: `${key}.states.forbidden`, 404: `${key}.states.notFound` } as const
@@ -206,6 +207,15 @@ export function PatientDetailPage() {
         {tab === 'daily' ? <DailyLifeTab detail={data} onEdit={onEdit} /> : null}
         {tab === 'contacts' ? (
           <EmergencyContactsCard canEdit={canEdit} contacts={data.emergencyContacts ?? []} recipientId={profile.id} />
+        ) : null}
+        {tab === 'addresses' ? (
+          <AddressesCard
+            canEdit={canEdit}
+            profileAddress={[profile.addressLine, profile.ward, profile.district, profile.province]
+              .filter(Boolean)
+              .join(', ')}
+            recipientId={profile.id}
+          />
         ) : null}
         {tab === 'managers' ? <ManagersCard recipientId={profile.id} /> : null}
       </div>

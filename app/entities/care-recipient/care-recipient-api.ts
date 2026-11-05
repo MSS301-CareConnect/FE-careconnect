@@ -1,15 +1,19 @@
 import {
   assignPrimaryCareRecipientEmergencyContact,
   createCareRecipient,
+  createCareRecipientAddress,
   createCareRecipientEmergencyContact,
   createCareRecipientMedication,
   deleteCareRecipient,
+  deleteCareRecipientAddress,
   deleteCareRecipientEmergencyContact,
   deleteCareRecipientMedication,
   getCareRecipient,
   listCareRecipients,
   setCareRecipientMedicationActive,
   updateCareRecipient,
+  listCareRecipientAddresses,
+  updateCareRecipientAddress,
   updateCareRecipientEmergencyContact,
   updateCareRecipientMedication
 } from '~/shared/api/generated/api/care-recipient/care-recipient'
@@ -18,7 +22,9 @@ import type {
   CareRecipientUpdateRequest,
   EmergencyContactRequest,
   ListCareRecipientsParams,
-  MedicationRequest
+  MedicationRequest,
+  RecipientAddressRecord,
+  RecipientAddressRequest
 } from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 
@@ -51,7 +57,8 @@ export function careRecipientErrorCode(error: unknown): number | undefined {
 export const careRecipientKeys = {
   all: ['care-recipient'] as const,
   list: (params: ListCareRecipientsParams) => ['care-recipient', 'list', params] as const,
-  detail: (id: string) => ['care-recipient', 'detail', id] as const
+  detail: (id: string) => ['care-recipient', 'detail', id] as const,
+  addresses: (id: string) => ['care-recipient', 'addresses', id] as const
 }
 
 export async function fetchCareRecipients(params: ListCareRecipientsParams = {}) {
@@ -95,4 +102,28 @@ export async function makePrimaryEmergencyContact(recipientId: string, contactId
 }
 export async function removeEmergencyContact(recipientId: string, contactId: string) {
   success(await deleteCareRecipientEmergencyContact(recipientId, contactId, await writeOptions()))
+}
+
+/** Saved addresses of a care recipient (2026-11-05): picked when booking or when moving some visits elsewhere. */
+export async function fetchRecipientAddresses(recipientId: string) {
+  return result(await listCareRecipientAddresses(recipientId, readOptions))
+}
+export async function createRecipientAddress(recipientId: string, request: RecipientAddressRequest) {
+  return result(await createCareRecipientAddress(recipientId, request, await writeOptions()))
+}
+export async function saveRecipientAddress(recipientId: string, addressId: string, request: RecipientAddressRequest) {
+  return result(await updateCareRecipientAddress(recipientId, addressId, request, await writeOptions()))
+}
+export async function removeRecipientAddress(recipientId: string, addressId: string) {
+  success(await deleteCareRecipientAddress(recipientId, addressId, await writeOptions()))
+}
+
+/** "9 Nguyễn Trãi, Phường 2, Quận 5, TP. Hồ Chí Minh" — the same joining BookingService uses for a care address. */
+export function formatRecipientAddress(
+  address: Pick<RecipientAddressRecord, 'addressLine' | 'ward' | 'district' | 'province'>
+) {
+  return [address.addressLine, address.ward, address.district, address.province]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(', ')
 }

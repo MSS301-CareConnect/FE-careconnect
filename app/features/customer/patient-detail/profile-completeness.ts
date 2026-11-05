@@ -2,7 +2,7 @@ import type { CareRecipientDetailRecord } from '~/shared/api/generated/contracts
 
 import type { EditSection } from './hooks/use-profile-editor'
 
-export type DetailTab = 'overview' | 'medical' | 'daily' | 'contacts' | 'managers'
+export type DetailTab = 'overview' | 'medical' | 'daily' | 'contacts' | 'addresses' | 'managers'
 
 /** A piece of the profile that helps the caregiver, where to fill it in, and whether it is there. */
 export interface CompletenessItem {
