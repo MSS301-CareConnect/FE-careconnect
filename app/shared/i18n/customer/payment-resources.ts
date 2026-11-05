@@ -113,7 +113,34 @@ export const customerPaymentVi = {
   },
   reference: 'Mã giao dịch',
   amount: 'Số tiền',
-  booking: 'Lịch đặt'
+  booking: 'Lịch đặt',
+  paymentType: 'Loại thanh toán',
+  paymentTypes: {
+    DEPOSIT: 'Đặt cọc (Khoản đầu)',
+    REMAINING: 'Thanh toán phần còn lại',
+    FULL: 'Thanh toán trọn gói'
+  },
+  paymentMethod: 'Phương thức',
+  paymentMethodVnpay: 'Cổng thanh toán VNPay',
+  paymentTime: 'Thời gian',
+  copied: 'Đã sao chép',
+  copyCode: 'Sao chép mã',
+  overviewTitle: 'Thông tin lịch chăm sóc',
+  recipient: 'Người được chăm sóc',
+  caregiver: 'Người chăm sóc',
+  caregiverWaiting: 'Đang phân công người chăm sóc',
+  schedule: 'Thời gian chăm sóc',
+  address: 'Địa chỉ chăm sóc',
+  totalBooking: 'Tổng giá trị lịch đặt',
+  nextStepsTitle: 'Điều gì xảy ra tiếp theo?',
+  step1Title: 'Ghi nhận giao dịch',
+  step1Desc: 'Cổng thanh toán VNPay gửi xác nhận và ghi nhận vào lịch đặt.',
+  step2Title: 'Trung tâm chuẩn bị',
+  step2Desc: 'Trung tâm xác nhận lịch và hoàn tất kế hoạch chăm sóc chi tiết.',
+  step3Title: 'Thực hiện chăm sóc',
+  step3Desc: 'Người chăm sóc có mặt đúng giờ theo lịch hẹn tại địa chỉ của bạn.',
+  supportTitle: 'Cần hỗ trợ thanh toán?',
+  supportHotline: 'Hotline: 1900 6868 (07:00 – 22:00)'
 }
 
 export const customerPaymentEn = {
@@ -231,7 +258,34 @@ export const customerPaymentEn = {
   },
   reference: 'Payment reference',
   amount: 'Amount',
-  booking: 'Booking'
+  booking: 'Booking',
+  paymentType: 'Payment type',
+  paymentTypes: {
+    DEPOSIT: 'Deposit (Initial payment)',
+    REMAINING: 'Remaining balance',
+    FULL: 'Full payment'
+  },
+  paymentMethod: 'Method',
+  paymentMethodVnpay: 'VNPay Gateway',
+  paymentTime: 'Time',
+  copied: 'Copied',
+  copyCode: 'Copy code',
+  overviewTitle: 'Care booking overview',
+  recipient: 'Care recipient',
+  caregiver: 'Caregiver',
+  caregiverWaiting: 'Assigning caregiver',
+  schedule: 'Care schedule',
+  address: 'Service address',
+  totalBooking: 'Total booking value',
+  nextStepsTitle: 'What happens next?',
+  step1Title: 'Payment Recorded',
+  step1Desc: 'VNPay confirms transaction and records it into your booking.',
+  step2Title: 'Center Prepares',
+  step2Desc: 'The center confirms schedule and prepares the care plan.',
+  step3Title: 'Care Visit Begins',
+  step3Desc: 'Caregiver arrives on time at your address as scheduled.',
+  supportTitle: 'Need payment support?',
+  supportHotline: 'Hotline: 1900 6868 (07:00 – 22:00)'
 }
 
 export const customerPaymentsVi = {
