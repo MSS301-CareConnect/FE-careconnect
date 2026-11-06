@@ -30,12 +30,14 @@ import type {
   CenterUpdateRequest,
   EmptyActionResponse,
   ListProviderCenterSchedulesParams,
+  ListProviderCenterTimeOffsParams,
   ListProviderCentersParams,
   ListPublicProviderCentersParams,
   ProviderCenterPageResponse,
   ProviderCenterResponse,
   ProviderSchedulePageResponse,
   ProviderStatisticsResponse,
+  ProviderTimeOffPageResponse,
   PublicCenterPageResponse,
   PublicCenterResponse
 } from '../../contracts'
@@ -1512,6 +1514,203 @@ export const useRestoreProviderCenter = <
 > => {
   return useMutation(getRestoreProviderCenterMutationOptions(options), queryClient)
 }
+export type listProviderCenterTimeOffsResponse200 = {
+  data: ProviderTimeOffPageResponse
+  status: 200
+}
+
+export type listProviderCenterTimeOffsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listProviderCenterTimeOffsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listProviderCenterTimeOffsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listProviderCenterTimeOffsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listProviderCenterTimeOffsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listProviderCenterTimeOffsResponseSuccess = listProviderCenterTimeOffsResponse200 & {
+  headers: Headers
+}
+export type listProviderCenterTimeOffsResponseError = (
+  | listProviderCenterTimeOffsResponse400
+  | listProviderCenterTimeOffsResponse401
+  | listProviderCenterTimeOffsResponse403
+  | listProviderCenterTimeOffsResponse404
+  | listProviderCenterTimeOffsResponse500
+) & {
+  headers: Headers
+}
+
+export const getListProviderCenterTimeOffsUrl = (centerId: string, params?: ListProviderCenterTimeOffsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/care-centers/${centerId}/time-offs?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/care-centers/${centerId}/time-offs`
+}
+
+/**
+ * @summary Ngày nghỉ của mọi người chăm sóc trong trung tâm
+ */
+export const listProviderCenterTimeOffs = async (
+  centerId: string,
+  params?: ListProviderCenterTimeOffsParams,
+  options?: RequestInit
+): Promise<listProviderCenterTimeOffsResponseSuccess> => {
+  const res = await fetch(getListProviderCenterTimeOffsUrl(centerId, params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listProviderCenterTimeOffsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listProviderCenterTimeOffsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listProviderCenterTimeOffsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProviderCenterTimeOffsResponseSuccess
+}
+
+export const getListProviderCenterTimeOffsQueryKey = (centerId: string, params?: ListProviderCenterTimeOffsParams) => {
+  return [`${env.API_BASE_URL}/v1/care-centers/${centerId}/time-offs`, ...(params ? [params] : [])] as const
+}
+
+export const getListProviderCenterTimeOffsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  params?: ListProviderCenterTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListProviderCenterTimeOffsQueryKey(centerId, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>> = ({ signal }) =>
+    listProviderCenterTimeOffs(centerId, params, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: centerId !== null && centerId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type ListProviderCenterTimeOffsQueryResult = NonNullable<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>>
+export type ListProviderCenterTimeOffsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListProviderCenterTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  params: undefined | ListProviderCenterTimeOffsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCenterTimeOffs>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCenterTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  params?: ListProviderCenterTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCenterTimeOffs>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCenterTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  params?: ListProviderCenterTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Ngày nghỉ của mọi người chăm sóc trong trung tâm
+ */
+
+export function useListProviderCenterTimeOffs<
+  TData = Awaited<ReturnType<typeof listProviderCenterTimeOffs>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  centerId: string,
+  params?: ListProviderCenterTimeOffsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCenterTimeOffs>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProviderCenterTimeOffsQueryOptions(centerId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
 export type listProviderCenterSchedulesResponse200 = {
   data: ProviderSchedulePageResponse
   status: 200

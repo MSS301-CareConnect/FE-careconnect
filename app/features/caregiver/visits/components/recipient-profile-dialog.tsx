@@ -202,23 +202,37 @@ function ProfileBody({ data }: { data: AssignedProfile }) {
         </ProfileSection>
 
         <ProfileSection className='md:col-span-2 lg:col-span-1' icon='self_care' title={t(`${key}.sections.daily`)}>
-          {levels.length ? (
-            <p className='mb-3 flex flex-wrap gap-1.5'>
-              {levels.map((label) => (
-                <span className='rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-primary' key={label}>
-                  {label}
-                </span>
-              ))}
-            </p>
-          ) : null}
-          <Notes
-            items={[
-              { label: t(`${key}.fields.diet`), value: snapshot.dietaryNotes },
-              { label: t(`${key}.fields.sleep`), value: details?.sleepHabits },
-              { label: t(`${key}.fields.behavior`), value: snapshot.behaviorNotes },
-              { label: t(`${key}.fields.requirements`), value: snapshot.careRequirements }
-            ]}
-          />
+          <div className='flex flex-col gap-3'>
+            {levels.length ? (
+              <div className='flex flex-wrap gap-1.5'>
+                {levels.map((label) => (
+                  <span className='rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-primary' key={label}>
+                    {label}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            <DailyCard
+              icon='restaurant'
+              label={t(`${key}.fields.diet`)}
+              value={snapshot.dietaryNotes}
+            />
+            <DailyCard
+              icon='bedtime'
+              label={t(`${key}.fields.sleep`)}
+              value={details?.sleepHabits}
+            />
+            <DailyCard
+              icon='psychology'
+              label={t(`${key}.fields.behavior`)}
+              value={snapshot.behaviorNotes}
+            />
+            <DailyCard
+              icon='assignment_turned_in'
+              label={t(`${key}.fields.requirements`)}
+              value={snapshot.careRequirements}
+            />
+          </div>
         </ProfileSection>
       </div>
     </div>
@@ -279,6 +293,21 @@ function Notes({ items }: { items: { label: string; value?: string }[] }) {
         </div>
       ))}
     </dl>
+  )
+}
+
+function DailyCard({ icon, label, value }: { icon: string; label: string; value?: string }) {
+  const { t } = useTranslation()
+  return (
+    <div className='rounded-xl border border-outline-variant/60 bg-surface-container-low p-3 transition-colors'>
+      <span className='flex items-center gap-1.5 text-xs font-bold text-on-surface'>
+        <Icon className='text-base text-primary' name={icon} />
+        {label}
+      </span>
+      <p className='mt-1 text-sm leading-relaxed break-words whitespace-pre-line text-on-surface'>
+        {value || <span className='text-xs italic text-on-surface-variant'>{t(`${key}.notProvided`)}</span>}
+      </p>
+    </div>
   )
 }
 

@@ -48,28 +48,28 @@ export function ManagerBookingQueue({ list }: { list: ManagerBookingList }) {
         return (
           <button
             aria-pressed={selected}
-            className={`group flex min-h-28 flex-col justify-between rounded-2xl border bg-surface-container-lowest p-4 text-left shadow-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-              selected
-                ? 'border-primary ring-1 ring-primary'
-                : urgent
-                  ? 'border-error/40 hover:border-error'
-                  : 'border-outline-variant/60 hover:border-primary/50'
-            }`}
+            className={`group flex min-h-[7.5rem] flex-col rounded-2xl border p-4 text-left transition-[border-color,background-color,box-shadow] duration-150 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              urgent
+                ? 'border-error/40 bg-error-container/40 hover:border-error'
+                : action && count > 0
+                  ? 'border-warning/50 bg-warning-container/50 hover:border-warning'
+                  : 'border-outline-variant/50 bg-surface-container-lowest hover:border-primary/40'
+            } ${selected ? 'ring-2 ring-primary' : ''}`}
             key={status}
             onClick={() => list.setStatus(selected ? '' : status)}
             type='button'
           >
             <span className='flex items-center justify-between gap-2'>
-              <span className='text-sm font-semibold text-on-surface-variant'>{t(`${key}.${status}`)}</span>
+              <span className='text-sm font-medium text-on-surface-variant'>{t(`${key}.${status}`)}</span>
               <Icon
-                className={`text-xl ${action ? 'text-primary' : 'text-outline'} transition-transform group-hover:scale-110`}
+                className={`text-xl ${urgent ? 'text-error' : action && count > 0 ? 'text-warning' : action ? 'text-primary' : 'text-outline'}`}
                 name={icon}
               />
             </span>
-            <span className='mt-2 text-3xl font-extrabold text-on-surface tabular-nums'>
+            <span className='mt-2 text-3xl font-bold text-on-surface tabular-nums'>
               {list.counts.isSuccess ? count : '–'}
             </span>
-            <span className={`mt-1 text-xs font-medium ${detail?.tone ?? 'text-outline'}`}>{detail?.text}</span>
+            <span className={`mt-auto pt-1 text-xs font-medium ${detail?.tone ?? 'text-outline'}`}>{detail?.text}</span>
           </button>
         )
       })}

@@ -343,4 +343,58 @@ describe('Center Manager bookings', () => {
     expect(await screen.findByRole('button', { name: 'Hủy lịch đặt' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Hủy buổi' })).not.toBeInTheDocument()
   })
+
+  it('shows unit prices and opens the details of one visit with its service and price', async () => {
+    const visit = {
+      ...booking.occurrences![0],
+      status: 'SCHEDULED' as const,
+      caregiverId: 'cg-1',
+      careServiceId: 'svc-1',
+      priceAmount: 250000
+    }
+    vi.mocked(fetchBooking).mockResolvedValue({
+      ...booking,
+      status: 'CONFIRMED',
+      caregiverId: 'cg-1',
+      totalAmount: 250000,
+      fullyPaidAt: '2026-11-05T15:16:00Z',
+      services: [
+        {
+          id: 'item-1',
+          careServiceId: 'svc-1',
+          serviceName: 'Vật lý trị liệu',
+          planName: 'Gói 1 giờ',
+          unitType: 'HOUR',
+          unitPrice: 250000,
+          quantity: 1,
+          unitsPerOccurrence: 1,
+          totalPrice: 250000
+        }
+      ],
+      occurrences: [visit]
+    })
+    vi.mocked(fetchOccurrence).mockResolvedValue({
+      id: 'occ-1',
+      occurrenceNo: 1,
+      startAt: visit.startAt,
+      endAt: visit.endAt,
+      status: 'SCHEDULED',
+      bookingId: 'bk-1',
+      acknowledgedAt: '2026-11-05T15:19:00Z'
+    })
+    wrap(<ManagerBookingDetailPage />, '/center-manager/bookings/bk-1')
+
+    expect(await screen.findByText('Đã thanh toán đủ')).toBeInTheDocument()
+    expect(screen.getByText(/Theo giờ × 1/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Xem chi tiết' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Buổi 1 · #BK0001' })
+    expect(within(dialog).getAllByText('Vật lý trị liệu').length).toBeGreaterThan(0)
+    expect(within(dialog).getByText('Gói 1 giờ')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Chị Hoa' })).toHaveAttribute(
+      'href',
+      '/center-manager/caregivers/cg-1'
+    )
+    expect(await within(dialog).findByText(/Đã nhận buổi lúc/)).toBeInTheDocument()
+    expect(within(dialog).getByText('Ca chưa bắt đầu (chưa check-in).')).toBeInTheDocument()
+  })
 })

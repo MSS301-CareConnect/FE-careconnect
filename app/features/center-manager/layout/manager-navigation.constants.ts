@@ -31,7 +31,7 @@ export const managerNavigation = [
         key: 'schedules',
         label: 'centerManager.schedules.title',
         to: '/center-manager/schedules',
-        icon: 'event_available'
+        icon: 'calendar_view_week'
       }
     ]
   },

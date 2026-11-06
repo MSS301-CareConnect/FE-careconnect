@@ -1,5 +1,46 @@
 export const managerManagementVi = {
   title: 'Quản lý Người chăm sóc & CCHN',
+  roster: {
+    title: 'Người chăm sóc của trung tâm',
+    subtitle:
+      'Hồ sơ, xác minh và lịch hôm nay của từng người. Mở hồ sơ để sửa thông tin, dịch vụ, chứng chỉ và ngày nghỉ.',
+    filters: 'Bộ lọc người chăm sóc',
+    verification: 'Xác minh',
+    total: '{{count, number}} người',
+    pageFilterHint: 'Tìm theo tên và lọc thâm niên áp dụng trên trang đang xem.',
+    empty: 'Trung tâm chưa có người chăm sóc',
+    emptyHint: 'Thêm người chăm sóc đầu tiên để bắt đầu nhận lịch.',
+    rating: '{{score}} · {{count, number}} đánh giá',
+    noRating: 'Chưa có đánh giá',
+    onLeave: 'Đang nghỉ',
+    noShiftToday: 'Không có ca',
+    open: 'Xem hồ sơ',
+    openSchedule: 'Xem lịch làm việc',
+    openTimeOff: 'Xem ngày nghỉ',
+    more: 'Thao tác khác với {{name}}',
+    pageSize: 'Số dòng mỗi trang',
+    columns: {
+      caregiver: 'Người chăm sóc',
+      experience: 'Thâm niên',
+      today: 'Hôm nay',
+      status: 'Trạng thái',
+      verification: 'Xác minh',
+      actions: 'Thao tác'
+    },
+    sorts: { rating: 'Đánh giá cao nhất', experience: 'Thâm niên', newest: 'Mới thêm', name: 'Tên A–Z' },
+    stats: {
+      label: 'Tổng quan người chăm sóc',
+      total: 'Tổng nhân sự',
+      totalHint: 'Mọi hồ sơ chưa lưu trữ của trung tâm',
+      pending: 'Chờ xác minh',
+      pendingHint: 'Bấm để lọc hồ sơ cần xác minh',
+      pendingNone: 'Không có hồ sơ chờ xác minh',
+      working: 'Có ca hôm nay',
+      workingHint: 'Mở lịch làm việc của trung tâm',
+      onLeave: 'Đang nghỉ',
+      onLeaveHint: 'Mở danh sách ngày nghỉ'
+    }
+  },
   documentTitle: 'Quản lý người chăm sóc | CareConnect',
   list: 'Danh sách Người chăm sóc',
   subtitle: 'Quản lý hồ sơ điều dưỡng, kỹ năng, thẩm định CCHN và trạng thái hoạt động.',
@@ -70,6 +111,47 @@ export const managerManagementVi = {
 } as const
 export const managerManagementEn = {
   title: 'Caregiver & License Management',
+  roster: {
+    title: 'Center caregivers',
+    subtitle:
+      'Profiles, verification and today’s schedule of each person. Open a profile to edit details, services, certificates and time off.',
+    filters: 'Caregiver filters',
+    verification: 'Verification',
+    total: '{{count, number}} people',
+    pageFilterHint: 'Name search and the experience filter apply to the page shown.',
+    empty: 'The center has no caregivers yet',
+    emptyHint: 'Add the first caregiver to start taking bookings.',
+    rating: '{{score}} · {{count, number}} reviews',
+    noRating: 'No reviews yet',
+    onLeave: 'On leave',
+    noShiftToday: 'No shift',
+    open: 'View profile',
+    openSchedule: 'View work schedule',
+    openTimeOff: 'View time off',
+    more: 'More actions for {{name}}',
+    pageSize: 'Rows per page',
+    columns: {
+      caregiver: 'Caregiver',
+      experience: 'Experience',
+      today: 'Today',
+      status: 'Status',
+      verification: 'Verification',
+      actions: 'Actions'
+    },
+    sorts: { rating: 'Highest rated', experience: 'Experience', newest: 'Newest', name: 'Name A–Z' },
+    stats: {
+      label: 'Caregiver overview',
+      total: 'Team size',
+      totalHint: 'Every non-archived profile of the center',
+      pending: 'Awaiting verification',
+      pendingHint: 'Click to filter profiles to verify',
+      pendingNone: 'No profiles awaiting verification',
+      working: 'Working today',
+      workingHint: 'Open the center’s work schedule',
+      onLeave: 'On leave',
+      onLeaveHint: 'Open the time-off list'
+    }
+  },
   documentTitle: 'Caregiver management | CareConnect',
   list: 'Caregiver list',
   subtitle: 'Review caregiver profiles, skills, credentials and account status.',

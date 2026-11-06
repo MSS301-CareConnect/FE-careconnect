@@ -1,171 +1,48 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
-import {
-  changeCaregiverStatus,
-  fetchCaregiver,
-  fetchProviderMedia,
-  providerKeys,
-  removeCaregiver,
-  saveCaregiver
-} from '~/entities/provider/provider-api'
-import { formatProviderDate } from '~/entities/provider/provider-format'
 import { CaregiverTimeOffs } from '~/entities/provider/caregiver-time-offs'
+import { fetchCaregiver, fetchProviderMedia, providerKeys, removeCaregiver } from '~/entities/provider/provider-api'
+import { pickAvatar } from '~/entities/provider/provider-avatar'
+import { formatProviderDate } from '~/entities/provider/provider-format'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
-import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
+import { calendarDayOf } from '~/shared/lib/format'
+import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { Avatar } from '~/shared/ui/avatar'
+import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
+import { PageHeader } from '~/shared/ui/page-header'
+import { ErrorState, ForbiddenState, SkeletonBlock } from '~/shared/ui/state-panels'
 
+import { CaregiverEditorDialog } from './components/caregiver-editor-dialog'
 import { CaregiverServicesEditor } from './components/caregiver-services-editor'
+import { CaregiverUpcomingShifts } from './components/caregiver-upcoming-shifts'
 import { ManagerCertificates } from './components/manager-certificates'
-import { pickAvatar } from '~/entities/provider/provider-avatar'
-import { Avatar } from '~/shared/ui/avatar'
-import { DatePicker } from '~/shared/ui/date-picker'
 
 const key = 'centerManager.provider' as const
-const inputClass = 'mt-1 w-full rounded-lg border border-outline-variant bg-white px-3 py-2'
 const genderOptions = { MALE: 'male', FEMALE: 'female', OTHER: 'other' } as const
-const statusOptions = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended' } as const
 const statusLabels = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
 const verificationLabels = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
-function CaregiverEditor({ person, onDone }: { person: ProviderCaregiverRecord; onDone: () => void }) {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
-  const [name, setName] = useState(person.fullName)
-  const [experience, setExperience] = useState(person.experienceYears ?? 0)
-  const [bio, setBio] = useState(person.bio ?? '')
-  const [status, setStatus] = useState(person.caregiverStatus)
-  const canActivate = person.verificationStatus === 'VERIFIED'
-  const [birthDate, setBirthDate] = useState(person.dateOfBirth ?? '')
-  const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER' | ''>(person.gender ?? '')
-  const update = useMutation({
-    mutationFn: async () => {
-      // M-12: ProviderService changes status only through its own PATCH (it also flags the caregiver's visits, H-11).
-      // The PATCH runs first because it flushes and returns the new version; the profile PUT returns it before flushing.
-      const version =
-        status === person.caregiverStatus
-          ? person.version
-          : (await changeCaregiverStatus(person.id, { status, version: person.version })).version
-      await saveCaregiver(person.id, {
-        fullName: name.trim(),
-        experienceYears: experience,
-        bio: bio.trim() || undefined,
-        dateOfBirth: birthDate || undefined,
-        gender: gender || undefined,
-        version
-      })
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(person.id) })
-      await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(person.centerId) })
-      onDone()
-    }
-  })
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    update.mutate()
-  }
-  return (
-    <form className='space-y-4 rounded-xl border bg-white p-5' onSubmit={submit}>
-      <h2 className='text-lg font-semibold'>{t(`${key}.editCaregiver`)}</h2>
-      <div className='grid gap-4 sm:grid-cols-2'>
-        <label className='text-sm'>
-          {t(`${key}.caregiverName`)}
-          <input className={inputClass} onChange={(event) => setName(event.target.value)} required value={name} />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.experience`)}
-          <input
-            className={inputClass}
-            max={80}
-            min={0}
-            onChange={(event) => setExperience(Number(event.target.value))}
-            required
-            type='number'
-            value={experience}
-          />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.gender`)}
-          <select
-            className={inputClass}
-            onChange={(event) => setGender(event.target.value as typeof gender)}
-            value={gender}
-          >
-            <option value=''>{t(`${key}.unknown`)}</option>
-            {(
-              Object.entries(genderOptions) as [
-                keyof typeof genderOptions,
-                (typeof genderOptions)[keyof typeof genderOptions]
-              ][]
-            ).map(([value, label]) => (
-              <option key={value} value={value}>
-                {t(`${key}.${label}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.birthDate`)}
-          <DatePicker className='mt-1' defaultMonth='1990-01-01' onChange={setBirthDate} value={birthDate} />
-        </label>
-        <label className='text-sm'>
-          {t(`${key}.status`)}
-          <select
-            className={inputClass}
-            onChange={(event) => setStatus(event.target.value as typeof status)}
-            value={status}
-          >
-            {(
-              Object.entries(statusOptions) as [
-                keyof typeof statusOptions,
-                (typeof statusOptions)[keyof typeof statusOptions]
-              ][]
-            ).map(([value, label]) => (
-              // PRV-06: only a verified caregiver can be made active.
-              <option
-                disabled={value === 'ACTIVE' && !canActivate && person.caregiverStatus !== 'ACTIVE'}
-                key={value}
-                value={value}
-              >
-                {t(`${key}.${label}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className='text-sm sm:col-span-2'>
-          {t(`${key}.bio`)}
-          <textarea className={inputClass} onChange={(event) => setBio(event.target.value)} value={bio} />
-        </label>
-      </div>
-      {update.isError ? <p role='alert'>{t(apiRequestErrorKey(update.error, `${key}.actionError`))}</p> : null}
-      <div className='flex gap-3'>
-        <button
-          className='rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50'
-          disabled={update.isPending}
-          type='submit'
-        >
-          {t(`${key}.save`)}
-        </button>
-        <button className='rounded-lg border px-4 py-2' onClick={onDone} type='button'>
-          {t(`${key}.cancel`)}
-        </button>
-      </div>
-    </form>
-  )
-}
+const container = 'mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'
 
+/**
+ * Center Manager caregiver profile: identity and status, then what the center plans with them — upcoming shifts, time
+ * off, services and certificates. Edits open as popups; the shift card links to the center's work schedule.
+ */
 export function ManagerCaregiverDetailPage() {
   const { id = '' } = useParams()
   const { t, i18n } = useTranslation()
   const user = useAuthUser()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const now = useClock(60_000)
+  const today = calendarDayOf(new Date(now))
   const [editing, setEditing] = useState(false)
   const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
   const caregiver = useQuery({
@@ -181,119 +58,155 @@ export function ManagerCaregiverDetailPage() {
     enabled: Boolean(id) && caregiver.data?.centerId === user?.centerId
   })
   const archive = useMutation({
-    mutationFn: () => removeCaregiver(id, caregiver.data!.version),
+    mutationFn: () => removeCaregiver(id, caregiver.data?.version ?? 0),
     onSuccess: async () => {
       setConfirmArchiveOpen(false)
-      await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(user!.centerId!) })
+      await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(user?.centerId ?? '') })
       navigate('/center-manager/caregivers')
     }
   })
   useDocumentTitle(caregiver.data?.fullName ?? t(`${key}.caregiversTitle`))
+
   if (!user?.centerId)
     return (
-      <main className='mx-auto max-w-6xl p-6' role='alert'>
+      <div className={`${container} py-8`} role='alert'>
         {t(`${key}.noCenter`)}
-      </main>
+      </div>
     )
   if (caregiver.isPending)
     return (
-      <main className='mx-auto max-w-6xl p-6' role='status'>
-        {t(`${key}.loading`)}
-      </main>
+      <div className={`${container} py-8`}>
+        <SkeletonBlock label={t(`${key}.loading`)} rows={6} />
+      </div>
     )
   if (caregiver.isError)
     return (
-      <main className='mx-auto max-w-6xl p-6' role='alert'>
-        <p>{t(`${key}.caregiverError`)}</p>
-        <button className='text-primary underline' onClick={() => void caregiver.refetch()} type='button'>
-          {t(`${key}.retry`)}
-        </button>
-      </main>
+      <div className={`${container} py-8`}>
+        <ErrorState
+          message={t(`${key}.caregiverError`)}
+          onRetry={() => void caregiver.refetch()}
+          retryLabel={t(`${key}.retry`)}
+        />
+      </div>
     )
   if (caregiver.data.centerId !== user.centerId)
     return (
-      <main className='mx-auto max-w-6xl p-6' role='alert'>
-        {t(`${key}.noAccess`)}
-      </main>
+      <div className={`${container} py-8`}>
+        <ForbiddenState description={t(`${key}.noAccess`)} />
+      </div>
     )
+
+  const person = caregiver.data
+  const facts = [
+    [
+      t(`${key}.experience`),
+      person.experienceYears !== undefined
+        ? t(`${key}.yearsValue`, { count: person.experienceYears })
+        : t(`${key}.unknown`),
+      'work_history'
+    ],
+    [
+      t(`${key}.birthDate`),
+      person.dateOfBirth ? formatProviderDate(person.dateOfBirth, i18n.language) : t(`${key}.unknown`),
+      'cake'
+    ],
+    [t(`${key}.gender`), person.gender ? t(`${key}.${genderOptions[person.gender]}`) : t(`${key}.unknown`), 'wc'],
+    [t(`${key}.centerName`), person.centerName || t(`${key}.unknown`), 'home_health']
+  ] as const
+
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <Link
-        className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2.5 text-sm font-semibold text-primary hover:bg-secondary-container'
-        to='/center-manager/caregivers'
-      >
-        <Icon name='arrow_back' />
-        {t(`${key}.back`)}
-      </Link>
-      <section className='overflow-hidden rounded-2xl border border-outline-variant/40 bg-white'>
-        <div className='h-2 bg-primary' />
-        <div className='p-5 sm:p-7'>
-          <div className='flex flex-wrap items-start justify-between gap-5'>
-            <div className='flex min-w-0 flex-wrap items-center gap-5'>
-              <span className='flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-secondary-container text-primary sm:h-28 sm:w-28'>
-                <Avatar
-                  className='h-full w-full'
-                  icon='person'
-                  name={caregiver.data.fullName}
-                  onExpired={() => void avatarMedia.refetch()}
-                  src={pickAvatar(avatarMedia.data)?.downloadUrl}
-                  viewable
-                />
+    <div className={container}>
+      <PageHeader
+        actions={
+          <>
+            <Button leftIcon={<Icon name='edit' />} onClick={() => setEditing(true)} variant='outline'>
+              {t(`${key}.editCaregiver`)}
+            </Button>
+            <Button
+              className='text-error! hover:text-error!'
+              disabled={archive.isPending}
+              leftIcon={<Icon name='inventory_2' />}
+              onClick={() => setConfirmArchiveOpen(true)}
+              variant='ghost'
+            >
+              {t(`${key}.archive`)}
+            </Button>
+          </>
+        }
+        breadcrumb={[
+          { label: t('centerManager.caregivers'), to: '/center-manager/caregivers' },
+          { label: person.fullName }
+        ]}
+        breadcrumbLabel={t(`${key}.caregiversTitle`)}
+        title={person.fullName}
+      />
+
+      <section className='rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6'>
+        <div className='flex flex-wrap items-center gap-5'>
+          <span className='flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-secondary-container text-primary'>
+            <Avatar
+              className='h-full w-full'
+              icon='person'
+              name={person.fullName}
+              onExpired={() => void avatarMedia.refetch()}
+              src={pickAvatar(avatarMedia.data)?.downloadUrl}
+              viewable
+            />
+          </span>
+          <div className='min-w-0 flex-1'>
+            <div className='flex flex-wrap items-center gap-2'>
+              <ProviderStatusBadge
+                label={t(`${key}.${statusLabels[person.caregiverStatus]}`)}
+                status={person.caregiverStatus}
+              />
+              <ProviderStatusBadge
+                label={t(`${key}.${verificationLabels[person.verificationStatus]}`)}
+                status={person.verificationStatus}
+              />
+            </div>
+            <p className='mt-2 flex items-center gap-1 text-sm font-semibold tabular-nums'>
+              <Icon className='text-warning' filled name='star' />
+              {person.ratingAverage !== undefined && (person.ratingCount ?? 0) > 0
+                ? new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(person.ratingAverage)
+                : '—'}
+              <span className='ml-1 font-normal text-on-surface-variant'>
+                {t(`${key}.reviewsValue`, { count: person.ratingCount ?? 0 })}
               </span>
+            </p>
+            <p className='mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-on-surface-variant'>
+              {person.bio || t(`${key}.noBio`)}
+            </p>
+          </div>
+        </div>
+        <dl className='mt-5 grid gap-3 border-t border-outline-variant/40 pt-5 sm:grid-cols-2 xl:grid-cols-4'>
+          {facts.map(([label, value, icon]) => (
+            <div className='flex items-center gap-3 rounded-xl bg-surface-container-low px-4 py-3' key={label}>
+              <Icon className='text-2xl text-primary' name={icon} />
               <div className='min-w-0'>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <h1 className='text-2xl font-extrabold tracking-tight'>{caregiver.data.fullName}</h1>
-                  <ProviderStatusBadge
-                    label={t(`${key}.${statusLabels[caregiver.data.caregiverStatus]}`)}
-                    status={caregiver.data.caregiverStatus}
-                  />
-                </div>
-                {caregiver.data.ratingAverage !== undefined ? (
-                  <p className='mt-2 flex items-center gap-1 text-sm font-semibold tabular-nums'>
-                    <Icon className='text-warning' filled name='star' />
-                    {new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
-                      caregiver.data.ratingAverage
-                    )}
-                    <span className='ml-2 font-normal text-outline'>
-                      {t('centerManager.provider.reviewsValue', { count: caregiver.data.ratingCount ?? 0 })}
-                    </span>
-                  </p>
-                ) : null}
-                <div className='mt-3'>
-                  <ProviderStatusBadge
-                    label={t(`${key}.${verificationLabels[caregiver.data.verificationStatus]}`)}
-                    status={caregiver.data.verificationStatus}
-                  />
-                </div>
+                <dt className='text-xs text-on-surface-variant'>{label}</dt>
+                <dd className='truncate font-semibold text-on-surface'>{value}</dd>
               </div>
             </div>
-            <div className='flex flex-wrap gap-2'>
-              <button
-                className='flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-2.5 text-xs font-semibold text-primary'
-                onClick={() => setEditing(true)}
-                type='button'
-              >
-                <Icon name='edit' />
-                {t(`${key}.editCaregiver`)}
-              </button>
-              <button
-                className='flex items-center gap-2 rounded-lg bg-error-container px-3 py-2.5 text-xs font-semibold text-on-error-container disabled:opacity-50'
-                disabled={archive.isPending}
-                onClick={() => setConfirmArchiveOpen(true)}
-                type='button'
-              >
-                <Icon name='block' />
-                {t(`${key}.archive`)}
-              </button>
-            </div>
-          </div>
-          {archive.isError ? (
-            <p className='mt-4 text-error' role='alert'>
-              {t(apiRequestErrorKey(archive.error, `${key}.actionError`))}
-            </p>
-          ) : null}
-        </div>
+          ))}
+        </dl>
+        {archive.isError ? (
+          <p className='mt-4 text-sm text-error' role='alert'>
+            {t(apiRequestErrorKey(archive.error, `${key}.actionError`))}
+          </p>
+        ) : null}
       </section>
+
+      <div className='grid items-start gap-5 lg:grid-cols-12'>
+        <div className='space-y-5 lg:col-span-7'>
+          <CaregiverUpcomingShifts caregiverId={id} centerId={person.centerId} today={today} />
+          <CaregiverTimeOffs caregiverId={id} caregiverName={person.fullName} now={now} />
+        </div>
+        <div className='space-y-5 lg:col-span-5'>
+          <CaregiverServicesEditor caregiverId={id} centerId={person.centerId} />
+          <ManagerCertificates caregiverId={id} />
+        </div>
+      </div>
+
       <ConfirmDialog
         confirmLabel={t(`${key}.archive`)}
         description={t(`${key}.confirmArchive`)}
@@ -304,64 +217,9 @@ export function ManagerCaregiverDetailPage() {
         title={t(`${key}.archive`)}
         tone='danger'
       />
-      <div className='grid overflow-hidden rounded-2xl border border-outline-variant/40 bg-white sm:grid-cols-2 xl:grid-cols-4'>
-        {(
-          [
-            [
-              t(`${key}.experience`),
-              caregiver.data.experienceYears !== undefined
-                ? t(`${key}.yearsValue`, { count: caregiver.data.experienceYears })
-                : t(`${key}.unknown`),
-              'work_history'
-            ],
-            [
-              t(`${key}.birthDate`),
-              caregiver.data.dateOfBirth
-                ? formatProviderDate(caregiver.data.dateOfBirth, i18n.language)
-                : t(`${key}.unknown`),
-              'calendar_month'
-            ],
-            [
-              t(`${key}.gender`),
-              caregiver.data.gender ? t(`${key}.${genderOptions[caregiver.data.gender]}`) : t(`${key}.unknown`),
-              'wc'
-            ],
-            [t(`${key}.centerName`), caregiver.data.centerName || t(`${key}.unknown`), 'home_health']
-          ] as const
-        ).map(([label, value, icon]) => (
-          <section
-            className='border-b border-outline-variant/30 p-5 last:border-b-0 sm:odd:border-r xl:border-b-0 xl:border-r xl:last:border-r-0'
-            key={label}
-          >
-            <div className='flex items-center justify-between gap-2'>
-              <h2 className='text-xs font-semibold text-outline'>{label}</h2>
-              <Icon className='text-2xl text-primary' name={icon} />
-            </div>
-            <p className='mt-4 text-xl font-bold text-on-surface'>{value}</p>
-          </section>
-        ))}
-      </div>
       {editing ? (
-        <CaregiverEditor key={caregiver.data.version} onDone={() => setEditing(false)} person={caregiver.data} />
+        <CaregiverEditorDialog key={person.version} onClose={() => setEditing(false)} person={person} />
       ) : null}
-      <div className='grid items-start gap-6 lg:grid-cols-12'>
-        <div className='space-y-6 lg:col-span-5'>
-          <section className='rounded-2xl border border-outline-variant/40 bg-white p-5 sm:p-7'>
-            <h2 className='flex items-center gap-2 text-lg font-bold'>
-              <Icon className='text-primary' name='person' />
-              {t(`${key}.profileTitle`)}
-            </h2>
-            <p className='mt-4 text-sm leading-7 text-on-surface-variant'>
-              {caregiver.data.bio || t(`${key}.unknown`)}
-            </p>
-          </section>
-          <CaregiverServicesEditor caregiverId={id} centerId={caregiver.data.centerId} />
-        </div>
-        <div className='lg:col-span-7'>
-          <ManagerCertificates caregiverId={id} />
-          <CaregiverTimeOffs caregiverId={id} copy='centerManager.provider.timeOff' />
-        </div>
-      </div>
-    </main>
+    </div>
   )
 }

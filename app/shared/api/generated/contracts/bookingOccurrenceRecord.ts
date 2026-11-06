@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { BookingOccurrenceRecordCancelledByParty } from './bookingOccurrenceRecordCancelledByParty'
+import type { BookingOccurrenceRecordReplacementConsentStatus } from './bookingOccurrenceRecordReplacementConsentStatus'
 import type { OccurrenceStatus } from './occurrenceStatus'
 
 export interface BookingOccurrenceRecord {
@@ -34,5 +35,5 @@ export interface BookingOccurrenceRecord {
   originalEndAt?: string
   isEmergencyReplacement?: boolean
   replacementReason?: string
-  replacementConsentStatus?: 'NONE' | 'PENDING_CUSTOMER' | 'ACCEPTED' | 'REJECTED_RESCHEDULE' | 'REJECTED_CANCEL'
+  replacementConsentStatus?: BookingOccurrenceRecordReplacementConsentStatus
 }

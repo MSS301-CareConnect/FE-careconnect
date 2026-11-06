@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createRecipientAddress, fetchRecipientAddresses } from '~/entities/care-recipient/care-recipient-api'
+import { fetchPublicCenter } from '~/entities/provider/provider-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { pickOption } from '~/shared/test/pickers'
@@ -19,6 +20,10 @@ vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) =
   ...(await importOriginal<typeof import('~/entities/care-recipient/care-recipient-api')>()),
   fetchRecipientAddresses: vi.fn(),
   createRecipientAddress: vi.fn()
+}))
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchPublicCenter: vi.fn()
 }))
 
 const HOUR = 3_600_000
@@ -53,6 +58,7 @@ function renderDialog(customer = true) {
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  vi.mocked(fetchPublicCenter).mockResolvedValue(undefined as unknown as Awaited<ReturnType<typeof fetchPublicCenter>>)
   vi.mocked(fetchRecipientAddresses).mockResolvedValue([
     {
       id: 'addr-1',
@@ -162,5 +168,29 @@ describe('Change care address of chosen visits', () => {
     expect(screen.getAllByRole('checkbox').every((box) => !(box as HTMLInputElement).disabled)).toBe(true)
     expect(screen.queryByText('Sổ địa chỉ của Bà Lan')).not.toBeInTheDocument()
     expect(fetchRecipientAddresses).not.toHaveBeenCalled()
+  })
+
+  it('blocks submit and shows an error when the new address is in a different province than the center', async () => {
+    vi.mocked(fetchPublicCenter).mockResolvedValue({
+      centerId: 'center-1',
+      centerName: 'Trung tâm Hà Nội',
+      address: '45 Kim Mã, Ba Đình, Hà Nội'
+    } as unknown as Awaited<ReturnType<typeof fetchPublicCenter>>)
+    vi.mocked(fetchRecipientAddresses).mockResolvedValue([
+      {
+        id: 'addr-hcm',
+        label: 'Nhà con gái TP.HCM',
+        addressLine: '9 Nguyễn Trãi',
+        district: 'Quận 5',
+        province: 'Thành phố Hồ Chí Minh'
+      }
+    ])
+    renderDialog()
+
+    fireEvent.click(await screen.findByRole('radio', { name: /Nhà con gái TP\.HCM/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Đổi địa chỉ 2 buổi' }))
+
+    expect(await screen.findByText(/Địa chỉ mới không nằm trong khu vực hoạt động của trung tâm chăm sóc/)).toBeInTheDocument()
+    expect(updateServiceAddressRequest).not.toHaveBeenCalled()
   })
 })

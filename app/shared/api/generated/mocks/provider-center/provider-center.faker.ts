@@ -13,6 +13,7 @@ import type {
   ProviderCenterResponse,
   ProviderSchedulePageResponse,
   ProviderStatisticsResponse,
+  ProviderTimeOffPageResponse,
   PublicCenterPageResponse,
   PublicCenterResponse
 } from '../../contracts'
@@ -22,6 +23,7 @@ import {
   getProviderCenterRecordMock,
   getProviderSchedulePageMock,
   getProviderStatisticsRecordMock,
+  getProviderTimeOffPageMock,
   getPublicCenterPageMock,
   getPublicCenterRecordMock
 } from '../../contracts/index.faker'
@@ -104,6 +106,15 @@ export const getRestoreProviderCenterResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getProviderCenterRecordMock() },
+  ...overrideResponse
+})
+
+export const getListProviderCenterTimeOffsResponseMock = (
+  overrideResponse: Partial<Extract<ProviderTimeOffPageResponse, object>> = {}
+): ProviderTimeOffPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderTimeOffPageMock() },
   ...overrideResponse
 })
 

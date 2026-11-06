@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 
+import { useAdminUnits } from '~/entities/address/use-admin-units'
 import { bookingKeys, fetchBookingQuote, fetchCenterBookingPolicy, placeBooking } from '~/entities/booking/booking-api'
 import { bookingDay, vietnamInstant } from '~/entities/booking/booking-format'
 import { careCatalogKeys, fetchCenterOfferings, fetchPricePlans } from '~/entities/care-catalog/care-catalog-api'
+import { isCenterInServiceArea } from '~/entities/care-center/center-service-area'
 import { useSelectedCenter } from '~/entities/care-center/selected-center'
 import {
   careRecipientKeys,
@@ -95,6 +97,7 @@ export type SlotIssue =
 export type MissingReason =
   | 'recipient'
   | 'center'
+  | 'centerOutOfArea'
   | 'services'
   | 'plans'
   | 'caregiverUnavailable'
@@ -218,6 +221,7 @@ function scheduleFields(schedule: BookingSchedule, caregiverId: string | undefin
 export function useBookingForm() {
   const queryClient = useQueryClient()
   const [params] = useSearchParams()
+  const units = useAdminUnits()
   // "Now" is fixed when the form opens: render must stay pure (react-hooks/purity).
   const [now] = useState(() => Date.now())
   const hasPrefill = PREFILL_PARAMS.some((name) => params.get(name))
@@ -382,6 +386,10 @@ export function useBookingForm() {
   })
   const chosenAddressId = addressPick?.recipientId === recipientId ? addressPick.addressId : ''
   const chosenAddress = savedAddresses.data?.find((item) => item.id === chosenAddressId)
+  const careProvince = chosenAddress?.province || recipient?.province || ''
+  const centerOutOfArea = Boolean(
+    centerId && center?.address && careProvince && !isCenterInServiceArea(center.address, careProvince, units.data)
+  )
 
   const missingNamesOf = (id: string) =>
     providers
@@ -475,13 +483,15 @@ export function useBookingForm() {
     1: recipientId ? null : 'recipient',
     2: !centerId
       ? 'center'
-      : selected.length === 0
-        ? 'services'
-        : !plansChosen
-          ? 'plans'
-          : caregiverUnavailable
-            ? 'caregiverUnavailable'
-            : null,
+      : centerOutOfArea
+        ? 'centerOutOfArea'
+        : selected.length === 0
+          ? 'services'
+          : !plansChosen
+            ? 'plans'
+            : caregiverUnavailable
+              ? 'caregiverUnavailable'
+              : null,
     3: scheduleIssue()
   }
   // The default schedule is valid on its own, so the price waits until the customer has opened the schedule step.
@@ -663,6 +673,9 @@ export function useBookingForm() {
     caregiverParam,
     caregiver,
     providers,
+    units,
+    careProvince,
+    centerOutOfArea,
     centers: centerList,
     centerId,
     centerName: center?.name ?? caregiver.data?.centerName,

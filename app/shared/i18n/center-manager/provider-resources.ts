@@ -30,6 +30,41 @@ export const managerProviderVi = {
   caregiverError: 'Không thể tải hồ sơ người chăm sóc.',
   noCenter: 'Tài khoản chưa được gán trung tâm. Vui lòng liên hệ quản trị viên.',
   noAccess: 'Hồ sơ này không thuộc trung tâm của bạn.',
+  noBio: 'Chưa có giới thiệu.',
+  create: {
+    account: 'Tài khoản đăng nhập',
+    accountHint: 'Hệ thống gửi mã xác thực tới email này để người chăm sóc tự đặt mật khẩu.',
+    profile: 'Hồ sơ chuyên môn',
+    profileHint:
+      'Thông tin khách thấy khi chọn người chăm sóc. Sau khi lưu, gán dịch vụ, chứng chỉ và xác minh trong hồ sơ để người chăm sóc nhận lịch.',
+    emailPlaceholder: 'vd: hoa.nguyen@gmail.com',
+    phonePlaceholder: 'vd: 0912345678',
+    phoneHint: 'Không bắt buộc. 10–11 chữ số, bắt đầu bằng 0.',
+    namePlaceholder: 'vd: Nguyễn Thị Hoa',
+    genderUnset: 'Chưa chọn',
+    bioPlaceholder: 'Kinh nghiệm, thế mạnh, nơi từng làm việc…',
+    created: 'Đã thêm {{name}}. Mã đặt mật khẩu đã gửi tới email.',
+    errors: {
+      emailRequired: 'Nhập email đăng nhập.',
+      email: 'Email chưa đúng định dạng.',
+      phone: 'Số điện thoại gồm 10–11 chữ số và bắt đầu bằng 0.',
+      bio: 'Giới thiệu tối đa 2000 ký tự.'
+    }
+  },
+  editor: {
+    nameRequired: 'Nhập họ tên người chăm sóc.',
+    experienceInvalid: 'Số năm kinh nghiệm là số nguyên từ 0 đến 80.',
+    activateHint: 'Chỉ người chăm sóc đã được xác minh mới chuyển sang "Hoạt động" được.',
+    saved: 'Đã lưu hồ sơ người chăm sóc.'
+  },
+  upcomingShifts: {
+    title: 'Lịch làm việc sắp tới',
+    hint: 'Các ca đã duyệt trong {{days}} ngày tới. Bấm một ca để mở chi tiết ca.',
+    openCalendar: 'Xem lịch làm việc',
+    loading: 'Đang tải lịch làm việc…',
+    error: 'Không tải được lịch làm việc.',
+    empty: 'Chưa có ca nào trong 2 tuần tới.'
+  },
   notFound: 'Không tìm thấy hồ sơ người chăm sóc.',
   loading: 'Đang tải dữ liệu…',
   all: 'Tất cả',
@@ -74,8 +109,37 @@ export const managerProviderVi = {
     reason: 'Lý do (không bắt buộc)',
     add: 'Thêm ngày nghỉ',
     remove: 'Xóa',
-    saveError: 'Thời gian nghỉ trùng với buổi chăm sóc đã đặt hoặc ngày nghỉ khác. Vui lòng chọn thời gian khác.',
-    actionError: 'Không cập nhật được ngày nghỉ. Vui lòng thử lại.'
+    saveError: 'Thời gian nghỉ trùng với một ngày nghỉ khác của người chăm sóc. Vui lòng chọn thời gian khác.',
+    actionError: 'Không cập nhật được ngày nghỉ. Vui lòng thử lại.',
+    startTime: 'Giờ bắt đầu',
+    endTime: 'Giờ kết thúc',
+    cancel: 'Hủy',
+    caregiver: 'Người chăm sóc',
+    caregiverPlaceholder: 'Chọn người chăm sóc',
+    caregiverSearch: 'Tìm theo tên',
+    reasonHint: 'Ví dụ: nghỉ phép năm, việc gia đình, khám sức khỏe. Tối đa 500 ký tự.',
+    dialogTitle: 'Thêm ngày nghỉ',
+    dialogTitleFor: 'Thêm ngày nghỉ cho {{name}}',
+    dialogHint: 'Giờ theo giờ Việt Nam. Trong khoảng nghỉ, khách không đặt được người chăm sóc này.',
+    visitsHint:
+      'Nếu khoảng nghỉ trùng buổi chăm sóc đã giao, hãy vào lịch đặt để đổi người cho các buổi đó. Mỗi lần nghỉ tối đa 30 ngày.',
+    panelHint: 'Ngày nghỉ đang diễn ra và sắp tới. Khách không đặt được người chăm sóc trong các khoảng này.',
+    noReason: 'Không ghi lý do',
+    unknown: 'Không rõ',
+    added: 'Đã thêm ngày nghỉ.',
+    removed: 'Đã xóa ngày nghỉ.',
+    removeTitle: 'Xóa ngày nghỉ',
+    removeLabel: 'Xóa ngày nghỉ {{range}}',
+    removeDescription: 'Xóa ngày nghỉ của {{name}} ({{range}})? Người chăm sóc sẽ lại nhận được lịch trong khoảng này.',
+    phase: { ongoing: 'Đang nghỉ', upcoming: 'Sắp tới', past: 'Đã qua' },
+    errors: {
+      caregiver: 'Chọn người chăm sóc.',
+      start: 'Chọn ngày bắt đầu.',
+      end: 'Chọn ngày kết thúc.',
+      order: 'Thời điểm kết thúc phải sau thời điểm bắt đầu.',
+      tooLong: 'Mỗi lần nghỉ tối đa {{days}} ngày.',
+      reason: 'Lý do tối đa 500 ký tự.'
+    }
   },
   confirmCertificate: 'Xác nhận chứng chỉ',
   rejectCertificate: 'Từ chối',
@@ -205,6 +269,41 @@ export const managerProviderEn = {
   caregiverError: 'Unable to load caregiver details.',
   noCenter: 'Your account has no assigned center. Contact an administrator.',
   noAccess: 'This profile does not belong to your center.',
+  noBio: 'No biography yet.',
+  create: {
+    account: 'Sign-in account',
+    accountHint: 'A code is emailed to this address so the caregiver sets their own password.',
+    profile: 'Professional profile',
+    profileHint:
+      'What customers see when they choose a caregiver. After saving, assign services and certificates and verify the profile so the caregiver can take bookings.',
+    emailPlaceholder: 'e.g. hoa.nguyen@gmail.com',
+    phonePlaceholder: 'e.g. 0912345678',
+    phoneHint: 'Optional. 10–11 digits starting with 0.',
+    namePlaceholder: 'e.g. Nguyen Thi Hoa',
+    genderUnset: 'Not set',
+    bioPlaceholder: 'Experience, strengths, previous workplaces…',
+    created: '{{name}} added. A password code was emailed.',
+    errors: {
+      emailRequired: 'Enter the sign-in email.',
+      email: 'The email is not valid.',
+      phone: 'The phone number has 10–11 digits and starts with 0.',
+      bio: 'The biography is at most 2000 characters.'
+    }
+  },
+  editor: {
+    nameRequired: 'Enter the caregiver’s full name.',
+    experienceInvalid: 'Years of experience is a whole number from 0 to 80.',
+    activateHint: 'Only a verified caregiver can be set to "Active".',
+    saved: 'Caregiver profile saved.'
+  },
+  upcomingShifts: {
+    title: 'Upcoming work schedule',
+    hint: 'Approved shifts in the next {{days}} days. Click a shift to open it.',
+    openCalendar: 'Open work schedule',
+    loading: 'Loading the work schedule…',
+    error: 'Unable to load the work schedule.',
+    empty: 'No shifts in the next 2 weeks.'
+  },
   notFound: 'Caregiver profile not found.',
   loading: 'Loading data…',
   all: 'All',
@@ -249,8 +348,37 @@ export const managerProviderEn = {
     reason: 'Reason (optional)',
     add: 'Add time off',
     remove: 'Delete',
-    saveError: 'This time overlaps a booked visit or another time off. Choose a different time.',
-    actionError: 'Unable to update time off. Please try again.'
+    saveError: 'This time overlaps another time off of the caregiver. Choose a different time.',
+    actionError: 'Unable to update time off. Please try again.',
+    startTime: 'Start time',
+    endTime: 'End time',
+    cancel: 'Cancel',
+    caregiver: 'Caregiver',
+    caregiverPlaceholder: 'Choose a caregiver',
+    caregiverSearch: 'Search by name',
+    reasonHint: 'For example: annual leave, family matters, a health check. Up to 500 characters.',
+    dialogTitle: 'Add time off',
+    dialogTitleFor: 'Add time off for {{name}}',
+    dialogHint: 'Times are in Vietnam time. Customers cannot book this caregiver during the time off.',
+    visitsHint:
+      'If the time off covers visits already assigned, open the bookings to reassign them. One time off lasts at most 30 days.',
+    panelHint: 'Current and upcoming time off. Customers cannot book the caregiver in these periods.',
+    noReason: 'No reason given',
+    unknown: 'Unknown',
+    added: 'Time off added.',
+    removed: 'Time off deleted.',
+    removeTitle: 'Delete time off',
+    removeLabel: 'Delete time off {{range}}',
+    removeDescription: 'Delete the time off of {{name}} ({{range}})? The caregiver can be booked again in that period.',
+    phase: { ongoing: 'On leave', upcoming: 'Upcoming', past: 'Past' },
+    errors: {
+      caregiver: 'Choose a caregiver.',
+      start: 'Choose a start date.',
+      end: 'Choose an end date.',
+      order: 'The end must be after the start.',
+      tooLong: 'One time off lasts at most {{days}} days.',
+      reason: 'The reason is at most 500 characters.'
+    }
   },
   confirmCertificate: 'Confirm certificate',
   rejectCertificate: 'Reject',

@@ -17,6 +17,8 @@ export interface ProviderScheduleRecord {
   workDate: string
   startTime: string
   endTime: string
+  /** MORNING / AFTERNOON / EVENING / NIGHT / FULL_DAY / CUSTOM (legacy DAILY / WEEKLY) */
+  shiftType?: string
   scheduleStatus: ProviderScheduleRecordScheduleStatus
   assignedBy?: string
   assignedAt?: string

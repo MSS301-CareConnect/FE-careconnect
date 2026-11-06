@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './providerTimeOffRecord'
 export * from './emptyActionResponse'
 export * from './providerScheduleRecordScheduleStatus'
 export * from './providerScheduleRecord'
@@ -22,6 +23,7 @@ export * from './bookingUnitType'
 export * from './outboxStatus'
 export * from './outboxSkipRequest'
 export * from './bookingOccurrenceRecordCancelledByParty'
+export * from './bookingOccurrenceRecordReplacementConsentStatus'
 export * from './bookingOccurrenceRecord'
 export * from './bookingSnapshotMedicationRecord'
 export * from './bookingSnapshotEmergencyContactRecord'

@@ -24,6 +24,7 @@ export const bookingEn = {
     missing: {
       recipient: 'Choose who needs care',
       center: 'Choose a care center',
+      centerOutOfArea: 'The chosen center is outside the recipient\'s area — choose another center',
       services: 'Choose at least one service',
       plans: 'Choose a price plan for every service',
       caregiverUnavailable: 'The chosen caregiver does not provide all these services — pick another',
@@ -87,7 +88,9 @@ export const bookingEn = {
   },
   center: {
     title: 'Care center',
-    description: 'Services, prices and caregivers depend on the center.'
+    description: 'Services, prices and caregivers depend on the center.',
+    outOfArea: 'Outside service area ({{province}})',
+    selectedOutOfArea: 'This center is outside the service area for {{province}}. Please choose a center in the same area.'
   },
   services: {
     title: 'Services',
@@ -382,6 +385,7 @@ export const bookingVi = {
     missing: {
       recipient: 'Hãy chọn người được chăm sóc',
       center: 'Hãy chọn trung tâm',
+      centerOutOfArea: 'Trung tâm đã chọn nằm ngoài khu vực của người được chăm sóc — hãy chọn trung tâm khác',
       services: 'Hãy chọn ít nhất 1 dịch vụ',
       plans: 'Hãy chọn gói giá cho mỗi dịch vụ',
       caregiverUnavailable: 'Người chăm sóc đã chọn không làm đủ các dịch vụ này — hãy chọn người khác',
@@ -445,7 +449,9 @@ export const bookingVi = {
   },
   center: {
     title: 'Trung tâm chăm sóc',
-    description: 'Dịch vụ, giá và người chăm sóc tùy theo trung tâm.'
+    description: 'Dịch vụ, giá và người chăm sóc tùy theo trung tâm.',
+    outOfArea: 'Ngoài khu vực phục vụ ({{province}})',
+    selectedOutOfArea: 'Trung tâm này nằm ngoài khu vực phục vụ tại {{province}}. Vui lòng chọn trung tâm trong cùng khu vực.'
   },
   services: {
     title: 'Dịch vụ',

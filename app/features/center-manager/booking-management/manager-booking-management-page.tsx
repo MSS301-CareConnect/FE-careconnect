@@ -7,6 +7,7 @@ import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { PageHeader } from '~/shared/ui/page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { tabId, tabPanelId } from '~/shared/ui/tabs'
@@ -32,22 +33,9 @@ export function ManagerBookingManagementPage() {
   const actionCount = list.groupCount('action')
 
   return (
-    <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-end justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant'>
-            {actionCount ? t(`${key}.pendingSubtitle`, { count: actionCount }) : t(`${key}.subtitle`)}
-          </p>
-        </div>
-        <div className='flex items-center gap-3'>
-          {bookings.dataUpdatedAt ? (
-            <span className='hidden text-xs text-on-surface-variant sm:inline'>
-              {t(`${key}.updatedAt`, {
-                time: formatClock(new Date(bookings.dataUpdatedAt).toISOString(), i18n.language)
-              })}
-            </span>
-          ) : null}
+    <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
+      <PageHeader
+        actions={
           <Button
             leftIcon={<Icon className='text-lg' name='refresh' />}
             loading={bookings.isFetching}
@@ -55,16 +43,27 @@ export function ManagerBookingManagementPage() {
               void bookings.refetch()
               void list.counts.refetch()
             }}
-            size='sm'
-            variant='secondary'
+            variant='outline'
           >
             {t(`${key}.refresh`)}
           </Button>
-        </div>
-      </header>
+        }
+        description={actionCount ? t(`${key}.pendingSubtitle`, { count: actionCount }) : t(`${key}.subtitle`)}
+        meta={
+          bookings.dataUpdatedAt ? (
+            <span className='inline-flex items-center gap-1.5 text-xs'>
+              <Icon className='text-sm' name='autorenew' />
+              {t(`${key}.updatedAt`, {
+                time: formatClock(new Date(bookings.dataUpdatedAt).toISOString(), i18n.language)
+              })}
+            </span>
+          ) : null
+        }
+        title={t(`${key}.title`)}
+      />
 
       <ManagerBookingQueue list={list} />
-      <ManagerBookingFilters key={list.keyword} list={list} />
+      <ManagerBookingFilters key={list.keyword} list={list} total={bookings.data?.totalElements} />
 
       <div aria-labelledby={tabId(BOOKING_LIST_TABS, list.group)} id={tabPanelId(BOOKING_LIST_TABS)} role='tabpanel'>
         {bookings.isPending ? <SkeletonBlock label={t(`${key}.loading`)} rows={5} /> : null}

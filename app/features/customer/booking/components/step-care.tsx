@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { serviceCategoryGroup } from '~/entities/care-catalog/service-category'
+import { getCenterProvinceName, isCenterInServiceArea } from '~/entities/care-center/center-service-area'
 import type { CenterOfferingRecord, PricePlanRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
 import { Avatar } from '~/shared/ui/avatar'
@@ -29,23 +30,49 @@ export function StepCare({ form }: { form: BookingForm }) {
           id='booking-center'
           title={t('customer.booking.center.title')}
         >
+          {form.centerOutOfArea ? (
+            <div
+              className='mb-4 flex items-center gap-2.5 rounded-xl border border-error/30 bg-error-container p-3.5 text-sm text-on-error-container'
+              role='alert'
+            >
+              <Icon className='text-xl shrink-0' name='location_off' />
+              <p>
+                {t('customer.booking.center.selectedOutOfArea', {
+                  province: form.careProvince
+                })}
+              </p>
+            </div>
+          ) : null}
           <fieldset>
             <legend className='sr-only'>{t('customer.booking.center.title')}</legend>
             <div className='grid gap-3 sm:grid-cols-2'>
-              {form.centers.map((center) => (
-                <ChoiceCard
-                  checked={form.centerId === center.id}
-                  key={center.id}
-                  name='center'
-                  onChange={() => form.selectCenter(center.id)}
-                  type='radio'
-                >
-                  <span className='flex items-center gap-2 font-semibold text-on-surface'>
-                    <Icon className='text-xl text-primary' name='home_health' />
-                    {center.name}
-                  </span>
-                </ChoiceCard>
-              ))}
+              {form.centers.map((center) => {
+                const inArea = isCenterInServiceArea(center.address, form.careProvince, form.units.data)
+                const centerProvince = getCenterProvinceName(center.address, form.units.data)
+                return (
+                  <ChoiceCard
+                    checked={form.centerId === center.id}
+                    disabled={!inArea}
+                    key={center.id}
+                    name='center'
+                    onChange={() => form.selectCenter(center.id)}
+                    type='radio'
+                  >
+                    <span className='flex flex-col gap-1 min-w-0'>
+                      <span className='flex items-center gap-2 font-semibold text-on-surface'>
+                        <Icon className='text-xl text-primary' name='home_health' />
+                        <span className='truncate'>{center.name}</span>
+                      </span>
+                      {!inArea ? (
+                        <span className='inline-flex items-center gap-1 text-xs font-medium text-error'>
+                          <Icon className='text-sm' name='location_off' />
+                          {t('customer.booking.center.outOfArea', { province: centerProvince || '' })}
+                        </span>
+                      ) : null}
+                    </span>
+                  </ChoiceCard>
+                )
+              })}
             </div>
           </fieldset>
         </WizardSection>

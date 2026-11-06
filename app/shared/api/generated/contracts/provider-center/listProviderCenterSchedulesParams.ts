@@ -5,8 +5,22 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { ListProviderCenterSchedulesStatus } from './listProviderCenterSchedulesStatus'
 
 export type ListProviderCenterSchedulesParams = {
+  /**
+   * Only this caregiver of the center
+   */
+  caregiverId?: string
+  status?: ListProviderCenterSchedulesStatus
+  /**
+   * First work date (Vietnam time), inclusive
+   */
+  fromDate?: string
+  /**
+   * Last work date (Vietnam time), inclusive; before fromDate → 400 4416
+   */
+  toDate?: string
   page?: number
   size?: number
 }

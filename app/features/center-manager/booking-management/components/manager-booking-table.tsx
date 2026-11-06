@@ -9,6 +9,7 @@ import type { BookingSummaryRecord } from '~/shared/api/generated/contracts'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 
+import { useCenterCaregivers } from '../hooks/use-center-caregivers'
 import type { ManagerBookingAction } from './manager-booking-action-dialog'
 
 // The countdown chip carries the urgency; a row under an hour from its deadline also gets a faint tint.
@@ -87,16 +88,25 @@ function Deadline({ booking, now }: { booking: BookingSummaryRecord; now: number
     return <p className='text-xs text-on-surface-variant'>{t(`booking.expiredReason.${booking.expiredReason}`)}</p>
   }
   if (booking.nextOccurrenceAt) {
+    const total = booking.totalCount ?? 0
+    const done = booking.completedCount ?? 0
     return (
-      <p className='text-xs text-on-surface-variant tabular-nums'>
-        {formatDateTime(booking.nextOccurrenceAt, i18n.language)}
-        <span className='block'>
-          {t('centerManager.bookingManagement.progress', {
-            done: booking.completedCount ?? 0,
-            total: booking.totalCount ?? 0
+      <div className='text-xs text-on-surface-variant tabular-nums'>
+        <p>
+          {t('centerManager.bookingManagement.nextVisit', {
+            time: formatDateTime(booking.nextOccurrenceAt, i18n.language)
           })}
-        </span>
-      </p>
+        </p>
+        <p className='mt-0.5'>{t('centerManager.bookingManagement.progress', { done, total })}</p>
+        {total > 0 ? (
+          <div aria-hidden='true' className='mt-1 h-1.5 w-28 overflow-hidden rounded-full bg-surface-container'>
+            <div
+              className='h-full rounded-full bg-primary'
+              style={{ width: `${Math.min(100, (done / total) * 100)}%` }}
+            />
+          </div>
+        ) : null}
+      </div>
     )
   }
   return <span className='text-xs text-outline'>{t('centerManager.bookingManagement.noDeadline')}</span>
@@ -147,10 +157,11 @@ export function ManagerBookingTable({
 }) {
   const { t, i18n } = useTranslation()
   const key = 'centerManager.bookingManagement' as const
+  const caregiverName = useCenterCaregivers().nameOf
 
   return (
     <>
-      <div className='hidden overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-xs md:block'>
+      <div className='hidden overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest md:block'>
         <table className='w-full table-fixed text-left text-sm'>
           <caption className='sr-only'>{t(`${key}.title`)}</caption>
           <colgroup>
@@ -186,9 +197,14 @@ export function ManagerBookingTable({
                   <Services booking={booking} />
                   <div className='mt-1.5 flex flex-wrap items-center gap-1.5'>
                     <BookingStatusBadge status={booking.status} />
-                    {booking.caregiverId || !booking.status.startsWith('PENDING') ? null : (
+                    {booking.caregiverId ? (
+                      <span className='inline-flex items-center gap-1 text-xs text-on-surface-variant'>
+                        <Icon className='text-sm' name='person' />
+                        {caregiverName(booking.caregiverId) ?? t('booking.occurrences.assigned')}
+                      </span>
+                    ) : booking.status.startsWith('PENDING') ? (
                       <span className='text-xs font-medium text-on-warning-container'>{t(`${key}.noCaregiver`)}</span>
-                    )}
+                    ) : null}
                   </div>
                 </td>
                 <td className='px-4 py-3.5'>

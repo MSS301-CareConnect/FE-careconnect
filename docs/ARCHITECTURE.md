@@ -363,7 +363,7 @@ Information / Certificates / Security tabs (`?tab=`): only the phone is editable
 `PUT /caregivers/{id}` is for managers; certificates are added with optional number and dates, show review and expiry
 states and can be deleted; security changes the password and names devices from their User-Agent. `/caregiver/security`
 redirects there; `/account/security` stays the shared screen of the other roles. The Center Manager
-`/center-manager/schedules` page keeps `entities/provider/provider-schedule-page.tsx` read-only. Pages compare dates
+`/center-manager/schedules` page is the center's work calendar (see below). Pages compare dates
 against a "now" from `useNow` because `react-hooks/purity` forbids `Date.now()` during render.
 
 ### Design system tokens and shared UI primitives
@@ -447,8 +447,22 @@ use cookie credentials and fetch a fresh Identity CSRF token before mutations.
 The manager caregiver detail assigns the caregiver's services (`PUT /caregivers/{id}/services`, PRV-01) from the
 center's active offerings (`features/center-manager/caregivers/components/caregiver-services-editor.tsx`); booking
 accepts only a caregiver who covers every chosen service, so a caregiver without services is flagged as unbookable.
-Time off for a caregiver is shared by the manager detail and the caregiver profile through
-`entities/provider/caregiver-time-offs.tsx`, which takes the copy namespace of the portal that renders it.
+Time off is managed through `entities/provider/caregiver-time-offs.tsx` (2026-11-06): `TimeOffDialog` (centred
+two-column popup, caregiver picker unless one is fixed, dates and times in Vietnam time, notes under the inputs, 409 =
+overlaps another time off), `RemoveTimeOffDialog`, and the `CaregiverTimeOffs` panel of the manager caregiver detail;
+every change invalidates `providerKeys.allTimeOffs`. The caregiver detail (redesigned 2026-11-06) is a `PageHeader` with
+breadcrumb, a profile card with the facts, then upcoming shifts of the next 14 days (`GET /care-centers/{id}/schedules`
+with `caregiverId` / dates / status) linking to the work calendar, time off, services and certificates; the profile edit
+is a popup. The caregiver list shows four numbers (team, awaiting verification — click filters, working today, on
+leave now), one filter row and a "Today" column (shift hours or "On leave") from one schedule read and one time-off read
+for the whole center.
+
+`/center-manager/schedules` ("Work schedule & time off", 2026-11-06, `features/center-manager/work-calendar`) shows one
+week at a time (`?week=` Monday, `?caregiver=`, `?view=team|list|timeOff`, `?scope=` of the time-off tab): four numbers
+(shifts and hours, people with shifts, on leave today, shifts that fall in time off), a team × day grid (shift chips link
+to `/center-manager/work-shifts/:id`, dashed amber time off clipped to each day, red = shift during time off, struck =
+cancelled), a shift list, and the center's time off (`GET /care-centers/{id}/time-offs`, ProviderService 2026-11-06)
+with add / delete. Shifts are still created and approved in "Work shifts".
 
 `/center-manager/work-shifts` (reworked 2026-11-05, `docs/2026-11-05-WORK_SHIFT_FLOW_PROGRESS.md`) shows four numbers for
 the whole filter from `GET /work-shifts/statistics` (next 7 days; understaffed shifts of the next 7 days with the
@@ -466,9 +480,8 @@ cascades to sign-ups and availability), a history built from the shift and its s
 single or bulk approve / reject (`PATCH /work-shifts/{id}/registrations/review`). Results are sonner toasts (the center
 manager layout mounts the shared `Toaster`). No Provider mutation runs from sample fixtures.
 
-`/center-manager/schedules` reads the assigned center's ProviderService schedules.
-The manager status mutation is unavailable in the current backend, so this page is
-read-only; caregivers can still update their own schedules. Customer
+`/center-manager/schedules` reads the assigned center's ProviderService schedules and time off (see the work calendar
+above); caregivers still cancel their own availability slots. Customer
 `/customer/caregivers` reads the ProviderService
 catalog; its detail route resolves a caregiver by Identity user ID and lists only
 verified certificates. Shared `entities/provider` code owns gateway request wrappers,
@@ -499,7 +512,14 @@ The Center Manager booking list `/center-manager/bookings` and detail `/center-m
 BookingService for the manager's center (list filters in URL search parameters). The detail accepts, rejects,
 cancels and reassigns through `entities/booking`; the caregiver picker marks who is free for every upcoming visit
 using ProviderService `/caregivers/search` with the booking's services and visit slots (M-16, Đợt 5), and the
-backend checks again on save. No-show reports are decided per visit.
+backend checks again on save. No-show reports are decided per visit. Since 2026-11-06 the detail uses `PageHeader`
+(breadcrumb, status, caregiver and deadline in the meta line, actions as buttons), each visit row names its service and
+opens `ManagerVisitDetailDialog` (planned / actual / check-in window, service with plan, unit price, units and the visit
+price, address and note, caregiver and acceptance, the care session with its tasks — `GET /care-sessions/{id}` — and the
+submitted report), and the side column prices every service as unit price × units with the plan, the subtotal, initial
+payment, remaining balance with its due time, refund and a payment state badge; caregiver change requests are
+translated. The list uses `PageHeader`, stat-style queue cards, one filter card (status chips with counts, code search,
+care date range, sort chip, total) and rows with the caregiver's name and a visit progress bar.
 Since 2026-11-05 (`BE/docs/2026-11-05-CENTER_QUEUE_EXPIRY_NOTIFICATIONS.md`) the list is a work queue: four queue
 cards from `GET /bookings/status-counts` (count, nearest deadline, due soon / past due), group tabs (to handle, waiting on
 others, active, closed, all → `statuses=`), a toolbar (code, `DatePicker` range, sort `deadlineAt,asc` by default for the

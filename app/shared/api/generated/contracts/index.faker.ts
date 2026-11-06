@@ -279,6 +279,8 @@ import type {
   ProviderStatisticsRecord,
   ProviderStatisticsResponse,
   ProviderTimeOffListResponse,
+  ProviderTimeOffPage,
+  ProviderTimeOffPageResponse,
   ProviderTimeOffRecord,
   ProviderTimeOffResponse,
   ProviderWorkShiftListResponse,
@@ -803,6 +805,7 @@ export const getProviderTimeOffRecordMock = (
 ): ProviderTimeOffRecord => ({
   id: faker.string.uuid(),
   caregiverId: faker.string.uuid(),
+  caregiverName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   startAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
   endAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
   reason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
@@ -915,6 +918,28 @@ export const getProviderTimeOffListResponseMock = (
   result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     ...getProviderTimeOffRecordMock()
   })),
+  ...overrideResponse
+})
+
+export const getProviderTimeOffPageMock = (
+  overrideResponse: Partial<ProviderTimeOffPage> = {}
+): ProviderTimeOffPage => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getProviderTimeOffRecordMock()
+  })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getProviderTimeOffPageResponseMock = (
+  overrideResponse: Partial<ProviderTimeOffPageResponse> = {}
+): ProviderTimeOffPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderTimeOffPageMock() },
   ...overrideResponse
 })
 
@@ -1619,6 +1644,7 @@ export const getProviderScheduleRecordMock = (
   workDate: faker.date.past().toISOString().slice(0, 10),
   startTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
   endTime: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  shiftType: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   scheduleStatus: faker.helpers.arrayElement(['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const),
   assignedBy: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   assignedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
@@ -3125,6 +3151,21 @@ export const getBookingOccurrenceRecordMock = (
   needsReassignment: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   note: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   careServiceId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  rescheduleCount: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  originalStartAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  originalEndAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  isEmergencyReplacement: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  replacementReason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  replacementConsentStatus: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      'NONE',
+      'PENDING_CUSTOMER',
+      'ACCEPTED',
+      'REJECTED_RESCHEDULE',
+      'REJECTED_CANCEL'
+    ] as const),
+    undefined
+  ]),
   ...overrideResponse
 })
 

@@ -19,6 +19,7 @@ export const managerBookingManagementVi = {
   },
   noCaregiver: 'Chưa phân công',
   progress: 'Đã xong {{done}} / {{total}} buổi',
+  nextVisit: 'Buổi tới: {{time}}',
   sessions: '{{count}} buổi',
   moreServices: '+{{count}} dịch vụ',
   noDeadline: 'Không có hạn',
@@ -46,7 +47,7 @@ export const managerBookingManagementVi = {
     booking: 'Lịch đặt',
     customer: 'Khách hàng',
     schedule: 'Lịch chăm sóc',
-    deadline: 'Hạn xử lý',
+    deadline: 'Hạn xử lý / tiến độ',
     next: 'Buổi kế tiếp',
     total: 'Tổng tiền',
     status: 'Trạng thái',
@@ -71,7 +72,9 @@ export const managerBookingManagementVi = {
     from: 'Từ ngày',
     to: 'Đến ngày',
     sort: 'Sắp xếp',
-    reset: 'Xóa bộ lọc'
+    reset: 'Xóa bộ lọc',
+    range: 'Ngày chăm sóc',
+    total: '{{count, number}} lịch đặt'
   },
   sorts: {
     deadline: 'Hạn xử lý gần nhất',
@@ -108,6 +111,7 @@ export const managerBookingManagementEn = {
   },
   noCaregiver: 'Not assigned',
   progress: '{{done}} / {{total}} visits done',
+  nextVisit: 'Next visit: {{time}}',
   sessions: '{{count}} visits',
   moreServices: '+{{count}} services',
   noDeadline: 'No deadline',
@@ -135,7 +139,7 @@ export const managerBookingManagementEn = {
     booking: 'Booking',
     customer: 'Customer',
     schedule: 'Schedule',
-    deadline: 'Due',
+    deadline: 'Due / progress',
     next: 'Next visit',
     total: 'Total',
     status: 'Status',
@@ -160,7 +164,9 @@ export const managerBookingManagementEn = {
     from: 'From',
     to: 'To',
     sort: 'Sort',
-    reset: 'Clear filters'
+    reset: 'Clear filters',
+    range: 'Care dates',
+    total: '{{count, number}} bookings'
   },
   sorts: {
     deadline: 'Nearest deadline',

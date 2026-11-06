@@ -41,7 +41,9 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   verifyCertificateByCenter: vi.fn(),
   fetchTimeOffs: vi.fn(),
   createTimeOff: vi.fn(),
-  fetchCaregiverServices: vi.fn().mockResolvedValue([])
+  fetchCaregiverServices: vi.fn().mockResolvedValue([]),
+  fetchCenterSchedules: vi.fn().mockResolvedValue({ items: [], page: 0, size: 50, totalElements: 0, totalPages: 0 }),
+  fetchCenterTimeOffs: vi.fn().mockResolvedValue({ items: [], page: 0, size: 50, totalElements: 0, totalPages: 0 })
 }))
 
 const person: ProviderCaregiverRecord = {
@@ -111,6 +113,19 @@ describe('Center Manager Provider caregivers', () => {
     )
   })
 
+  it('checks the add-caregiver form before creating anything', async () => {
+    vi.mocked(fetchCaregivers).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
+    renderManager()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add caregiver' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Add caregiver' })
+    fireEvent.change(within(dialog).getByLabelText('Phone number'), { target: { value: '12345' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    expect(await within(dialog).findByText('Enter the sign-in email.')).toBeInTheDocument()
+    expect(within(dialog).getByText('The phone number has 10–11 digits and starts with 0.')).toBeInTheDocument()
+    expect(provisionCaregiverAccount).not.toHaveBeenCalled()
+  })
+
   it('retries only the profile after an account was created', async () => {
     vi.mocked(fetchCaregivers).mockResolvedValue({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
     vi.mocked(provisionCaregiverAccount).mockResolvedValue('user-1')
@@ -152,7 +167,7 @@ describe('Center Manager Provider caregivers', () => {
       verification: undefined,
       status: undefined
     })
-    fireEvent.click(screen.getByRole('link', { name: 'View details for Lan Nguyen' }))
+    fireEvent.click(screen.getByRole('link', { name: 'View profile' }))
     expect(await screen.findByRole('heading', { name: 'Lan Nguyen' })).toBeInTheDocument()
     expect(await screen.findByText('No certificates yet.')).toBeInTheDocument()
     expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
@@ -264,16 +279,20 @@ describe('Center Manager Provider caregivers', () => {
     vi.mocked(createTimeOff).mockResolvedValue({} as never)
     renderManager('/center-manager/caregivers/caregiver-1')
 
-    const add = await screen.findByRole('button', { name: 'Add time off' })
-    expect(add).toBeDisabled()
-    fireEvent.change(screen.getByRole('textbox', { name: 'Start' }), { target: { value: '01/12/2026' } })
-    fireEvent.change(screen.getByRole('textbox', { name: 'End' }), { target: { value: '02/12/2026' } })
-    pickTime(within(screen.getByRole('group', { name: 'End' })).getByRole('combobox'), '08:00')
-    fireEvent.click(add)
+    fireEvent.click(await screen.findByRole('button', { name: 'Add time off' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Add time off for Lan Nguyen' })
+    // Submitting empty shows the notes under the inputs and sends nothing.
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add time off' }))
+    expect(await within(dialog).findByText('Choose a start date.')).toBeInTheDocument()
+    expect(createTimeOff).not.toHaveBeenCalled()
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Start' }), { target: { value: '01/12/2026' } })
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'End' }), { target: { value: '02/12/2026' } })
+    pickTime(within(dialog).getByRole('combobox', { name: 'End time' }), '08:00')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add time off' }))
     await waitFor(() =>
       expect(createTimeOff).toHaveBeenCalledWith('caregiver-1', {
-        startAt: new Date('2026-12-01T08:00').toISOString(),
-        endAt: new Date('2026-12-02T08:00').toISOString(),
+        startAt: new Date('2026-12-01T08:00:00+07:00').toISOString(),
+        endAt: new Date('2026-12-02T08:00:00+07:00').toISOString(),
         reason: undefined
       })
     )

@@ -9,6 +9,7 @@
 export interface ProviderTimeOffRecord {
   id: string
   caregiverId: string
+  caregiverName?: string
   startAt: string
   endAt: string
   reason?: string

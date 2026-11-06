@@ -61,7 +61,10 @@ export function CaregiverServicesEditor({ caregiverId, centerId }: { caregiverId
   }
 
   return (
-    <section aria-labelledby='caregiver-services-title' className='rounded-xl bg-white p-5 shadow-sm'>
+    <section
+      aria-labelledby='caregiver-services-title'
+      className='rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6'
+    >
       <div className='flex flex-wrap items-start justify-between gap-3'>
         <h2 className='flex items-center gap-2 text-lg font-bold' id='caregiver-services-title'>
           <Icon className='text-primary' name='medical_services' />

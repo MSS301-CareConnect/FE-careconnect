@@ -5,7 +5,7 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { ProviderTimeOffRecord } from './providerTimeOffRecord'
+import type { ProviderTimeOffRecord } from '../providerTimeOffRecord'
 
 export interface ProviderTimeOffListResponse {
   code: number

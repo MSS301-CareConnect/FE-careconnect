@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { AddressFields } from '~/entities/address/address-fields'
 import { addressIssues, hasAddressIssues, normalizeAddress, type AddressParts } from '~/entities/address/admin-units'
 import { useAdminUnits } from '~/entities/address/use-admin-units'
+import { useServiceCenter } from '~/entities/care-center/care-center-api'
+import { getCenterProvinceName, isCenterInServiceArea } from '~/entities/care-center/center-service-area'
 import {
   careRecipientKeys,
   createRecipientAddress,
@@ -75,6 +77,7 @@ export function ServiceAddressDialog({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const units = useAdminUnits()
+  const center = useServiceCenter(booking.centerId)
   const [openedAt] = useState(() => Date.now())
   const visits = upcomingVisits(booking, openedAt)
   const lead = customer ? CUSTOMER_ADDRESS_LEAD_MS : 0
@@ -128,6 +131,16 @@ export function ServiceAddressDialog({
     }
   }
 
+  const candidate = chosenAddress()
+  const centerAddress = center.data?.address
+  const centerProvince = getCenterProvinceName(centerAddress, units.data)
+  const areaMismatch = Boolean(
+    source !== null &&
+      centerAddress &&
+      candidate.province &&
+      !isCenterInServiceArea(centerAddress, candidate.province, units.data)
+  )
+
   const save = useMutation({
     mutationFn: async () => {
       const address = chosenAddress()
@@ -150,7 +163,15 @@ export function ServiceAddressDialog({
 
   function submit() {
     setSubmitted(true)
-    if (missingVisits || missingSource || hasAddressIssues(typedIssues) || missingLabel || save.isPending) return
+    if (
+      missingVisits ||
+      missingSource ||
+      hasAddressIssues(typedIssues) ||
+      missingLabel ||
+      areaMismatch ||
+      save.isPending
+    )
+      return
     save.mutate()
   }
 
@@ -236,6 +257,15 @@ export function ServiceAddressDialog({
             <p className='-mt-2 text-xs font-semibold text-error' role='alert'>
               {t('booking.address.sourceRequired')}
             </p>
+          ) : null}
+          {submitted && areaMismatch ? (
+            <div
+              className='flex items-center gap-2 rounded-xl border border-error/30 bg-error-container p-3 text-sm text-on-error-container'
+              role='alert'
+            >
+              <Icon className='text-lg shrink-0' name='location_off' />
+              <p>{t('booking.address.centerOutOfArea', { province: centerProvince || '' })}</p>
+            </div>
           ) : null}
 
           {source === 'new' ? (

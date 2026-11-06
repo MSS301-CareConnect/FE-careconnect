@@ -8,7 +8,8 @@ import {
   restoreProviderCenter,
   setProviderCenterStatus,
   updateProviderCenter,
-  listProviderCenterSchedules
+  listProviderCenterSchedules,
+  listProviderCenterTimeOffs
 } from '~/shared/api/generated/api/provider-center/provider-center'
 import {
   archiveProviderCaregiver,
@@ -89,6 +90,7 @@ import type {
   ListProviderBookableSchedulesParams,
   ListMyProviderShiftRegistrationsParams,
   ListProviderCenterSchedulesParams,
+  ListProviderCenterTimeOffsParams,
   ScheduleStatusRequest,
   SearchProviderCaregiversParams,
   ShiftRegistrationRequest,
@@ -121,7 +123,10 @@ export const providerKeys = {
   caregivers: (centerId: string) => ['provider', 'caregivers', centerId] as const,
   caregiver: (id: string) => ['provider', 'caregiver', id] as const,
   pendingCaregivers: (page: number) => ['provider', 'pending-caregivers', page] as const,
+  /** Prefix of every time-off list (one caregiver's and the whole center's): invalidate it after a change. */
+  allTimeOffs: ['provider', 'time-offs'] as const,
   timeOffs: (caregiverId: string) => ['provider', 'time-offs', caregiverId] as const,
+  centerTimeOffs: (centerId: string) => ['provider', 'time-offs', 'center', centerId] as const,
   caregiverServices: (caregiverId: string) => ['provider', 'caregiver-services', caregiverId] as const,
   publicCaregiver: (id: string) => ['provider', 'public-caregiver', id] as const,
   serviceCaregivers: (params: SearchProviderCaregiversParams) => ['provider', 'service-caregivers', params] as const,
@@ -307,6 +312,9 @@ export async function updateCaregiverSchedule(id: string, request: ScheduleStatu
 }
 export async function fetchCenterSchedules(centerId: string, params: ListProviderCenterSchedulesParams = {}) {
   return result(await listProviderCenterSchedules(centerId, params, readOptions))
+}
+export async function fetchCenterTimeOffs(centerId: string, params: ListProviderCenterTimeOffsParams = {}) {
+  return result(await listProviderCenterTimeOffs(centerId, params, readOptions))
 }
 export async function registerForShift(id: string, request: ShiftRegistrationRequest) {
   return result(await registerProviderShift(id, request, await writeOptions()))

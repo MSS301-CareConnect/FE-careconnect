@@ -97,7 +97,7 @@ export function ManagerCertificates({ caregiverId }: { caregiverId: string }) {
   })
 
   return (
-    <section className='rounded-2xl border border-outline-variant/40 bg-white p-5 sm:p-7'>
+    <section className='rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6'>
       <div className='flex items-start gap-3'>
         <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-primary'>
           <Icon name='workspace_premium' />

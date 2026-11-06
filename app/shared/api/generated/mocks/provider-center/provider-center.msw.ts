@@ -14,6 +14,7 @@ import type {
   ProviderCenterResponse,
   ProviderSchedulePageResponse,
   ProviderStatisticsResponse,
+  ProviderTimeOffPageResponse,
   PublicCenterPageResponse,
   PublicCenterResponse
 } from '../../contracts'
@@ -25,6 +26,7 @@ import {
   getGetProviderStatisticsResponseMock,
   getGetPublicProviderCenterResponseMock,
   getListProviderCenterSchedulesResponseMock,
+  getListProviderCenterTimeOffsResponseMock,
   getListProviderCentersResponseMock,
   getListPublicProviderCentersResponseMock,
   getRestoreProviderCenterResponseMock,
@@ -43,6 +45,7 @@ export {
   getArchiveProviderCenterResponseMock,
   getSetProviderCenterStatusResponseMock,
   getRestoreProviderCenterResponseMock,
+  getListProviderCenterTimeOffsResponseMock,
   getListProviderCenterSchedulesResponseMock,
   getGetProviderStatisticsResponseMock,
   getUpdateMyProviderCenterResponseMock
@@ -278,6 +281,32 @@ export const getRestoreProviderCenterMockHandler = (
   )
 }
 
+export const getListProviderCenterTimeOffsMockHandler = (
+  overrideResponse?:
+    | ProviderTimeOffPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderTimeOffPageResponse> | ProviderTimeOffPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-centers/:centerId/time-offs',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListProviderCenterTimeOffsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getListProviderCenterSchedulesMockHandler = (
   overrideResponse?:
     | ProviderSchedulePageResponse
@@ -365,6 +394,7 @@ export const getProviderCenterMock = () => [
   getArchiveProviderCenterMockHandler(),
   getSetProviderCenterStatusMockHandler(),
   getRestoreProviderCenterMockHandler(),
+  getListProviderCenterTimeOffsMockHandler(),
   getListProviderCenterSchedulesMockHandler(),
   getGetProviderStatisticsMockHandler(),
   getUpdateMyProviderCenterMockHandler()
