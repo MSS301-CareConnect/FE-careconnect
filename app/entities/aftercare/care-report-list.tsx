@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { aftercareErrorKey, aftercareKeys, fetchReports } from './aftercare-api'
+import { CareReportPhotos } from './care-report-photos'
 
 /** Submitted care reports of a booking, for the customer and the center manager (H-04). */
 export function CareReportList({ bookingId }: { bookingId: string }) {
@@ -45,6 +46,11 @@ export function CareReportList({ bookingId }: { bookingId: string }) {
                 {report.recommendations}
               </p>
             ) : null}
+            <CareReportPhotos
+              onReload={() => reports.refetch()}
+              photos={report.photos}
+              reloading={reports.isFetching}
+            />
           </li>
         ))}
       </ul>

@@ -22,6 +22,7 @@ import {
   saveReport,
   sendFeedback,
   submitReport,
+  uploadReportPhotos,
   withdraw
 } from './aftercare-api'
 import { CareReportForm } from './care-report-form'
@@ -33,6 +34,7 @@ vi.mock('./aftercare-api', async (importOriginal) => ({
   fetchReports: vi.fn(),
   saveReport: vi.fn(),
   submitReport: vi.fn(),
+  uploadReportPhotos: vi.fn(),
   fetchSessionNotes: vi.fn(),
   addSessionNote: vi.fn(),
   fetchEligibleCaregivers: vi.fn(),
@@ -47,6 +49,7 @@ vi.mock('./aftercare-api', async (importOriginal) => ({
 }))
 
 const draft: CareReportRecord = { id: 'rep-1', sessionId: 'ses-1', status: 'DRAFT', version: 0, summary: '' }
+const reportPhoto = { mediaFileId: 'photo-1', displayOrder: 0, downloadUrl: 'https://example.test/report.jpg' }
 const complaint: ComplaintRecord = {
   id: 'c-1',
   bookingId: 'bk-1',
@@ -96,12 +99,102 @@ describe('Aftercare on the web (Đợt 3)', () => {
   })
 
   it('locks a submitted report', async () => {
-    vi.mocked(fetchReports).mockResolvedValue([{ ...draft, status: 'SUBMITTED', summary: 'Xong' }])
+    vi.mocked(fetchReports).mockResolvedValue([
+      { ...draft, status: 'SUBMITTED', summary: 'Xong', photos: [reportPhoto] }
+    ])
     renderUi(<CareReportForm bookingId='bk-1' sessionId='ses-1' />)
 
     expect(await screen.findByText('Báo cáo đã nộp.')).toBeInTheDocument()
     expect(screen.getByLabelText('Tóm tắt buổi chăm sóc')).toBeDisabled()
     expect(screen.queryByRole('button', { name: 'Nộp báo cáo' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Đính kèm ảnh')).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Ảnh báo cáo 1' })).toHaveAttribute('src', reportPhoto.downloadUrl)
+    fireEvent.click(screen.getByRole('button', { name: 'Xem ảnh Ảnh báo cáo 1' }))
+    expect(within(screen.getByRole('dialog')).getByRole('img')).toHaveAttribute('src', reportPhoto.downloadUrl)
+  })
+
+  it('uploads selected photos to the saved draft before submitting', async () => {
+    vi.mocked(fetchReports).mockResolvedValue([])
+    vi.mocked(saveReport).mockResolvedValue(draft)
+    vi.mocked(uploadReportPhotos).mockResolvedValue({ ...draft, photos: [reportPhoto] })
+    vi.mocked(submitReport).mockResolvedValue({ ...draft, status: 'SUBMITTED', photos: [reportPhoto] })
+    renderUi(<CareReportForm bookingId='bk-1' sessionId='ses-1' />)
+
+    const input = await screen.findByLabelText('Đính kèm ảnh')
+    fireEvent.change(input, { target: { files: [new File(['data'], 'wrong.pdf', { type: 'application/pdf' })] } })
+    expect(screen.getByRole('alert')).toHaveTextContent('JPEG, PNG hoặc WebP')
+    const file = new File(['image'], 'report.png', { type: 'image/png' })
+    fireEvent.change(input, { target: { files: [file] } })
+    expect(screen.getByText('1/5 ảnh')).toBeInTheDocument()
+    expect(uploadReportPhotos).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText('Tóm tắt buổi chăm sóc'), { target: { value: 'Ăn ngủ tốt' } })
+    fireEvent.change(screen.getByLabelText('Tình trạng chung'), { target: { value: 'IMPROVED' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Nộp báo cáo' }))
+
+    expect(await screen.findByText('Báo cáo đã nộp.')).toBeInTheDocument()
+    expect(uploadReportPhotos).toHaveBeenCalledWith('rep-1', [file])
+    expect(submitReport).toHaveBeenCalledWith('rep-1')
+    expect(vi.mocked(saveReport).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(uploadReportPhotos).mock.invocationCallOrder[0]
+    )
+    expect(vi.mocked(uploadReportPhotos).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(submitReport).mock.invocationCallOrder[0]
+    )
+  })
+
+  it('retains the created draft and blocks upload replay after an uncertain result', async () => {
+    vi.mocked(fetchReports)
+      .mockResolvedValueOnce([])
+      .mockResolvedValue([{ ...draft, photos: [reportPhoto] }])
+    vi.mocked(saveReport).mockResolvedValue(draft)
+    vi.mocked(uploadReportPhotos).mockRejectedValueOnce(new TypeError('Network failure'))
+    renderUi(<CareReportForm bookingId='bk-1' sessionId='ses-1' />)
+
+    const input = await screen.findByLabelText('Đính kèm ảnh')
+    fireEvent.change(input, { target: { files: [new File(['image'], 'report.png', { type: 'image/png' })] } })
+    fireEvent.change(screen.getByLabelText('Tóm tắt buổi chăm sóc'), { target: { value: 'Đang soạn' } })
+    fireEvent.change(screen.getByLabelText('Tình trạng chung'), { target: { value: 'IMPROVED' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Lưu nháp' }))
+
+    const recover = await screen.findByRole('button', { name: 'Tải lại và bỏ ảnh đang chờ' })
+    expect(screen.getByRole('button', { name: 'Lưu nháp' })).toBeDisabled()
+    fireEvent.click(recover)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Lưu nháp' })).toBeEnabled())
+    expect(screen.getByLabelText('Tóm tắt buổi chăm sóc')).toHaveValue('Đang soạn')
+    expect(await screen.findByRole('img', { name: 'Ảnh báo cáo 1' })).toBeInTheDocument()
+    expect(uploadReportPhotos).toHaveBeenCalledTimes(1)
+    expect(submitReport).not.toHaveBeenCalled()
+  })
+
+  it('lets the caregiver refresh a failed attachment without clearing draft edits', async () => {
+    const refreshedPhoto = { ...reportPhoto, downloadUrl: 'https://example.test/refreshed.jpg' }
+    vi.mocked(fetchReports)
+      .mockResolvedValueOnce([{ ...draft, photos: [reportPhoto] }])
+      .mockResolvedValue([{ ...draft, photos: [refreshedPhoto] }])
+    renderUi(<CareReportForm bookingId='bk-1' sessionId='ses-1' />)
+
+    fireEvent.change(await screen.findByLabelText('Tóm tắt buổi chăm sóc'), { target: { value: 'Đang soạn' } })
+    fireEvent.error(screen.getByRole('img', { name: 'Ảnh báo cáo 1' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Tải lại ảnh' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('img', { name: 'Ảnh báo cáo 1' })).toHaveAttribute('src', refreshedPhoto.downloadUrl)
+    )
+    expect(screen.getByLabelText('Tóm tắt buổi chăm sóc')).toHaveValue('Đang soạn')
+  })
+
+  it('shows only submitted report photos to the customer, in display order', async () => {
+    const secondPhoto = { mediaFileId: 'photo-2', displayOrder: 1, downloadUrl: 'https://example.test/second.jpg' }
+    vi.mocked(fetchReports).mockResolvedValue([
+      { ...draft, id: 'private-draft', photos: [{ downloadUrl: 'https://example.test/draft.jpg' }] },
+      { ...draft, status: 'SUBMITTED', photos: [secondPhoto, reportPhoto] }
+    ])
+    vi.mocked(fetchComplaints).mockResolvedValue([])
+    renderUi(<BookingAftercare bookingId='bk-1' completed={false} visited />)
+
+    const photos = await within(await screen.findByRole('list', { name: 'Ảnh đính kèm' })).findAllByRole('img')
+    expect(photos.map((photo) => photo.getAttribute('src'))).toEqual([reportPhoto.downloadUrl, secondPhoto.downloadUrl])
   })
 
   it('lists and adds session notes (M-17)', async () => {

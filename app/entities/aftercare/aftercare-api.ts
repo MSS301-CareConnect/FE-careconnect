@@ -1,4 +1,5 @@
 import {
+  addCareReportPhotos,
   createCareReport,
   listCareReports,
   submitCareReport,
@@ -57,6 +58,12 @@ export async function saveReport(id: string | undefined, request: CareReportRequ
 
 export async function submitReport(id: string) {
   return result(await submitCareReport(id, await writeOptions()))
+}
+
+export async function uploadReportPhotos(id: string, files: File[]) {
+  const report = result(await addCareReportPhotos(id, { files }, await writeOptions()))
+  if (report?.id !== id || !Array.isArray(report.photos)) throw new Error('Invalid report attachment response')
+  return report
 }
 
 // ===== session notes (M-17) =====

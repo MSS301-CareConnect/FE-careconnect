@@ -902,6 +902,11 @@ Contract update workflow:
 - Booking aftercare (`booking-aftercare.tsx`) shows care reports and the new-complaint action only once a visit has
   taken place; the review has no preset rating; each complaint keeps its own escalation reason and error, and
   withdrawing asks for confirmation.
+- The web caregiver report form keeps selected images in memory. Save or Submit first checkpoints the server draft,
+  then uploads the selected batch through `POST /api/v1/care-reports/{id}/photos`. Submit runs only after the upload
+  succeeds. An uncertain upload requires a fresh report read and clearing the selected batch before choosing missing
+  photos. The business limit is five JPEG, PNG or WebP files up to 10 MB each. The deployment's multipart limits must
+  also allow those sizes.
 - `/customer/bookings` groups the nine booking statuses into tabs (all, needs action, upcoming, in care, completed,
   cancelled). BookingService filters one status per request, so the list reads the customer's newest 500 bookings
   (`fetchBookingCollection`, pages of 100) and groups, searches (code or name, diacritics ignored), sorts and pages them
