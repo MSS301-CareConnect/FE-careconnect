@@ -1,0 +1,36 @@
+export const managerLayoutVi = {
+  role: 'Quản lý trung tâm',
+  manager: 'Minh Hoàng',
+  managerShort: 'MH',
+  menu: 'Menu quản lý trung tâm',
+  breadcrumb: 'Đường dẫn trang quản lý trung tâm',
+  groups: { careDelivery: 'Chăm sóc', coordination: 'Điều phối' },
+  openMenu: 'Mở menu',
+  closeMenu: 'Đóng menu',
+  caregivers: 'Quản lý người chăm sóc',
+  bookings: 'Quản lý lịch đặt và phân công',
+  serviceMenu: 'Dịch vụ & bảng giá',
+  feedback: 'Đánh giá phản hồi',
+  notifications: 'Thông báo',
+  unavailable: 'Chức năng này sắp ra mắt.',
+  portal: 'Hệ thống Quản trị',
+  footer: 'CareConnect • Trang quản lý trung tâm (bản xem thử)'
+} as const
+export const managerLayoutEn = {
+  role: 'Center manager',
+  manager: 'Minh Hoàng',
+  managerShort: 'MH',
+  menu: 'Center manager menu',
+  breadcrumb: 'Center manager breadcrumb',
+  groups: { careDelivery: 'Care delivery', coordination: 'Coordination' },
+  openMenu: 'Open menu',
+  closeMenu: 'Close menu',
+  caregivers: 'Caregiver management',
+  bookings: 'Bookings and assignments',
+  serviceMenu: 'Services & pricing',
+  feedback: 'Reviews and feedback',
+  notifications: 'Notifications',
+  unavailable: 'This feature is coming soon.',
+  portal: 'Management portal',
+  footer: 'CareConnect • Center manager preview'
+} as const

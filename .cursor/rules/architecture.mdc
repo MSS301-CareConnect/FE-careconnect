@@ -1,0 +1,9 @@
+---
+description: SaaS-Sentry Web architecture and dependency boundaries
+globs: "app/**/*.{ts,tsx,css}"
+alwaysApply: true
+---
+
+Read `AGENTS.md` and `ARCHITECTURE.md`. Keep route files thin and preserve
+`routes -> features -> entities -> shared`. Never edit generated API files; change
+OpenAPI/Orval inputs and run `pnpm api:generate`.

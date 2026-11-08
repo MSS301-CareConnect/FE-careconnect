@@ -1,0 +1,176 @@
+export const adminQualityVi = {
+  documentTitle: 'Kiểm soát chất lượng điều dưỡng | Quản trị CareConnect',
+  breadcrumb: 'Kiểm soát chất lượng & an toàn y tế',
+  title: 'Xác minh & Kiểm soát chất lượng hồ sơ Điều dưỡng',
+  subtitle: 'Xem trước hồ sơ năng lực, chứng chỉ và các bước kiểm định trước khi mở quyền nhận ca.',
+  sample: 'Số liệu minh họa tháng 10/2025 · Chưa đối chiếu với dữ liệu của Bộ Y tế.',
+  tier: 'Cổng thẩm định cuối · bản xem trước',
+  export: 'Xuất CSV mẫu',
+  metrics: {
+    urgent: 'Cần xử lý',
+    approved: 'Đạt chuẩn tháng này',
+    review: 'Yêu cầu phúc tra CCHN',
+    rejected: 'Từ chối / Cấm hoạt động'
+  },
+  metricHints: {
+    urgent: '14 hồ sơ (minh họa)',
+    approved: 'Tỷ lệ thông qua mẫu: 89,4%',
+    review: '6 hồ sơ cần đối chiếu',
+    rejected: '2 hồ sơ bị đánh dấu trong mẫu'
+  },
+  process: 'Quy trình thẩm định y tế ba lớp',
+  processHint: 'Quy trình minh họa; chưa phải kết quả xác minh thực tế.',
+  steps: {
+    center: 'Trung tâm đối tác sơ tuyển',
+    license: 'Đối chiếu CCHN và giấy tờ',
+    admin: 'Hội đồng y khoa & quản trị viên chốt'
+  },
+  search: 'Tìm tên điều dưỡng, mã hồ sơ, số CCHN hoặc trung tâm',
+  center: 'Trung tâm đề xuất',
+  specialty: 'Chuyên môn',
+  risk: 'Mức rủi ro',
+  status: 'Trạng thái',
+  all: 'Tất cả',
+  specialties: { general: 'Điều dưỡng đa khoa', rehab: 'Phục hồi chức năng', elderly: 'Lão khoa & giảm nhẹ' },
+  risks: { low: 'Rủi ro thấp', medium: 'Rủi ro trung bình', high: 'Cần lưu ý' },
+  tabs: {
+    all: 'Tất cả chờ duyệt',
+    license: 'Chờ kiểm tra CCHN',
+    center: 'Trung tâm sơ duyệt',
+    interview: 'Cần phỏng vấn lâm sàng'
+  },
+  columns: {
+    caregiver: 'Điều dưỡng & thông tin',
+    center: 'Đơn vị đề xuất',
+    license: 'Chứng chỉ CCHN',
+    background: 'Lý lịch & sức khỏe',
+    assessment: 'Đánh giá chuyên môn',
+    status: 'Trạng thái kiểm tra',
+    actions: 'Quyết định quản trị'
+  },
+  age: '{{count}} tuổi',
+  licenseId: 'CCHN',
+  centerSignoff: 'Sơ duyệt trung tâm',
+  backgroundSample: 'Hồ sơ lý lịch trong mẫu',
+  clinicalScore: '{{score}} / 100',
+  reviewProgress: 'Mức hoàn thiện mẫu: {{value}}%',
+  statuses: { ready: 'Chờ Admin phê duyệt', discrepancy: 'Cần đối chiếu phôi bằng', clinical: 'Chờ chốt thẩm định' },
+  licenseStates: { match: 'Khớp dữ liệu trong mẫu', mismatch: 'Cần đối chiếu lại số phôi', valid: 'Hợp lệ trong mẫu' },
+  actions: {
+    approve: 'Phê duyệt & cấp huy hiệu Đã xác minh',
+    review: 'Yêu cầu phúc tra',
+    details: 'Xem hồ sơ mẫu',
+    reject: 'Từ chối hồ sơ'
+  },
+  results: '{{count}} hồ sơ trong mẫu',
+  empty: 'Không có hồ sơ phù hợp.',
+  previous: 'Trang trước',
+  next: 'Trang sau',
+  page: 'Trang {{page}} / {{pages}}',
+  diagnostics: 'Đối chiếu giấy tờ & CCHN',
+  diagnosticsHint: 'Chưa đối chiếu với dữ liệu của Bộ Y tế. Các trạng thái trong bảng chỉ mang tính minh họa.',
+  diagnosticsRows: { identity: 'Họ tên & giấy tờ', license: 'Hiệu lực chứng chỉ', revoke: 'Lịch sử thu hồi' },
+  diagnosticsValue: 'Chưa xác minh trực tiếp',
+  clinical: 'Trạm phỏng vấn lâm sàng',
+  clinicalHint: 'Chức năng gọi kiểm tra và bài kiểm tra thực tế sắp ra mắt.',
+  guarantor: 'Bảo lãnh trách nhiệm dân sự',
+  guarantorHint: 'Thông tin ký quỹ và bảo hiểm trong mẫu cần đối chiếu với hợp đồng đối tác.',
+  previewTitle: 'Hồ sơ điều dưỡng mẫu',
+  previewHint: 'Thông tin này chưa được thẩm định.',
+  close: 'Đóng',
+  candidateNotes: {
+    huong: 'Bài kiểm tra chuyên môn mẫu đạt 96/100; chờ quyết định cuối.',
+    khanh: 'Mẫu ghi nhận số phôi chứng chỉ cần đối chiếu lại.',
+    loan: 'Bài kiểm tra chuyên môn mẫu đạt 98/100; chờ chốt thẩm định.'
+  }
+} as const
+
+export const adminQualityEn = {
+  documentTitle: 'Caregiver quality control | CareConnect Admin',
+  breadcrumb: 'Quality control & clinical safety',
+  title: 'Caregiver verification & quality control',
+  subtitle: 'Preview credentials, licenses and review steps before caregivers can accept care shifts.',
+  sample: 'Illustrative October 2025 data · No live Ministry of Health or verification connection.',
+  tier: 'Final review gate · preview',
+  export: 'Export sample CSV',
+  metrics: {
+    urgent: 'Needs review',
+    approved: 'Approved this month',
+    review: 'License rechecks',
+    rejected: 'Rejected / banned'
+  },
+  metricHints: {
+    urgent: '14 files (sample)',
+    approved: 'Sample pass rate: 89.4%',
+    review: '6 files need comparison',
+    rejected: '2 flagged files (sample)'
+  },
+  process: 'Three-layer clinical review',
+  processHint: 'Sample process; not real verification results.',
+  steps: {
+    center: 'Partner center prescreening',
+    license: 'License and document comparison',
+    admin: 'Medical panel & Admin decision'
+  },
+  search: 'Search caregiver, record ID, license or center',
+  center: 'Nominating center',
+  specialty: 'Specialty',
+  risk: 'Risk level',
+  status: 'Status',
+  all: 'All',
+  specialties: { general: 'General nursing', rehab: 'Rehabilitation', elderly: 'Geriatric & palliative care' },
+  risks: { low: 'Low risk', medium: 'Medium risk', high: 'Needs attention' },
+  tabs: { all: 'All pending', license: 'License check', center: 'Center prescreened', interview: 'Clinical interview' },
+  columns: {
+    caregiver: 'Caregiver & identity',
+    center: 'Nominating center',
+    license: 'Practice license',
+    background: 'Background & health',
+    assessment: 'Clinical assessment',
+    status: 'Review status',
+    actions: 'Admin decision'
+  },
+  age: '{{count}} years old',
+  licenseId: 'Practice license',
+  centerSignoff: 'Center prescreening',
+  backgroundSample: 'Sample background record',
+  clinicalScore: '{{score}} / 100',
+  reviewProgress: 'Sample completion: {{value}}%',
+  statuses: {
+    ready: 'Awaiting Admin approval',
+    discrepancy: 'License number needs checking',
+    clinical: 'Awaiting final review'
+  },
+  licenseStates: {
+    match: 'Matched (sample)',
+    mismatch: 'License number requires comparison',
+    valid: 'Valid (sample)'
+  },
+  actions: {
+    approve: 'Approve & mark verified',
+    review: 'Request recheck',
+    details: 'View sample record',
+    reject: 'Reject application'
+  },
+  results: '{{count}} sample records',
+  empty: 'No matching records.',
+  previous: 'Previous page',
+  next: 'Next page',
+  page: 'Page {{page}} / {{pages}}',
+  diagnostics: 'Document & license check',
+  diagnosticsHint: 'Not yet checked against Ministry of Health data. Table statuses are samples only.',
+  diagnosticsRows: { identity: 'Name & identity', license: 'License validity', revoke: 'Revocation history' },
+  diagnosticsValue: 'Not verified live',
+  clinical: 'Clinical interview station',
+  clinicalHint: 'Live calls and practical tests require an integrated service and review process.',
+  guarantor: 'Civil liability guarantee',
+  guarantorHint: 'Sample deposit and insurance details must be checked against the partner contract.',
+  previewTitle: 'Sample caregiver record',
+  previewHint: 'This information has not been reviewed yet.',
+  close: 'Close',
+  candidateNotes: {
+    huong: 'Sample clinical score is 96/100; awaiting final decision.',
+    khanh: 'A license number is flagged for rechecking (sample).',
+    loan: 'Sample clinical score is 98/100; awaiting final review.'
+  }
+} as const

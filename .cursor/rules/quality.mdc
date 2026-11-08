@@ -1,0 +1,11 @@
+---
+description: SaaS-Sentry Web verification and generated-code rules
+globs: "**/*"
+alwaysApply: true
+---
+
+Use pnpm, strict TypeScript, accessible tests, and the quality gates in `AGENTS.md`.
+Do not manually edit lockfiles, generated API code, or build output. Keep Faker and
+MSW out of production imports.
+All UI/accessibility copy uses typed vi/en i18n keys. Do not bypass
+`project/no-hardcoded-ui-text`. Run OpenAPI validation before generation.

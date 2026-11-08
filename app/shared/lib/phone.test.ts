@@ -1,0 +1,31 @@
+import { describe, expect, it } from 'vitest'
+
+import { formatPhone, isMaskedPhone, phoneHref } from './phone'
+
+describe('formatPhone', () => {
+  it('groups Vietnamese mobile and landline numbers', () => {
+    expect(formatPhone('0912345678')).toBe('0912 345 678')
+    expect(formatPhone('0912.345.678')).toBe('0912 345 678')
+    expect(formatPhone('02838221234')).toBe('028 3822 1234')
+  })
+
+  it('normalizes 84 / +84 numbers, also with the extra leading zero', () => {
+    expect(formatPhone('+84912345678')).toBe('+84 912 345 678')
+    expect(formatPhone('84912345678')).toBe('+84 912 345 678')
+    expect(formatPhone('+84 0912 345 678')).toBe('+84 912 345 678')
+  })
+
+  it('keeps unknown shapes readable and empty values empty', () => {
+    expect(formatPhone('123456789012')).toBe('123 456 789 012')
+    expect(formatPhone(undefined)).toBe('')
+    expect(phoneHref('0912 345 678')).toBe('tel:0912345678')
+  })
+
+  it('keeps hidden digits of a masked number and never dials it', () => {
+    expect(formatPhone('09******78')).toBe('09•• ••• •78')
+    expect(formatPhone('+84*******78')).toBe('+84 ••• ••• •78')
+    expect(isMaskedPhone('09******78')).toBe(true)
+    expect(isMaskedPhone('0912345678')).toBe(false)
+    expect(phoneHref('09******78')).toBeUndefined()
+  })
+})

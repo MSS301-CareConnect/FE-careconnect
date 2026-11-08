@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.*
+.agents
+.claude
+!.env.example
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+/coverage/
+/.vercel/
+/.agents/
+/.claude/
+
+.impeccable/

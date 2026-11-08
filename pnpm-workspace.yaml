@@ -1,0 +1,5 @@
+allowBuilds:
+  esbuild: true
+  msw: true
+overrides:
+  '@vercel/static-config@3.4.1>ajv': 8.20.0
