@@ -13,6 +13,7 @@ import { authEn, authVi } from './auth/login-resources'
 import { registrationEn, registrationVi } from './auth/registration-resources'
 import { recoveryEn, recoveryVi } from './auth/password-recovery-resources'
 import { securityEn, securityVi } from './auth/security-resources'
+import { authShellEn, authShellVi } from './auth/shell-resources'
 import { customerLayoutEn, customerLayoutVi } from './customer/layout-resources'
 import { customerHomeEn, customerHomeVi } from './customer/home-resources'
 import { bookingDetailEn, bookingDetailVi } from './customer/booking-detail-resources'
@@ -102,7 +103,7 @@ export const resources = {
       aftercare: aftercareEn,
       statistics: statisticsEn,
       home: publicHomeEn,
-      auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn },
+      auth: { ...authEn, registration: registrationEn, recovery: recoveryEn, security: securityEn, shell: authShellEn },
       customer: {
         ...customerLayoutEn,
         home: customerHomeEn,
@@ -188,7 +189,7 @@ export const resources = {
       aftercare: aftercareVi,
       statistics: statisticsVi,
       home: publicHomeVi,
-      auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi },
+      auth: { ...authVi, registration: registrationVi, recovery: recoveryVi, security: securityVi, shell: authShellVi },
       customer: {
         ...customerLayoutVi,
         home: customerHomeVi,

@@ -1,6 +1,8 @@
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { scrollToTopSmoothly, useScrollTopOnSamePage } from '~/shared/lib/use-scroll-top-on-same-page'
+
 import { Icon } from './icon'
 
 const heading = 'text-xs font-semibold tracking-[0.12em] text-mint-200/80 uppercase'
@@ -16,6 +18,7 @@ export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
   const { t } = useTranslation()
   const isCustomer = audience === 'customer'
   const hotline = t('customer.nav.hotlineNumber')
+  const toTopIfOpen = useScrollTopOnSamePage()
 
   return (
     <footer>
@@ -35,6 +38,7 @@ export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
           <div>
             <Link
               className='inline-flex items-center gap-2.5 rounded-full text-lg font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint-200'
+              onClick={toTopIfOpen(isCustomer ? '/customer' : '/')}
               to={isCustomer ? '/customer' : '/'}
             >
               <span
@@ -58,17 +62,17 @@ export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
             <h2 className={heading}>{t('customer.footer.explore')}</h2>
             <ul className='mt-5 flex flex-col gap-3'>
               <li>
-                <Link className={link} to='/customer/caregivers'>
+                <Link className={link} onClick={toTopIfOpen('/customer/caregivers')} to='/customer/caregivers'>
                   {t('customer.nav.caregivers')}
                 </Link>
               </li>
               <li>
-                <Link className={link} to='/customer/services'>
+                <Link className={link} onClick={toTopIfOpen('/customer/services')} to='/customer/services'>
                   {t('customer.nav.services')}
                 </Link>
               </li>
               <li>
-                <Link className={link} to='/customer/centers'>
+                <Link className={link} onClick={toTopIfOpen('/customer/centers')} to='/customer/centers'>
                   {t('customer.nav.centers')}
                 </Link>
               </li>
@@ -86,17 +90,21 @@ export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
               {isCustomer ? (
                 <>
                   <li>
-                    <Link className={link} to='/customer/bookings'>
+                    <Link className={link} onClick={toTopIfOpen('/customer/bookings')} to='/customer/bookings'>
                       {t('customer.nav.bookings')}
                     </Link>
                   </li>
                   <li>
-                    <Link className={link} to='/customer/patient-profiles'>
+                    <Link
+                      className={link}
+                      onClick={toTopIfOpen('/customer/patient-profiles')}
+                      to='/customer/patient-profiles'
+                    >
                       {t('customer.nav.relatives')}
                     </Link>
                   </li>
                   <li>
-                    <Link className={link} to='/customer/payments'>
+                    <Link className={link} onClick={toTopIfOpen('/customer/payments')} to='/customer/payments'>
                       {t('customer.nav.payments')}
                     </Link>
                   </li>
@@ -104,12 +112,12 @@ export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
               ) : (
                 <>
                   <li>
-                    <Link className={link} to='/login'>
+                    <Link className={link} onClick={toTopIfOpen('/login')} to='/login'>
                       {t('home.signIn')}
                     </Link>
                   </li>
                   <li>
-                    <Link className={link} to='/register'>
+                    <Link className={link} onClick={toTopIfOpen('/register')} to='/register'>
                       {t('home.createAccount')}
                     </Link>
                   </li>
@@ -144,7 +152,7 @@ export function SiteFooter({ audience }: { audience: 'public' | 'customer' }) {
           <p className='text-xs text-white/50'>{t('home.footerCopyright', { year: new Date().getFullYear() })}</p>
           <button
             className='inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-4 text-xs whitespace-nowrap font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint-200'
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={scrollToTopSmoothly}
             type='button'
           >
             {t('customer.footer.backToTop')}

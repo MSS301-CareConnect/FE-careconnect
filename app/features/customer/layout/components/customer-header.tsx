@@ -9,6 +9,7 @@ import { NotificationBell } from '~/entities/notification/notification-bell'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
 import { LanguageSwitch } from '~/shared/ui/language-switch'
+import { useScrollTopOnSamePage } from '~/shared/lib/use-scroll-top-on-same-page'
 
 import { usePendingInvitations } from '../account-shell'
 import { useBookingsAttention } from '../hooks/use-bookings-attention'
@@ -43,6 +44,7 @@ export function CustomerHeader() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const displayName = authUser?.fullName || authUser?.email || t('customer.nav.userName')
   const { scrollY, scrollYProgress } = useScroll()
+  const toTopIfOpen = useScrollTopOnSamePage()
   const [scrolled, setScrolled] = useState(false)
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 20))
 
@@ -83,6 +85,7 @@ export function CustomerHeader() {
         />
         <Link
           className='inline-flex shrink-0 items-center gap-2 rounded-full pr-2 text-lg font-bold tracking-tight text-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900'
+          onClick={toTopIfOpen(homePath)}
           to={homePath}
         >
           <span
@@ -102,6 +105,7 @@ export function CustomerHeader() {
               }
               end={end}
               key={to}
+              onClick={toTopIfOpen(to)}
               to={to}
             >
               {({ isActive }) => (

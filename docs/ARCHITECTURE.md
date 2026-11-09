@@ -177,6 +177,10 @@ dates are never suggested. Matching ignores case and Vietnamese diacritics and a
 the start of the name or of any word in it. Free text stays allowed, and a chosen entry
 fills only an empty route field.
 
+`/login`, `/register` and `/forgot-password` share the layout route `routes/auth-layout.tsx` →
+`features/shared/auth/auth-shell.tsx`, which stays mounted so on desktop the forest card and the form slide past each
+other and the page (outlet) swaps while they cross; the pages render only their form.
+
 Public customer registration uses `/api/v1/auth/register` to send an email OTP. The
 account is created only after `/api/v1/auth/register/verify` succeeds; verification
 does not create a web session, so the user signs in separately. The registration

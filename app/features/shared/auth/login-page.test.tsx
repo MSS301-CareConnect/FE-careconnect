@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
+import { AuthShell } from './auth-shell'
 import { LoginPage } from './login-page'
 import { loadSession, signIn } from './session-api'
 
@@ -32,7 +33,9 @@ describe('login page', () => {
       <QueryClientProvider client={client}>
         <MemoryRouter initialEntries={['/login?next=%2Fadmin%2Fdashboard']}>
           <Routes>
-            <Route path='/login' element={<LoginPage />} />
+            <Route element={<AuthShell />}>
+              <Route path='/login' element={<LoginPage />} />
+            </Route>
             <Route path='/admin/dashboard' element={<div>{destination}</div>} />
           </Routes>
         </MemoryRouter>
@@ -40,7 +43,7 @@ describe('login page', () => {
     )
 
     expect(await screen.findByRole('link', { name: 'Về trang chủ' })).toHaveAttribute('href', '/')
-    fireEvent.change(screen.getByLabelText('Địa chỉ email'), { target: { value: 'admin@careconnect.test' } })
+    fireEvent.change(await screen.findByLabelText('Địa chỉ email'), { target: { value: 'admin@careconnect.test' } })
     fireEvent.change(screen.getByLabelText('Mật khẩu'), { target: { value: 'secret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }))
 

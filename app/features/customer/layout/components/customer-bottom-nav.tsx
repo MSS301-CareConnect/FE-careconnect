@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router'
 
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { useScrollTopOnSamePage } from '~/shared/lib/use-scroll-top-on-same-page'
 import { Icon } from '~/shared/ui/icon'
 
 const spring = { type: 'spring' as const, stiffness: 420, damping: 34 }
@@ -17,6 +18,7 @@ export function CustomerBottomNav() {
   const { t } = useTranslation()
   const authUser = useAuthUser()
   const isCustomer = Boolean(authUser?.status === 'ACTIVE' && authUser.roles?.includes('CUSTOMER'))
+  const toTopIfOpen = useScrollTopOnSamePage()
   const items = isCustomer
     ? [
         { to: '/customer', icon: 'home', label: t('customer.nav.home'), end: true },
@@ -43,6 +45,7 @@ export function CustomerBottomNav() {
             <NavLink
               className='group relative flex min-h-12 w-full flex-col items-center justify-center rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900'
               end={item.end}
+              onClick={toTopIfOpen(item.to)}
               to={item.to}
             >
               {({ isActive }) =>

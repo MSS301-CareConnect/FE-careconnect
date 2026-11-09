@@ -8,7 +8,12 @@ export const authShellEn = {
   registerTab: 'Sign up',
   backToSignIn: 'Back to sign in',
   rememberPassword: 'Remembered your password?',
+  securityNote: 'Safe & secure care',
+  footerMotto: 'CareConnect · Peace of mind when loved ones are cared for',
   panel: {
+    switchPromptRegister: 'Create a free account',
+    switchPromptLogin: 'Sign in to your account',
+    switchPromptForgot: 'Back to sign in',
     login: {
       eyebrow: 'Care at home',
       title: 'Care that feels close to <accent>home</accent>.',
@@ -56,7 +61,12 @@ export const authShellVi = {
   registerTab: 'Đăng ký',
   backToSignIn: 'Quay lại đăng nhập',
   rememberPassword: 'Đã nhớ ra mật khẩu?',
+  securityNote: 'Bảo mật & An tâm trọn vẹn',
+  footerMotto: 'CareConnect · An tâm khi người thân được chăm sóc',
   panel: {
+    switchPromptRegister: 'Tạo tài khoản miễn phí',
+    switchPromptLogin: 'Đăng nhập vào tài khoản',
+    switchPromptForgot: 'Quay lại đăng nhập',
     login: {
       eyebrow: 'Chăm sóc tại nhà',
       title: 'An tâm khi người thân được <accent>chăm sóc</accent>.',

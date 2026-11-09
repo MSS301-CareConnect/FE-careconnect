@@ -784,15 +784,57 @@ dialog[open] {
   letter-spacing: -0.01em;
 }
 
-/* Auth frame (2026-11-09, after the owner's EXE auth screens): the forest panel and the form trade halves when
-   /login ↔ /register change. Transform only; reduced motion keeps it still. */
+/* Auth frame (2026-11-09): the forest panel and the form trade halves when
+   /login ↔ /register change. Transform, border-radius and shadow smoothly transition. */
 .cc-auth-slide {
   transition: transform 720ms cubic-bezier(0.65, 0, 0.35, 1);
   will-change: transform;
 }
 
+.cc-auth-card-slide {
+  /* Tailwind v4 translate-x-* sets the `translate` property, not `transform`. */
+  transition:
+    translate 760ms cubic-bezier(0.65, 0, 0.35, 1),
+    transform 760ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: translate;
+}
+
+.cc-auth-card-left,
+.cc-auth-card-right {
+  transition:
+    border-radius 760ms cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 760ms ease;
+}
+
+.cc-auth-card-left {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 24% 50%;
+  border-bottom-right-radius: 24% 50%;
+  box-shadow: 24px 0 60px -15px rgba(7, 29, 24, 0.32);
+}
+
+.cc-auth-card-right {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 24% 50%;
+  border-bottom-left-radius: 24% 50%;
+  box-shadow: -24px 0 60px -15px rgba(7, 29, 24, 0.32);
+}
+
+.cc-auth-form-slide {
+  transition:
+    translate 700ms cubic-bezier(0.65, 0, 0.35, 1),
+    transform 700ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: translate;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cc-auth-slide {
+  .cc-auth-slide,
+  .cc-auth-card-slide,
+  .cc-auth-card-left,
+  .cc-auth-card-right,
+  .cc-auth-form-slide {
     transition: none;
   }
 }
