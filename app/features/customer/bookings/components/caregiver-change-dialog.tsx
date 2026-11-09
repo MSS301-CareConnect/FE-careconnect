@@ -7,114 +7,82 @@ import {
   createCaregiverChangeRequest,
   type CaregiverChangeCreatePayload
 } from '~/entities/booking/booking-api'
-import { formatDateTime, isUpcomingOccurrence } from '~/entities/booking/booking-format'
-import type { BookingDetailRecord, BookingOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { isUpcomingOccurrence } from '~/entities/booking/booking-format'
+import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
+import { calendarDayOf, useFormat } from '~/shared/lib/format'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 
-const REASON_OPTIONS = [
-  { code: 'SKILL_MISMATCH', label: 'Kỹ năng chuyên môn chưa phù hợp', icon: 'medical_services' },
-  { code: 'ATTITUDE_ISSUE', label: 'Thái độ giao tiếp / phục vụ chưa tốt', icon: 'sentiment_dissatisfied' },
-  { code: 'PUNCTUALITY_ISSUE', label: 'Không đúng giờ / hay đến muộn', icon: 'schedule' },
-  { code: 'PERSONAL_PREFERENCE', label: 'Gia đình muốn thử nhân sự khác', icon: 'person' },
-  { code: 'OTHER', label: 'Lý do khác', icon: 'more_horiz' }
+const REASONS = [
+  { code: 'SKILL_MISMATCH', icon: 'medical_services' },
+  { code: 'ATTITUDE_ISSUE', icon: 'sentiment_dissatisfied' },
+  { code: 'PUNCTUALITY_ISSUE', icon: 'schedule' },
+  { code: 'PERSONAL_PREFERENCE', icon: 'person' },
+  { code: 'OTHER', icon: 'more_horiz' }
 ] as const
+const PREVIEW_VISITS = 3
+const key = 'customer.caregiverChange' as const
 
-type ReasonCode = (typeof REASON_OPTIONS)[number]['code']
+type ReasonCode = CaregiverChangeCreatePayload['reasonCode']
 
-export interface CaregiverChangeDialogProps {
-  booking: BookingDetailRecord
-  initialOccurrence?: BookingOccurrenceRecord | null
-  onClose: () => void
+function errorMessage(error: unknown) {
+  if (typeof error !== 'object' || error === null || !('info' in error)) return undefined
+  const info = error.info
+  return typeof info === 'object' && info !== null && 'message' in info && typeof info.message === 'string'
+    ? info.message
+    : undefined
 }
 
-export function CaregiverChangeDialog({
-  booking,
-  initialOccurrence,
-  onClose
-}: CaregiverChangeDialogProps) {
-  const { t, i18n } = useTranslation()
-  const language = i18n.language
+/**
+ * The customer asks the center for another caregiver for the WHOLE booking (2026-11-09): every visit still to come
+ * moves to the caregiver the center picks; visits within 12 hours keep the current one (BookingService decides).
+ */
+export function CaregiverChangeDialog({ booking, onClose }: { booking: BookingDetailRecord; onClose: () => void }) {
+  const { t } = useTranslation()
+  const format = useFormat()
   const queryClient = useQueryClient()
-
-  const upcoming = (booking.occurrences ?? []).filter((o) => isUpcomingOccurrence(o))
-  const [scope, setScope] = useState<'ALL_REMAINING' | 'SPECIFIC_OCCURRENCES'>(
-    initialOccurrence ? 'SPECIFIC_OCCURRENCES' : 'ALL_REMAINING'
-  )
-  const [selectedIds, setSelectedIds] = useState<string[]>(
-    initialOccurrence ? [initialOccurrence.id] : []
-  )
+  const upcoming = (booking.occurrences ?? [])
+    .filter((occurrence) => isUpcomingOccurrence(occurrence))
+    .sort((first, second) => first.startAt.localeCompare(second.startAt))
   const [reasonCode, setReasonCode] = useState<ReasonCode>('PERSONAL_PREFERENCE')
   const [reasonDetail, setReasonDetail] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [missingDetail, setMissingDetail] = useState(false)
 
   const mutation = useMutation({
-    mutationFn: (payload: CaregiverChangeCreatePayload) =>
-      createCaregiverChangeRequest(booking.id, payload),
+    mutationFn: (payload: CaregiverChangeCreatePayload) => createCaregiverChangeRequest(booking.id, payload),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(booking.id) })
       void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
       onClose()
-    },
-    onError: (err: any) => {
-      setErrorMessage(err?.info?.message || 'Có lỗi xảy ra khi gửi yêu cầu đổi người chăm sóc.')
     }
   })
 
-  function toggleAll() {
-    if (selectedIds.length === upcoming.length) {
-      setSelectedIds([])
-    } else {
-      setSelectedIds(upcoming.map((o) => o.id))
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (scope === 'SPECIFIC_OCCURRENCES' && selectedIds.length === 0) {
-      setErrorMessage('Vui lòng chọn ít nhất một buổi cần đổi người chăm sóc.')
-      return
-    }
+  function submit() {
     if (!reasonDetail.trim()) {
-      setErrorMessage('Vui lòng nhập lý do cụ thể để trung tâm sắp xếp nhân sự phù hợp.')
+      setMissingDetail(true)
       return
     }
-
-    setErrorMessage(null)
-    mutation.mutate({
-      scopeType: scope,
-      occurrenceIds: scope === 'SPECIFIC_OCCURRENCES' ? selectedIds : undefined,
-      reasonCode,
-      reasonDetail: reasonDetail.trim()
-    })
+    mutation.mutate({ scopeType: 'ALL_REMAINING', reasonCode, reasonDetail: reasonDetail.trim() })
   }
-
-  const isValid =
-    (scope === 'ALL_REMAINING' || selectedIds.length > 0) &&
-    reasonDetail.trim().length > 0 &&
-    !mutation.isPending
 
   return (
     <Modal
-      dismissOnBackdrop
+      dismissOnBackdrop={false}
       footer={
-        <div className='flex items-center justify-between w-full'>
-          <span className='text-xs text-on-surface-variant'>
-            Yêu cầu sẽ được trung tâm xem xét và phản hồi trong thời gian sớm nhất.
-          </span>
+        <div className='flex w-full flex-wrap items-center justify-between gap-3'>
+          <span className='text-xs text-on-surface-variant'>{t(`${key}.footer`)}</span>
           <div className='flex gap-2.5'>
             <Button onClick={onClose} type='button' variant='secondary'>
-              Quay lại
+              {t(`${key}.back`)}
             </Button>
             <Button
-              disabled={!isValid}
+              disabled={upcoming.length === 0}
               loading={mutation.isPending}
-              onClick={handleSubmit}
-              type='submit'
+              onClick={submit}
+              type='button'
               variant='primary'
             >
-              Gửi yêu cầu đổi
+              {t(`${key}.submit`)}
             </Button>
           </div>
         </div>
@@ -122,172 +90,87 @@ export function CaregiverChangeDialog({
       onClose={onClose}
       open
       size='xl'
-      title={`Yêu cầu đổi người chăm sóc #${booking.bookingCode}`}
+      title={t(`${key}.title`, { code: booking.bookingCode })}
     >
-      <form className='flex flex-col gap-4 text-sm' onSubmit={handleSubmit}>
-        {errorMessage && (
-          <div className='rounded-xl border border-error/30 bg-error-container p-3 text-xs font-semibold text-on-error-container'>
-            {errorMessage}
+      <div className='grid gap-5 text-sm md:grid-cols-2'>
+        <section className='flex flex-col gap-3'>
+          <h3 className='text-xs font-bold tracking-wider text-on-surface-variant uppercase'>{t(`${key}.scopeTitle`)}</h3>
+          <div className='rounded-xl border border-primary/40 bg-brand-50/60 p-3.5'>
+            <p className='flex items-center gap-2 font-semibold text-on-surface'>
+              <Icon className='text-lg text-primary' name='event_repeat' />
+              {upcoming.length ? t(`${key}.scope`, { count: upcoming.length }) : t(`${key}.scopeNone`)}
+            </p>
+            <p className='mt-1.5 text-xs text-on-surface-variant'>{t(`${key}.scopeNote`)}</p>
           </div>
-        )}
-
-        {/* 2-column layout */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {/* Left Column: Scope & Occurrences */}
-          <div className='flex flex-col gap-3.5'>
-            <span className='font-bold text-xs uppercase tracking-wider text-on-surface-variant'>
-              1. Phạm vi áp dụng đổi người
-            </span>
-
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-2.5'>
-              <button
-                type='button'
-                onClick={() => setScope('ALL_REMAINING')}
-                className={`flex items-start gap-2.5 rounded-xl border p-3 text-left transition-all ${
-                  scope === 'ALL_REMAINING'
-                    ? 'border-primary bg-primary/5 ring-1.5 ring-primary'
-                    : 'border-outline-variant/60 bg-surface-container-lowest hover:border-outline-variant'
-                }`}
-              >
-                <div
-                  className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border ${
-                    scope === 'ALL_REMAINING' ? 'border-primary bg-primary text-white' : 'border-outline-variant'
-                  }`}
-                >
-                  {scope === 'ALL_REMAINING' && <div className='h-1.5 w-1.5 rounded-full bg-white' />}
-                </div>
-                <div>
-                  <span className='block font-semibold text-xs text-on-surface'>Tất cả buổi còn lại</span>
-                  <span className='block text-[11px] text-on-surface-variant mt-0.5'>
-                    Toàn bộ {upcoming.length} buổi sắp tới
-                  </span>
-                </div>
-              </button>
-
-              <button
-                type='button'
-                onClick={() => setScope('SPECIFIC_OCCURRENCES')}
-                className={`flex items-start gap-2.5 rounded-xl border p-3 text-left transition-all ${
-                  scope === 'SPECIFIC_OCCURRENCES'
-                    ? 'border-primary bg-primary/5 ring-1.5 ring-primary'
-                    : 'border-outline-variant/60 bg-surface-container-lowest hover:border-outline-variant'
-                }`}
-              >
-                <div
-                  className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border ${
-                    scope === 'SPECIFIC_OCCURRENCES' ? 'border-primary bg-primary text-white' : 'border-outline-variant'
-                  }`}
-                >
-                  {scope === 'SPECIFIC_OCCURRENCES' && <div className='h-1.5 w-1.5 rounded-full bg-white' />}
-                </div>
-                <div>
-                  <span className='block font-semibold text-xs text-on-surface'>Chỉ một số buổi</span>
-                  <span className='block text-[11px] text-on-surface-variant mt-0.5'>
-                    {selectedIds.length > 0 ? `Đã chọn ${selectedIds.length} buổi` : 'Tùy chọn từng buổi'}
-                  </span>
-                </div>
-              </button>
-            </div>
-
-            {/* Checklist if SPECIFIC_OCCURRENCES */}
-            {scope === 'SPECIFIC_OCCURRENCES' && (
-              <div className='rounded-xl border border-outline-variant/60 bg-surface-container-low/40 p-3'>
-                <div className='mb-2 flex items-center justify-between text-xs'>
-                  <span className='font-semibold text-on-surface'>Chọn các buổi muốn đổi:</span>
-                  <button
-                    type='button'
-                    onClick={toggleAll}
-                    className='font-semibold text-primary hover:underline'
-                  >
-                    {selectedIds.length === upcoming.length ? 'Bỏ chọn' : 'Chọn tất cả'}
-                  </button>
-                </div>
-                <ul className='flex max-h-52 flex-col gap-1.5 overflow-y-auto pr-1 text-xs'>
-                  {upcoming.map((occ) => {
-                    const checked = selectedIds.includes(occ.id)
-                    return (
-                      <li key={occ.id}>
-                        <label
-                          className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition-colors ${
-                            checked
-                              ? 'border-primary/50 bg-surface-container-lowest shadow-2xs font-semibold'
-                              : 'border-transparent bg-surface-container-lowest/70 hover:bg-surface-container-lowest'
-                          }`}
-                        >
-                          <input
-                            checked={checked}
-                            className='accent-primary rounded'
-                            onChange={(e) =>
-                              setSelectedIds(
-                                e.target.checked
-                                  ? [...selectedIds, occ.id]
-                                  : selectedIds.filter((id) => id !== occ.id)
-                              )
-                            }
-                            type='checkbox'
-                          />
-                          <span className='truncate text-on-surface'>
-                            Buổi #{occ.occurrenceNo} · {formatDateTime(occ.startAt, language)}
-                          </span>
-                        </label>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Reason Code & Detail */}
-          <div className='flex flex-col gap-3.5'>
-            <span className='font-bold text-xs uppercase tracking-wider text-on-surface-variant'>
-              2. Lý do đổi người chăm sóc
-            </span>
-
-            {/* Reason Code Selectors */}
-            <div className='grid grid-cols-1 gap-1.5'>
-              {REASON_OPTIONS.map((item) => (
-                <label
-                  key={item.code}
-                  className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 text-xs transition-colors ${
-                    reasonCode === item.code
-                      ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
-                      : 'border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface'
-                  }`}
-                >
-                  <input
-                    checked={reasonCode === item.code}
-                    className='accent-primary'
-                    name='reasonCode'
-                    onChange={() => setReasonCode(item.code)}
-                    type='radio'
-                  />
-                  <Icon className='text-sm text-primary' name={item.icon} />
-                  <span>{item.label}</span>
-                </label>
-              ))}
-            </div>
-
-            {/* Detail Reason Textarea */}
+          {upcoming.length ? (
             <div>
-              <label className='flex items-center gap-1 font-semibold text-xs text-on-surface' htmlFor='reasonDetail'>
-                <span>Mô tả chi tiết</span>
-                <span className='text-rose-600 font-bold'>*</span>
-              </label>
-              <textarea
-                className='mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-xs text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 transition-all'
-                id='reasonDetail'
-                maxLength={500}
-                onChange={(e) => setReasonDetail(e.target.value)}
-                placeholder='Nhập thông tin cụ thể (ví dụ: Chuyên viên chưa quen thao tác đo huyết áp, gia đình muốn người có kinh nghiệm hơn...)'
-                required
-                rows={3}
-                value={reasonDetail}
-              />
+              <p className='text-xs font-semibold text-on-surface-variant'>{t(`${key}.firstVisits`)}</p>
+              <ul className='mt-1.5 flex flex-col gap-1 text-xs text-on-surface tabular-nums'>
+                {upcoming.slice(0, PREVIEW_VISITS).map((occurrence) => (
+                  <li key={occurrence.id}>
+                    {format.longDayLabel(calendarDayOf(occurrence.startAt))} ·{' '}
+                    {t('bookingSchedule.timeRange', {
+                      start: format.clock(occurrence.startAt),
+                      end: format.clock(occurrence.endAt)
+                    })}
+                  </li>
+                ))}
+              </ul>
             </div>
+          ) : null}
+        </section>
+
+        <section className='flex flex-col gap-3'>
+          <h3 className='text-xs font-bold tracking-wider text-on-surface-variant uppercase'>{t(`${key}.reasonTitle`)}</h3>
+          <div className='flex flex-col gap-1.5' role='radiogroup'>
+            {REASONS.map((reason) => (
+              <label
+                className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 text-xs transition-colors ${reasonCode === reason.code ? 'border-primary bg-primary/5 font-semibold text-primary ring-1 ring-primary' : 'border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:bg-surface-container-low'}`}
+                key={reason.code}
+              >
+                <input
+                  checked={reasonCode === reason.code}
+                  className='accent-primary'
+                  name='caregiver-change-reason'
+                  onChange={() => setReasonCode(reason.code)}
+                  type='radio'
+                />
+                <Icon className='text-sm text-primary' name={reason.icon} />
+                {t(`${key}.reasons.${reason.code}`)}
+              </label>
+            ))}
           </div>
-        </div>
-      </form>
+          <div>
+            <label className='text-xs font-semibold text-on-surface' htmlFor='caregiver-change-detail'>
+              {t(`${key}.detail`)}
+            </label>
+            <textarea
+              aria-describedby={missingDetail ? 'caregiver-change-detail-error' : undefined}
+              aria-invalid={missingDetail}
+              className='mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-xs text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25'
+              id='caregiver-change-detail'
+              maxLength={1000}
+              onChange={(event) => {
+                setReasonDetail(event.target.value)
+                setMissingDetail(false)
+              }}
+              placeholder={t(`${key}.detailPlaceholder`)}
+              rows={3}
+              value={reasonDetail}
+            />
+            {missingDetail ? (
+              <p className='mt-1 text-xs text-error' id='caregiver-change-detail-error'>
+                {t(`${key}.detailRequired`)}
+              </p>
+            ) : null}
+          </div>
+        </section>
+      </div>
+      {mutation.isError ? (
+        <p className='mt-4 rounded-xl bg-error-container p-3 text-xs font-semibold text-on-error-container' role='alert'>
+          {errorMessage(mutation.error) ?? t(`${key}.failed`)}
+        </p>
+      ) : null}
     </Modal>
   )
 }

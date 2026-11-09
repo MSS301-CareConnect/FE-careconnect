@@ -18,18 +18,30 @@ export function awaitsRemaining(booking: BookingDetailRecord) {
 export const LIFECYCLE_STEPS = ['request', 'confirm', 'assign', 'pay', 'upcoming', 'care', 'done'] as const
 export type LifecycleStep = (typeof LIFECYCLE_STEPS)[number]
 
+/** Bookings made before 2026-11-09 can still wait on the center or the caregiver before payment. */
+const LEGACY_PENDING: ReadonlySet<BookingStatus> = new Set([
+  'PENDING_CENTER_CONFIRMATION',
+  'PENDING_CAREGIVER_CONFIRMATION',
+  'PENDING_CAREGIVER_ASSIGNMENT'
+])
+
+function isLegacyFlow(booking: BookingDetailRecord) {
+  return booking.bookingType !== 'SHIFT' && LEGACY_PENDING.has(booking.status)
+}
+
 /**
- * The steps a booking goes through. A SHIFT booking is held at once on the caregiver's own shift (2026-11-05), so it
- * has no confirmation or assignment step; a booking with a chosen caregiver is confirmed by that caregiver (CR-3).
- * "upcoming" is the wait between full payment and the first visit, so a paid booking does not read "in care" days early.
+ * The steps a booking goes through. Since 2026-11-09 every booking is held at once and paid first (the caregiver is
+ * chosen by the customer or assigned by the system), so it has no confirmation or assignment step; bookings made
+ * before still waiting on the center or their caregiver keep the old steps. "upcoming" is the wait between full
+ * payment and the first visit, so a paid booking does not read "in care" days early.
  */
 export function lifecycleSteps(booking: BookingDetailRecord): readonly LifecycleStep[] {
-  return booking.bookingType === 'SHIFT' ? ['request', 'pay', 'upcoming', 'care', 'done'] : LIFECYCLE_STEPS
+  return isLegacyFlow(booking) ? LIFECYCLE_STEPS : ['request', 'pay', 'upcoming', 'care', 'done']
 }
 
 /** Translation key suffix of a step: "confirm" names who confirms. */
 export function lifecycleStepLabel(booking: BookingDetailRecord, step: LifecycleStep) {
-  if (step === 'request' && booking.bookingType === 'SHIFT') return 'requestHeld' as const
+  if (step === 'request' && !isLegacyFlow(booking)) return 'requestHeld' as const
   if (step === 'confirm' && booking.status === 'PENDING_CAREGIVER_CONFIRMATION') return 'confirmCaregiver' as const
   return step
 }

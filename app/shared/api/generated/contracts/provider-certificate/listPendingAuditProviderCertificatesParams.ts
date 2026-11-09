@@ -5,9 +5,13 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { CertificateAiCheckStatus } from './certificateAiCheckStatus'
+import type { CertificateRiskLevel } from './certificateRiskLevel'
 
 export type ListPendingAuditProviderCertificatesParams = {
   centerId?: string
+  riskLevel?: CertificateRiskLevel
+  aiCheckStatus?: CertificateAiCheckStatus
   page?: number
   size?: number
 }

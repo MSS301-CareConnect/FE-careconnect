@@ -110,6 +110,9 @@ export function VisitCard({
           {visit.noShowReportedAt && !visit.noShowDecidedAt ? (
             <StatusBadge tone='warning'>{t('caregiver.visits.noShowPending')}</StatusBadge>
           ) : null}
+          {visit.needsReassignment ? (
+            <StatusBadge tone='caution'>{t('caregiver.booking.badge.replacing')}</StatusBadge>
+          ) : null}
         </div>
       </div>
 

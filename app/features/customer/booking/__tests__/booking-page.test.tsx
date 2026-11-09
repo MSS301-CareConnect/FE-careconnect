@@ -368,7 +368,7 @@ describe('CustomerBookingPage', () => {
     })
     expect(request.slots).toHaveLength(1)
     expect(request).not.toHaveProperty('startTime')
-    expect(await screen.findByText('Đặt cọc (30%) sau khi có người chăm sóc')).toBeInTheDocument()
+    expect(await screen.findByText('Đặt cọc (30%) ngay khi gửi')).toBeInTheDocument()
     // Unit price, quantity and amount of each service, in the review and in the summary column.
     expect(screen.getAllByText('Đơn giá: 100.000 ₫ / giờ').length).toBe(2)
     expect(screen.getAllByText('2 giờ × 1 buổi').length).toBe(2)

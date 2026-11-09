@@ -7,9 +7,16 @@
  */
 
 export * from './archiveProviderCertificateParams'
+export * from './certificateAiCheckStatus'
+export * from './certificateAiExtracted'
+export * from './certificateAiWarning'
+export * from './certificateAuditStatistics'
 export * from './certificateRequest'
+export * from './certificateRiskLevel'
 export * from './certificateVerificationRequest'
+export * from './getPendingAuditCertificateStatisticsParams'
 export * from './listPendingAuditProviderCertificatesParams'
+export * from './providerCertificateAuditStatisticsResponse'
 export * from './providerCertificateListResponse'
 export * from './providerCertificatePage'
 export * from './providerCertificatePageResponse'

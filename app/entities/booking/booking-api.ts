@@ -51,8 +51,17 @@ import type {
   NoShowDecisionRequest,
   ServiceAddressRequest
 } from '~/shared/api/generated/contracts'
+import {
+  createCaregiverWithdrawals,
+  listCaregiverWithdrawals
+} from '~/shared/api/generated/api/caregiver-withdrawal/caregiver-withdrawal'
+import type {
+  CaregiverWithdrawalRequest,
+  ListCaregiverWithdrawalsParams
+} from '~/shared/api/generated/contracts'
 import { csrfHeaders } from '~/shared/api/csrf'
 import { env } from '~/shared/config/env'
+import { syncServerClock } from '~/shared/lib/server-clock'
 
 const readOptions = { credentials: 'include' as const }
 const writeOptions = async (headers: HeadersInit = {}) => ({
@@ -95,7 +104,8 @@ export const bookingKeys = {
   centerPolicy: (centerId: string) => ['booking', 'center-policy', centerId] as const,
   caregiverRequests: (page: number) => ['booking', 'caregiver-requests', page] as const,
   caregiverRequest: (id: string) => ['booking', 'caregiver-request', id] as const,
-  statusCounts: (centerId?: string) => ['booking', 'status-counts', centerId ?? 'own'] as const
+  statusCounts: (centerId?: string) => ['booking', 'status-counts', centerId ?? 'own'] as const,
+  withdrawals: (params: ListCaregiverWithdrawalsParams) => ['booking', 'withdrawals', params] as const
 }
 
 export async function fetchBookings(params: ListBookingsParams = {}) {
@@ -138,7 +148,10 @@ export async function fetchHeldSchedules(params: ListBookingHeldSchedulesParams)
   return result(await listBookingHeldSchedules(params, readOptions))
 }
 export async function fetchBooking(id: string) {
-  return result(await getBooking(id, readOptions))
+  const booking = result(await getBooking(id, readOptions))
+  // The 5-minute hold countdown runs on server time (2026-11-09).
+  syncServerClock(booking.serverTime)
+  return booking
 }
 export async function fetchBookingHistory(id: string, page = 0) {
   return result(await listBookingHistory(id, { page, size: 50 }, readOptions))
@@ -149,7 +162,9 @@ export async function fetchBookingQuote(request: BookingQuoteRequest) {
 }
 /** The same Idempotency-Key returns the same booking when a submit is retried. */
 export async function placeBooking(request: BookingCreateRequest, idempotencyKey: string) {
-  return result(await createBooking(request, await writeOptions({ 'Idempotency-Key': idempotencyKey })))
+  const booking = result(await createBooking(request, await writeOptions({ 'Idempotency-Key': idempotencyKey })))
+  syncServerClock(booking.serverTime)
+  return booking
 }
 export async function previewCancellation(id: string, occurrenceIds?: string[]) {
   return result(await previewBookingCancellation(id, { occurrenceIds }, await writeOptions()))
@@ -186,6 +201,17 @@ export async function acceptAsCaregiverRequest(id: string) {
 }
 export async function declineAsCaregiverRequest(id: string, reason: string) {
   return result(await declineBookingAsCaregiver(id, { reason }, await writeOptions()))
+}
+
+/**
+ * 2026-11-09: a caregiver withdraws from visits of one booking (each > 24 h ahead) with a reason; the center — or the
+ * automatic assignment — gives them to another caregiver. Managers read their center's queue, caregivers their own.
+ */
+export async function fetchCaregiverWithdrawals(params: ListCaregiverWithdrawalsParams = {}) {
+  return result(await listCaregiverWithdrawals(params, readOptions))
+}
+export async function withdrawFromVisits(request: CaregiverWithdrawalRequest) {
+  return result(await createCaregiverWithdrawals(request, await writeOptions()))
 }
 
 export async function fetchMyOccurrences(params: ListMyBookingOccurrencesParams = {}) {

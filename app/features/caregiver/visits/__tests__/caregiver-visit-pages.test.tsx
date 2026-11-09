@@ -11,12 +11,14 @@ import {
   fetchCareSession,
   fetchMyOccurrences,
   fetchOccurrence,
-  saveSessionTask
+  saveSessionTask,
+  withdrawFromVisits
 } from '~/entities/booking/booking-api'
 import { fetchAssignedCareRecipient } from '~/entities/care-recipient/care-recipient-api'
 import type { CaregiverOccurrenceRecord, CareSessionRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
+import { CaregiverBookingPage } from '../caregiver-booking-page'
 import { CaregiverVisitDetailPage } from '../caregiver-visit-detail-page'
 import { CaregiverVisitsPage } from '../caregiver-visits-page'
 
@@ -28,7 +30,8 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   acknowledgeOccurrence: vi.fn(),
   checkIn: vi.fn(),
   checkOut: vi.fn(),
-  saveSessionTask: vi.fn()
+  saveSessionTask: vi.fn(),
+  withdrawFromVisits: vi.fn()
 }))
 
 vi.mock('~/entities/care-recipient/care-recipient-api', async (importOriginal) => ({
@@ -78,26 +81,35 @@ beforeEach(async () => {
 })
 
 describe('Caregiver care visits list', () => {
-  it('groups upcoming visits by day, links to each one and accepts from the card', async () => {
-    vi.mocked(fetchMyOccurrences).mockResolvedValue(page([visit]))
-    vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
+  it('gathers the visits of one booking into one card that opens the booking (2026-11-09)', async () => {
+    vi.mocked(fetchMyOccurrences).mockResolvedValue(
+      page([visit, { ...visit, id: 'occ-2', occurrenceNo: 2, startAt: new Date(Date.now() + 2 * 86_400_000).toISOString() }])
+    )
     renderWith(<CaregiverVisitsPage />)
 
-    const link = await screen.findByRole('link', { name: 'Mở buổi 1 của Bà Lan' })
-    expect(link).toHaveAttribute('href', '/caregiver/visits/occ-1')
-    expect(screen.getByRole('heading', { level: 2, name: /Hôm nay|Ngày mai/ })).toBeInTheDocument()
+    const link = await screen.findByRole('link', { name: 'Mở lịch BK0001 của Bà Lan' })
+    expect(link).toHaveAttribute('href', '/caregiver/visits/bookings/bk-1?from=upcoming')
+    expect(screen.getAllByRole('link', { name: /Mở lịch/ })).toHaveLength(1)
+    expect(screen.getByText('2 buổi')).toBeInTheDocument()
+    expect(screen.getByText('2 buổi cần xác nhận')).toBeInTheDocument()
     const upcoming = vi.mocked(fetchMyOccurrences).mock.calls.find(([params]) => !params?.status)?.[0]
     expect(upcoming).toMatchObject({ page: 0, size: 100 })
     expect(upcoming?.from).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Nhận buổi' }))
-    await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
   })
 
-  it('reads one period for finished visits and lists them newest first', async () => {
+  it('reads one period for finished visits and lists bookings by their newest visit', async () => {
     vi.mocked(fetchMyOccurrences).mockResolvedValue(
       page([
         { ...visit, id: 'old', status: 'COMPLETED', startAt: '2026-10-01T01:00:00Z', endAt: '2026-10-01T03:00:00Z' },
+        {
+          ...visit,
+          id: 'other',
+          bookingId: 'bk-2',
+          bookingCode: 'BK0002',
+          status: 'COMPLETED',
+          startAt: '2026-10-10T01:00:00Z',
+          endAt: '2026-10-10T03:00:00Z'
+        },
         { ...visit, id: 'new', status: 'COMPLETED', startAt: '2026-10-20T01:00:00Z', endAt: '2026-10-20T03:00:00Z' }
       ])
     )
@@ -106,9 +118,43 @@ describe('Caregiver care visits list', () => {
     await waitFor(() =>
       expect(fetchMyOccurrences).toHaveBeenCalledWith({ from: '2026-10-01', to: '2026-10-31', page: 0, size: 100 })
     )
-    const links = await screen.findAllByRole('link', { name: /Mở buổi 1 của Bà Lan/ })
-    expect(links.map((item) => item.getAttribute('href'))).toEqual(['/caregiver/visits/new', '/caregiver/visits/old'])
+    const links = await screen.findAllByRole('link', { name: /Mở lịch BK000/ })
+    expect(links.map((item) => item.getAttribute('href'))).toEqual([
+      '/caregiver/visits/bookings/bk-1?from=done',
+      '/caregiver/visits/bookings/bk-2?from=done'
+    ])
     expect(screen.getByRole('tab', { name: 'Đã xong' })).toHaveAttribute('aria-selected', 'true')
+  })
+})
+
+describe('Caregiver booking page', () => {
+  it('lists every visit of the booking, accepts from a card and withdraws from the visits more than a day away', async () => {
+    const far = { ...visit, id: 'far', occurrenceNo: 2, startAt: new Date(Date.now() + 3 * 86_400_000).toISOString(), endAt: new Date(Date.now() + 3 * 86_400_000 + 7_200_000).toISOString() }
+    vi.mocked(fetchMyOccurrences).mockResolvedValue(page([visit, far]))
+    vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
+    vi.mocked(withdrawFromVisits).mockResolvedValue([])
+    renderWith(<CaregiverBookingPage bookingId='bk-1' />, '/caregiver/visits/bookings/bk-1')
+
+    expect(await screen.findByRole('link', { name: 'Mở buổi 1 của Bà Lan' })).toHaveAttribute('href', '/caregiver/visits/occ-1')
+    expect(fetchMyOccurrences).toHaveBeenCalledWith({ bookingId: 'bk-1', page: 0, size: 100 })
+    fireEvent.click(screen.getAllByRole('button', { name: 'Nhận buổi' })[0])
+    await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Xin hủy các buổi còn lại' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Xin hủy buổi chăm sóc' })
+    // The visit starting in 10 minutes stays with the caregiver.
+    expect(within(dialog).getByText('Các buổi còn dưới 24 giờ — bạn vẫn phụ trách')).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('radio', { name: 'Lý do khác' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu hủy' }))
+    expect(within(dialog).getByText('Vui lòng ghi rõ lý do.')).toBeInTheDocument()
+    expect(withdrawFromVisits).not.toHaveBeenCalled()
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Ghi chú cho trung tâm' }), {
+      target: { value: 'Con ốm' }
+    })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu hủy' }))
+    await waitFor(() =>
+      expect(withdrawFromVisits).toHaveBeenCalledWith({ occurrenceIds: ['far'], reasonCode: 'OTHER', reasonDetail: 'Con ốm' })
+    )
   })
 })
 

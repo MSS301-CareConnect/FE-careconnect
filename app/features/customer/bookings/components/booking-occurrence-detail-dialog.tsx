@@ -26,7 +26,6 @@ export interface BookingOccurrenceDetailDialogProps {
   caregiverName?: string
   caregiverProfile?: ProviderCaregiverPublicRecord
   onClose: () => void
-  onRequestCaregiverChange?: (occurrence: BookingOccurrenceRecord) => void
   onReschedule?: (occurrence: BookingOccurrenceRecord) => void
   onCancelOccurrence?: (occurrence: BookingOccurrenceRecord) => void
 }
@@ -38,7 +37,6 @@ export function BookingOccurrenceDetailDialog({
   caregiverName,
   caregiverProfile,
   onClose,
-  onRequestCaregiverChange,
   onReschedule,
   onCancelOccurrence
 }: BookingOccurrenceDetailDialogProps) {
@@ -339,16 +337,6 @@ export function BookingOccurrenceDetailDialog({
               {/* Action buttons if upcoming */}
               {isUpcoming ? (
                 <div className='mt-3.5 pt-3 border-t border-outline-variant/40 flex flex-col gap-2'>
-                  {onRequestCaregiverChange ? (
-                    <button
-                      type='button'
-                      onClick={() => onRequestCaregiverChange(occurrence)}
-                      className='inline-flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-xs font-semibold text-on-surface hover:bg-surface-container-low transition-colors'
-                    >
-                      <Icon className='text-sm text-primary' name='sync_alt' />
-                      Yêu cầu đổi người chăm sóc
-                    </button>
-                  ) : null}
                   {onReschedule ? (
                     <button
                       type='button'

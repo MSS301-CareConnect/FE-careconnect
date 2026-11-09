@@ -7,11 +7,13 @@ import { bookingErrorStatus, bookingKeys, fetchBooking } from '~/entities/bookin
 import { EXPIRING_STATUSES } from '~/entities/booking/booking-deadline'
 import { bookingErrorKey, bookingTypeKey, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
-import { BookingOccurrenceList, matchOccurrenceService } from '~/entities/booking/booking-occurrence-list'
+import { matchOccurrenceService } from '~/entities/booking/booking-occurrence-list'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
+import { BookingVisitSchedule } from '~/entities/booking/booking-visit-schedule'
 import { ServiceAddressDialog, canChangeServiceAddress } from '~/entities/booking/service-address-dialog'
 import { fetchPublicCaregiver, providerKeys } from '~/entities/provider/provider-api'
 import type { BookingOccurrenceRecord, OccurrenceStatus } from '~/shared/api/generated/contracts'
+import { calendarDayOf } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ActionMenu } from '~/shared/ui/action-menu'
 import { CopyButton } from '~/shared/ui/copy-button'
@@ -61,7 +63,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
   const [cancelling, setCancelling] = useState(false)
   const [editingAddress, setEditingAddress] = useState(false)
   const [selectedOccurrence, setSelectedOccurrence] = useState<BookingOccurrenceRecord | null>(null)
-  const [requestingCaregiverChange, setRequestingCaregiverChange] = useState<BookingOccurrenceRecord | null | boolean>(false)
+  const [requestingCaregiverChange, setRequestingCaregiverChange] = useState(false)
   const [reschedulingOccurrence, setReschedulingOccurrence] = useState<BookingOccurrenceRecord | null>(null)
   // "Now" is fixed when the page opens: render must stay pure (react-hooks/purity).
   const [now] = useState(() => Date.now())
@@ -128,7 +130,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
       ? [
           {
             id: 'change-caregiver',
-            label: 'Đổi người chăm sóc',
+            label: t('customer.caregiverChange.open'),
             icon: 'sync_alt',
             onSelect: () => setRequestingCaregiverChange(true)
           }
@@ -203,11 +205,12 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
             icon='event_note'
             title={`${t(`${key}.occurrences`)}${occurrences.length ? ` (${occurrences.length})` : ''}`}
           >
-            <BookingOccurrenceList
+            <BookingVisitSchedule
               caregiverName={resolveCaregiverName}
               occurrences={occurrences}
-              onSelectOccurrence={(occ) => setSelectedOccurrence(occ)}
+              onSelect={(occ) => setSelectedOccurrence(occ)}
               services={data.services}
+              today={calendarDayOf(new Date(now))}
             />
           </SectionCard>
           <BookingAftercare
@@ -228,10 +231,6 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
           caregiverProfile={caregiverProfile.data}
           occurrence={selectedOccurrence}
           onClose={() => setSelectedOccurrence(null)}
-          onRequestCaregiverChange={(occ) => {
-            setSelectedOccurrence(null)
-            setRequestingCaregiverChange(occ)
-          }}
           onReschedule={(occ) => {
             setSelectedOccurrence(null)
             setReschedulingOccurrence(occ)
@@ -241,11 +240,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
       ) : null}
 
       {requestingCaregiverChange ? (
-        <CaregiverChangeDialog
-          booking={data}
-          initialOccurrence={typeof requestingCaregiverChange === 'object' ? requestingCaregiverChange : null}
-          onClose={() => setRequestingCaregiverChange(false)}
-        />
+        <CaregiverChangeDialog booking={data} onClose={() => setRequestingCaregiverChange(false)} />
       ) : null}
 
       {reschedulingOccurrence ? (

@@ -10,6 +10,7 @@ import type { RequestHandlerOptions } from 'msw'
 
 import type {
   EmptyActionResponse,
+  ProviderCertificateAuditStatisticsResponse,
   ProviderCertificateListResponse,
   ProviderCertificatePageResponse,
   ProviderCertificateResponse
@@ -18,9 +19,11 @@ import type {
 import {
   getArchiveProviderCertificateResponseMock,
   getCreateProviderCertificateResponseMock,
+  getGetPendingAuditCertificateStatisticsResponseMock,
   getListPendingAuditProviderCertificatesResponseMock,
   getListProviderCertificatesResponseMock,
   getListVerifiedProviderCertificatesResponseMock,
+  getStartProviderCertificateAiCheckResponseMock,
   getUpdateProviderCertificateResponseMock,
   getVerifyProviderCertificateByCenterResponseMock,
   getVerifyProviderCertificateResponseMock
@@ -33,6 +36,8 @@ export {
   getArchiveProviderCertificateResponseMock,
   getVerifyProviderCertificateResponseMock,
   getListVerifiedProviderCertificatesResponseMock,
+  getGetPendingAuditCertificateStatisticsResponseMock,
+  getStartProviderCertificateAiCheckResponseMock,
   getListPendingAuditProviderCertificatesResponseMock,
   getVerifyProviderCertificateByCenterResponseMock
 } from './provider-certificate.faker'
@@ -191,6 +196,58 @@ export const getListVerifiedProviderCertificatesMockHandler = (
   )
 }
 
+export const getGetPendingAuditCertificateStatisticsMockHandler = (
+  overrideResponse?:
+    | ProviderCertificateAuditStatisticsResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCertificateAuditStatisticsResponse> | ProviderCertificateAuditStatisticsResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/certificates/pending-audit/statistics',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetPendingAuditCertificateStatisticsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getStartProviderCertificateAiCheckMockHandler = (
+  overrideResponse?:
+    | ProviderCertificateResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<ProviderCertificateResponse> | ProviderCertificateResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/certificates/:id/ai-check',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getStartProviderCertificateAiCheckResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getListPendingAuditProviderCertificatesMockHandler = (
   overrideResponse?:
     | ProviderCertificatePageResponse
@@ -249,6 +306,8 @@ export const getProviderCertificateMock = () => [
   getArchiveProviderCertificateMockHandler(),
   getVerifyProviderCertificateMockHandler(),
   getListVerifiedProviderCertificatesMockHandler(),
+  getGetPendingAuditCertificateStatisticsMockHandler(),
+  getStartProviderCertificateAiCheckMockHandler(),
   getListPendingAuditProviderCertificatesMockHandler(),
   getVerifyProviderCertificateByCenterMockHandler()
 ]

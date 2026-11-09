@@ -112,7 +112,7 @@ describe('CustomerBookingDetailPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Bà Lan' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Đang chờ trung tâm xác nhận' })).toBeInTheDocument()
-    expect(screen.getByText(/Buổi 1/)).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: /Lịch \d+ buổi chăm sóc/ })).toBeInTheDocument()
     expect(await screen.findByText('Lịch đặt được cập nhật trạng thái')).toBeInTheDocument()
   })
 
@@ -278,7 +278,7 @@ describe('CustomerBookingDetailPage', () => {
     })
     renderPage()
 
-    const viewDetailBtn = await screen.findByRole('button', { name: 'Xem chi tiết' })
+    const viewDetailBtn = (await screen.findAllByRole('button', { name: 'Xem buổi 1' }))[0]
     fireEvent.click(viewDetailBtn)
 
     const dialog = await screen.findByRole('dialog', { name: 'Chi tiết buổi chăm sóc #1' })

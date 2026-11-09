@@ -68,4 +68,6 @@ export interface BookingDetailRecord {
   deadlineType?: BookingDeadlineType
   deadlineAt?: string
   expiredReason?: BookingExpiredReason
+  /** Server time of the response — the 5-minute hold countdown corrects the browser clock with it */
+  serverTime?: string
 }

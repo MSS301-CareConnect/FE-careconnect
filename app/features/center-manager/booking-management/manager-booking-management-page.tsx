@@ -16,6 +16,7 @@ import { ManagerBookingQuickAction, type ManagerBookingAction } from './componen
 import { BOOKING_LIST_TABS, ManagerBookingFilters } from './components/manager-booking-filters'
 import { ManagerBookingQueue } from './components/manager-booking-queue'
 import { ManagerBookingTable } from './components/manager-booking-table'
+import { ManagerWithdrawalQueue } from './components/manager-withdrawal-queue'
 import { useManagerBookings } from './hooks/use-manager-bookings'
 
 /**
@@ -63,6 +64,7 @@ export function ManagerBookingManagementPage() {
       />
 
       <ManagerBookingQueue list={list} />
+      <ManagerWithdrawalQueue />
       <ManagerBookingFilters key={list.keyword} list={list} total={bookings.data?.totalElements} />
 
       <div aria-labelledby={tabId(BOOKING_LIST_TABS, list.group)} id={tabPanelId(BOOKING_LIST_TABS)} role='tabpanel'>

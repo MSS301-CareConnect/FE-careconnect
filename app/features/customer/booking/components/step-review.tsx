@@ -175,11 +175,7 @@ export function StepReview({ form }: { form: BookingForm }) {
         <h3 className='font-semibold text-on-surface' id='review-next'>
           {t('customer.booking.review.nextTitle')}
         </h3>
-        <NextSteps
-          assign={!form.selectedCaregiverId}
-          confirmMinutes={policy?.confirmationTimeoutMinutes}
-          held={form.schedule.bookingType === 'SHIFT'}
-        />
+        <NextSteps assign={!form.selectedCaregiverId} />
       </section>
 
       <label className='flex cursor-pointer items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary'>

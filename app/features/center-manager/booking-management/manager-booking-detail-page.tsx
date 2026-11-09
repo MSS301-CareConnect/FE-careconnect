@@ -38,6 +38,7 @@ import { ManagerBookingActionDialog } from './components/manager-booking-action-
 import { ManagerBookingSummary } from './components/manager-booking-summary'
 import { ManagerOccurrenceActions } from './components/manager-occurrence-actions'
 import { ManagerVisitDetailDialog } from './components/manager-visit-detail-dialog'
+import { BookingWithdrawalNotice } from './components/manager-withdrawal-queue'
 import { useCenterCaregivers } from './hooks/use-center-caregivers'
 import { useFreeCaregivers } from './hooks/use-free-caregivers'
 
@@ -288,6 +289,7 @@ export function ManagerBookingDetailPage() {
 
       <div className='grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]'>
         <div className='flex min-w-0 flex-col gap-5'>
+          <BookingWithdrawalNotice bookingId={data.id} />
           <SectionCard icon='event_note' title={t(`${k}.occurrences`)}>
             <p className='-mt-1 mb-3 text-sm text-on-surface-variant'>{t(`${k}.occurrencesHint`)}</p>
             <BookingOccurrenceList

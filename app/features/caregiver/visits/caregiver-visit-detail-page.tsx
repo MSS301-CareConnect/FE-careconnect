@@ -18,6 +18,7 @@ import { VisitActions } from './components/visit-actions'
 import { VisitChecklist } from './components/visit-checklist'
 import { BookingVisits } from './components/visit-booking'
 import { VisitLogistics } from './components/visit-logistics'
+import { VisitWithdraw } from './components/visit-withdraw'
 
 export function CaregiverVisitDetailPage({ id }: { id: string }) {
   const { t } = useTranslation()
@@ -25,7 +26,9 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
   const today = useToday()
   const visit = useQuery({ queryKey: bookingKeys.occurrence(id), queryFn: () => fetchOccurrence(id), retry: false })
   useDocumentTitle(t('caregiver.visitDetail.documentTitle', { name: visit.data?.recipientName ?? '' }))
-  const back = { to: '/caregiver/visits', label: t('caregiver.visitDetail.backToVisits') }
+  const back = visit.data?.bookingId
+    ? { to: `/caregiver/visits/bookings/${visit.data.bookingId}`, label: t('caregiver.booking.page.crumb', { code: visit.data.bookingCode ?? '' }) }
+    : { to: '/caregiver/visits', label: t('caregiver.visitDetail.backToVisits') }
 
   if (visit.isPending)
     return (
@@ -76,6 +79,7 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
         <div className='grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]'>
           <div className='flex min-w-0 flex-col gap-4'>
             {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
+            <VisitWithdraw visit={data} />
             <CareProfile visit={data} />
             {data.customerNote ? (
               <section aria-labelledby='visit-customer-note' className={`${cgCard} p-4 sm:p-5`}>

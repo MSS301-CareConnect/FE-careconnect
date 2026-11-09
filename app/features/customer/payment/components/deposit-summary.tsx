@@ -2,14 +2,17 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { timeLeft } from '~/entities/booking/booking-deadline'
+import { formatCountdown } from '~/entities/booking/hold-countdown'
 import type { initialPaymentOf } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
-import { useClock } from '~/shared/lib/use-clock'
+import { useServerClock } from '~/shared/lib/use-clock'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'customer.payment.deposit' as const
 const URGENT_MS = 3 * 60 * 60_000
+// 2026-11-09: the 5-minute hold of a new booking counts down in mm:ss.
+const SHORT_HOLD_MS = 15 * 60_000
 
 /**
  * The amount paid now, the payment plan (initial payment now, the rest before the first visit — or everything at once
@@ -30,15 +33,18 @@ export function DepositSummary({
 }) {
   const { t } = useTranslation()
   const format = useFormat()
-  const now = useClock(30_000)
+  const now = useServerClock(1_000)
   const full = deposit.percent === undefined || deposit.percent >= 100
-  const left = booking.depositDueAt ? timeLeft(booking.depositDueAt, now) : null
-  const urgent = booking.depositDueAt ? new Date(booking.depositDueAt).getTime() - now < URGENT_MS : false
+  const msLeft = booking.depositDueAt ? new Date(booking.depositDueAt).getTime() - now : 0
+  const left = booking.depositDueAt && msLeft > 0 ? timeLeft(booking.depositDueAt, now) : null
+  const urgent = booking.depositDueAt ? msLeft < URGENT_MS : false
   const leftText = !booking.depositDueAt
     ? undefined
     : !left
       ? t(`${key}.timeUp`)
-      : t(`${key}.timeLeft`, {
+      : msLeft <= SHORT_HOLD_MS
+        ? t('bookingSchedule.hold.leftLabel', { time: formatCountdown(msLeft) })
+        : t(`${key}.timeLeft`, {
           time:
             left.days > 0
               ? t('customer.bookingDetail.lifecycle.leftDays', { days: left.days, hours: left.hours })

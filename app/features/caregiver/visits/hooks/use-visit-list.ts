@@ -32,6 +32,25 @@ export interface VisitDayGroup {
   visits: CaregiverOccurrenceRecord[]
 }
 
+export interface VisitBookingGroup {
+  bookingId: string
+  visits: CaregiverOccurrenceRecord[]
+}
+
+/**
+ * Visits grouped by booking (2026-11-09), in the order of each booking's first visit in the list; a booking's visits
+ * keep the list order (soonest first in the upcoming tabs, newest first in history).
+ */
+export function groupByBooking(visits: CaregiverOccurrenceRecord[]): VisitBookingGroup[] {
+  const groups = new Map<string, VisitBookingGroup>()
+  for (const visit of visits) {
+    const group = groups.get(visit.bookingId) ?? { bookingId: visit.bookingId, visits: [] }
+    group.visits.push(visit)
+    groups.set(visit.bookingId, group)
+  }
+  return [...groups.values()]
+}
+
 /** Visits grouped by their calendar day (Vietnam time), in the order given. */
 export function groupByDay(visits: CaregiverOccurrenceRecord[]): VisitDayGroup[] {
   const groups: VisitDayGroup[] = []
@@ -104,6 +123,7 @@ export function useVisitList(today: string) {
     pages,
     visits,
     groups: groupByDay(visits),
+    bookingGroups: groupByBooking(visits),
     setTab: (value: VisitTab) => update({ tab: value === 'upcoming' ? '' : value }),
     setRange: (value: VisitRange) => update({ range: value === 'month' ? '' : value }),
     setCustom: (from: string, to: string) => update({ range: 'custom', from, to })

@@ -99,6 +99,17 @@ export function useFormat() {
     return t(`booking.weekdays.${isoWeekday(day) as 1 | 2 | 3 | 4 | 5 | 6 | 7}`)
   }
 
+  function longWeekday(day: string) {
+    return t(`bookingSchedule.weekdaysLong.${isoWeekday(day) as 1 | 2 | 3 | 4 | 5 | 6 | 7}`)
+  }
+
+  /** "Hôm nay" / "Ngày mai" when `day` is today or tomorrow (both calendar dates), otherwise null. */
+  function relativeDay(day: string, today: string) {
+    if (day === today) return t('bookingSchedule.relative.today')
+    if (day === addDays(today, 1)) return t('bookingSchedule.relative.tomorrow')
+    return null
+  }
+
   function duration(minutes: number) {
     if (minutes <= 0) return ''
     const hours = Math.floor(minutes / 60)
@@ -132,6 +143,20 @@ export function useFormat() {
     timeRange: (start: string, end: string) => {
       const length = duration(minutesBetween(start, end))
       return length ? `${start}–${end} (${length})` : `${start}–${end}`
+    },
+    longWeekday,
+    relativeDay,
+    /** "Thứ Sáu, 06/11/2026" from a calendar date — the full weekday reads better than "T6" in schedules. */
+    longDayLabel: (day: string) => `${longWeekday(day)}, ${formatCalendarDate(day)}`,
+    /** "14:35 hôm nay" / "14:35 ngày mai" / "14:35 · Thứ Sáu, 06/11/2026" from an instant, relative to `today`. */
+    clockWithDay: (value: string | undefined, today: string) => {
+      if (!value) return ''
+      const day = calendarDayOf(value)
+      const relative = relativeDay(day, today)
+      const clock = formatClock24(value, language)
+      return relative
+        ? `${clock} ${relative.toLowerCase()}`
+        : `${clock} · ${longWeekday(day)}, ${formatCalendarDate(day)}`
     }
   }
 }

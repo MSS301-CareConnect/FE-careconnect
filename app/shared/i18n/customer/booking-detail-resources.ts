@@ -15,7 +15,7 @@ export const bookingDetailEn = {
     label: 'Booking progress',
     steps: {
       request: 'Request sent',
-      requestHeld: 'Shift held',
+      requestHeld: 'Booked & held',
       confirm: 'Center confirms',
       confirmCaregiver: 'Caregiver accepts',
       assign: 'Caregiver assigned',
@@ -71,12 +71,14 @@ export const bookingDetailEn = {
     },
     AWAITING_INITIAL_PAYMENT: {
       title: 'Pay to confirm',
-      body: 'The center accepted. Pay the initial payment of {{deposit}} by {{depositDue}}, or the booking expires.',
-      bodyNoAmount: 'The center accepted. Pay the initial payment by {{depositDue}}, or the booking expires.'
+      body: 'Your booking is on hold. Pay the initial payment of {{deposit}} by {{depositDue}}; after that it is cancelled so others can book.',
+      bodyNoAmount: 'Your booking is on hold. Pay the initial payment by {{depositDue}}; after that it is cancelled so others can book.'
     },
     CONFIRMED: {
       title: 'Confirmed',
       body: 'Your payment is received and the caregiver will arrive for each visit below.',
+      bodyAssigning:
+        'Your payment is received. A caregiver is being found for the visits that have none yet — you will be told when one is assigned. A visit still without one shortly before it starts is cancelled and fully refunded.',
       bodyRemaining:
         'Your initial payment is received. Pay the remaining {{remaining}} by {{remainingDue}}: care starts only once the booking is paid in full, and an unpaid booking expires.'
     },
@@ -179,7 +181,7 @@ export const bookingDetailVi = {
     label: 'Tiến trình lịch đặt',
     steps: {
       request: 'Gửi yêu cầu',
-      requestHeld: 'Giữ ca',
+      requestHeld: 'Đặt & giữ chỗ',
       confirm: 'Trung tâm xác nhận',
       confirmCaregiver: 'Người chăm sóc nhận lịch',
       assign: 'Phân công',
@@ -235,12 +237,14 @@ export const bookingDetailVi = {
     },
     AWAITING_INITIAL_PAYMENT: {
       title: 'Thanh toán để xác nhận lịch',
-      body: 'Trung tâm đã duyệt. Hãy thanh toán khoản đầu {{deposit}} trước {{depositDue}}, nếu không lịch sẽ hết hạn.',
-      bodyNoAmount: 'Trung tâm đã duyệt. Hãy thanh toán khoản đầu trước {{depositDue}}, nếu không lịch sẽ hết hạn.'
+      body: 'Lịch đang được giữ cho bạn. Hãy thanh toán khoản đầu {{deposit}} trước {{depositDue}}, quá hạn lịch sẽ tự hủy để người khác đặt.',
+      bodyNoAmount: 'Lịch đang được giữ cho bạn. Hãy thanh toán khoản đầu trước {{depositDue}}, quá hạn lịch sẽ tự hủy để người khác đặt.'
     },
     CONFIRMED: {
       title: 'Đã xác nhận',
       body: 'Đã nhận thanh toán. Người chăm sóc sẽ đến theo từng buổi bên dưới.',
+      bodyAssigning:
+        'Đã nhận thanh toán. Hệ thống đang tìm người chăm sóc cho các buổi chưa có người — bạn sẽ được báo khi có. Nếu tới sát giờ vẫn chưa có người, buổi đó được hủy và hoàn tiền đầy đủ.',
       bodyRemaining:
         'Đã nhận khoản thanh toán đầu. Hãy thanh toán phần còn lại {{remaining}} trước {{remainingDue}}: chỉ bắt đầu chăm sóc khi đã trả đủ, chưa trả đủ thì lịch đặt sẽ hết hạn.'
     },
