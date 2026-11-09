@@ -53,6 +53,7 @@ export function RegistrationPage() {
                 autoComplete='email'
                 icon='mail'
                 id='register-email-verify'
+                placeholder={t('auth.shell.placeholders.email')}
                 label={t('auth.email')}
                 onChange={(event) => set.setEmail(event.target.value)}
                 required
@@ -63,6 +64,7 @@ export function RegistrationPage() {
                 autoComplete='one-time-code'
                 icon='pin'
                 id='register-otp'
+                placeholder={t('auth.shell.placeholders.otp')}
                 inputClassName='text-lg font-bold tracking-[0.45em] tabular-nums'
                 inputMode='numeric'
                 label={t('auth.registration.otpCode')}
@@ -121,6 +123,7 @@ export function RegistrationPage() {
                   autoComplete='name'
                   icon='person'
                   id='register-name'
+                  placeholder={t('auth.shell.placeholders.fullName')}
                   label={t('auth.registration.fullName')}
                   maxLength={255}
                   onChange={(event) => set.setFullName(event.target.value)}
@@ -131,6 +134,7 @@ export function RegistrationPage() {
                   autoComplete='tel'
                   icon='call'
                   id='register-phone'
+                  placeholder={t('auth.shell.placeholders.phone')}
                   inputMode='tel'
                   label={t('auth.registration.phoneNumber')}
                   onChange={(event) => set.setPhoneNumber(event.target.value)}
@@ -142,6 +146,7 @@ export function RegistrationPage() {
                 autoComplete='email'
                 icon='mail'
                 id='register-email'
+                placeholder={t('auth.shell.placeholders.email')}
                 label={t('auth.email')}
                 onChange={(event) => set.setEmail(event.target.value)}
                 required
@@ -152,6 +157,7 @@ export function RegistrationPage() {
                 <PasswordField
                   autoComplete='new-password'
                   id='register-password'
+                  placeholder={t('auth.shell.placeholders.newPassword')}
                   label={t('auth.registration.password')}
                   onChange={set.setPassword}
                   value={fields.password}
@@ -160,6 +166,7 @@ export function RegistrationPage() {
                 <PasswordField
                   autoComplete='new-password'
                   id='register-confirm'
+                  placeholder={t('auth.shell.placeholders.confirmPassword')}
                   label={t('auth.registration.confirmPassword')}
                   onChange={set.setConfirmPassword}
                   value={fields.confirmPassword}

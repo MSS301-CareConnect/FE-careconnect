@@ -1,16 +1,36 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet } from 'react-router'
+import { useLocation, useOutlet } from 'react-router'
 import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
 
+import { PageTransition } from '~/shared/ui/page-transition'
 import { Toaster } from '~/shared/ui/toaster'
 
 import { ManagerSidebar } from './components/manager-sidebar'
 import { ManagerTopbar } from './components/manager-topbar'
+import '~/shared/ui/ops-theme.css'
 
+const COLLAPSED_KEY = 'careconnect.manager.sidebarCollapsed'
+
+function readCollapsed() {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem(COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Center Manager shell ("Soft Bento", 2026-11-09): the floating forest rail (collapsible from 1024 px, a drawer below),
+ * a light topbar over the mint → peach page, and page changes that fade, blur and rise through `PageTransition`
+ * (keyed by path, so search-parameter changes of a page do not animate).
+ */
 export function CenterManagerLayout() {
   const { t } = useTranslation()
+  const { pathname } = useLocation()
+  const outlet = useOutlet()
   const [open, setOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(readCollapsed)
 
   useEffect(() => {
     if (!open) return
@@ -21,15 +41,33 @@ export function CenterManagerLayout() {
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [open])
 
+  function toggleCollapsed() {
+    setCollapsed((value) => {
+      try {
+        localStorage.setItem(COLLAPSED_KEY, value ? '0' : '1')
+      } catch {
+        // A blocked storage only loses the preference.
+      }
+      return !value
+    })
+  }
+
   return (
-    <div className='min-h-screen bg-surface text-on-surface'>
-      <ManagerSidebar onClose={() => setOpen(false)} open={open} />
-      <div className='flex min-h-screen min-w-0 flex-col lg:pl-72'>
+    <div className='theme-ops cc-mesh min-h-screen bg-fixed text-on-surface'>
+      <ManagerSidebar
+        collapsed={collapsed}
+        onClose={() => setOpen(false)}
+        onToggleCollapsed={toggleCollapsed}
+        open={open}
+      />
+      <div
+        className={`flex min-h-screen min-w-0 flex-col transition-[padding] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${collapsed ? 'lg:pl-[5.75rem]' : 'lg:pl-[19rem]'}`}
+      >
         <ManagerTopbar menuOpen={open} onToggleMenu={() => setOpen(!open)} />
         <main className='w-full min-w-0 flex-1'>
-          <Outlet />
+          <PageTransition pageKey={pathname.replace(/\/+$/, '')}>{outlet}</PageTransition>
         </main>
-        <footer className='border-t border-outline-variant/20 bg-white px-6 py-5 text-center text-xs text-outline'>
+        <footer className='px-6 py-6 text-center text-xs text-on-surface-variant/80'>
           {t('centerManager.footer')}
         </footer>
         {/* Action results (work shifts…) are sonner toasts, like the admin, customer and caregiver portals. */}

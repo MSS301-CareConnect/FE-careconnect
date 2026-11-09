@@ -18,7 +18,8 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ActionMenu } from '~/shared/ui/action-menu'
 import { CopyButton } from '~/shared/ui/copy-button'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { SectionCard } from '~/shared/ui/section-card'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
@@ -103,7 +104,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
           {missing ? t(`${key}.notFound.description`) : t(bookingErrorKey(booking.error))}
         </p>
         <Link
-          className='mt-6 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm font-semibold text-on-primary hover:bg-primary-container'
+          className='mt-6 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-on-primary hover:bg-primary-container'
           to='/customer/bookings'
         >
           {t(`${key}.back`)}
@@ -156,13 +157,11 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
     return undefined
   }
 
-  const selectedService = selectedOccurrence
-    ? matchOccurrenceService(selectedOccurrence, data.services)
-    : undefined
+  const selectedService = selectedOccurrence ? matchOccurrenceService(selectedOccurrence, data.services) : undefined
 
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         actions={menuItems.length > 0 ? <ActionMenu items={menuItems} label={t(`${key}.moreActions`)} /> : undefined}
         breadcrumb={[
           { label: t('customer.nav.home'), to: '/customer' },
@@ -219,7 +218,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
             visited={occurrences.some((visit) => VISITED.has(visit.status))}
           />
           <SectionCard icon='history' title={t(`${key}.history`)}>
-            <BookingHistoryList bookingId={data.id} />
+            <BookingHistoryList bookingId={data.id} collapsedCount={4} />
           </SectionCard>
         </div>
       </div>
@@ -227,7 +226,9 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
       {selectedOccurrence ? (
         <BookingOccurrenceDetailDialog
           booking={data}
-          caregiverName={selectedOccurrence.caregiverId ? resolveCaregiverName(selectedOccurrence.caregiverId) : undefined}
+          caregiverName={
+            selectedOccurrence.caregiverId ? resolveCaregiverName(selectedOccurrence.caregiverId) : undefined
+          }
           caregiverProfile={caregiverProfile.data}
           occurrence={selectedOccurrence}
           onClose={() => setSelectedOccurrence(null)}

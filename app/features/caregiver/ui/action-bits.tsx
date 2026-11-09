@@ -14,12 +14,12 @@ import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from '~/share
 import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 /**
- * Bottom bar for the page's main action on phones, inside thumb reach and above the tab bar. From `lg` it becomes an
- * ordinary inline row.
+ * Floating card for the page's main action on phones, just above the pill tab bar and beside the AI assistant button
+ * (so neither covers the other). From `lg` it becomes an ordinary inline row.
  */
 export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
-    <div className='fixed inset-x-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-30 border-t border-outline-variant bg-surface-container-lowest/95 px-4 py-3 shadow-[0_-6px_20px_-12px_rgb(16_24_20/0.25)] backdrop-blur lg:static lg:z-auto lg:mt-2 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none'>
+    <div className='fixed right-[5rem] bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] left-3 z-30 rounded-3xl border border-white/80 bg-white/95 p-2.5 shadow-[var(--shadow-float)] backdrop-blur-xl lg:static lg:z-auto lg:mt-2 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none'>
       <div className='mx-auto flex max-w-[1080px] flex-wrap items-center gap-2 [&>*]:flex-1 lg:[&>*]:flex-none'>
         {children}
       </div>

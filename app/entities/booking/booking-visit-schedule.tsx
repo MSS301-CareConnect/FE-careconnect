@@ -47,6 +47,7 @@ export function BookingVisitSchedule({
           caregiverName={caregiverName}
           onSelect={onSelect}
           services={services}
+          showService={false}
           today={today}
           visits={visits}
         />

@@ -22,7 +22,7 @@ export function WalletWithdrawals() {
   })
 
   return (
-    <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs sm:p-6'>
+    <section className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'>
       <h2 className='text-base font-bold text-on-surface'>{t('wallet.withdrawals.title')}</h2>
       {withdrawals.isPending ? (
         <div aria-label={t('wallet.loading')} className='mt-4 space-y-3' role='status'>

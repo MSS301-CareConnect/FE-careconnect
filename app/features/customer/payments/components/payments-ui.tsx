@@ -68,7 +68,7 @@ export function PaymentListSection({
   return (
     <section aria-labelledby={id} className='flex flex-col gap-3'>
       <div>
-        <h2 className='text-lg font-semibold text-on-surface' id={id}>
+        <h2 className='text-lg font-bold tracking-tight text-forest-950' id={id}>
           {title}
         </h2>
         {description ? <p className='mt-0.5 text-sm text-on-surface-variant'>{description}</p> : null}

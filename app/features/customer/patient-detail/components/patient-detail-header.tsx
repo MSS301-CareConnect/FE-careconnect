@@ -68,7 +68,9 @@ export function PatientDetailHeader({
           viewable
         />
         <div className='min-w-0 flex-1 basis-56'>
-          <h1 className='text-2xl font-bold text-on-surface sm:text-[30px]'>{profile.fullName}</h1>
+          <h1 className='text-[clamp(1.6rem,3vw,2.3rem)] leading-tight font-extrabold tracking-tight text-forest-950'>
+            {profile.fullName}
+          </h1>
           {facts.length ? <p className='mt-1 text-base text-on-surface-variant'>{facts.join(' · ')}</p> : null}
           <div className='mt-2 flex flex-wrap items-center gap-2 text-sm'>
             <StatusBadge
@@ -87,7 +89,7 @@ export function PatientDetailHeader({
         <div className='flex items-center gap-2'>
           {profile.status === 'ACTIVE' ? (
             <Link
-              className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-on-primary shadow-xs transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+              className='inline-flex min-h-11 items-center gap-2 rounded-full bg-peach-300 px-5 text-sm font-semibold text-forest-950 transition-[background-color,transform] hover:bg-peach-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)]'
               to={`/customer/booking?patientId=${profile.id}`}
             >
               <Icon className='text-lg' name='event_available' />
@@ -114,7 +116,7 @@ export function PatientDetailHeader({
               role='progressbar'
             >
               <span
-                className='block h-full rounded-full bg-primary transition-[width] duration-300'
+                className='block h-full rounded-full bg-gradient-to-r from-mint-400 to-forest-700 transition-[width] duration-500'
                 style={{ width: `${completeness.percent}%` }}
               />
             </div>

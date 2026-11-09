@@ -5,6 +5,8 @@ import { useSearchParams } from 'react-router'
 import type { CatalogItemRecord } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { BentoPageHeader, bentoContainer, bentoTabClass, bentoTabList } from '~/shared/ui/bento-page-header'
+import { CountUp } from '~/shared/ui/motion'
 
 import { CatalogFilters } from './components/catalog-filters'
 import { CatalogItemDialog } from './components/catalog-item-dialog'
@@ -60,41 +62,50 @@ export function AdminServicesPage() {
   ] as const
 
   return (
-    <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-start justify-between gap-5'>
-        <div className='max-w-3xl'>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl text-on-surface'>{t(`${key}.title`)}</h1>
-          <p className='mt-2 text-sm leading-6 text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
-        </div>
-        <div className='flex flex-wrap gap-2'>
+    <div className={`${bentoContainer} space-y-6`}>
+      <BentoPageHeader
+        actions={
           <button
-            className='inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary shadow-xs transition-all hover:bg-primary-container active:scale-[0.98]'
+            className='inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-peach-300 px-6 text-sm font-bold text-forest-950 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)] transition-[background-color,transform] hover:bg-peach-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-200 active:scale-[0.97] disabled:opacity-50'
             onClick={() => setEditing({ mode: 'create' })}
             type='button'
           >
             <Icon className='text-lg' name='add_circle' />
             {t(`${key}.add`)}
           </button>
-        </div>
-      </header>
+        }
+        description={t(`${key}.subtitle`)}
+        icon='medical_information'
+        title={t(`${key}.title`)}
+        variant='hero'
+      />
 
       {tab === 'master' ? (
-        <section aria-label={t(`${key}.metrics.total`)} className='grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4'>
-          {metrics.map((item) => (
+        <section
+          aria-label={t(`${key}.metrics.total`)}
+          className='ops-stagger grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4'
+        >
+          {metrics.map((item, index) => (
             <div
-              className='relative min-w-0 overflow-hidden rounded-2xl border border-outline-variant/60 bg-white p-4 shadow-xs sm:p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md'
+              className={`relative min-w-0 overflow-hidden rounded-2xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] ${index === 0 ? 'ops-stat-dark' : ''}`}
               key={item.name}
             >
               <div className='flex items-start justify-between gap-2'>
                 <span className='min-w-0 text-[11px] font-bold uppercase leading-4 tracking-wider text-outline sm:text-xs'>
                   {t(`${key}.metrics.${item.name}`)}
                 </span>
-                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${item.badgeBg}`}>
+                <span
+                  className={`ops-stat-icon grid h-10 w-10 shrink-0 place-items-center rounded-full ${item.badgeBg}`}
+                >
                   <Icon className='text-xl' name={item.icon} />
                 </span>
               </div>
-              <strong className='mt-3 block text-2xl font-extrabold sm:mt-4 sm:text-3xl tracking-tight tabular-nums text-on-surface'>
-                {list.query.isSuccess ? number.format(item.value) : '—'}
+              <strong className='ops-stat-value mt-3 block text-[30px] leading-none font-extrabold tracking-tight text-forest-950 sm:mt-4 sm:text-[34px]'>
+                {list.query.isSuccess ? (
+                  <CountUp format={(n) => number.format(Math.round(n))} value={item.value} />
+                ) : (
+                  '—'
+                )}
               </strong>
               <p className='mt-1.5 line-clamp-2 text-xs text-on-surface-variant'>
                 {t(`${key}.metricHints.${item.name}`)}
@@ -104,19 +115,11 @@ export function AdminServicesPage() {
         </section>
       ) : null}
 
-      <div
-        aria-label={t('admin.services')}
-        className='flex gap-1.5 overflow-x-auto rounded-2xl bg-surface-container-low p-1.5 shadow-xs'
-        role='tablist'
-      >
+      <div aria-label={t('admin.services')} className={bentoTabList} role='tablist'>
         {tabs.map((item) => (
           <button
             aria-selected={tab === item}
-            className={`shrink-0 whitespace-nowrap rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${
-              tab === item
-                ? 'bg-white text-primary shadow-xs'
-                : 'text-on-surface-variant hover:bg-white/60 hover:text-on-surface'
-            }`}
+            className={bentoTabClass(tab === item)}
             key={item}
             onClick={() => selectTab(item)}
             role='tab'

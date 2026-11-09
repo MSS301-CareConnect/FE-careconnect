@@ -31,7 +31,7 @@ const WITHDRAWABLE = new Set(['OPEN', 'IN_PROGRESS', 'ESCALATED'])
 const inputClass =
   'mt-1 min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none'
 const primaryButton =
-  'min-h-11 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
+  'min-h-11 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
 
 /** Customer aftercare for one booking (H-04, H-05): care reports, a review per caregiver, complaints. */
 export function BookingAftercare({

@@ -70,7 +70,7 @@ export function CustomerHeader() {
   return (
     <motion.header
       animate={{ y: 0, opacity: 1 }}
-      className='sticky top-0 z-50 h-[4.75rem] px-2 sm:px-4'
+      className='sticky top-0 z-50 h-[4.75rem] px-2 [view-transition-name:cc-customer-header] sm:px-4'
       initial={{ y: '-100%', opacity: 0 }}
       transition={{ duration: 0.6, ease: [0.2, 0.7, 0.2, 1] }}
     >
@@ -87,6 +87,7 @@ export function CustomerHeader() {
           className='inline-flex shrink-0 items-center gap-2 rounded-full pr-2 text-lg font-bold tracking-tight text-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900'
           onClick={toTopIfOpen(homePath)}
           to={homePath}
+          viewTransition
         >
           <span
             aria-hidden='true'
@@ -107,6 +108,7 @@ export function CustomerHeader() {
               key={to}
               onClick={toTopIfOpen(to)}
               to={to}
+              viewTransition
             >
               {({ isActive }) => (
                 <>

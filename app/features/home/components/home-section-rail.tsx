@@ -11,6 +11,8 @@ const sections = [
 ] as const
 
 const spring = { type: 'spring' as const, stiffness: 380, damping: 30 }
+/** Pixels scrolled before the rail appears. */
+const SHOW_AFTER = 80
 
 /**
  * Section rail in place of the page scrollbar on large screens (UI redesign 2026-11-09): the landing sections sit as a
@@ -18,13 +20,16 @@ const spring = { type: 'spring' as const, stiffness: 380, damping: 30 }
  * the stack drifts a little with the scroll speed and springs back to the middle, so it moves with the page. Hovering
  * or focusing fans the stack out with every name (collapsed it is only numbers, so it never covers the content), and a
  * click scrolls to that section. While mounted it hides the native scrollbar from `lg` up (`html.cc-rail-page` in
- * app.css); wheel, keys and touch still scroll.
+ * app.css); wheel, keys and touch still scroll. At the very top of the page it stays hidden (the hero is the whole
+ * story there) and slides in from the right once the visitor starts scrolling down.
  */
 export function HomeSectionRail() {
   const { t } = useTranslation()
   const { scrollY } = useScroll()
   const [active, setActive] = useState(0)
   const [open, setOpen] = useState(false)
+  // Hidden at the top of the page; appears once the page has scrolled a little.
+  const [shown, setShown] = useState(() => typeof window !== 'undefined' && window.scrollY > SHOW_AFTER)
   // Drift with the scroll speed (down → lags upward), clamped to ±18 px, then spring back to the middle.
   const drift = useSpring(useTransform(useVelocity(scrollY), [-3000, 0, 3000], [18, 0, -18]), {
     stiffness: 260,
@@ -38,7 +43,8 @@ export function HomeSectionRail() {
     return () => root.classList.remove('cc-rail-page')
   }, [])
 
-  useMotionValueEvent(scrollY, 'change', () => {
+  useMotionValueEvent(scrollY, 'change', (y) => {
+    setShown(y > SHOW_AFTER)
     const line = window.innerHeight * 0.4
     let current = 0
     sections.forEach((section, index) => {
@@ -58,15 +64,20 @@ export function HomeSectionRail() {
   // block and pin the rail to the page instead of the viewport.
   if (typeof document === 'undefined') return null
   return createPortal(
-    <nav
+    <motion.nav
+      animate={shown ? { opacity: 1, x: 0, filter: 'blur(0px)' } : { opacity: 0, x: 32, filter: 'blur(4px)' }}
+      aria-hidden={shown ? undefined : true}
       aria-label={t('home.rail.label')}
-      className='fixed top-1/2 right-4 z-30 hidden -translate-y-1/2 lg:block'
+      className={`fixed top-1/2 right-4 z-30 hidden -translate-y-1/2 lg:block ${shown ? '' : 'pointer-events-none'}`}
+      inert={!shown}
+      initial={false}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false)
       }}
       onFocus={() => setOpen(true)}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
       <motion.ol className='flex flex-col items-end' style={{ y: drift }}>
         {sections.map((section, index) => {
@@ -109,7 +120,7 @@ export function HomeSectionRail() {
           )
         })}
       </motion.ol>
-    </nav>,
+    </motion.nav>,
     document.body
   )
 }

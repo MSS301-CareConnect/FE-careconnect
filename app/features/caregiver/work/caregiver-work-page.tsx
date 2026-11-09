@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { Tabs, tabPanelId } from '~/shared/ui/tabs'
+import { PillTabs } from '~/shared/ui/pill-tabs'
+import { tabPanelId } from '~/shared/ui/tabs'
 
 import { useMyCaregiverProfile, useToday } from '../data/caregiver-queries'
 import { CaregiverError, CaregiverPageHeader, cgContainer } from '../ui/caregiver-page'
@@ -32,7 +33,7 @@ export function CaregiverWorkPage({ tab }: { tab: WorkTab }) {
   return (
     <div className={cgContainer}>
       <CaregiverPageHeader description={t('caregiver.work.subtitle')} title={t('caregiver.work.title')} />
-      <Tabs
+      <PillTabs
         className='mb-5'
         idBase='caregiver-work'
         items={(Object.keys(TAB_PATHS) as WorkTab[]).map((value) => ({

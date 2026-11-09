@@ -39,7 +39,7 @@ export function CenterServicesSection({ center }: { center: ServiceCenter }) {
 
   return (
     <section aria-labelledby='center-services-title' className='flex flex-col gap-4'>
-      <h2 className='text-xl font-semibold text-on-surface' id='center-services-title'>
+      <h2 className='text-xl font-bold tracking-tight text-forest-950' id='center-services-title'>
         {t(`${key}.title`)}
       </h2>
       {list.isPending ? (
@@ -96,7 +96,7 @@ export function CenterServicesSection({ center }: { center: ServiceCenter }) {
                   </span>
                   <Link
                     aria-label={`${t(`${services}.card.bookShort`)} ${service.name}`}
-                    className='inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+                    className='inline-flex min-h-10 items-center gap-1.5 rounded-full bg-primary px-3.5 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
                     to={`/customer/booking?center=${center.id}&service=${service.catalogItemId}`}
                   >
                     {t(`${services}.card.bookShort`)}
@@ -105,11 +105,7 @@ export function CenterServicesSection({ center }: { center: ServiceCenter }) {
               )
             })}
           </ul>
-          <Pagination
-            onPageChange={setPage}
-            page={safePage}
-            totalPages={totalPages}
-          />
+          <Pagination onPageChange={setPage} page={safePage} totalPages={totalPages} />
         </>
       ) : null}
     </section>

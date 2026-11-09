@@ -1,8 +1,13 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { canAnimate, useExitPresence } from '../lib/use-exit-presence'
 import { Button } from './button'
 import { Icon } from './icon'
+import './dialog-motion.css'
+
+/** Length of the `cc-modal-out` animation in dialog-motion.css. */
+const CLOSE_MS = 150
 
 export interface ModalProps {
   open: boolean
@@ -52,32 +57,41 @@ export function Modal({
   const dialogRef = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const descriptionId = useId()
+  // Stays mounted for the close animation when the caller sets `open` to false (`data-state='closed'`).
+  const { present, state } = useExitPresence(open, CLOSE_MS + 20)
 
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
-    if (open && !dialog.open) {
-      dialog.showModal()
-    } else if (!open && dialog.open) {
-      dialog.close()
-    }
+    if (open && !dialog.open) dialog.showModal()
+    // While closing, the dialog stays open for its exit animation; unmounting removes it from the top layer.
   }, [open])
 
-  if (!open) return null
+  if (!present) return null
 
   const requestClose = () => {
     if (beforeClose && !beforeClose()) return
-    dialogRef.current?.close()
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (!canAnimate()) {
+      dialog.close()
+      return
+    }
+    // Play the exit, then close: the close event reaches `onClose` once the dialog has left.
+    dialog.dataset.state = 'closed'
+    window.setTimeout(() => dialog.close(), CLOSE_MS)
   }
 
   return (
     <dialog
       aria-describedby={description ? descriptionId : undefined}
       aria-labelledby={titleId}
-      className={`m-auto w-[calc(100%_-_2rem)] ${size ? SIZE_CLASSES[size] : maxWidthClass} rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-0 text-on-surface shadow-xl backdrop:bg-on-surface/55`}
+      className={`cc-modal m-auto w-[calc(100%_-_2rem)] ${size ? SIZE_CLASSES[size] : maxWidthClass} rounded-[1.75rem] border border-white/70 bg-surface-container-lowest p-0 text-on-surface shadow-[var(--shadow-float)]`}
+      data-state={state}
       onCancel={(event) => {
-        // Escape: the browser closes the dialog unless the guard keeps it open.
-        if (beforeClose && !beforeClose()) event.preventDefault()
+        // Escape: closed through the same guarded, animated path as the close button.
+        event.preventDefault()
+        requestClose()
       }}
       onClose={onClose}
       onMouseDown={(event) => {
@@ -88,9 +102,9 @@ export function Modal({
       ref={dialogRef}
     >
       <div className='flex max-h-[min(90dvh,calc(100dvh-2rem))] flex-col'>
-        <div className='flex shrink-0 items-start justify-between gap-3 border-b border-outline-variant/40 px-5 py-4 sm:px-6'>
+        <div className='flex shrink-0 items-start justify-between gap-3 border-b border-outline-variant/40 px-5 py-4 sm:px-7 sm:py-5'>
           <div>
-            <h2 className='text-lg font-bold text-on-surface' id={titleId}>
+            <h2 className='text-xl font-bold tracking-tight text-forest-950' id={titleId}>
               {title}
             </h2>
             {description ? (
@@ -101,16 +115,16 @@ export function Modal({
           </div>
           <button
             aria-label={t('common.ui.closeDialog')}
-            className='grid h-9 w-9 shrink-0 place-items-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary'
+            className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface-container-low text-on-surface-variant transition-[background-color,color,transform] duration-200 hover:rotate-90 hover:bg-mint-100 hover:text-forest-900 focus-visible:outline-2 focus-visible:outline-primary'
             onClick={requestClose}
             type='button'
           >
             <Icon name='close' />
           </button>
         </div>
-        {children ? <div className='min-h-0 overflow-y-auto p-5 text-sm sm:p-6'>{children}</div> : null}
+        {children ? <div className='min-h-0 overflow-y-auto p-5 text-sm sm:px-7 sm:py-6'>{children}</div> : null}
         {footer ? (
-          <div className='flex shrink-0 flex-wrap items-center justify-end gap-2.5 border-t border-outline-variant/40 bg-surface-container-low px-5 py-3.5 sm:px-6'>
+          <div className='flex shrink-0 flex-wrap items-center justify-end gap-2.5 border-t border-outline-variant/40 bg-mint-50/60 px-5 py-4 sm:px-7'>
             {footer}
           </div>
         ) : null}

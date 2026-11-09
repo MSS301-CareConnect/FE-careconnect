@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
+import { Icon } from '~/shared/ui/icon'
 import { Pagination } from '~/shared/ui/pagination'
 
 import { BOOKING_STATUSES, OCCURRENCE_STATUSES, formatDateTime } from './booking-format'
@@ -33,10 +34,15 @@ function HistoryReasonText({ reason }: { reason?: string | null }) {
   )
 }
 
-/** Status changes and occurrence events of one booking, oldest first, from GET /bookings/{id}/history. */
-export function BookingHistoryList({ bookingId }: { bookingId: string }) {
+/**
+ * Status changes and occurrence events of one booking, oldest first, from GET /bookings/{id}/history. With
+ * `collapsedCount` (the customer page, 2026-11-09) only the latest entries show until "Show earlier" is pressed,
+ * so a long history does not stretch the page.
+ */
+export function BookingHistoryList({ bookingId, collapsedCount }: { bookingId: string; collapsedCount?: number }) {
   const { t, i18n } = useTranslation()
   const [page, setPage] = useState(0)
+  const [expanded, setExpanded] = useState(false)
   const history = useQuery({
     queryKey: bookingKeys.history(bookingId, page),
     queryFn: () => fetchBookingHistory(bookingId, page),
@@ -65,47 +71,58 @@ export function BookingHistoryList({ bookingId }: { bookingId: string }) {
   if (history.data.items.length === 0)
     return <p className='text-sm text-on-surface-variant'>{t('booking.history.empty')}</p>
 
+  const all = history.data.items
+  const hiddenCount = collapsedCount && !expanded ? Math.max(0, all.length - collapsedCount) : 0
+  const shown = hiddenCount > 0 ? all.slice(hiddenCount) : all
+  const canCollapse = Boolean(collapsedCount && all.length > collapsedCount)
+
   return (
     <>
       <ol className='flex flex-col gap-4'>
-      {history.data.items.map((entry, index) => {
-        const type = knownEvent(entry.eventType)
-        return (
-          <li className='grid grid-cols-[12px_minmax(0,1fr)] gap-3' key={`${entry.changedAt}-${index}`}>
-            <span aria-hidden='true' className='mt-1.5 h-3 w-3 rounded-full bg-primary' />
-            <div className='min-w-0'>
-              <p className='text-sm font-semibold text-on-surface'>
-                {type ? t(`booking.history.events.${type}`) : t('booking.history.events.other')}
-                {entry.toStatus ? (
-                  <span className='font-normal text-on-surface-variant'>
-                    {' · '}
-                    {entry.fromStatus
-                      ? t('booking.history.transition', {
-                          from: statusLabel(entry.fromStatus),
-                          to: statusLabel(entry.toStatus)
-                        })
-                      : statusLabel(entry.toStatus)}
-                  </span>
-                ) : null}
-              </p>
-              <p className='text-xs text-on-surface-variant'>{formatDateTime(entry.changedAt, i18n.language)}</p>
-              {entry.newValue ? (
-                <p className='mt-1 text-sm text-on-surface'>
-                  {t('booking.address.changedEvent', { from: entry.oldValue ?? '', to: entry.newValue })}
+        {shown.map((entry, index) => {
+          const type = knownEvent(entry.eventType)
+          return (
+            <li className='grid grid-cols-[12px_minmax(0,1fr)] gap-3' key={`${entry.changedAt}-${index}`}>
+              <span aria-hidden='true' className='mt-1.5 h-3 w-3 rounded-full bg-primary' />
+              <div className='min-w-0'>
+                <p className='text-sm font-semibold text-on-surface'>
+                  {type ? t(`booking.history.events.${type}`) : t('booking.history.events.other')}
+                  {entry.toStatus ? (
+                    <span className='font-normal text-on-surface-variant'>
+                      {' · '}
+                      {entry.fromStatus
+                        ? t('booking.history.transition', {
+                            from: statusLabel(entry.fromStatus),
+                            to: statusLabel(entry.toStatus)
+                          })
+                        : statusLabel(entry.toStatus)}
+                    </span>
+                  ) : null}
                 </p>
-              ) : null}
-              <HistoryReasonText reason={entry.reason} />
-            </div>
-          </li>
-        )
-      })}
-    </ol>
-    <Pagination
-      className='mt-4'
-      onPageChange={setPage}
-      page={page}
-      totalPages={history.data.totalPages ?? 0}
-    />
-  </>
+                <p className='text-xs text-on-surface-variant'>{formatDateTime(entry.changedAt, i18n.language)}</p>
+                {entry.newValue ? (
+                  <p className='mt-1 text-sm text-on-surface'>
+                    {t('booking.address.changedEvent', { from: entry.oldValue ?? '', to: entry.newValue })}
+                  </p>
+                ) : null}
+                <HistoryReasonText reason={entry.reason} />
+              </div>
+            </li>
+          )
+        })}
+      </ol>
+      {canCollapse ? (
+        <button
+          aria-expanded={expanded}
+          className='mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          onClick={() => setExpanded((value) => !value)}
+          type='button'
+        >
+          <Icon className='text-lg' name={expanded ? 'expand_less' : 'expand_more'} />
+          {expanded ? t('booking.history.showLess') : t('booking.history.showEarlier', { count: hiddenCount })}
+        </button>
+      ) : null}
+      <Pagination className='mt-4' onPageChange={setPage} page={page} totalPages={history.data.totalPages ?? 0} />
+    </>
   )
 }

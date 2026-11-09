@@ -107,7 +107,7 @@ export function CenterOptions({ onPick, onLeave, size }: CenterOptionsProps) {
         <p className='font-bold text-on-surface'>{t(`${key}.states.signInTitle`)}</p>
         <p className='leading-6 text-on-surface-variant'>{t(`${key}.states.signInText`)}</p>
         <Link
-          className='mt-1 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 font-bold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          className='mt-1 inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
           onClick={onLeave}
           to='/login'
         >

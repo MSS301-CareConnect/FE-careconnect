@@ -66,8 +66,8 @@ export function PersonalInfoPanel({ user, memberSince }: { user: UserResponse; m
     >
       <div className='flex flex-wrap items-center gap-4 border-b border-outline-variant/70 p-5 sm:p-6'>
         <Avatar className='h-16 w-16 shrink-0 rounded-full text-lg ring-4 ring-brand-50' decorative name={name} />
-        <div className='min-w-0 flex-1'>
-          <h2 className='truncate text-lg font-semibold text-on-surface' id='personal-info-title'>
+        <div className='min-w-0 flex-1 basis-40'>
+          <h2 className='truncate text-lg font-bold tracking-tight text-forest-950' id='personal-info-title'>
             {name}
           </h2>
           <p className='text-sm text-on-surface-variant'>

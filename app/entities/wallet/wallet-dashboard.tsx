@@ -50,7 +50,7 @@ export function WalletDashboard({ bookingHref }: { bookingHref?: (bookingId: str
 
       <section aria-labelledby={`${id}-period`} className='space-y-4'>
         <div className='flex flex-wrap items-end justify-between gap-3'>
-          <h2 className='text-xl font-bold text-on-surface' id={`${id}-period`}>
+          <h2 className='text-[22px] font-bold tracking-tight text-forest-950' id={`${id}-period`}>
             {t(`wallet.titles.${wallet.data.ownerType}`)}
           </h2>
           <label className='text-sm font-semibold text-on-surface' htmlFor={`${id}-select`}>

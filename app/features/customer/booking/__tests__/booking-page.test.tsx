@@ -686,7 +686,7 @@ describe('CustomerBookingPage', () => {
     expect(screen.getAllByRole('button', { name: 'Gửi yêu cầu đặt lịch' })[0]).toBeDisabled()
   })
 
-  it('disables centers outside the recipient province and shows an out of area badge', async () => {
+  it('hides centers outside the recipient province and says how many were hidden', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue({
       items: [{ id: 'rec-1', fullName: 'Bà Lan', age: 81, province: 'Thành phố Hà Nội', status: 'ACTIVE' }],
       page: 0,
@@ -708,10 +708,8 @@ describe('CustomerBookingPage', () => {
     await next()
 
     expect(await screen.findByRole('heading', { name: 'Dịch vụ' })).toBeInTheDocument()
-    await waitFor(() => {
-      const outOfAreaCenter = screen.getByRole('radio', { name: /TT Bình An/ })
-      expect(outOfAreaCenter).toBeDisabled()
-    })
-    expect(screen.getByText(/Ngoài khu vực phục vụ/)).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('radio', { name: /TT Bình An/ })).not.toBeInTheDocument())
+    expect(screen.getByRole('radio', { name: /TT An Tâm/ })).toBeInTheDocument()
+    expect(screen.getByText('Đã ẩn 1 trung tâm ngoài Thành phố Hà Nội.')).toBeInTheDocument()
   })
 })

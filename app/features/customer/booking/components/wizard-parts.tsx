@@ -24,7 +24,7 @@ export function WizardSection({
     <section aria-labelledby={id} className='flex flex-col gap-4'>
       <div className='flex flex-wrap items-end justify-between gap-2'>
         <div>
-          <h2 className='text-lg font-semibold text-on-surface' id={id}>
+          <h2 className='text-lg font-bold tracking-tight text-forest-950' id={id}>
             {title}
           </h2>
           {description ? <p className='mt-0.5 text-sm text-on-surface-variant'>{description}</p> : null}
@@ -69,7 +69,12 @@ export function StepFooter({
   return (
     <div className='flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant pt-5'>
       {showBack ? (
-        <Button leftIcon={<Icon className='text-lg' name='arrow_back' />} onClick={onBack} variant='ghost'>
+        <Button
+          className='rounded-full!'
+          leftIcon={<Icon className='text-lg' name='arrow_back' />}
+          onClick={onBack}
+          variant='ghost'
+        >
           {t('customer.booking.nav.back')}
         </Button>
       ) : (
@@ -79,6 +84,7 @@ export function StepFooter({
         <MissingHint id={hintId} reason={reason} />
         <Button
           aria-describedby={reason ? hintId : undefined}
+          className='rounded-full! px-6! shadow-[var(--shadow-soft)]!'
           disabled={Boolean(reason)}
           loading={loading}
           loadingLabel={t('customer.booking.nav.submitting')}

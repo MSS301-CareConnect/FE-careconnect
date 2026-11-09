@@ -17,6 +17,7 @@ import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
+import { BentoPageHeader, bentoContainer, bentoTabClass, bentoTabList } from '~/shared/ui/bento-page-header'
 
 import { CenterForm } from './components/center-form'
 
@@ -149,39 +150,35 @@ export function AdminCentersPage() {
   }
 
   return (
-    <main className='mx-auto max-w-7xl space-y-5 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-start justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
-          <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
-        </div>
-        <div className='flex flex-wrap gap-2'>
-          <Button
-            disabled={!rows.length}
-            leftIcon={<Icon className='text-lg' name='download' />}
-            onClick={exportCsv}
-            variant='outline'
-          >
-            {t(`${key}.exportPage`)}
-          </Button>
-          <Button leftIcon={<Icon className='text-lg' name='add' />} onClick={() => setCreating(true)}>
-            {t(`${key}.add`)}
-          </Button>
-        </div>
-      </header>
+    <main className={bentoContainer}>
+      <BentoPageHeader
+        actions={
+          <>
+            <Button
+              disabled={!rows.length}
+              leftIcon={<Icon className='text-lg' name='download' />}
+              onClick={exportCsv}
+              variant='outline'
+            >
+              {t(`${key}.exportPage`)}
+            </Button>
+            <Button leftIcon={<Icon className='text-lg' name='add' />} onClick={() => setCreating(true)}>
+              {t(`${key}.add`)}
+            </Button>
+          </>
+        }
+        description={t(`${key}.subtitle`)}
+        title={t(`${key}.title`)}
+      />
 
-      <div
-        aria-label={t(`${key}.tabsLabel`)}
-        className='flex gap-1 overflow-x-auto border-b border-outline-variant/40'
-        role='tablist'
-      >
+      <div aria-label={t(`${key}.tabsLabel`)} className={bentoTabList} role='tablist'>
         {(['all', ...STATUSES] as const).map((item) => {
           const selected = (status ?? 'all') === item
           const count = item === 'all' ? undefined : counts[item]
           return (
             <button
               aria-selected={selected}
-              className={`-mb-px inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3.5 text-sm font-semibold transition-colors ${selected ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'}`}
+              className={bentoTabClass(selected)}
               key={item}
               onClick={() => update({ status: item === 'all' ? undefined : item })}
               role='tab'
@@ -190,7 +187,7 @@ export function AdminCentersPage() {
               {t(`${key}.tabs.${item}`)}
               {count ? (
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${item === 'PENDING' ? 'bg-warning-container text-on-warning-container' : 'bg-surface-container-low text-on-surface-variant'}`}
+                  className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${item === 'PENDING' ? 'bg-peach-300 text-forest-950' : selected ? 'bg-mint-300 text-forest-950' : 'bg-surface-container-low text-on-surface-variant'}`}
                 >
                   {number.format(count)}
                 </span>

@@ -47,7 +47,10 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
     if (chosen.length === upcoming.length) {
       changeScope('selected', [])
     } else {
-      changeScope('selected', upcoming.map((o) => o.id))
+      changeScope(
+        'selected',
+        upcoming.map((o) => o.id)
+      )
     }
   }
 
@@ -58,9 +61,7 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
     <div className='flex flex-col gap-4'>
       {/* Scope Selector: 2 Selectable Cards */}
       <div>
-        <label className='mb-2 block font-semibold text-on-surface'>
-          {t('customer.bookingDetail.cancel.scope')}
-        </label>
+        <label className='mb-2 block font-semibold text-on-surface'>{t('customer.bookingDetail.cancel.scope')}</label>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3' role='radiogroup'>
           <button
             type='button'
@@ -130,11 +131,7 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
         <div className='rounded-xl border border-outline-variant/60 bg-surface-container-low/50 p-4'>
           <div className='mb-2.5 flex items-center justify-between text-xs'>
             <span className='font-semibold text-on-surface text-sm'>Danh sách buổi sắp tới ({upcoming.length})</span>
-            <button
-              type='button'
-              onClick={toggleAllSelected}
-              className='font-semibold text-primary hover:underline'
-            >
+            <button type='button' onClick={toggleAllSelected} className='font-semibold text-primary hover:underline'>
               {chosen.length === upcoming.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
             </button>
           </div>
@@ -301,10 +298,11 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
             Xem trước số tiền hoàn chính xác
           </div>
           <p className='text-xs text-on-surface-variant leading-relaxed'>
-            Hệ thống sẽ tính toán chi tiết số tiền hoàn nhận về và các khoản phí phạt (nếu có) theo từng buổi bạn muốn hủy.
+            Hệ thống sẽ tính toán chi tiết số tiền hoàn nhận về và các khoản phí phạt (nếu có) theo từng buổi bạn muốn
+            hủy.
           </p>
           <button
-            className='mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all'
+            className='mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all'
             disabled={preview.isPending || (scope === 'selected' && chosen.length === 0)}
             onClick={() => preview.mutate()}
             type='button'

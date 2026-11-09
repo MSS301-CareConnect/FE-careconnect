@@ -16,6 +16,7 @@ type PasswordFieldProps = {
   action?: ReactNode
   required?: boolean
   requiredIndicator?: boolean
+  placeholder?: string
 }
 
 export function PasswordField({
@@ -27,7 +28,8 @@ export function PasswordField({
   variant = 'default',
   action,
   required = true,
-  requiredIndicator
+  requiredIndicator,
+  placeholder
 }: PasswordFieldProps) {
   const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
@@ -58,6 +60,7 @@ export function PasswordField({
           }
           id={id}
           onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
           required={required}
           type={visible ? 'text' : 'password'}
           value={value}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { useLocation, useOutlet } from 'react-router'
 import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
+import { PageTransition } from '~/shared/ui/page-transition'
 
 import { CaregiverToaster } from '../ui/caregiver-toaster'
 import {
@@ -28,8 +29,9 @@ function readCollapsed() {
 }
 
 /**
- * Caregiver shell: a collapsible sidebar from 1024 px, a bottom tab bar on phones, and a compact topbar. Only the
- * content area animates between pages; the navigation stays still.
+ * Caregiver shell ("Soft Bento", 2026-11-09): the floating forest rail from 1024 px (collapsible), a floating pill tab
+ * bar on phones and a light topbar over the mint → peach page. Only the content animates between pages (fade, blur and
+ * rise through `PageTransition`); the navigation stays still.
  */
 export function CaregiverLayout() {
   const { pathname } = useLocation()
@@ -40,6 +42,7 @@ export function CaregiverLayout() {
   const profile = useMyCaregiverProfile()
   const avatar = useMyAvatar(profile.data?.id)
   const pageKey = caregiverPageKey(pathname)
+  const outlet = useOutlet()
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -57,17 +60,15 @@ export function CaregiverLayout() {
   }
 
   return (
-    <div className='theme-caregiver min-h-dvh bg-surface text-on-surface'>
+    <div className='theme-caregiver cc-mesh min-h-dvh bg-fixed text-on-surface'>
       <CaregiverRouteProgress />
       <CaregiverSidebar collapsed={collapsed} onToggle={toggle} requests={requests} toAccept={toAccept} />
       <div
-        className={`flex min-h-dvh min-w-0 flex-col transition-[padding] duration-200 ease-[var(--cg-ease)] print:pl-0 ${collapsed ? 'lg:pl-[72px]' : 'lg:pl-60'}`}
+        className={`flex min-h-dvh min-w-0 flex-col transition-[padding] duration-200 ease-[var(--cg-ease)] print:pl-0 ${collapsed ? 'lg:pl-[5.75rem]' : 'lg:pl-[16.5rem]'}`}
       >
         <CaregiverTopbar avatarUrl={avatar.url} name={profile.data?.fullName} />
-        <main className='w-full min-w-0 flex-1 pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0'>
-          <div className='cg-page-in' key={pageKey}>
-            <Outlet />
-          </div>
+        <main className='w-full min-w-0 flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-6'>
+          <PageTransition pageKey={pageKey}>{outlet}</PageTransition>
         </main>
       </div>
       <CaregiverBottomNav requests={requests} toAccept={toAccept} />

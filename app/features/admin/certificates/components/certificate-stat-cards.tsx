@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import type { CertificateAuditStatistics, CertificateRiskLevel } from '~/shared/api/generated/contracts'
+import { CountUp } from '~/shared/ui/motion'
 
 export type StatFilter = 'total' | CertificateRiskLevel | 'checking' | 'failed'
 
@@ -26,17 +27,17 @@ export function CertificateStatCards({
 }) {
   const { t } = useTranslation()
   return (
-    <ul className='grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7'>
+    <ul className='ops-stagger grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7'>
       {CARDS.map((card) => {
         const selected = active === card.key
         return (
           <li key={card.key}>
             <button
               aria-pressed={selected}
-              className={`flex min-h-20 w-full flex-col justify-between rounded-2xl border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              className={`flex min-h-24 w-full flex-col justify-between rounded-2xl border p-4 text-left shadow-[var(--shadow-card)] transition-[background-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 selected
-                  ? 'border-primary bg-primary/5'
-                  : 'border-outline-variant/60 bg-surface-container-lowest hover:bg-surface-container-low'
+                  ? 'border-transparent bg-forest-900 text-white [&_span]:text-white!'
+                  : 'border-forest-900/[0.06] bg-surface-container-lowest hover:bg-mint-50'
               }`}
               onClick={() => onSelect(card.key)}
               type='button'
@@ -44,8 +45,8 @@ export function CertificateStatCards({
               <span className='text-xs font-semibold text-on-surface-variant'>
                 {t(`admin.certificatesPage.stats.${card.stat}`)}
               </span>
-              <span className={`text-2xl font-extrabold tabular-nums ${card.accent}`}>
-                {statistics ? statistics[card.stat] : '–'}
+              <span className={`text-[28px] leading-none font-extrabold tracking-tight tabular-nums ${card.accent}`}>
+                {statistics ? <CountUp value={statistics[card.stat]} /> : '–'}
               </span>
             </button>
           </li>

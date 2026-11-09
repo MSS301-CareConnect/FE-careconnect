@@ -170,7 +170,10 @@ export const bookingSharedVi = {
       NO_SHOW_REPORTED: 'Báo khách vắng mặt',
       other: 'Cập nhật lịch đặt'
     },
-    depositReceived: 'Đã nhận tiền cọc qua cổng thanh toán.'
+    depositReceived: 'Đã nhận tiền cọc qua cổng thanh toán.',
+    showEarlier_one: 'Xem thêm {{count}} mục cũ hơn',
+    showEarlier_other: 'Xem thêm {{count}} mục cũ hơn',
+    showLess: 'Thu gọn'
   },
   recipient: {
     age: '{{age}} tuổi',
@@ -523,7 +526,10 @@ export const bookingSharedEn = {
       NO_SHOW_REPORTED: 'No-show reported',
       other: 'Booking updated'
     },
-    depositReceived: 'Deposit received through the payment gateway.'
+    depositReceived: 'Deposit received through the payment gateway.',
+    showEarlier_one: 'Show {{count}} earlier entry',
+    showEarlier_other: 'Show {{count}} earlier entries',
+    showLess: 'Show less'
   },
   recipient: {
     age: '{{age}} years old',

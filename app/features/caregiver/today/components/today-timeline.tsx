@@ -23,12 +23,12 @@ export function TodayTimeline({
   const format = useCaregiverFormat()
 
   return (
-    <section aria-labelledby='today-timeline' className={`${cgCard} p-4 sm:p-5`}>
+    <section aria-labelledby='today-timeline' className={`${cgCard} p-5`}>
       <div className='mb-3 flex items-baseline justify-between'>
         <h2 className='text-base font-semibold text-on-surface' id='today-timeline'>
           {t('caregiver.today.timeline.title')}
         </h2>
-        <span className='text-sm text-on-surface-variant tabular-nums'>
+        <span className='rounded-full bg-mint-100 px-2.5 py-0.5 text-xs font-semibold text-forest-800 tabular-nums'>
           {t('caregiver.today.timeline.count', { count: visits.length })}
         </span>
       </div>
@@ -43,12 +43,12 @@ export function TodayTimeline({
               ) : null}
               <span
                 aria-hidden='true'
-                className={`relative z-10 mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 ${next ? 'border-primary bg-primary text-on-primary' : past ? 'border-outline-variant bg-surface-container-low text-on-surface-variant' : 'border-primary bg-surface-container-lowest text-primary'}`}
+                className={`relative z-10 mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 ${next ? 'border-forest-900 bg-forest-900 text-white ring-4 ring-mint-100' : past ? 'border-mint-200 bg-mint-50 text-forest-700' : 'border-forest-700 bg-surface-container-lowest text-forest-700'}`}
               >
                 {past ? <Icon className='text-sm' name='check' /> : null}
               </span>
               <Link
-                className={`cg-press flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary ${past ? 'opacity-70' : ''}`}
+                className={`cg-press flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl px-3 py-2 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary ${past ? 'opacity-70' : ''}`}
                 to={`/caregiver/visits/${visit.id}`}
               >
                 <span className='min-w-0'>

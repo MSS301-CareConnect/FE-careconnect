@@ -30,7 +30,7 @@ export function OpenShiftSuggestions({ centerId, now }: { centerId?: string; now
   if (suggestions.length === 0) return null
 
   return (
-    <section aria-labelledby='today-open-shifts' className={`${cgCard} p-4 sm:p-5`}>
+    <section aria-labelledby='today-open-shifts' className={`${cgCard} p-5`}>
       <div className='flex flex-wrap items-center justify-between gap-2'>
         <h2 className='text-base font-semibold text-on-surface' id='today-open-shifts'>
           {t('caregiver.today.empty.openShifts')}
@@ -43,7 +43,7 @@ export function OpenShiftSuggestions({ centerId, now }: { centerId?: string; now
         {suggestions.map((shift) => (
           <li key={shift.id}>
             <Link
-              className='block rounded-lg border border-outline-variant p-3 transition-colors duration-150 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
+              className='cg-lift block rounded-2xl bg-surface-container-low p-4 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary'
               to='/caregiver/work-shifts'
             >
               <span className='block font-semibold tabular-nums'>{format.shortDay(shift.workDate)}</span>

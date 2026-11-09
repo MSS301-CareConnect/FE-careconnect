@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { SERVICE_CATEGORY_ICONS, serviceCategoryGroup } from '~/entities/care-catalog/service-category'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 
 import { ServiceBookingCard } from './components/service-booking-card'
 import { ServiceCaregivers } from './components/service-caregivers'
@@ -24,7 +25,7 @@ export function CustomerServiceDetailPage() {
 
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         breadcrumb={[
           { label: t(`${key}.breadcrumbHome`), to: '/customer' },
           { label: t(`${key}.breadcrumbServices`), to: '/customer/services' },
@@ -70,7 +71,7 @@ export function CustomerServiceDetailPage() {
             <h1 className='mt-4 text-xl font-bold text-on-surface'>{t(`${key}.error`)}</h1>
             <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.errorHelp`)}</p>
             <button
-              className='mt-6 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container'
+              className='mt-6 rounded-full bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container'
               onClick={() => offering.refetch()}
               type='button'
             >

@@ -105,15 +105,17 @@ export function AccountDetailPage() {
         />
       ) : (
         <>
-          <header className='flex flex-wrap items-center gap-4'>
+          <header className='flex flex-wrap items-center gap-5 rounded-[1.75rem] border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6'>
             <AccountAvatar
-              className='h-14 w-14 rounded-2xl text-lg'
+              className='h-16 w-16 rounded-full text-lg ring-4 ring-mint-100'
               name={account.data.fullName || account.data.email}
               roles={account.data.roles}
               userId={account.data.id}
             />
             <div className='min-w-0 flex-1'>
-              <h1 className='text-2xl font-extrabold tracking-tight'>{account.data.fullName || account.data.email}</h1>
+              <h1 className='text-[26px] leading-tight text-forest-950 sm:text-[32px]'>
+                {account.data.fullName || account.data.email}
+              </h1>
               <p className='mt-1 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
                 {account.data.email}
                 <StatusBadge dot tone={account.data.status === 'ACTIVE' ? 'success' : 'error'}>

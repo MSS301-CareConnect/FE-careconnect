@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 
@@ -50,27 +51,39 @@ export function CustomerAccountShell({ children }: { children: ReactNode }) {
     <div className={`${pageContainer} pb-16 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8`}>
       <nav
         aria-label={t('customer.accountArea.label')}
-        className='-mx-4 border-b border-outline-variant px-4 pt-4 sm:-mx-6 sm:px-6 lg:sticky lg:top-24 lg:mx-0 lg:self-start lg:border-b-0 lg:px-0 lg:pt-8'
+        className='-mx-4 px-4 pt-4 sm:-mx-6 sm:px-6 lg:sticky lg:top-24 lg:mx-0 lg:mt-8 lg:self-start lg:rounded-3xl lg:border lg:border-forest-900/[0.06] lg:bg-white/80 lg:p-3 lg:shadow-[var(--shadow-card)] lg:backdrop-blur'
       >
-        <p className='hidden px-3 pb-2 text-xs font-semibold tracking-wide text-on-surface-variant uppercase lg:block'>
+        <p className='hidden px-3 pt-2 pb-3 text-xs font-bold tracking-wide text-forest-700 uppercase lg:block'>
           {t('customer.accountArea.title')}
         </p>
-        <ul className='cc-no-scrollbar flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible'>
+        <ul className='cc-no-scrollbar flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0'>
           {SECTIONS.map((section) => {
             const active = section.id === current
             return (
               <li className='shrink-0' key={section.id}>
                 <Link
                   aria-current={active ? 'page' : undefined}
-                  className={`flex min-h-11 items-center gap-2.5 px-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary max-lg:rounded-t-lg lg:rounded-xl ${active ? 'font-semibold text-primary max-lg:shadow-[inset_0_-2px_0_var(--color-primary)] lg:bg-brand-50' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'}`}
+                  className={`relative flex min-h-11 items-center gap-2.5 rounded-full px-3.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-forest-900 lg:rounded-2xl ${active ? 'font-semibold text-white' : 'text-on-surface-variant max-lg:bg-white/70 max-lg:ring-1 max-lg:ring-forest-900/5 hover:bg-mint-50 hover:text-forest-900'}`}
                   to={section.to}
                 >
-                  <Icon className='text-xl max-lg:hidden' filled={active} name={section.icon} />
-                  {t(`customer.accountArea.${section.id}`)}
+                  {active ? (
+                    <motion.span
+                      aria-hidden='true'
+                      className='absolute inset-0 -z-0 rounded-full bg-forest-900 shadow-[var(--shadow-soft)] lg:rounded-2xl'
+                      layoutId='customer-account-active'
+                      transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                    />
+                  ) : null}
+                  <Icon
+                    className={`relative text-xl max-lg:hidden ${active ? 'text-mint-300' : ''}`}
+                    filled={active}
+                    name={section.icon}
+                  />
+                  <span className='relative'>{t(`customer.accountArea.${section.id}`)}</span>
                   {section.id === 'invitations' && pending > 0 ? (
                     <span
                       aria-label={t('customer.accountArea.pendingInvitations', { count: pending })}
-                      className='ml-auto min-w-5 rounded-full bg-warning-container px-1.5 py-0.5 text-center text-xs leading-4 font-semibold text-on-warning-container tabular-nums'
+                      className='relative ml-auto min-w-5 rounded-full bg-peach-200 px-1.5 py-0.5 text-center text-xs leading-4 font-bold text-forest-950 tabular-nums'
                     >
                       {pending}
                     </span>

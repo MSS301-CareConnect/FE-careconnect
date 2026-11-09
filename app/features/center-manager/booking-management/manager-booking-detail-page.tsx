@@ -28,11 +28,11 @@ import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
 import { SectionCard } from '~/shared/ui/section-card'
 import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { CaregiverAssignDialog } from './components/caregiver-assign-dialog'
 import { ManagerBookingActionDialog } from './components/manager-booking-action-dialog'
 import { ManagerBookingSummary } from './components/manager-booking-summary'
@@ -151,7 +151,7 @@ export function ManagerBookingDetailPage() {
 
   return (
     <div className={container}>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <>
             {data.status === 'PENDING_CENTER_CONFIRMATION' && !past ? (

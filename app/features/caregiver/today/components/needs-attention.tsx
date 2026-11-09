@@ -127,8 +127,8 @@ export function NeedsAttention({
   ]
 
   return (
-    <section aria-labelledby='needs-attention' className={`${cgCard} p-4 sm:p-5`}>
-      <h2 className='mb-2 text-base font-semibold text-on-surface' id='needs-attention'>
+    <section aria-labelledby='needs-attention' className={`${cgCard} p-5`}>
+      <h2 className='mb-3 text-base font-semibold text-on-surface' id='needs-attention'>
         {t('caregiver.today.attention.title')}
       </h2>
       {items.length === 0 ? (
@@ -141,16 +141,16 @@ export function NeedsAttention({
           {items.map((item) => (
             <li key={item.key}>
               <Link
-                className='cg-press flex min-h-12 items-center gap-3 rounded-lg border border-outline-variant px-3 py-2 hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
+                className='cg-press group flex min-h-14 items-center gap-3 rounded-2xl bg-surface-container-low px-3 py-2.5 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary'
                 to={item.to}
               >
                 <span
-                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${item.tone === 'warning' ? 'bg-warning-container text-on-warning-container' : 'bg-info-container text-on-info-container'}`}
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${item.tone === 'warning' ? 'bg-peach-100 text-peach-700' : 'bg-mint-100 text-forest-800'}`}
                 >
                   <Icon className='text-lg' name={item.icon} />
                 </span>
                 <span className='min-w-0 flex-1 text-sm font-medium text-on-surface'>{item.text}</span>
-                <span className='flex shrink-0 items-center text-sm font-semibold text-primary'>
+                <span className='flex shrink-0 items-center text-sm font-semibold text-forest-800 transition-transform duration-200 group-hover:translate-x-0.5'>
                   {item.action}
                   <Icon className='text-lg' name='chevron_right' />
                 </span>

@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 
 import { CenterContextLine } from '~/entities/care-center/center-scope'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 
 import { ServicesFilters } from './components/services-filters'
 import { ServicesResults } from './components/services-results'
@@ -18,7 +19,7 @@ export function CustomerServicesPage() {
 
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         breadcrumb={[
           { label: t(`${key}.breadcrumb.home`), to: '/customer' },
           { label: t(`${key}.breadcrumb.current`) }

@@ -8,7 +8,8 @@ import { apiErrorStatus } from '~/shared/api/error-details'
 import { foldText } from '~/shared/lib/fold-text'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { SearchInput } from '~/shared/ui/search-input'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
@@ -54,7 +55,7 @@ export function CentersPage() {
 
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         breadcrumb={[
           { label: t(`${key}.breadcrumb.home`), to: '/customer' },
           { label: t(`${key}.breadcrumb.current`) }
@@ -122,12 +123,7 @@ export function CentersPage() {
               <CenterCard center={center} key={center.id} />
             ))}
           </div>
-          <Pagination
-            className='mt-8'
-            onPageChange={setPage}
-            page={page}
-            totalPages={totalPages}
-          />
+          <Pagination className='mt-8' onPageChange={setPage} page={page} totalPages={totalPages} />
         </>
       ) : null}
     </div>

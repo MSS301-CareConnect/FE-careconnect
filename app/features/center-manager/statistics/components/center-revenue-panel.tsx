@@ -59,7 +59,7 @@ export function CenterRevenuePanel() {
     <section aria-labelledby={`${id}-title`} className='space-y-4'>
       <div className='flex flex-wrap items-end justify-between gap-3'>
         <div>
-          <h2 className='text-xl font-bold text-on-surface' id={`${id}-title`}>
+          <h2 className='text-[22px] font-bold tracking-tight text-forest-950' id={`${id}-title`}>
             {t(`${key}.title`)}
           </h2>
           <p className='text-sm text-on-surface-variant'>{t(`${key}.hint`)}</p>
@@ -89,14 +89,16 @@ export function CenterRevenuePanel() {
         <ErrorState message={t(paymentErrorKey(revenue.error))} onRetry={() => void revenue.refetch()} />
       ) : null}
       {revenue.data ? (
-        <dl className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
-          {metrics.map(([metric, value]) => (
+        <dl className='ops-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
+          {metrics.map(([metric, value], index) => (
             <div
-              className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-xs'
+              className={`rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] ${index === 0 ? 'ops-stat-dark' : ''}`}
               key={metric}
             >
               <dt className='text-xs font-semibold text-on-surface-variant'>{t(`${key}.metrics.${metric}`)}</dt>
-              <dd className='mt-2 text-2xl font-extrabold tabular-nums text-primary'>{value}</dd>
+              <dd className='ops-stat-value mt-2 text-[26px] font-extrabold tracking-tight text-forest-950 tabular-nums'>
+                {value}
+              </dd>
             </div>
           ))}
         </dl>

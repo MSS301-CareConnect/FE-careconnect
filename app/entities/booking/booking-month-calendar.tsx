@@ -60,7 +60,7 @@ function VisitLink({
   return (
     <Link
       aria-label={t('booking.browser.open', { code: visit.bookingCode })}
-      className={`group flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary ${ended ? 'text-on-surface-variant/70' : 'text-on-surface'}`}
+      className={`group flex min-w-0 items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-colors hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary ${ended ? 'text-on-surface-variant/70' : 'text-on-surface'}`}
       to={detailPath(visit.bookingId)}
     >
       <span aria-hidden='true' className={`h-2 w-2 shrink-0 rounded-full ${DOT[BOOKING_STATUS_TONES[visit.status]]}`} />

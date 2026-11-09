@@ -65,7 +65,7 @@ export function CaregiverProfileDialog({
                 viewable
               />
               <div className='min-w-0'>
-                <p className='text-lg font-semibold text-on-surface'>{caregiver.fullName}</p>
+                <p className='text-lg font-bold tracking-tight text-forest-950'>{caregiver.fullName}</p>
                 <div className='mt-1 flex flex-wrap items-center gap-2'>
                   <Rating average={caregiver.ratingAverage} count={caregiver.ratingCount} />
                   {caregiver.verifiedCertificateCount ? <VerifiedBadge /> : null}

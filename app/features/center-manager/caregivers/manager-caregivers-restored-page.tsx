@@ -14,12 +14,12 @@ import { ActionMenu } from '~/shared/ui/action-menu'
 import { Button } from '~/shared/ui/button'
 import { FilterMenuChip } from '~/shared/ui/filter-menu-chip'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { SearchInput } from '~/shared/ui/search-input'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { CaregiverRosterStats } from './components/caregiver-roster-stats'
 import { CreateCaregiverDialog } from './components/create-caregiver-dialog'
 import { useCaregiverToday } from './hooks/use-caregiver-today'
@@ -156,7 +156,7 @@ export function ManagerCaregiversPage() {
 
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <>
             <Button

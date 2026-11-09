@@ -146,6 +146,7 @@ export function PasswordRecoveryPage() {
                 autoComplete='one-time-code'
                 icon='pin'
                 id='recovery-code'
+                placeholder={t('auth.shell.placeholders.otp')}
                 inputClassName='text-lg font-bold tracking-[0.45em] tabular-nums'
                 inputMode='numeric'
                 label={t('auth.recovery.code')}
@@ -158,6 +159,7 @@ export function PasswordRecoveryPage() {
                 <PasswordField
                   autoComplete='new-password'
                   id='recovery-password'
+                  placeholder={t('auth.shell.placeholders.newPassword')}
                   label={t('auth.recovery.newPassword')}
                   onChange={setNewPassword}
                   value={newPassword}
@@ -166,6 +168,7 @@ export function PasswordRecoveryPage() {
                 <PasswordField
                   autoComplete='new-password'
                   id='recovery-confirm'
+                  placeholder={t('auth.shell.placeholders.confirmPassword')}
                   label={t('auth.recovery.confirmPassword')}
                   onChange={setConfirmation}
                   value={confirmation}
@@ -196,6 +199,7 @@ export function PasswordRecoveryPage() {
               autoComplete='email'
               icon='mail'
               id='recovery-email'
+              placeholder={t('auth.shell.placeholders.email')}
               label={t('auth.recovery.email')}
               onChange={(event) => {
                 setEmail(event.target.value)

@@ -17,6 +17,7 @@ import { BUILT_IN_ROLES, isBuiltInRole } from './account-format'
 import { CreateRoleDialog } from './components/create-role-dialog'
 import { fetchPermissions, fetchRoles, roleKeys, saveRolePermissions } from './identity-api'
 import { useActionToast } from '~/shared/ui/use-action-toast'
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 
 const key = 'admin.identity.rolesPage' as const
 
@@ -97,18 +98,18 @@ export function RolesPage() {
   const saveFailure = classifiedSave?.kind === 'business' ? classifiedSave : null
 
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-start justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
-          <p className='mt-2 max-w-2xl text-sm text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
-        </div>
-        {canManageRoles ? (
-          <Button leftIcon={<Icon name='add' />} onClick={() => setCreating(true)} variant='secondary'>
-            {t(`${key}.create`)}
-          </Button>
-        ) : null}
-      </header>
+    <main className={`${bentoContainer} space-y-6`}>
+      <BentoPageHeader
+        actions={
+          canManageRoles ? (
+            <Button leftIcon={<Icon name='add' />} onClick={() => setCreating(true)} variant='secondary'>
+              {t(`${key}.create`)}
+            </Button>
+          ) : undefined
+        }
+        description={t(`${key}.subtitle`)}
+        title={t(`${key}.title`)}
+      />
 
       {roles.isPending || permissions.isPending ? (
         <SkeletonBlock label={t(`${key}.loading`)} rows={6} />

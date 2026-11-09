@@ -62,7 +62,7 @@ export function PasswordChangePanel() {
       aria-labelledby='account-security-title'
       className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'
     >
-      <h2 className='text-lg font-semibold text-on-surface' id='account-security-title'>
+      <h2 className='text-lg font-bold tracking-tight text-forest-950' id='account-security-title'>
         {t('auth.security.passwordSectionTitle')}
       </h2>
       <p className='mt-1 text-sm text-on-surface-variant'>{t(`${key}.hint`)}</p>

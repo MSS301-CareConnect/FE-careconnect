@@ -107,30 +107,35 @@ export function AuthBrandPanel({
             <p className='mt-2 max-w-md text-sm leading-relaxed text-white/75 xl:text-[15px]'>{description}</p>
           </div>
 
-          {/* Hero photo: taller, with badge placed at top-right to NEVER cover faces */}
-          <div className='relative hidden max-h-72 min-h-28 w-full flex-1 overflow-hidden rounded-3xl border border-white/15 shadow-xl lg:block'>
-            <img
-              alt=''
-              className='h-full w-full object-cover object-center'
-              fetchPriority='high'
-              src={authPanelPhotos[mode]}
-            />
-            <span
-              aria-hidden='true'
-              className='absolute inset-0 bg-gradient-to-t from-forest-950/70 via-transparent to-transparent'
-            />
-            <motion.div
-              animate={{ y: [0, -4, 0] }}
-              className='absolute top-3.5 right-3.5 z-10'
-              transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <span className='cc-glass flex items-center gap-2 rounded-full py-1.5 pr-3.5 pl-1.5 text-xs font-semibold text-forest-950 shadow-md'>
-                <span className='grid h-5 w-5 place-items-center rounded-full bg-mint-300 text-forest-950'>
-                  <Icon className='text-xs' filled name={mode === 'forgot' ? 'mark_email_read' : 'verified'} />
+          {/* Hero photo with its chip sitting on the top edge (left on sign-up, right otherwise), so it never covers it */}
+          <div className='relative hidden max-h-72 min-h-28 w-full flex-1 lg:block'>
+            <div className='h-full w-full overflow-hidden rounded-3xl border border-white/15 shadow-xl'>
+              <img
+                alt=''
+                className='h-full w-full object-cover object-center'
+                fetchPriority='high'
+                src={authPanelPhotos[mode]}
+              />
+              <span
+                aria-hidden='true'
+                className='absolute inset-0 rounded-3xl bg-gradient-to-t from-forest-950/70 via-transparent to-transparent'
+              />
+            </div>
+            <div className={`absolute top-0 z-10 -translate-y-1/2 ${mode === 'register' ? 'left-6' : 'right-6'}`}>
+              {/* `transform` (not `y`) lets the browser run the float on the compositor: no main-thread jank. */}
+              <motion.div
+                animate={{ transform: ['translateY(0px)', 'translateY(-5px)', 'translateY(0px)'] }}
+                className='will-change-transform'
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <span className='flex items-center gap-2 rounded-full bg-white py-1.5 pr-3.5 pl-1.5 text-xs font-semibold whitespace-nowrap text-forest-950 shadow-[0_14px_30px_-8px_rgb(7_29_24/0.65)] ring-1 ring-white/70'>
+                  <span className='grid h-5 w-5 place-items-center rounded-full bg-mint-300 text-forest-950'>
+                    <Icon className='text-xs' filled name={mode === 'forgot' ? 'mark_email_read' : 'verified'} />
+                  </span>
+                  {chip}
                 </span>
-                {chip}
-              </span>
-            </motion.div>
+              </motion.div>
+            </div>
           </div>
 
           {/* Feature pillars */}

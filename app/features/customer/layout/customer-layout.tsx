@@ -9,6 +9,7 @@ import { SiteFooter } from '~/shared/ui/site-footer'
 import { CenterPickerDialog } from './components/center-picker-dialog'
 import { CustomerBottomNav } from './components/customer-bottom-nav'
 import { CustomerHeader } from './components/customer-header'
+import './customer-theme.css'
 
 /** Routes that hide the footer so the customer can focus on one task. */
 const FOCUS_ROUTES = ['/customer/booking']
@@ -42,7 +43,7 @@ export function CustomerLayout({
       ) : null}
       <CustomerHeader />
       <main className='w-full flex-1 pb-6'>
-        <div className='cc-fade-up' key={location.pathname}>
+        <div className='cc-fade-up cc-page-enter' key={location.pathname}>
           {children ?? <Outlet />}
         </div>
       </main>

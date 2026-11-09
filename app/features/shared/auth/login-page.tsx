@@ -75,6 +75,7 @@ export function LoginPage() {
               autoComplete='username'
               icon='mail'
               id='login-email'
+              placeholder={t('auth.shell.placeholders.email')}
               label={t('auth.email')}
               onChange={(event) => setEmail(event.target.value)}
               required
@@ -92,6 +93,7 @@ export function LoginPage() {
               }
               autoComplete='current-password'
               id='login-password'
+              placeholder={t('auth.shell.placeholders.password')}
               label={t('auth.password')}
               onChange={setPassword}
               value={password}

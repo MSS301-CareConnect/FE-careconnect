@@ -40,20 +40,20 @@ export function VisitBookingGroups({
         const name = people.name ?? t('caregiver.visits.patientFallback')
         const toAnswer = group.visits.filter((visit) => visit.status === 'SCHEDULED').length
         const replacing = group.visits.filter((visit) => visit.needsReassignment).length
-        const services = [...new Set(group.visits.flatMap((visit) => visit.services ?? []).map((item) => item.serviceName))]
+        const services = [
+          ...new Set(group.visits.flatMap((visit) => visit.services ?? []).map((item) => item.serviceName))
+        ]
           .filter(Boolean)
           .join(' · ')
         return (
           <li key={group.bookingId}>
-            <article
-              className={`${cgCard} cg-press relative flex flex-col gap-3 p-4 hover:border-brand-200 hover:shadow-[var(--cg-shadow-2)] sm:p-5`}
-            >
+            <article className={`${cgCard} cg-lift relative flex flex-col gap-3 p-5 hover:border-mint-200`}>
               <div className='flex items-start justify-between gap-3'>
                 <div className='min-w-0'>
                   <h3 className='text-base font-semibold text-on-surface'>
                     <Link
                       aria-label={t('caregiver.booking.groups.openLabel', { code: first.bookingCode ?? '', name })}
-                      className='after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-primary'
+                      className='after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-primary'
                       to={`/caregiver/visits/bookings/${group.bookingId}?from=${tab}`}
                     >
                       {name}
@@ -98,9 +98,15 @@ export function VisitBookingGroups({
               </div>
 
               <div className='flex flex-wrap items-center gap-2'>
-                {toAnswer ? <StatusBadge tone='warning'>{t('caregiver.booking.groups.toAnswer', { count: toAnswer })}</StatusBadge> : null}
+                {toAnswer ? (
+                  <StatusBadge tone='warning'>
+                    {t('caregiver.booking.groups.toAnswer', { count: toAnswer })}
+                  </StatusBadge>
+                ) : null}
                 {replacing ? (
-                  <StatusBadge tone='caution'>{t('caregiver.booking.groups.replacing', { count: replacing })}</StatusBadge>
+                  <StatusBadge tone='caution'>
+                    {t('caregiver.booking.groups.replacing', { count: replacing })}
+                  </StatusBadge>
                 ) : null}
                 <span className='ml-auto inline-flex items-center gap-1 text-sm font-semibold text-primary'>
                   {t('caregiver.booking.groups.open')}

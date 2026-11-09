@@ -55,7 +55,7 @@ export function NotificationItem({
 
   return (
     <li
-      className={`group relative flex items-start gap-1 px-2 py-1.5 transition-colors sm:px-3 ${selected ? 'bg-primary/10' : unread ? 'bg-primary/[0.04]' : ''}`}
+      className={`group relative flex items-start gap-1 px-2 py-1.5 transition-colors sm:px-3 ${selected ? 'bg-mint-100/70' : unread ? 'bg-mint-50/60' : ''}`}
     >
       <label className='grid h-12 w-10 shrink-0 cursor-pointer place-items-center'>
         <input
@@ -67,7 +67,7 @@ export function NotificationItem({
         />
       </label>
       <button
-        className='flex min-w-0 flex-1 items-start gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
+        className='flex min-w-0 flex-1 items-start gap-3 rounded-2xl px-2 py-2 text-left transition-colors hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary'
         onClick={() => onOpen(target)}
         type='button'
       >
@@ -78,7 +78,7 @@ export function NotificationItem({
           {unread ? (
             <span
               aria-hidden='true'
-              className='absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary ring-2 ring-surface-container-lowest'
+              className='absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-peach-400 ring-2 ring-surface-container-lowest'
             />
           ) : null}
         </span>

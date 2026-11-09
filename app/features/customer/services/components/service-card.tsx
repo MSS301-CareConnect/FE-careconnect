@@ -5,13 +5,13 @@ import { SERVICE_CATEGORY_ICONS, serviceCategoryGroup } from '~/entities/care-ca
 import { openCenterPicker } from '~/entities/care-center/selected-center'
 import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
+import { bentoCard, peachPillSm } from '~/features/customer/ui/bento-styles'
 
 import type { CustomerService } from '../services-data'
 import { planPrice } from '~/entities/care-catalog/price-plan-price'
 
 const key = 'customer.services' as const
-const primaryLink =
-  'relative z-10 inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+const primaryLink = `relative z-10 ${peachPillSm}`
 
 /**
  * A service card: category icon and label, name, two lines of description, one clear price ("100.000 ₫ / giờ" and
@@ -28,9 +28,9 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
   const detailsTo = service.center ? `/customer/services/${service.id}` : undefined
 
   return (
-    <article className='cc-lift group relative flex flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg'>
-      {/* Visual Image Header with Category Badge */}
-      <div className='relative aspect-[16/10] w-full overflow-hidden bg-surface-container-low'>
+    <article className={`cc-lift group relative flex flex-col overflow-hidden ${bentoCard} hover:border-mint-200`}>
+      {/* Visual image inset in the card, with the category as a glass chip */}
+      <div className='relative m-2 mb-0 aspect-[16/10] overflow-hidden rounded-[1.1rem] bg-mint-50'>
         {service.imageUrl ? (
           <img
             alt={service.name}
@@ -39,16 +39,16 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
             src={service.imageUrl}
           />
         ) : (
-          <div className='relative flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50/60 to-primary-fixed/25'>
+          <div className='relative flex h-full w-full items-center justify-center bg-[radial-gradient(120%_120%_at_0%_0%,var(--color-mint-200),transparent_60%),radial-gradient(120%_120%_at_100%_100%,var(--color-peach-100),transparent_60%)]'>
             <span
               aria-hidden='true'
-              className='grid h-14 w-14 place-items-center rounded-2xl bg-white/90 text-primary shadow-xs backdrop-blur-sm transition-transform duration-300 group-hover:scale-110'
+              className='grid h-14 w-14 place-items-center rounded-2xl bg-white/90 text-forest-800 shadow-xs backdrop-blur-sm transition-transform duration-300 group-hover:scale-110'
             >
               <Icon className='text-3xl' name={SERVICE_CATEGORY_ICONS[group]} />
             </span>
           </div>
         )}
-        <div className='absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-on-surface shadow-xs backdrop-blur-md'>
+        <div className='cc-glass absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold text-forest-900 shadow-xs'>
           <Icon aria-hidden='true' className='text-sm text-primary' name={SERVICE_CATEGORY_ICONS[group]} />
           <span>{t(`common.serviceCategories.${group}`)}</span>
         </div>
@@ -56,10 +56,10 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
 
       {/* Card Content Body */}
       <div className='flex flex-1 flex-col p-5'>
-        <h2 className='text-lg font-bold tracking-tight text-on-surface transition-colors group-hover:text-primary'>
+        <h2 className='text-lg font-bold tracking-tight text-forest-950'>
           {detailsTo ? (
             <Link
-              className='rounded after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+              className='rounded after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
               to={detailsTo}
             >
               {service.name}
@@ -89,7 +89,7 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
             {cheapest ? (
               <div>
                 <div className='flex items-baseline justify-between gap-2'>
-                  <span className='text-base font-bold text-on-surface tabular-nums'>
+                  <span className='text-lg font-extrabold tracking-tight text-forest-950 tabular-nums'>
                     {samePrice
                       ? t(`${key}.card.price`, {
                           price: format.money(planPrice(cheapest).finalPrice),
@@ -98,7 +98,7 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
                       : t(`${key}.card.fromPrice`, { price: format.money(planPrice(cheapest).finalPrice) })}
                   </span>
                   {!samePrice ? (
-                    <span className='rounded-full bg-secondary-container px-2 py-0.5 text-xs font-semibold text-primary'>
+                    <span className='rounded-full bg-mint-50 px-2 py-0.5 text-xs font-semibold text-forest-800 ring-1 ring-mint-200/60'>
                       {t(`${key}.card.plansCount`, { count: service.plans.length })}
                     </span>
                   ) : null}
@@ -119,8 +119,12 @@ export function ServiceCard({ service, showCenter }: { service: CustomerService;
           <div className='mt-4 flex items-center justify-between gap-3 border-t border-outline-variant/40 pt-3'>
             {service.center ? (
               <>
-                <span aria-hidden='true' className='text-sm font-semibold text-primary group-hover:underline'>
+                <span
+                  aria-hidden='true'
+                  className='inline-flex items-center gap-1 text-sm font-semibold text-forest-800 transition-[gap] group-hover:gap-2'
+                >
                   {t(`${key}.card.detailsShort`)}
+                  <Icon className='text-base' name='arrow_forward' />
                 </span>
                 <Link
                   aria-label={`${t(`${key}.card.bookShort`)} ${service.name}`}

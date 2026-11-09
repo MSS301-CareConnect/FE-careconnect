@@ -11,6 +11,7 @@ import { IncidentRow } from './components/incident-row'
 import { fetchIncidents, incidentKeys, requeueIncident, skipIncident, type IncidentSource } from './incidents-api'
 import { classifyApiError } from '~/shared/api/api-error'
 import { useActionToast } from '~/shared/ui/use-action-toast'
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 
 const SOURCES: IncidentSource[] = ['booking', 'provider']
 const STATUSES: (OutboxStatus | 'ALL')[] = ['FAILED', 'PENDING', 'SKIPPED', 'SENT', 'ALL']
@@ -68,18 +69,17 @@ export function AdminIncidentsPage() {
   }
 
   return (
-    <div className='flex flex-col gap-4 p-5 lg:p-8'>
-      <div>
-        <h1 className='text-2xl font-bold'>{t('admin.incidentsPage.title')}</h1>
-        <p className='mt-1 text-sm text-on-surface-variant'>{t('admin.incidentsPage.description')}</p>
-      </div>
+    <div className={bentoContainer}>
+      <BentoPageHeader description={t('admin.incidentsPage.description')} title={t('admin.incidentsPage.title')} />
       <div className='flex flex-wrap items-end gap-3'>
         <div aria-label={t('admin.incidentsPage.source')} className='flex gap-2' role='group'>
           {SOURCES.map((item) => (
             <button
               aria-pressed={item === source}
-              className={`rounded-lg border px-3 py-2 text-sm font-semibold ${
-                item === source ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant'
+              className={`min-h-10 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                item === source
+                  ? 'border-forest-900 bg-forest-900 text-white'
+                  : 'border-forest-900/10 bg-white text-on-surface-variant hover:bg-mint-50'
               }`}
               key={item}
               onClick={() => select({ source: item })}

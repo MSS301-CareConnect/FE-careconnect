@@ -21,6 +21,7 @@ import { Select } from '~/shared/ui/form-field'
 import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 
 import { CertificateStatCards, type StatFilter } from './components/certificate-stat-cards'
 
@@ -91,20 +92,16 @@ export function AdminCertificatesPage() {
   }
 
   return (
-    <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header>
-        <h1 className='text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl'>
-          {t('admin.certificatesPage.title')}
-        </h1>
-        <p className='mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant'>
-          {t('admin.certificatesPage.description')}
-        </p>
-        <p className='mt-1 max-w-3xl text-xs leading-5 text-on-surface-variant'>{t('admin.certificatesPage.steps')}</p>
-      </header>
+    <div className={`${bentoContainer} space-y-6`}>
+      <BentoPageHeader
+        description={t('admin.certificatesPage.description')}
+        meta={t('admin.certificatesPage.steps')}
+        title={t('admin.certificatesPage.title')}
+      />
 
       <CertificateStatCards active={activeStat} onSelect={selectStat} statistics={statistics.data} />
 
-      <fieldset className='flex flex-wrap items-end gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-xs'>
+      <fieldset className='flex flex-wrap items-end gap-3 rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-xs'>
         <legend className='sr-only'>{t('admin.certificatesPage.filters')}</legend>
         <label className='text-sm font-semibold text-on-surface' htmlFor={`${id}-center`}>
           {t('admin.certificatesPage.center')}

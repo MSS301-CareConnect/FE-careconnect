@@ -29,7 +29,7 @@ export function StepReview({ form }: { form: BookingForm }) {
   return (
     <div className='flex flex-col gap-6'>
       <div>
-        <h2 className='text-lg font-semibold text-on-surface'>{t('customer.booking.review.title')}</h2>
+        <h2 className='text-lg font-bold tracking-tight text-forest-950'>{t('customer.booking.review.title')}</h2>
         <p className='mt-0.5 text-sm text-on-surface-variant'>{t('customer.booking.review.description')}</p>
       </div>
 

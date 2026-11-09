@@ -10,6 +10,15 @@ export const authShellEn = {
   rememberPassword: 'Remembered your password?',
   securityNote: 'Safe & secure care',
   footerMotto: 'CareConnect · Peace of mind when loved ones are cared for',
+  placeholders: {
+    email: 'name@example.com',
+    password: 'Enter your password',
+    newPassword: 'At least 8 characters',
+    confirmPassword: 'Enter the password again',
+    fullName: 'Your full name',
+    phone: 'e.g. 0901 234 567',
+    otp: '••••••'
+  },
   panel: {
     switchPromptRegister: 'Create a free account',
     switchPromptLogin: 'Sign in to your account',
@@ -63,6 +72,15 @@ export const authShellVi = {
   rememberPassword: 'Đã nhớ ra mật khẩu?',
   securityNote: 'Bảo mật & An tâm trọn vẹn',
   footerMotto: 'CareConnect · An tâm khi người thân được chăm sóc',
+  placeholders: {
+    email: 'ten@example.com',
+    password: 'Nhập mật khẩu của bạn',
+    newPassword: 'Ít nhất 8 ký tự',
+    confirmPassword: 'Nhập lại mật khẩu',
+    fullName: 'Họ và tên của bạn',
+    phone: 'VD: 0901 234 567',
+    otp: '••••••'
+  },
   panel: {
     switchPromptRegister: 'Tạo tài khoản miễn phí',
     switchPromptLogin: 'Đăng nhập vào tài khoản',

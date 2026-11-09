@@ -22,7 +22,18 @@ export const caregiverMeEn = {
       birthDate: 'Date of birth (ask your center)'
     },
     previewAsCustomer: 'View as customers see it',
-    printCv: 'Print professional profile (CV)'
+    printCv: 'Print professional profile (CV)',
+    stats: {
+      label: 'Your profile at a glance',
+      rating: 'Rating',
+      noRating: 'No rating yet',
+      reviews_one: '{{count}} review',
+      reviews_other: '{{count}} reviews',
+      experience: 'Experience',
+      years_one: '{{count}} year',
+      years_other: '{{count}} years',
+      completeness: 'Profile'
+    }
   },
   info: {
     personal: 'Personal information',
@@ -161,7 +172,18 @@ export const caregiverMeVi = {
       birthDate: 'Ngày sinh (nhờ trung tâm cập nhật)'
     },
     previewAsCustomer: 'Xem như khách hàng thấy',
-    printCv: 'In hồ sơ năng lực (CV)'
+    printCv: 'In hồ sơ năng lực (CV)',
+    stats: {
+      label: 'Tóm tắt hồ sơ',
+      rating: 'Đánh giá',
+      noRating: 'Chưa có đánh giá',
+      reviews_one: '{{count}} lượt đánh giá',
+      reviews_other: '{{count}} lượt đánh giá',
+      experience: 'Kinh nghiệm',
+      years_one: '{{count}} năm',
+      years_other: '{{count}} năm',
+      completeness: 'Hồ sơ'
+    }
   },
   info: {
     personal: 'Thông tin cá nhân',

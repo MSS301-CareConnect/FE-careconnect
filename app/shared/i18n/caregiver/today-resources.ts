@@ -1,9 +1,9 @@
 export const caregiverTodayEn = {
   documentTitle: 'Today | CareConnect',
   greeting: {
-    morning: 'Good morning, {{name}}',
-    afternoon: 'Good afternoon, {{name}}',
-    evening: 'Good evening, {{name}}'
+    morning: 'Good morning, <accent>{{name}}</accent>',
+    afternoon: 'Good afternoon, <accent>{{name}}</accent>',
+    evening: 'Good evening, <accent>{{name}}</accent>'
   },
   dateLine: '{{weekday}}, {{date}}',
   next: {
@@ -37,7 +37,10 @@ export const caregiverTodayEn = {
     title: 'This week',
     visits: 'Visits',
     hours: 'Care hours',
-    done: 'Done'
+    done: 'Done',
+    chart: 'Visits per day this week',
+    dayCount_one: '{{day}}: {{count}} visit',
+    dayCount_other: '{{day}}: {{count}} visits'
   },
   empty: {
     title: 'You have no visit today',
@@ -53,9 +56,9 @@ export const caregiverTodayEn = {
 export const caregiverTodayVi = {
   documentTitle: 'Hôm nay | CareConnect',
   greeting: {
-    morning: 'Chào buổi sáng, {{name}}',
-    afternoon: 'Chào buổi chiều, {{name}}',
-    evening: 'Chào buổi tối, {{name}}'
+    morning: 'Chào buổi sáng, <accent>{{name}}</accent>',
+    afternoon: 'Chào buổi chiều, <accent>{{name}}</accent>',
+    evening: 'Chào buổi tối, <accent>{{name}}</accent>'
   },
   dateLine: '{{weekday}}, {{date}}',
   next: {
@@ -89,7 +92,10 @@ export const caregiverTodayVi = {
     title: 'Tuần này',
     visits: 'Số buổi',
     hours: 'Giờ chăm sóc',
-    done: 'Đã xong'
+    done: 'Đã xong',
+    chart: 'Số buổi theo ngày trong tuần',
+    dayCount_one: '{{day}}: {{count}} buổi',
+    dayCount_other: '{{day}}: {{count}} buổi'
   },
   empty: {
     title: 'Hôm nay bạn chưa có buổi nào',

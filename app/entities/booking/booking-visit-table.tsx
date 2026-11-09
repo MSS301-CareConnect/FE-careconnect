@@ -29,6 +29,8 @@ export interface BookingVisitTableProps {
   onSelect?: (occurrence: BookingOccurrenceRecord) => void
   /** Hides status and caregiver: the visits of a booking being made or paid. */
   compact?: boolean
+  /** False hides the service column (the visit detail names it); the "other address" note moves under the date. */
+  showService?: boolean
 }
 
 /** Visits of a saved booking in occurrence order, as schedule rows. */
@@ -61,7 +63,8 @@ export function BookingVisitTable({
   services,
   caregiverName,
   onSelect,
-  compact = false
+  compact = false,
+  showService = true
 }: BookingVisitTableProps) {
   const { t } = useTranslation()
   const format = useFormat()
@@ -80,7 +83,9 @@ export function BookingVisitTable({
     const service =
       visit.serviceName ??
       (occurrence ? matchOccurrenceService(occurrence, services)?.serviceName : undefined) ??
-      (visit.careServiceId ? services?.find((item) => item.careServiceId === visit.careServiceId)?.serviceName : undefined) ??
+      (visit.careServiceId
+        ? services?.find((item) => item.careServiceId === visit.careServiceId)?.serviceName
+        : undefined) ??
       t('bookingSchedule.table.allServices')
     const minutes = occurrence
       ? (calcOccurrenceDurationMinutes(occurrence) ?? 0)
@@ -132,20 +137,38 @@ export function BookingVisitTable({
 
             <div className='hidden overflow-hidden rounded-xl border border-outline-variant/60 md:block'>
               <table className='w-full text-left text-sm'>
-                <caption className='sr-only'>{t('bookingSchedule.table.caption', { count: group.visits.length })}</caption>
+                <caption className='sr-only'>
+                  {t('bookingSchedule.table.caption', { count: group.visits.length })}
+                </caption>
                 <thead className='bg-surface-container-low text-xs font-semibold text-on-surface-variant'>
                   <tr>
-                    <th className='w-12 px-3 py-2.5' scope='col'>{t('bookingSchedule.table.number')}</th>
-                    <th className='px-3 py-2.5' scope='col'>{t('bookingSchedule.table.date')}</th>
-                    <th className='px-3 py-2.5' scope='col'>{t('bookingSchedule.table.time')}</th>
-                    <th className='px-3 py-2.5' scope='col'>{t('bookingSchedule.table.service')}</th>
+                    <th className='w-12 px-3 py-2.5' scope='col'>
+                      {t('bookingSchedule.table.number')}
+                    </th>
+                    <th className='px-3 py-2.5' scope='col'>
+                      {t('bookingSchedule.table.date')}
+                    </th>
+                    <th className='px-3 py-2.5' scope='col'>
+                      {t('bookingSchedule.table.time')}
+                    </th>
+                    {showService ? (
+                      <th className='px-3 py-2.5' scope='col'>
+                        {t('bookingSchedule.table.service')}
+                      </th>
+                    ) : null}
                     {compact ? null : (
                       <>
-                        <th className='px-3 py-2.5' scope='col'>{t('bookingSchedule.table.caregiver')}</th>
-                        <th className='px-3 py-2.5' scope='col'>{t('bookingSchedule.table.status')}</th>
+                        <th className='px-3 py-2.5' scope='col'>
+                          {t('bookingSchedule.table.caregiver')}
+                        </th>
+                        <th className='px-3 py-2.5' scope='col'>
+                          {t('bookingSchedule.table.status')}
+                        </th>
                       </>
                     )}
-                    <th className='px-3 py-2.5 text-right' scope='col'>{t('bookingSchedule.table.price')}</th>
+                    <th className='px-3 py-2.5 text-right' scope='col'>
+                      {t('bookingSchedule.table.price')}
+                    </th>
                     {onSelect ? (
                       <th className='w-12 px-2 py-2.5' scope='col'>
                         <span className='sr-only'>{t('bookingSchedule.table.actions')}</span>
@@ -158,25 +181,38 @@ export function BookingVisitTable({
                     const row = describe(visit, index)
                     const isToday = row.day === today
                     return (
-                      <tr className={`align-top ${isToday ? 'bg-brand-50/60' : 'bg-surface-container-lowest'}`} key={visit.id}>
+                      <tr
+                        className={`align-top ${isToday ? 'bg-brand-50/60' : 'bg-surface-container-lowest'}`}
+                        key={visit.id}
+                      >
                         <td className='px-3 py-3 font-semibold text-primary tabular-nums'>{row.number}</td>
                         <td className='px-3 py-3'>
                           <span className='block font-semibold text-on-surface'>{row.dayLabel}</span>
-                          {row.relative ? <span className='text-xs font-semibold text-primary'>{row.relative}</span> : null}
-                        </td>
-                        <td className='px-3 py-3 tabular-nums'>
-                          <span className='block font-semibold text-on-surface'>{row.time}</span>
-                          <span className='text-xs text-on-surface-variant'>{row.duration}</span>
-                        </td>
-                        <td className='px-3 py-3 text-on-surface'>
-                          {row.service}
-                          {visit.serviceAddress ? (
+                          {row.relative ? (
+                            <span className='text-xs font-semibold text-primary'>{row.relative}</span>
+                          ) : null}
+                          {!showService && visit.serviceAddress ? (
                             <span className='mt-0.5 flex items-start gap-1 text-xs font-medium text-primary'>
                               <Icon className='text-sm' name='home_pin' />
                               {t('bookingSchedule.table.otherAddress', { address: visit.serviceAddress })}
                             </span>
                           ) : null}
                         </td>
+                        <td className='px-3 py-3 tabular-nums'>
+                          <span className='block font-semibold text-on-surface'>{row.time}</span>
+                          <span className='text-xs text-on-surface-variant'>{row.duration}</span>
+                        </td>
+                        {showService ? (
+                          <td className='px-3 py-3 text-on-surface'>
+                            {row.service}
+                            {visit.serviceAddress ? (
+                              <span className='mt-0.5 flex items-start gap-1 text-xs font-medium text-primary'>
+                                <Icon className='text-sm' name='home_pin' />
+                                {t('bookingSchedule.table.otherAddress', { address: visit.serviceAddress })}
+                              </span>
+                            ) : null}
+                          </td>
+                        ) : null}
                         {compact ? null : (
                           <>
                             <td className='px-3 py-3 text-on-surface-variant'>{row.caregiver}</td>
@@ -214,7 +250,7 @@ export function BookingVisitTable({
                         {row.time}
                         <span className='text-on-surface-variant'> · {row.duration}</span>
                       </p>
-                      <p className='truncate text-on-surface-variant'>{row.service}</p>
+                      {showService ? <p className='truncate text-on-surface-variant'>{row.service}</p> : null}
                       {compact ? null : (
                         <div className='mt-1 flex flex-wrap items-center gap-2'>
                           {visit.occurrence ? <OccurrenceStatusBadge status={visit.occurrence.status} /> : null}

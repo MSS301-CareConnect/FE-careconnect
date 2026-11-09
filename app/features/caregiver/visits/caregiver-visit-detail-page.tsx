@@ -27,7 +27,10 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
   const visit = useQuery({ queryKey: bookingKeys.occurrence(id), queryFn: () => fetchOccurrence(id), retry: false })
   useDocumentTitle(t('caregiver.visitDetail.documentTitle', { name: visit.data?.recipientName ?? '' }))
   const back = visit.data?.bookingId
-    ? { to: `/caregiver/visits/bookings/${visit.data.bookingId}`, label: t('caregiver.booking.page.crumb', { code: visit.data.bookingCode ?? '' }) }
+    ? {
+        to: `/caregiver/visits/bookings/${visit.data.bookingId}`,
+        label: t('caregiver.booking.page.crumb', { code: visit.data.bookingCode ?? '' })
+      }
     : { to: '/caregiver/visits', label: t('caregiver.visitDetail.backToVisits') }
 
   if (visit.isPending)
@@ -60,7 +63,7 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
   const allergies = visitPeople(data).allergies
 
   return (
-    <div className={`${cgContainer} pb-28 lg:pb-8`}>
+    <div className={`${cgContainer} pb-32 lg:pb-8`}>
       <CaregiverPageHeader
         actions={<VisitStatusBadge className='text-sm' status={data.status} />}
         back={back}

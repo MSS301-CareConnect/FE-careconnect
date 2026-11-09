@@ -90,7 +90,10 @@ export const bookingEn = {
     title: 'Care center',
     description: 'Services, prices and caregivers depend on the center.',
     outOfArea: 'Outside service area ({{province}})',
-    selectedOutOfArea: 'This center is outside the service area for {{province}}. Please choose a center in the same area.'
+    selectedOutOfArea: 'This center is outside the service area for {{province}}. Please choose a center in the same area.',
+    hiddenOutOfArea_one: '{{count}} center outside {{province}} is hidden.',
+    hiddenOutOfArea_other: '{{count}} centers outside {{province}} are hidden.',
+    noneInArea: 'No center serves {{province}} yet. Choose another care address or contact us.'
   },
   services: {
     title: 'Services',
@@ -453,7 +456,10 @@ export const bookingVi = {
     title: 'Trung tâm chăm sóc',
     description: 'Dịch vụ, giá và người chăm sóc tùy theo trung tâm.',
     outOfArea: 'Ngoài khu vực phục vụ ({{province}})',
-    selectedOutOfArea: 'Trung tâm này nằm ngoài khu vực phục vụ tại {{province}}. Vui lòng chọn trung tâm trong cùng khu vực.'
+    selectedOutOfArea: 'Trung tâm này nằm ngoài khu vực phục vụ tại {{province}}. Vui lòng chọn trung tâm trong cùng khu vực.',
+    hiddenOutOfArea_one: 'Đã ẩn {{count}} trung tâm ngoài {{province}}.',
+    hiddenOutOfArea_other: 'Đã ẩn {{count}} trung tâm ngoài {{province}}.',
+    noneInArea: 'Chưa có trung tâm nào phục vụ tại {{province}}. Hãy chọn địa chỉ chăm sóc khác hoặc liên hệ hỗ trợ.'
   },
   services: {
     title: 'Dịch vụ',

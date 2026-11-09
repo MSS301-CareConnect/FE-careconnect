@@ -1,0 +1,161 @@
+/*
+ * Customer portal in "Soft Bento" (2026-11-09, docs/2026-11-09-UI_REDESIGN_PLAN.md phase 3).
+ *
+ * Customer screens are written against the semantic tokens (primary, surface-container-*, outline-variant, brand-*),
+ * so remapping them here restyles every customer page at once: deep forest for primary actions and links, mint for
+ * selected / soft fills, rounder bento cards with soft shadows. Scoped to `.theme-customer` (set by CustomerLayout),
+ * loaded after app.css; the other portals keep the base tokens. `div.` raises specificity over app.css's block.
+ */
+div.theme-customer {
+  --color-primary: #123b33; /* forest-800 */
+  --color-primary-container: #0c2b25; /* forest-900, hover of primary */
+  --color-primary-fixed: #d7f3e7; /* mint-100 */
+  --color-on-primary-fixed: #0c2b25;
+  --color-secondary: #1b4d42;
+  --color-secondary-container: #effaf5; /* mint-50 */
+  --color-on-secondary-container: #123b33;
+
+  --color-background: #f6f8f5;
+  --color-surface: #f6f8f5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f0f5f1;
+  --color-surface-container: #e6eee8;
+  --color-surface-container-high: #d9e5dd;
+  --color-outline-variant: #e1e8e3;
+  --color-on-surface: #13221d;
+  --color-on-surface-variant: #55655e;
+
+  --color-success: #1b4d42;
+  --color-success-container: #effaf5;
+  --color-on-success-container: #123b33;
+
+  /* The brand scale follows the mint → forest ramp. */
+  --color-brand-50: #effaf5;
+  --color-brand-100: #d7f3e7;
+  --color-brand-200: #b4e7d3;
+  --color-brand-300: #84d6b9;
+  --color-brand-400: #4fbf9b;
+  --color-brand-500: #2ea482;
+  --color-brand-600: #1b4d42;
+  --color-brand-700: #123b33;
+  --color-brand-800: #0c2b25;
+  --color-brand-900: #071d18;
+
+  /* Bento geometry: cards 24 px, controls 16 px, soft layered shadows. */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --shadow-card: 0 1px 2px rgb(12 43 37 / 0.04), 0 10px 28px -18px rgb(12 43 37 / 0.22);
+  --shadow-raised: 0 18px 40px -22px rgb(12 43 37 / 0.3), 0 2px 6px rgb(12 43 37 / 0.05);
+}
+
+/*
+ * Page changes from the header, logo and bottom bar (2026-11-09) run as a browser view transition (`viewTransition`
+ * on those links): the old page fades and lifts away, the new one rises in, while the header and the bottom bar stay
+ * put and only their active pill slides. The keyed `cc-fade-up` of the layout is skipped during one so the page does
+ * not animate twice; other navigations keep it. Browsers without view transitions keep the plain fade.
+ */
+@keyframes cc-page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes cc-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+::view-transition-old(root) {
+  animation: cc-page-out 160ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: cc-page-in 340ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+}
+
+::view-transition-old(cc-customer-header),
+::view-transition-old(cc-customer-bottom-nav) {
+  display: none;
+}
+
+::view-transition-new(cc-customer-header),
+::view-transition-new(cc-customer-bottom-nav) {
+  animation: none;
+}
+
+html:active-view-transition .cc-page-enter {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Dialogs render in the top layer outside the page box but inside the theme element, so they follow it too. */
+div.theme-customer :where(dialog) {
+  border-radius: var(--radius-3xl);
+}
+
+/* Customer page titles: a touch heavier and tighter, like the landing. */
+div.theme-customer :where(main h1) {
+  letter-spacing: -0.025em;
+  font-weight: 800;
+}
+
+/* Stronger versions of app.css's `cc-lift` / `cc-stagger` for the customer portal: a 4 px rise with the soft
+   shadow, and a slower stagger that also unblurs, like the landing's reveal. */
+div.theme-customer .cc-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft);
+}
+
+@keyframes cc-bento-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+div.theme-customer .cc-stagger > * {
+  animation: cc-bento-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+div.theme-customer .cc-stagger > :nth-child(2) {
+  animation-delay: 60ms;
+}
+div.theme-customer .cc-stagger > :nth-child(3) {
+  animation-delay: 120ms;
+}
+div.theme-customer .cc-stagger > :nth-child(4) {
+  animation-delay: 180ms;
+}
+div.theme-customer .cc-stagger > :nth-child(5) {
+  animation-delay: 240ms;
+}
+div.theme-customer .cc-stagger > :nth-child(6) {
+  animation-delay: 300ms;
+}
+div.theme-customer .cc-stagger > :nth-child(n + 7) {
+  animation-delay: 340ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  div.theme-customer .cc-lift:hover {
+    transform: none;
+  }
+  div.theme-customer .cc-stagger > * {
+    animation: none;
+  }
+}

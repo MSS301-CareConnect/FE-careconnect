@@ -74,6 +74,14 @@ export const customerProviderVi = {
     noRating: 'Chưa có đánh giá',
     gender: 'Giới tính',
     about: 'Giới thiệu',
+    stats: {
+      label: 'Số liệu chính',
+      years: 'Năm kinh nghiệm',
+      rating: 'Đánh giá',
+      ratingNew: 'Mới',
+      certificates: 'Chứng chỉ',
+      services: 'Dịch vụ'
+    },
     aboutEmpty: 'Người chăm sóc chưa cập nhật phần giới thiệu.',
     services: 'Dịch vụ đảm nhận',
     servicesEmpty: 'Người chăm sóc chưa đăng ký dịch vụ nào.',
@@ -166,6 +174,14 @@ export const customerProviderEn = {
     noRating: 'No reviews yet',
     gender: 'Gender',
     about: 'About',
+    stats: {
+      label: 'Key facts',
+      years: 'Years of experience',
+      rating: 'Rating',
+      ratingNew: 'New',
+      certificates: 'Certificates',
+      services: 'Services'
+    },
     aboutEmpty: 'This caregiver has not added an introduction yet.',
     services: 'Services provided',
     servicesEmpty: 'This caregiver has not registered any services yet.',

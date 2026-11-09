@@ -37,7 +37,7 @@ export function CustomerBottomNav() {
   return (
     <nav
       aria-label={t('customer.nav.bottomNav')}
-      className='fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-40 lg:hidden'
+      className='fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-40 [view-transition-name:cc-customer-bottom-nav] lg:hidden'
     >
       <ul className='mx-auto flex h-16 max-w-md items-center justify-around rounded-[2rem] border border-white/80 bg-white/95 px-1.5 shadow-[var(--shadow-float)] backdrop-blur-xl'>
         {items.map((item) => (
@@ -47,6 +47,7 @@ export function CustomerBottomNav() {
               end={item.end}
               onClick={toTopIfOpen(item.to)}
               to={item.to}
+              viewTransition
             >
               {({ isActive }) =>
                 'primary' in item && item.primary ? (

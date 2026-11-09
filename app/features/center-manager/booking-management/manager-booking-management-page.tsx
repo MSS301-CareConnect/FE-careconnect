@@ -7,11 +7,11 @@ import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { tabId, tabPanelId } from '~/shared/ui/tabs'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { ManagerBookingQuickAction, type ManagerBookingAction } from './components/manager-booking-action-dialog'
 import { BOOKING_LIST_TABS, ManagerBookingFilters } from './components/manager-booking-filters'
 import { ManagerBookingQueue } from './components/manager-booking-queue'
@@ -35,7 +35,7 @@ export function ManagerBookingManagementPage() {
 
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <Button
             leftIcon={<Icon className='text-lg' name='refresh' />}

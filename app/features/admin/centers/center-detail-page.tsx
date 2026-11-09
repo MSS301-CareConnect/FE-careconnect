@@ -19,6 +19,7 @@ import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { useActionToast } from '~/shared/ui/use-action-toast'
+import { bentoBackLink, bentoTabClass, bentoTabList } from '~/shared/ui/bento-page-header'
 
 import { CENTER_BUSINESS_ERRORS } from './center-errors'
 import { parseCenterHours } from './center-hours'
@@ -125,10 +126,7 @@ export function CenterDetailPage({ id }: { id: string }) {
 
   return (
     <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <Link
-        className='inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline'
-        to='/admin/centers'
-      >
+      <Link className={bentoBackLink} to='/admin/centers'>
         <Icon className='text-base' name='arrow_back' />
         {t(`${key}.detail.back`)}
       </Link>
@@ -142,9 +140,9 @@ export function CenterDetailPage({ id }: { id: string }) {
         />
       ) : (
         <>
-          <header className='flex flex-wrap items-start gap-4'>
+          <header className='flex flex-wrap items-start gap-5 rounded-[1.75rem] border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6'>
             <Avatar
-              className='h-16 w-16 rounded-2xl'
+              className='h-20 w-20 rounded-full ring-4 ring-mint-100'
               icon='apartment'
               name={center.data.centerName}
               onExpired={() => void media.refetch()}
@@ -152,7 +150,7 @@ export function CenterDetailPage({ id }: { id: string }) {
               viewable
             />
             <div className='min-w-0 flex-1'>
-              <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{center.data.centerName}</h1>
+              <h1 className='text-[28px] leading-tight text-forest-950 sm:text-[34px]'>{center.data.centerName}</h1>
               <div className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
                 <ProviderStatusBadge status={center.data.centerStatus}>
                   {t(`${key}.status.${center.data.centerStatus}`)}
@@ -184,16 +182,12 @@ export function CenterDetailPage({ id }: { id: string }) {
               </div>
             )}
           </header>
-          <div
-            aria-label={t(`${key}.detail.tabsLabel`)}
-            className='flex gap-1 overflow-x-auto border-b border-outline-variant/40'
-            role='tablist'
-          >
+          <div aria-label={t(`${key}.detail.tabsLabel`)} className={bentoTabList} role='tablist'>
             {tabs.map((item) => (
               <button
                 aria-controls={`center-panel-${item}`}
                 aria-selected={tab === item}
-                className={`-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors ${tab === item ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'}`}
+                className={bentoTabClass(tab === item)}
                 id={`center-tab-${item}`}
                 key={item}
                 onClick={() => selectTab(item)}

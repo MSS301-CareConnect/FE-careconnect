@@ -90,7 +90,7 @@ describe('Caregiver shell', () => {
     renderCaregiver()
     fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
     const sidebar = screen.getByRole('navigation', { name: 'Caregiver navigation' })
-    expect(within(sidebar).getByRole('link', { name: 'Today' })).toHaveAttribute('title', 'Today')
+    expect(within(sidebar).getByRole('link', { name: 'Today' })).toHaveAttribute('aria-label', 'Today')
     expect(screen.getByRole('button', { name: 'Expand sidebar' })).toHaveAttribute('aria-expanded', 'false')
   })
 

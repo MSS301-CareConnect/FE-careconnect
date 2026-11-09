@@ -5,7 +5,8 @@ import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { StatusBadge } from '~/shared/ui/status-badge'
-import { Tabs, tabPanelId } from '~/shared/ui/tabs'
+import { PillTabs } from '~/shared/ui/pill-tabs'
+import { tabPanelId } from '~/shared/ui/tabs'
 
 import { useBookingRequests, useToday, useVisitsToAccept } from '../data/caregiver-queries'
 import { BookingRequestsList } from '../requests/booking-requests-list'
@@ -65,7 +66,7 @@ export function CaregiverVisitsPage() {
     <div className={cgContainer}>
       <CaregiverPageHeader description={t('caregiver.visits.subtitle')} title={t('caregiver.visits.title')} />
 
-      <Tabs
+      <PillTabs
         className='mb-4'
         idBase='caregiver-visits'
         items={VISIT_TABS.map((value) => ({

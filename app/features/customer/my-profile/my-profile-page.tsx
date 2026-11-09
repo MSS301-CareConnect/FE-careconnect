@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { dateLocale } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { PageHeader } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 
 import { PasswordChangePanel } from './password-change-panel'
 import { PersonalInfoPanel } from './personal-info-panel'
@@ -35,7 +35,7 @@ export function MyProfilePage() {
 
   return (
     <div>
-      <PageHeader
+      <CustomerPageHeader
         description={security ? t(`${key}.security.description`) : t(`${key}.description`)}
         title={security ? t(`${key}.security.title`) : t(`${key}.title`)}
       />

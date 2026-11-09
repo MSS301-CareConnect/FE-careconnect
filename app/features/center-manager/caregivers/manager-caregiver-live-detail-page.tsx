@@ -17,9 +17,9 @@ import { Avatar } from '~/shared/ui/avatar'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
-import { PageHeader } from '~/shared/ui/page-header'
 import { ErrorState, ForbiddenState, SkeletonBlock } from '~/shared/ui/state-panels'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { CaregiverEditorDialog } from './components/caregiver-editor-dialog'
 import { CaregiverServicesEditor } from './components/caregiver-services-editor'
 import { CaregiverUpcomingShifts } from './components/caregiver-upcoming-shifts'
@@ -116,7 +116,7 @@ export function ManagerCaregiverDetailPage() {
 
   return (
     <div className={container}>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <>
             <Button leftIcon={<Icon name='edit' />} onClick={() => setEditing(true)} variant='outline'>
@@ -141,9 +141,13 @@ export function ManagerCaregiverDetailPage() {
         title={person.fullName}
       />
 
-      <section className='rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6'>
+      <section className='relative isolate overflow-hidden rounded-[1.75rem] bg-forest-900 p-5 text-white shadow-[var(--shadow-float)] sm:p-7'>
+        <span
+          aria-hidden='true'
+          className='pointer-events-none absolute -top-24 -right-16 -z-10 h-72 w-72 rounded-full bg-mint-400/25 blur-3xl'
+        />
         <div className='flex flex-wrap items-center gap-5'>
-          <span className='flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-secondary-container text-primary'>
+          <span className='flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-mint-100 text-forest-800 ring-4 ring-mint-300/60 sm:h-28 sm:w-28'>
             <Avatar
               className='h-full w-full'
               icon='person'
@@ -164,33 +168,38 @@ export function ManagerCaregiverDetailPage() {
                 status={person.verificationStatus}
               />
             </div>
-            <p className='mt-2 flex items-center gap-1 text-sm font-semibold tabular-nums'>
-              <Icon className='text-warning' filled name='star' />
+            <p className='mt-3 flex items-center gap-1 text-base font-semibold tabular-nums'>
+              <Icon className='text-peach-300' filled name='star' />
               {person.ratingAverage !== undefined && (person.ratingCount ?? 0) > 0
                 ? new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(person.ratingAverage)
                 : '—'}
-              <span className='ml-1 font-normal text-on-surface-variant'>
+              <span className='ml-1 font-normal text-white/65'>
                 {t(`${key}.reviewsValue`, { count: person.ratingCount ?? 0 })}
               </span>
             </p>
-            <p className='mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-on-surface-variant'>
+            <p className='mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-white/70'>
               {person.bio || t(`${key}.noBio`)}
             </p>
           </div>
         </div>
-        <dl className='mt-5 grid gap-3 border-t border-outline-variant/40 pt-5 sm:grid-cols-2 xl:grid-cols-4'>
+        <dl className='mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
           {facts.map(([label, value, icon]) => (
-            <div className='flex items-center gap-3 rounded-xl bg-surface-container-low px-4 py-3' key={label}>
-              <Icon className='text-2xl text-primary' name={icon} />
+            <div
+              className='flex items-center gap-3 rounded-2xl bg-white/[0.07] px-4 py-3 ring-1 ring-white/10'
+              key={label}
+            >
+              <span className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mint-300 text-forest-950'>
+                <Icon className='text-xl' name={icon} />
+              </span>
               <div className='min-w-0'>
-                <dt className='text-xs text-on-surface-variant'>{label}</dt>
-                <dd className='truncate font-semibold text-on-surface'>{value}</dd>
+                <dt className='text-xs text-white/65'>{label}</dt>
+                <dd className='truncate font-semibold text-white'>{value}</dd>
               </div>
             </div>
           ))}
         </dl>
         {archive.isError ? (
-          <p className='mt-4 text-sm text-error' role='alert'>
+          <p className='mt-4 inline-block rounded-full bg-peach-100 px-3 py-1 text-sm text-peach-700' role='alert'>
             {t(apiRequestErrorKey(archive.error, `${key}.actionError`))}
           </p>
         ) : null}

@@ -20,6 +20,7 @@ import {
   providerKeys,
   verifyCaregiver
 } from '~/entities/provider/provider-api'
+import { BentoPageHeader, bentoBackLink, bentoContainer } from '~/shared/ui/bento-page-header'
 
 const key = 'admin.provider' as const
 const statusKeys = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
@@ -243,23 +244,20 @@ export function AdminCenterCaregiversPage() {
     })
   }
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <Link
-        className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold text-primary'
-        to={`/admin/centers/${id}?tab=staff`}
-      >
+    <main className={`${bentoContainer} space-y-6`}>
+      <Link className={bentoBackLink} to={`/admin/centers/${id}?tab=staff`}>
         <Icon name='arrow_back' />
         {center.data?.centerName ?? t(`${key}.backToCenters`)}
       </Link>
-      <header className='flex flex-wrap items-center justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.caregiverTitle`)}</h1>
-          {center.isSuccess ? <p className='mt-2 text-sm text-on-surface-variant'>{center.data.centerName}</p> : null}
-        </div>
-        <span className='rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-primary'>
-          {caregivers.data?.totalElements ?? 0}
-        </span>
-      </header>
+      <BentoPageHeader
+        actions={
+          <span className='rounded-full bg-mint-100 px-3.5 py-1.5 text-sm font-bold text-forest-900 tabular-nums'>
+            {caregivers.data?.totalElements ?? 0}
+          </span>
+        }
+        description={center.isSuccess ? center.data.centerName : undefined}
+        title={t(`${key}.caregiverTitle`)}
+      />
       {center.isError ? <p role='alert'>{t(`${key}.centerLoadError`)}</p> : null}
       {caregivers.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
       {caregivers.isError ? (
@@ -271,7 +269,7 @@ export function AdminCenterCaregiversPage() {
         </div>
       ) : null}
       {caregivers.isSuccess ? (
-        <section className='overflow-hidden rounded-xl bg-white shadow-sm'>
+        <section className='overflow-hidden rounded-2xl border border-forest-900/[0.06] bg-white shadow-[var(--shadow-card)]'>
           {caregivers.data.items.length === 0 ? (
             <p className='p-5'>{t(`${key}.caregiverEmpty`)}</p>
           ) : (

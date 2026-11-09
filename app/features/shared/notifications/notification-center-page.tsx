@@ -113,15 +113,15 @@ export function NotificationCenterPage({ portal }: { portal: NotificationPortal 
 
   return (
     <div
-      className={`${portal === 'customer' ? pageContainer : 'mx-auto w-full px-4 sm:px-6'} max-w-3xl pt-6 pb-12 sm:pt-8`}
+      className={`${portal === 'customer' ? `${pageContainer} pt-6 sm:pt-8` : 'mx-auto w-full px-4 pt-2 sm:px-6 sm:pt-4'} max-w-3xl pb-12`}
     >
       <header className='flex flex-wrap items-end justify-between gap-4'>
         <div className='flex items-center gap-3'>
-          <span className='grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary'>
+          <span className='grid h-14 w-14 place-items-center rounded-full bg-forest-900 text-mint-200 shadow-[var(--shadow-soft)]'>
             <Icon className='text-2xl' name='notifications' />
           </span>
           <div>
-            <h1 className='text-2xl font-bold text-on-surface sm:text-[28px]'>{t('notifications.title')}</h1>
+            <h1 className='text-[28px] leading-tight text-forest-950 sm:text-[34px]'>{t('notifications.title')}</h1>
             <p className='text-sm text-on-surface-variant'>
               {unreadCount > 0 ? t(`${key}.unreadSummary`, { count: unreadCount }) : t(`${key}.allRead`)}
             </p>
@@ -155,7 +155,7 @@ export function NotificationCenterPage({ portal }: { portal: NotificationPortal 
 
       <section
         aria-label={t('notifications.title')}
-        className='mt-6 overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-xs'
+        className='mt-6 overflow-hidden rounded-[1.75rem] border border-forest-900/[0.06] bg-surface-container-lowest shadow-[var(--shadow-card)]'
       >
         <NotificationToolbar
           items={items}
@@ -172,7 +172,10 @@ export function NotificationCenterPage({ portal }: { portal: NotificationPortal 
         />
 
         {failed ? (
-          <p className='mx-4 mt-3 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container' role='alert'>
+          <p
+            className='mx-4 mt-3 rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container'
+            role='alert'
+          >
             {t(`${key}.actionError`)}
           </p>
         ) : null}
@@ -202,7 +205,7 @@ export function NotificationCenterPage({ portal }: { portal: NotificationPortal 
         ) : null}
         {list.isSuccess && items.length === 0 ? (
           <div className='cc-fade-up flex flex-col items-center px-6 py-16 text-center'>
-            <span className='grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-primary'>
+            <span className='grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-mint-100 to-peach-100 text-forest-800 ring-8 ring-mint-50'>
               <Icon className='text-3xl' name={unreadOnly ? 'mark_email_read' : 'notifications_off'} />
             </span>
             <h2 className='mt-4 text-base font-semibold text-on-surface'>
@@ -214,7 +217,7 @@ export function NotificationCenterPage({ portal }: { portal: NotificationPortal 
 
         {groupByDay(items, now).map((group) => (
           <section aria-label={t(`${key}.groups.${group.day}`)} key={group.day}>
-            <h2 className='border-b border-outline-variant/40 bg-surface-container-low px-5 py-1.5 text-xs font-semibold text-on-surface-variant'>
+            <h2 className='border-b border-outline-variant/40 bg-mint-50/70 px-5 py-2 text-xs font-semibold tracking-wide text-forest-700 uppercase'>
               {t(`${key}.groups.${group.day}`)}
             </h2>
             <ul className='cc-stagger divide-y divide-outline-variant/30'>

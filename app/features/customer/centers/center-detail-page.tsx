@@ -5,7 +5,9 @@ import { useServiceCenter } from '~/entities/care-center/care-center-api'
 import { apiErrorStatus } from '~/shared/api/error-details'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
+import { peachPill } from '~/features/customer/ui/bento-styles'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
 
@@ -78,14 +80,11 @@ export function CenterDetailPage() {
   const data = center.data
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         actions={
           <>
             <ChooseCenterButton center={data} />
-            <Link
-              className='inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary shadow-[var(--shadow-card)] hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-              to={`/customer/booking?center=${data.id}`}
-            >
+            <Link className={peachPill} to={`/customer/booking?center=${data.id}`}>
               <Icon aria-hidden='true' className='text-lg' name='event_available' />
               {t(`${key}.book`)}
             </Link>
@@ -102,8 +101,10 @@ export function CenterDetailPage() {
           <CenterCaregiversSection centerId={data.id} />
         </div>
         <aside className='flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start'>
-          <div className='overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest'>
-            <CenterPhoto center={data} className='aspect-[16/10] w-full' />
+          <div className='overflow-hidden rounded-3xl border border-forest-900/[0.06] bg-white shadow-[var(--shadow-card)]'>
+            <div className='m-2 mb-0 overflow-hidden rounded-[1.1rem]'>
+              <CenterPhoto center={data} className='aspect-[16/10] w-full' />
+            </div>
             <CenterFacts center={data} className='p-5' />
           </div>
           <CenterPolicySection centerId={data.id} />

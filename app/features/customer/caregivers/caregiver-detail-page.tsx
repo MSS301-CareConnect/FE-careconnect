@@ -41,7 +41,7 @@ export function CustomerCaregiverDetailPage() {
     <div className='flex w-full flex-1 flex-col text-on-surface'>
       <div className={`${pageContainer} pb-16`}>
         <nav aria-label={t(`${key}.list.breadcrumb.label`)} className='pt-6 sm:pt-8'>
-          <ol className='flex flex-wrap items-center gap-1 text-sm text-on-surface-variant'>
+          <ol className='cc-glass inline-flex max-w-full flex-wrap items-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-on-surface-variant shadow-xs'>
             <li>
               <Link className='rounded hover:text-primary hover:underline' to='/customer'>
                 {t(`${key}.list.breadcrumb.home`)}
@@ -56,7 +56,7 @@ export function CustomerCaregiverDetailPage() {
             {profile.data ? (
               <li className='flex items-center gap-1'>
                 <Icon className='text-base text-outline' name='chevron_right' />
-                <span aria-current='page' className='font-medium text-on-surface'>
+                <span aria-current='page' className='font-semibold text-forest-900'>
                   {profile.data.fullName}
                 </span>
               </li>
@@ -65,7 +65,7 @@ export function CustomerCaregiverDetailPage() {
         </nav>
 
         {profile.isPending ? (
-          <div className='mt-6 rounded-2xl border border-outline-variant bg-surface-container-lowest p-7' role='status'>
+          <div className='mt-6 rounded-3xl border border-outline-variant bg-surface-container-lowest p-7' role='status'>
             <span className='sr-only'>{t(`${key}.loading`)}</span>
             <div className='flex items-center gap-5'>
               <span className='cc-skeleton h-28 w-28 rounded-full' />
@@ -87,7 +87,7 @@ export function CustomerCaregiverDetailPage() {
             <h1 className='mt-4 text-xl font-bold text-on-surface'>{t(`${key}.profileError`)}</h1>
             <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.detail.errorHelp`)}</p>
             <button
-              className='mt-6 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container'
+              className='mt-6 rounded-full bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-colors hover:bg-primary-container'
               onClick={() => profile.refetch()}
               type='button'
             >
@@ -97,7 +97,7 @@ export function CustomerCaregiverDetailPage() {
         ) : null}
 
         {profile.isSuccess ? (
-          <div className='mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8'>
+          <div className='cc-fade-up mt-5 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8'>
             <div className='flex min-w-0 flex-col gap-6'>
               <CaregiverDetailHero profile={profile.data} />
               <DetailSection icon='medical_services' title={t(`${key}.detail.services`)}>

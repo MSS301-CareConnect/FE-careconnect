@@ -26,7 +26,7 @@ export function CenterPolicySection({ centerId }: { centerId: string }) {
       aria-labelledby='center-policy-title'
       className='flex flex-col gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-5'
     >
-      <h2 className='flex items-center gap-2 text-lg font-semibold text-on-surface' id='center-policy-title'>
+      <h2 className='flex items-center gap-2 text-lg font-bold tracking-tight text-forest-950' id='center-policy-title'>
         <Icon aria-hidden='true' className='text-xl text-primary' name='currency_exchange' />
         {t(`${key}.title`)}
       </h2>

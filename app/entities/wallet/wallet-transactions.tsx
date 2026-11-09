@@ -48,7 +48,7 @@ export function WalletTransactionRow({
         ) : null}
       </div>
       <div className='text-left sm:text-right'>
-        <p className={`font-bold tabular-nums ${sign > 0 ? 'text-success' : 'text-on-surface'}`}>
+        <p className={`font-bold tabular-nums ${sign > 0 ? 'text-mint-500' : 'text-on-surface'}`}>
           {sign > 0 ? '+' : '−'}
           {money(transaction.amount)}
         </p>
@@ -82,7 +82,7 @@ export function WalletTransactions({
   })
 
   return (
-    <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs sm:p-6'>
+    <section className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'>
       <h2 className='text-base font-bold text-on-surface'>{t('wallet.transactions.title')}</h2>
       <p className='mt-1 text-sm text-on-surface-variant'>{t('wallet.transactions.hint')}</p>
       {transactions.isPending ? (

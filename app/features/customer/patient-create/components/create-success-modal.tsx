@@ -38,7 +38,7 @@ export function CreateSuccessModal({ profile, onClose }: CreateSuccessModalProps
           <Link
             to={`/customer/patient-profiles/${profile.id}`}
             onClick={onClose}
-            className='w-full rounded-lg bg-primary px-4 py-2.5 text-center text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container'
+            className='w-full rounded-full bg-primary px-4 py-2.5 text-center text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container'
           >
             {t('customer.patientCreate.modal.viewProfile')}
           </Link>

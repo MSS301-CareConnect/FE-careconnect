@@ -5,7 +5,7 @@ import { DatePicker } from '~/shared/ui/date-picker'
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { FilterMenuChip } from '~/shared/ui/filter-menu-chip'
 import { Icon } from '~/shared/ui/icon'
-import { Tabs } from '~/shared/ui/tabs'
+import { PillTabs } from '~/shared/ui/pill-tabs'
 
 import {
   GROUP_STATUSES,
@@ -36,7 +36,7 @@ export function ManagerBookingFilters({ list, total }: { list: ManagerBookingLis
 
   return (
     <div className='space-y-3'>
-      <Tabs
+      <PillTabs
         idBase={BOOKING_LIST_TABS}
         items={MANAGER_GROUPS.map((group) => ({
           value: group,

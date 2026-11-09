@@ -17,7 +17,7 @@ import { NextSteps } from './next-steps'
 import { QuoteLines } from './quote-lines'
 
 const primaryLink =
-  'inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-5 font-semibold text-on-primary transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+  'inline-flex min-h-12 items-center justify-center rounded-full bg-primary px-5 font-semibold text-on-primary transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 const secondaryLink =
   'inline-flex min-h-12 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest px-5 font-semibold text-on-surface transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 
@@ -101,7 +101,9 @@ export function BookingSuccess({ form }: { form: BookingForm }) {
               <span className='font-medium'>{form.chosenCaregiver.fullName}</span>
             ) : booking.caregiverId ? (
               <span className='flex flex-col gap-1.5 sm:items-end'>
-                <span className='text-xs font-semibold text-primary'>{t('customer.booking.success.caregiverAuto')}</span>
+                <span className='text-xs font-semibold text-primary'>
+                  {t('customer.booking.success.caregiverAuto')}
+                </span>
                 <AssignedCaregiverCard caregiverId={booking.caregiverId} />
               </span>
             ) : (
@@ -115,7 +117,9 @@ export function BookingSuccess({ form }: { form: BookingForm }) {
           <dt className='text-on-surface-variant'>{t('customer.booking.summary.schedule')}</dt>
           <dd className='text-right font-medium text-on-surface'>
             {t(`customer.booking.schedule.types.${form.schedule.bookingType}.title`)}
-            {booking.occurrences?.length ? ` · ${t('customer.booking.summary.visits', { count: booking.occurrences.length })}` : ''}
+            {booking.occurrences?.length
+              ? ` · ${t('customer.booking.summary.visits', { count: booking.occurrences.length })}`
+              : ''}
           </dd>
         </div>
 
@@ -135,7 +139,12 @@ export function BookingSuccess({ form }: { form: BookingForm }) {
           <h2 className='mb-3 font-semibold text-on-surface' id='success-visits-title'>
             {t('customer.booking.review.visitsTitle')}
           </h2>
-          <BookingVisitTable compact services={booking.services} today={today} visits={occurrenceVisits(booking.occurrences)} />
+          <BookingVisitTable
+            compact
+            services={booking.services}
+            today={today}
+            visits={occurrenceVisits(booking.occurrences)}
+          />
         </section>
       ) : null}
 

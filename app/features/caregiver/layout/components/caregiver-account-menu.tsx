@@ -51,7 +51,7 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
         aria-expanded={open}
         aria-haspopup='true'
         aria-label={t('caregiver.account.menu')}
-        className='cg-press flex min-h-11 items-center gap-2 rounded-full p-1 hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary lg:rounded-xl lg:pr-2'
+        className='cg-press flex min-h-11 items-center gap-2 rounded-full bg-white/85 p-1 shadow-[var(--cg-shadow-1)] ring-1 ring-forest-900/5 hover:bg-white focus-visible:outline-2 focus-visible:outline-primary lg:pr-3'
         onClick={() => setOpen((value) => !value)}
         ref={buttonRef}
         type='button'
@@ -67,7 +67,7 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
         <nav
           aria-label={t('caregiver.account.menu')}
           data-state={panelState}
-          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
+          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-2xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
           id='caregiver-account-menu'
         >
           <div className='flex items-center gap-3 border-b border-outline-variant px-3 pt-2 pb-3'>

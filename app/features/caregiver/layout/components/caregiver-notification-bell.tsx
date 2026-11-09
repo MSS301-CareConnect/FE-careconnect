@@ -87,7 +87,7 @@ export function CaregiverNotificationBell() {
         aria-expanded={open}
         aria-haspopup='true'
         aria-label={count > 0 ? t('notifications.bellUnread', { count }) : t('notifications.bell')}
-        className='cg-press relative grid h-11 w-11 place-items-center rounded-full text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
+        className='cg-press relative grid h-11 w-11 place-items-center rounded-full bg-white/85 text-forest-900 shadow-[var(--cg-shadow-1)] ring-1 ring-forest-900/5 hover:bg-white focus-visible:outline-2 focus-visible:outline-primary'
         onClick={() => {
           setSheetHost(
             window.matchMedia('(max-width: 639px)').matches ? document.querySelector('.theme-caregiver') : null
@@ -99,7 +99,7 @@ export function CaregiverNotificationBell() {
       >
         <Icon filled={open} name='notifications' />
         {count > 0 ? (
-          <span className='absolute top-1.5 right-1.5 min-w-[18px] rounded-full bg-error px-1 text-center text-[10px] leading-[18px] font-bold text-on-error tabular-nums ring-2 ring-surface-container-lowest'>
+          <span className='absolute top-1.5 right-1.5 min-w-[18px] rounded-full bg-peach-400 px-1 text-center text-[10px] leading-[18px] font-bold text-forest-950 tabular-nums ring-2 ring-white'>
             {count > MAX_BADGE ? `${MAX_BADGE}+` : count}
           </span>
         ) : null}
@@ -112,7 +112,7 @@ export function CaregiverNotificationBell() {
                 aria-label={t('notifications.title')}
                 ref={panelRef}
                 data-state={panelState}
-                className='cc-dropdown cg-safe-bottom fixed inset-x-0 bottom-0 z-50 origin-bottom sm:origin-top-right max-h-[80dvh] overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--cg-shadow-2)] sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:bottom-auto sm:mt-2 sm:w-96 sm:rounded-xl'
+                className='cc-dropdown cg-safe-bottom fixed inset-x-0 bottom-0 z-50 origin-bottom sm:origin-top-right max-h-[80dvh] overflow-hidden rounded-t-3xl border border-outline-variant bg-surface-container-lowest shadow-[var(--cg-shadow-2)] sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:bottom-auto sm:mt-2 sm:w-96 sm:rounded-2xl'
               >
                 <div className='mx-auto mt-2 h-1 w-10 rounded-full bg-outline-variant sm:hidden' />
                 <div className='flex items-center justify-between border-b border-outline-variant px-4 py-3'>

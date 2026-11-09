@@ -7,6 +7,7 @@ import type { ComplaintRecord, ComplaintStatus } from '~/shared/api/generated/co
 import { accept, adminResolve, aftercareErrorKey, aftercareKeys, fetchComplaints, resolve } from './aftercare-api'
 import { classifyApiError } from '~/shared/api/api-error'
 import { useActionToast } from '~/shared/ui/use-action-toast'
+import { bentoTabClass, bentoTabList } from '~/shared/ui/bento-page-header'
 
 const FILTERS = [
   'OPEN',
@@ -30,11 +31,11 @@ export function ComplaintQueue({ role }: { role: 'CENTER_MANAGER' | 'ADMIN' }) {
   })
   return (
     <div className='flex flex-col gap-4'>
-      <div aria-label={t('aftercare.queue.filter')} className='flex flex-wrap gap-2' role='group'>
+      <div aria-label={t('aftercare.queue.filter')} className={bentoTabList} role='group'>
         {FILTERS.map((item) => (
           <button
             aria-pressed={status === item}
-            className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${status === item ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant'}`}
+            className={bentoTabClass(status === item)}
             key={item}
             onClick={() => setStatus(item)}
             type='button'
@@ -54,9 +55,11 @@ export function ComplaintQueue({ role }: { role: 'CENTER_MANAGER' | 'ADMIN' }) {
         </p>
       ) : null}
       {complaints.isSuccess && complaints.data.length === 0 ? (
-        <p className='text-sm text-on-surface-variant'>{t('aftercare.queue.empty')}</p>
+        <p className='rounded-2xl border border-forest-900/[0.06] bg-white px-5 py-10 text-center text-sm text-on-surface-variant shadow-[var(--shadow-card)]'>
+          {t('aftercare.queue.empty')}
+        </p>
       ) : null}
-      <ul className='flex flex-col gap-3'>
+      <ul className='ops-stagger cc-stagger flex flex-col gap-3'>
         {(complaints.data ?? []).map((complaint) => (
           <ComplaintItem complaint={complaint} key={complaint.id} role={role} />
         ))}
@@ -97,12 +100,12 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
     (role === 'CENTER_MANAGER' && complaint.status === 'IN_PROGRESS') ||
     (role === 'ADMIN' && complaint.status === 'ESCALATED')
   return (
-    <li className='rounded-xl border border-outline-variant bg-white p-4'>
-      <p className='text-sm font-bold'>
+    <li className='rounded-2xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)]'>
+      <p className='text-base font-bold text-forest-950'>
         {complaint.complaintCode ? `${complaint.complaintCode} · ` : ''}
         {complaint.title ?? '—'}
       </p>
-      <p className='mt-1 text-xs text-on-surface-variant'>
+      <p className='mt-1.5 inline-flex rounded-full bg-mint-50 px-2.5 py-0.5 text-xs font-medium text-forest-800'>
         {complaint.category ? t(`aftercare.categories.${complaint.category}`) : ''} ·{' '}
         {t(`aftercare.complaintStatus.${complaint.status}`)}
       </p>
@@ -121,7 +124,7 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
       ) : null}
       {canAccept ? (
         <button
-          className='mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-50'
+          className='mt-4 min-h-11 rounded-full bg-forest-900 px-5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-forest-800 disabled:opacity-50'
           disabled={acceptMutation.isPending}
           onClick={() => acceptMutation.mutate()}
           type='button'
@@ -130,11 +133,11 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
         </button>
       ) : null}
       {canResolve ? (
-        <div className='mt-3 flex flex-col gap-2'>
+        <div className='mt-4 flex flex-col gap-3 rounded-2xl bg-mint-50/70 p-4'>
           <label className='text-sm font-medium'>
             {t('aftercare.queue.resolution')}
             <textarea
-              className='mt-1 w-full rounded-lg border border-outline-variant p-2 text-sm'
+              className='mt-1 w-full rounded-2xl border border-outline-variant bg-white p-3 text-sm focus-visible:outline-2 focus-visible:outline-forest-900'
               onChange={(event) => setResolution(event.target.value)}
               rows={3}
               value={resolution}
@@ -144,7 +147,7 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
             <label className='text-sm font-medium'>
               {t('aftercare.queue.refund')}
               <input
-                className='mt-1 w-full rounded-lg border border-outline-variant p-2 text-sm'
+                className='mt-1 w-full rounded-2xl border border-outline-variant bg-white p-3 text-sm focus-visible:outline-2 focus-visible:outline-forest-900'
                 inputMode='numeric'
                 min={0}
                 onChange={(event) => setRefund(event.target.value)}
@@ -154,7 +157,7 @@ function ComplaintItem({ complaint, role }: { complaint: ComplaintRecord; role: 
             </label>
           ) : null}
           <button
-            className='self-start rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-50'
+            className='self-start min-h-11 rounded-full bg-forest-900 px-5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-forest-800 disabled:opacity-50'
             disabled={resolveMutation.isPending || !resolution.trim()}
             onClick={() => resolveMutation.mutate()}
             type='button'

@@ -88,15 +88,19 @@ center chip, the notification bell (which also pins pending profile invitations)
 bottom navigation. `/customer/my-profile`, `/customer/patient-profiles`, `/customer/patient-profiles/:id`,
 `/customer/payments` and `/customer/invitations` share an account shell (`routes/customer/account-layout.tsx` →
 `features/customer/layout/account-shell.tsx`): a sidebar on desktop, a row of tabs on phones, with a badge of pending
-invitations. Action results are sonner toasts (the shared `Toaster`, mounted in `CustomerLayout` above the bottom
+invitations. Since the "Soft Bento" restyle (2026-11-09) `features/customer/layout/customer-theme.css` remaps the
+semantic tokens inside `.theme-customer` (forest primary, mint fills, 24 px cards) and customer pages use
+`features/customer/ui` (`CustomerPageHeader`, `bento-styles.ts`) instead of the shared `PageHeader`. Action results are sonner toasts (the shared `Toaster`, mounted in `CustomerLayout` above the bottom
 navigation).
 Caregiver search, caregiver detail, and services under `/customer` use a public browse
 layout outside the Customer portal guard. Guests see the same navigation style with
 Home, Find Caregivers, Services, and Sign in; active Customers also see bookings and
 their account menu. The `/customer` index, booking routes, and personal and patient
-profiles remain guarded. The current backend requires an authenticated session for
-caregiver search and detail, verified certificates, catalog items, center offerings,
-and price plans. Guest browse routes remain reachable, but their data requests return 401.
+profiles remain guarded. Since 2026-11-09 guests read the caregiver catalog (`GET /caregivers`), the public caregiver
+profile (`GET /caregivers/{id}/public`), catalog items, center offerings and their price plans without signing in: the
+gateway's `OPTIONAL_AUTH_GET_ENDPOINTS` and the matching ProviderService / CareCatalogService matchers permit anonymous
+GETs but still forward and verify a token when one is present, so admins and managers keep their full view (an
+anonymous caller is treated like a customer). Verified certificate files and caregiver search still need a session.
 
 The Customer header carries a center selector beside the logo, and the public `/` home
 page uses the same Customer layout so the selector appears from the first visit.
@@ -543,6 +547,12 @@ The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts`
 menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue and
 quality previews keep their routes but are left out of the menu until a backend exists (D26). `/admin/policies` is
 live since booking spec v1.0 (2026-11-02): the admin picks an active center and edits its booking policy.
+Each labelled group is a parent section (2026-11-09, after the EXE admin sidebar; `NavRailGroup` `icon` + `collapsible`,
+`shared/ui/nav-rail-group.tsx`): a bold heading with its icon opens and closes its indented items, the choice is kept in
+`localStorage` (`careconnect.admin.navOpenGroups`, open by default) and navigating into a closed section opens it; on
+the collapsed rail a section is one icon whose items open in a flyout beside the rail (hover, click or ↓, Esc closes);
+the icon is the section's own until one of its pages is open, then that page's icon on a round mint badge. The phone
+drawer keeps the headings. Manager and caregiver rails do not use it.
 At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
 navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
 navigation. The topbar holds the language switch, notifications and the account menu;

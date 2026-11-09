@@ -1,7 +1,9 @@
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
 import type { WalletStatisticsRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
+import { revealVariants, staggerVariants } from '~/shared/ui/motion'
 
 import { WalletChart } from './wallet-chart'
 
@@ -40,22 +42,29 @@ export function WalletStatistics({ statistics }: { statistics: WalletStatisticsR
 
   return (
     <div className='space-y-5'>
-      <dl className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
-        {METRICS[statistics.ownerType].map((metric) => (
-          <div
-            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-xs'
+      <motion.dl
+        className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'
+        initial='hidden'
+        variants={staggerVariants(0.06)}
+        viewport={{ once: true, amount: 0.2 }}
+        whileInView='shown'
+      >
+        {METRICS[statistics.ownerType].map((metric, index) => (
+          <motion.div
+            className={`rounded-2xl border p-5 shadow-[var(--shadow-card)] ${index === 0 ? 'border-transparent bg-mint-100' : 'border-forest-900/[0.06] bg-surface-container-lowest'}`}
             key={metric}
+            variants={revealVariants}
           >
             <dt className='text-xs font-semibold text-on-surface-variant'>{t(`wallet.metrics.${metric}`)}</dt>
-            <dd className='mt-2 text-2xl font-extrabold tabular-nums text-on-surface'>{valueOf(metric)}</dd>
-          </div>
+            <dd className='mt-2 text-[26px] leading-tight font-extrabold tracking-tight text-forest-950 tabular-nums'>
+              {valueOf(metric)}
+            </dd>
+          </motion.div>
         ))}
         {platform ? (
-          <div className='rounded-2xl border border-warning/30 bg-warning-container p-4 shadow-xs'>
-            <dt className='text-xs font-semibold text-on-warning-container'>
-              {t('wallet.metrics.pendingWithdrawals')}
-            </dt>
-            <dd className='mt-2 text-lg font-bold tabular-nums text-on-warning-container'>
+          <div className='rounded-2xl border border-peach-200 bg-peach-50 p-5 shadow-[var(--shadow-card)]'>
+            <dt className='text-xs font-semibold text-peach-700'>{t('wallet.metrics.pendingWithdrawals')}</dt>
+            <dd className='mt-2 text-lg font-bold tabular-nums text-forest-950'>
               {t('wallet.metrics.pendingWithdrawalsValue', {
                 count: statistics.pendingWithdrawalCount ?? 0,
                 amount: money(statistics.pendingWithdrawalAmount ?? 0)
@@ -63,16 +72,16 @@ export function WalletStatistics({ statistics }: { statistics: WalletStatisticsR
             </dd>
           </div>
         ) : null}
-      </dl>
-      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
+      </motion.dl>
+      <div className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'>
         <WalletChart series={statistics.series} showSpent={statistics.ownerType === 'CUSTOMER'} />
       </div>
       {platform && statistics.liabilities ? (
-        <section className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
+        <section className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'>
           <h3 className='text-base font-bold text-on-surface'>{t('wallet.liabilities.title')}</h3>
           <p className='mt-1 text-sm text-on-surface-variant'>{t('wallet.liabilities.hint')}</p>
           <table className='mt-4 w-full text-left text-sm'>
-            <thead className='text-xs text-on-surface-variant'>
+            <thead className='bg-mint-50 text-xs text-on-surface-variant'>
               <tr>
                 <th className='py-2 font-semibold' scope='col'>
                   {t('wallet.liabilities.owner')}

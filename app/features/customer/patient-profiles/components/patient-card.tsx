@@ -54,7 +54,7 @@ export function PatientCard({
   ]
 
   return (
-    <article className='cc-lift group relative flex flex-col rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] hover:border-brand-200'>
+    <article className='cc-lift group relative flex flex-col rounded-3xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] hover:border-mint-200'>
       <div className='flex items-start gap-4'>
         <Avatar
           alt={t(`${key}.card.avatarAlt`, { name: patient.fullName })}
@@ -102,7 +102,7 @@ export function PatientCard({
         </Link>
         {patient.status === 'ACTIVE' ? (
           <Link
-            className='relative z-10 inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary shadow-xs transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+            className='relative z-10 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-peach-300 px-4 text-sm font-semibold text-forest-950 transition-[background-color,transform] hover:bg-peach-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)]'
             to={`/customer/booking?patientId=${patient.id}`}
           >
             <Icon className='text-lg' name='event_available' />

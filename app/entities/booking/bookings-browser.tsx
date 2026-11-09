@@ -130,17 +130,17 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
 
   return (
     <div className='space-y-4'>
-      <section className='space-y-4 rounded-xl border border-outline-variant/40 bg-white p-4'>
+      <section className='space-y-4 rounded-2xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)]'>
         <div className='flex flex-wrap items-center justify-between gap-3'>
           <div
             aria-label={t(`${key}.viewLabel`)}
-            className='inline-flex rounded-xl bg-surface-container-low p-1'
+            className='inline-flex rounded-full bg-surface-container-low p-1 ring-1 ring-forest-900/5'
             role='group'
           >
             {(['list', 'calendar'] as const).map((item) => (
               <button
                 aria-pressed={view === item}
-                className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary ${view === item ? 'bg-white text-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface'}`}
+                className={`inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-forest-900 ${view === item ? 'bg-forest-900 text-white shadow-[0_8px_18px_-10px_rgb(12_43_37/0.8)]' : 'text-on-surface-variant hover:text-forest-900'}`}
                 key={item}
                 onClick={() => update({ view: item === 'list' ? undefined : 'calendar', day: undefined })}
                 type='button'
@@ -285,11 +285,11 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
         ) : (
           <>
             <p className='text-sm text-on-surface-variant'>{t(`${key}.total`, { count: list.data.totalElements })}</p>
-            <ul className='overflow-hidden rounded-xl border border-outline-variant/40 bg-white'>
+            <ul className='cc-stagger overflow-hidden rounded-2xl border border-forest-900/[0.06] bg-white shadow-[var(--shadow-card)]'>
               {rows.map((booking) => (
                 <li className='border-b border-outline-variant/25 last:border-b-0' key={booking.id}>
                   <Link
-                    className='grid gap-2 px-4 py-3 text-sm transition-colors hover:bg-surface-container-low/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'
+                    className='grid gap-2 px-5 py-3.5 text-sm transition-colors hover:bg-mint-50/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'
                     to={detailPath(booking.id)}
                   >
                     <span className='min-w-0'>
@@ -342,7 +342,10 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
       ) : (
         <>
           {calendar.data.truncated ? (
-            <p className='rounded-xl bg-warning-container px-4 py-2.5 text-sm text-on-warning-container' role='status'>
+            <p
+              className='rounded-2xl bg-peach-50 px-4 py-2.5 text-sm text-peach-700 ring-1 ring-peach-200'
+              role='status'
+            >
               {t(`${key}.tooMany`, { count: MONTH_PAGE_SIZE * MONTH_MAX_PAGES })}
             </p>
           ) : null}

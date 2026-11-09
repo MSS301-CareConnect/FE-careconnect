@@ -17,7 +17,7 @@ import { Avatar } from '~/shared/ui/avatar'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
-import { PageHeader } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
@@ -55,7 +55,7 @@ export function InvitationsPage() {
 
   return (
     <div>
-      <PageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
+      <CustomerPageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
 
       {invitations.isPending ? (
         <SkeletonGroup className='flex flex-col gap-4' label={t(`${key}.loading`)}>
@@ -161,12 +161,7 @@ export function InvitationsPage() {
         })}
       </ul>
 
-      <Pagination
-        className='mt-6'
-        onPageChange={setPage}
-        page={safePage}
-        totalPages={totalPages}
-      />
+      <Pagination className='mt-6' onPageChange={setPage} page={safePage} totalPages={totalPages} />
 
       <ConfirmDialog
         confirmLabel={t(`${key}.decline`)}

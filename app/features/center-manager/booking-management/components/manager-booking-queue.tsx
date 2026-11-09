@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { formatDateTime } from '~/entities/booking/booking-format'
 import type { BookingStatus } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
+import { CountUp } from '~/shared/ui/motion'
 
 import type { ManagerBookingList } from '../hooks/use-manager-bookings'
 
@@ -27,7 +28,7 @@ export function ManagerBookingQueue({ list }: { list: ManagerBookingList }) {
   const key = 'centerManager.bookingManagement.queue' as const
 
   return (
-    <section aria-label={t(`${key}.label`)} className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+    <section aria-label={t(`${key}.label`)} className='ops-stagger grid grid-cols-2 gap-3 lg:grid-cols-4'>
       {QUEUE.map(({ status, icon, action }) => {
         const item = list.byStatus.get(status)
         const count = item?.count ?? 0
@@ -48,26 +49,30 @@ export function ManagerBookingQueue({ list }: { list: ManagerBookingList }) {
         return (
           <button
             aria-pressed={selected}
-            className={`group flex min-h-[7.5rem] flex-col rounded-2xl border p-4 text-left transition-[border-color,background-color,box-shadow] duration-150 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            className={`group flex min-h-[8.5rem] flex-col rounded-2xl border p-5 text-left shadow-[var(--shadow-card)] transition-[border-color,background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               urgent
                 ? 'border-error/40 bg-error-container/40 hover:border-error'
                 : action && count > 0
-                  ? 'border-warning/50 bg-warning-container/50 hover:border-warning'
-                  : 'border-outline-variant/50 bg-surface-container-lowest hover:border-primary/40'
-            } ${selected ? 'ring-2 ring-primary' : ''}`}
+                  ? 'border-peach-200 bg-peach-50 hover:border-peach-300'
+                  : 'border-forest-900/[0.06] bg-surface-container-lowest hover:border-mint-300'
+            } ${selected ? 'ring-2 ring-forest-900' : ''}`}
             key={status}
             onClick={() => list.setStatus(selected ? '' : status)}
             type='button'
           >
             <span className='flex items-center justify-between gap-2'>
               <span className='text-sm font-medium text-on-surface-variant'>{t(`${key}.${status}`)}</span>
-              <Icon
-                className={`text-xl ${urgent ? 'text-error' : action && count > 0 ? 'text-warning' : action ? 'text-primary' : 'text-outline'}`}
-                name={icon}
-              />
+              <span
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${urgent ? 'bg-error-container' : action && count > 0 ? 'bg-peach-100' : 'bg-mint-50'}`}
+              >
+                <Icon
+                  className={`text-xl ${urgent ? 'text-error' : action && count > 0 ? 'text-peach-700' : action ? 'text-primary' : 'text-outline'}`}
+                  name={icon}
+                />
+              </span>
             </span>
-            <span className='mt-2 text-3xl font-bold text-on-surface tabular-nums'>
-              {list.counts.isSuccess ? count : '–'}
+            <span className='mt-3 text-[34px] leading-none font-bold tracking-tight text-forest-950 tabular-nums'>
+              {list.counts.isSuccess ? <CountUp value={count} /> : '–'}
             </span>
             <span className={`mt-auto pt-1 text-xs font-medium ${detail?.tone ?? 'text-outline'}`}>{detail?.text}</span>
           </button>

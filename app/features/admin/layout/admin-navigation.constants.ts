@@ -1,6 +1,8 @@
 /**
- * Admin sidebar items grouped by area; every item opens a live screen (Đợt 5). Revenue and quality previews stay
- * routable but are left out of the menu until their backend exists (D26); booking policies are live (spec §8).
+ * Admin sidebar items grouped by area. A labelled group is a parent section with its own icon: it opens and closes in
+ * the expanded sidebar and becomes one icon with a flyout when the sidebar is collapsed (2026-11-09).
+ * Every item opens a live screen (Đợt 5). Revenue and quality previews stay routable but are left out of the menu
+ * until their backend exists (D26); booking policies are live (spec §8).
  */
 export const adminNavigation = [
   {
@@ -12,6 +14,7 @@ export const adminNavigation = [
   {
     key: 'operations',
     labelled: true,
+    icon: 'settings_suggest',
     items: [
       { key: 'services', to: '/admin/services', icon: 'medical_information' },
       { key: 'centers', to: '/admin/centers', icon: 'apartment' },
@@ -25,6 +28,7 @@ export const adminNavigation = [
   {
     key: 'finance',
     labelled: true,
+    icon: 'account_balance',
     items: [
       { key: 'wallet', to: '/admin/wallet', icon: 'account_balance_wallet' },
       { key: 'withdrawals', to: '/admin/withdrawals', icon: 'payments' }
@@ -33,6 +37,7 @@ export const adminNavigation = [
   {
     key: 'customerCare',
     labelled: true,
+    icon: 'support_agent',
     items: [
       { key: 'customers', to: '/admin/customers', icon: 'groups' },
       { key: 'reviewsComplaints', to: '/admin/reviews-complaints', icon: 'forum' }
@@ -41,6 +46,7 @@ export const adminNavigation = [
   {
     key: 'system',
     labelled: true,
+    icon: 'shield_person',
     items: [
       { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
       { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },

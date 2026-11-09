@@ -11,10 +11,10 @@ import { Button } from '~/shared/ui/button'
 import { Combobox } from '~/shared/ui/combobox'
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { buildRows, clashesWithLeave, leaveOnDay, scheduleMinutes, type DayLeave } from './calendar-model'
 import { ScheduleList } from './components/schedule-list'
 import { TeamWeekGrid } from './components/team-week-grid'
@@ -88,7 +88,7 @@ export function ManagerWorkCalendarPage() {
 
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <Button leftIcon={<Icon name='event_busy' />} onClick={() => setAdding(true)}>
             {t('centerManager.provider.timeOff.add')}

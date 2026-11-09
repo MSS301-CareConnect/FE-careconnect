@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 /** Length of the `.cc-dropdown` close animation in app.css, plus a little slack. */
 const EXIT_MS = 160
 
-function canAnimate() {
+/** False in tests and under reduced motion, where closing panels and dialogs skip their exit animation. */
+export function canAnimate() {
   if (import.meta.env.MODE === 'test' || typeof window === 'undefined') return false
   return !(typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 }
