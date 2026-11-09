@@ -6,6 +6,7 @@ import { Icon } from '~/shared/ui/icon'
 
 import { usePickCenter } from '../hooks/use-pick-center'
 import { CenterOptions } from './center-options'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const key = 'customer.centerPicker' as const
 
@@ -15,6 +16,7 @@ export function CenterSelector() {
   const center = useCurrentCenter()
   const pickCenter = usePickCenter()
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const containerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -65,10 +67,11 @@ export function CenterSelector() {
           name='expand_more'
         />
       </button>
-      {open ? (
+      {present ? (
         <div
           aria-label={t(`${key}.menu`)}
-          className='absolute top-full left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] rounded-3xl border border-white/70 bg-white/95 p-2 shadow-[var(--shadow-float)] backdrop-blur-xl'
+          data-state={panelState}
+          className='cc-dropdown absolute top-full left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] origin-top-left rounded-3xl border border-white/70 bg-white/95 p-2 shadow-[var(--shadow-float)] backdrop-blur-xl'
           id='customer-center-menu'
           role='region'
         >

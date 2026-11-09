@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import { Icon } from './icon'
 import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from './use-anchored-popover'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 export interface FilterMenuOption {
   value: string
@@ -40,7 +41,15 @@ export function FilterMenuChip({
   const active = value !== defaultValue
 
   const dismiss = useCallback(() => setOpen(false), [])
-  const side = useAnchoredPopover({ open, anchorRef: buttonRef, panelRef, rootRef, onDismiss: dismiss, gap: 8 })
+  const { present, state: panelState } = useExitPresence(open)
+  const side = useAnchoredPopover({
+    open: present,
+    anchorRef: buttonRef,
+    panelRef,
+    rootRef,
+    onDismiss: dismiss,
+    gap: 8
+  })
 
   useEffect(() => {
     if (!open) return
@@ -73,10 +82,12 @@ export function FilterMenuChip({
         </span>
         <Icon className={`text-lg transition-transform duration-200 ${open ? 'rotate-180' : ''}`} name='expand_more' />
       </button>
-      {open ? (
+      {present ? (
         <div
           aria-label={label}
-          className={`${popoverPanelClass} cc-scale-in min-w-48 rounded-xl p-1.5 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+          className={`${popoverPanelClass} cc-dropdown min-w-48 rounded-xl p-1.5 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+          data-side={side}
+          data-state={panelState}
           id={listId}
           popover={popoverAttribute}
           ref={panelRef}

@@ -5,6 +5,7 @@ import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from '~/share
 
 import { suggestMedications } from './medication-catalog'
 import type { MedicationCatalogEntry } from './medication-catalog.constants'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 export interface MedicationNameInputProps {
   value: string
@@ -48,7 +49,15 @@ export function MedicationNameInput({
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
   const dismiss = useCallback(() => setIsOpen(false), [])
-  useAnchoredPopover({ open: isExpanded, anchorRef: inputRef, panelRef: listRef, rootRef, onDismiss: dismiss, gap: 4 })
+  const { present, state: panelState } = useExitPresence(isExpanded)
+  const side = useAnchoredPopover({
+    open: present,
+    anchorRef: inputRef,
+    panelRef: listRef,
+    rootRef,
+    onDismiss: dismiss,
+    gap: 4
+  })
 
   function choose(entry: MedicationCatalogEntry) {
     onChange(entry.medicationName)
@@ -101,12 +110,14 @@ export function MedicationNameInput({
         onBlur={() => setIsOpen(false)}
         className={className}
       />
-      {isExpanded ? (
+      {present ? (
         <ul
           id={listId}
           role='listbox'
           aria-label={t('customer.careRecipient.medicationSuggestions')}
-          className={`${popoverPanelClass} max-h-64 w-[min(24rem,calc(100vw-1rem))] overflow-y-auto rounded-lg py-1 text-left`}
+          className={`${popoverPanelClass} cc-dropdown max-h-64 w-[min(24rem,calc(100vw-1rem))] origin-top overflow-y-auto rounded-lg py-1 text-left`}
+          data-side={side}
+          data-state={panelState}
           popover={popoverAttribute}
           ref={listRef}
         >

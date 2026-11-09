@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Icon } from '~/shared/ui/icon'
 import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from '~/shared/ui/use-anchored-popover'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 /**
  * Bottom bar for the page's main action on phones, inside thumb reach and above the tab bar. From `lg` it becomes an
@@ -67,8 +68,9 @@ export function OverflowMenu({ actions, label }: { actions: MenuAction[]; label?
   const panelRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
   const dismiss = useCallback(() => setOpen(false), [])
+  const { present, state: panelState } = useExitPresence(open)
   const side = useAnchoredPopover({
-    open,
+    open: present,
     anchorRef: buttonRef,
     panelRef,
     rootRef,
@@ -115,10 +117,12 @@ export function OverflowMenu({ actions, label }: { actions: MenuAction[]; label?
       >
         <Icon name='more_horiz' />
       </button>
-      {open ? (
+      {present ? (
         <div
           aria-label={label ?? t('caregiver.ui.actions.more')}
-          className={`${popoverPanelClass} cg-pop w-56 rounded-xl p-1.5 shadow-[var(--cg-shadow-2)] ${side === 'top' ? 'origin-bottom-right' : 'origin-top-right'}`}
+          className={`${popoverPanelClass} cc-dropdown w-56 rounded-xl p-1.5 shadow-[var(--cg-shadow-2)] ${side === 'top' ? 'origin-bottom-right' : 'origin-top-right'}`}
+          data-side={side}
+          data-state={panelState}
           id={menuId}
           onKeyDown={onMenuKey}
           popover={popoverAttribute}

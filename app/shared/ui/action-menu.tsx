@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } f
 
 import { Icon } from './icon'
 import { popoverAttribute, popoverPanelClass, useAnchoredPopover } from './use-anchored-popover'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 export interface ActionMenuItem {
   id: string
@@ -36,8 +37,9 @@ export function ActionMenu({
   const menuId = useId()
 
   const dismiss = useCallback(() => setOpen(false), [])
+  const { present, state: panelState } = useExitPresence(open)
   const side = useAnchoredPopover({
-    open,
+    open: present,
     anchorRef: buttonRef,
     panelRef,
     rootRef,
@@ -95,10 +97,12 @@ export function ActionMenu({
       >
         <Icon className='text-xl' name='more_horiz' />
       </button>
-      {open ? (
+      {present ? (
         <div
           aria-label={label}
-          className={`${popoverPanelClass} cc-scale-in min-w-52 p-1.5 ${originClass}`}
+          className={`${popoverPanelClass} cc-dropdown min-w-52 p-1.5 ${originClass}`}
+          data-side={side}
+          data-state={panelState}
           id={menuId}
           onKeyDown={onMenuKey}
           popover={popoverAttribute}

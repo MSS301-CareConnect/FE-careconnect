@@ -7,6 +7,7 @@ import { CalendarPanel } from './calendar-panel'
 import { baseControlClass } from './form-field'
 import { Icon } from './icon'
 import { useAnchoredPopover } from './use-anchored-popover'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 /** "20/05/1945" → "1945-05-20"; null when the text is not a real date. */
 export function parseDayInput(text: string) {
@@ -77,7 +78,8 @@ export function DatePicker({
 
   const unreadable = text.trim() !== '' && parseDayInput(text) === null
   const dismiss = useCallback(() => setOpen(false), [])
-  const side = useAnchoredPopover({ open, anchorRef, panelRef, rootRef, onDismiss: dismiss })
+  const { present, state: panelState } = useExitPresence(open)
+  const side = useAnchoredPopover({ open: present, anchorRef, panelRef, rootRef, onDismiss: dismiss })
 
   function commit(next: string) {
     setText(next)
@@ -166,7 +168,7 @@ export function DatePicker({
           {t('common.kit.invalidDate')}
         </p>
       ) : null}
-      {open ? (
+      {present ? (
         <CalendarPanel
           disabledReason={disabledReason}
           focusOnOpen={focusOnOpen}
@@ -181,6 +183,7 @@ export function DatePicker({
           }}
           panelRef={panelRef}
           side={side}
+          state={panelState}
           startDay={defaultMonth || min || ''}
           value={value}
         />

@@ -563,24 +563,34 @@ dialog[open] {
       background: var(--color-surface-container-lowest);
       color: var(--color-on-surface);
       box-shadow: var(--shadow-raised);
+      /* Same open / close motion as the custom dropdowns (`.cc-dropdown`): grow, fade and unblur; reversed on close. */
       opacity: 0;
-      translate: 0 -4px;
+      translate: 0 -6px;
+      scale: 0.96;
+      filter: blur(4px);
+      transform-origin: top center;
       transition:
-        opacity 160ms var(--ease-out-soft),
-        translate 160ms var(--ease-out-soft),
-        display 160ms allow-discrete,
-        overlay 160ms allow-discrete;
+        opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        translate 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        scale 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        display 180ms allow-discrete,
+        overlay 180ms allow-discrete;
     }
 
     select:not([multiple], [size]):open::picker(select) {
       opacity: 1;
       translate: 0 0;
+      scale: 1;
+      filter: none;
     }
 
     @starting-style {
       select:not([multiple], [size]):open::picker(select) {
         opacity: 0;
-        translate: 0 -4px;
+        translate: 0 -6px;
+        scale: 0.96;
+        filter: blur(4px);
       }
     }
 
@@ -643,6 +653,104 @@ dialog[open] {
   }
 }
 
+/*
+ * Pointer cursor on everything clickable (2026-11-09). Tailwind's preflight leaves buttons on the default arrow; every
+ * button, link, summary, tab, option, label of a control and toggle input shows the hand, and a disabled one shows
+ * "not allowed". Kept in the base layer so a component's own `cursor-*` utility still wins.
+ */
+@layer base {
+  :where(
+    button,
+    a[href],
+    summary,
+    label[for],
+    select,
+    [role='button'],
+    [role='tab'],
+    [role='option'],
+    [role='menuitem'],
+    [role='menuitemradio'],
+    [role='menuitemcheckbox'],
+    [role='switch'],
+    [role='checkbox'],
+    [role='radio'],
+    input[type='checkbox'],
+    input[type='radio'],
+    input[type='file'],
+    input[type='color'],
+    input[type='range'],
+    input[type='submit'],
+    input[type='button'],
+    input[type='reset']
+  ):not(:disabled, [aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  :where(button, select, input, textarea, [role='button'], [role='option'], [role='tab']):is(
+    :disabled,
+    [aria-disabled='true']
+  ) {
+    cursor: not-allowed;
+  }
+
+  /* A label wrapping a checkbox / radio card (ChoiceCard and the like) is clickable as a whole. */
+  label:has(> input:is([type='checkbox'], [type='radio']):not(:disabled)) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * Dropdown panels (2026-11-09): every custom dropdown — date, time, combobox, "⋯" menus, filter chips, account menus,
+ * notification bells, the center selector — gets `cc-dropdown` with `data-state` from `useExitPresence` and
+ * `data-side` from `useAnchoredPopover`. Opening grows out of the trigger with a short fade and blur; closing plays it
+ * backwards while `useExitPresence` keeps the panel mounted for the exit.
+ */
+@keyframes cc-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--cc-drop-y, -6px)) scale(0.96);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes cc-dropdown-out {
+  from {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--cc-drop-y, -6px)) scale(0.96);
+    filter: blur(4px);
+  }
+}
+
+.cc-dropdown {
+  animation: cc-dropdown-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cc-dropdown[data-side='top'] {
+  --cc-drop-y: 6px;
+}
+
+.cc-dropdown[data-state='closed'] {
+  animation: cc-dropdown-out 140ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-dropdown,
+  .cc-dropdown[data-state='closed'] {
+    animation: none;
+  }
+}
+
 /* Soft Bento utilities (2026-11-09). */
 .cc-mesh {
   background-color: var(--color-background);
@@ -674,4 +782,17 @@ dialog[open] {
   font-style: italic;
   font-weight: 500;
   letter-spacing: -0.01em;
+}
+
+/* Auth frame (2026-11-09, after the owner's EXE auth screens): the forest panel and the form trade halves when
+   /login ↔ /register change. Transform only; reduced motion keeps it still. */
+.cc-auth-slide {
+  transition: transform 720ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-auth-slide {
+    transition: none;
+  }
 }

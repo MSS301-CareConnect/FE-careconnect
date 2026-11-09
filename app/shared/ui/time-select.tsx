@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { baseControlClass } from './form-field'
 import { Icon } from './icon'
 import { popoverAttribute, popoverPanelClass, stopLabelForwarding, useAnchoredPopover } from './use-anchored-popover'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const GROUPS = [
   { key: 'night', from: 0 },
@@ -85,7 +86,8 @@ export const TimeSelect = forwardRef<HTMLButtonElement, TimeSelectProps>(functio
   useImperativeHandle(ref, () => triggerRef.current as HTMLButtonElement)
 
   const dismiss = useCallback(() => setOpen(false), [])
-  const side = useAnchoredPopover({ open, anchorRef: triggerRef, panelRef, rootRef, onDismiss: dismiss })
+  const { present, state: panelState } = useExitPresence(open)
+  const side = useAnchoredPopover({ open: present, anchorRef: triggerRef, panelRef, rootRef, onDismiss: dismiss })
 
   const perHour = Math.max(1, Math.round(60 / step))
   const current = toMinutes(value)
@@ -182,9 +184,11 @@ export const TimeSelect = forwardRef<HTMLButtonElement, TimeSelectProps>(functio
           name='schedule'
         />
       </button>
-      {open ? (
+      {present ? (
         <div
-          className={`${popoverPanelClass} cc-scale-in w-[17.5rem] max-w-[calc(100vw-1rem)] p-1.5 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+          className={`${popoverPanelClass} cc-dropdown w-[17.5rem] max-w-[calc(100vw-1rem)] p-1.5 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+          data-side={side}
+          data-state={panelState}
           onClick={(event: MouseEvent) => stopLabelForwarding(event)}
           popover={popoverAttribute}
           ref={panelRef}

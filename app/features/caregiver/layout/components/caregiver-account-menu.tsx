@@ -7,6 +7,7 @@ import { SignOutButton } from '~/features/shared/auth/sign-out-button'
 import { setAppLanguage, type SupportedLanguage } from '~/shared/i18n/i18n'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const LANGUAGES: SupportedLanguage[] = ['vi', 'en']
 
@@ -15,6 +16,7 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
   const { t, i18n } = useTranslation()
   const user = useAuthUser()
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const displayName = name || user?.fullName || user?.email || t('caregiver.identity.role')
@@ -61,10 +63,11 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
         </span>
         <Icon className='hidden text-lg text-on-surface-variant lg:block' name='expand_more' />
       </button>
-      {open ? (
+      {present ? (
         <nav
           aria-label={t('caregiver.account.menu')}
-          className='cg-pop absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
+          data-state={panelState}
+          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
           id='caregiver-account-menu'
         >
           <div className='flex items-center gap-3 border-b border-outline-variant px-3 pt-2 pb-3'>

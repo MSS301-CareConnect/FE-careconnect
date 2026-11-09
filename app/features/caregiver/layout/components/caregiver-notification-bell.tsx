@@ -20,6 +20,7 @@ import { Skeleton } from '~/shared/ui/skeleton'
 
 import { useCaregiverFormat } from '../../ui/caregiver-format'
 import { useNow } from '../../ui/use-now'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const MAX_BADGE = 99
 
@@ -33,6 +34,7 @@ export function CaregiverNotificationBell() {
   const queryClient = useQueryClient()
   const now = useNow(60_000)
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const rootRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLElement>(null)
   // Phones get a bottom sheet rendered at the shell root, so the sticky topbar's stacking context cannot put it
@@ -102,14 +104,15 @@ export function CaregiverNotificationBell() {
           </span>
         ) : null}
       </button>
-      {open
+      {present
         ? renderPanel(
             <>
               <div aria-hidden='true' className='fixed inset-0 z-40 bg-on-surface/30 sm:hidden' />
               <section
                 aria-label={t('notifications.title')}
                 ref={panelRef}
-                className='cg-safe-bottom fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--cg-shadow-2)] sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:bottom-auto sm:mt-2 sm:w-96 sm:rounded-xl'
+                data-state={panelState}
+                className='cc-dropdown cg-safe-bottom fixed inset-x-0 bottom-0 z-50 origin-bottom sm:origin-top-right max-h-[80dvh] overflow-hidden rounded-t-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--cg-shadow-2)] sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:bottom-auto sm:mt-2 sm:w-96 sm:rounded-xl'
               >
                 <div className='mx-auto mt-2 h-1 w-10 rounded-full bg-outline-variant sm:hidden' />
                 <div className='flex items-center justify-between border-b border-outline-variant px-4 py-3'>
