@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -89,6 +89,40 @@ describe('HomePage', () => {
     // Guests see no customer data and trigger no customer requests.
     expect(screen.queryByRole('heading', { name: 'Lịch sắp tới' })).not.toBeInTheDocument()
     expect(fetchBookings).not.toHaveBeenCalled()
+  })
+
+  it('shows how it works as tabs that follow clicks and arrow keys', () => {
+    renderHome()
+
+    const tabs = within(screen.getByRole('tablist')).getAllByRole('tab')
+    expect(tabs).toHaveLength(3)
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel')).toHaveAccessibleName(/Tìm người chăm sóc/)
+
+    fireEvent.click(screen.getByRole('tab', { name: /Xem kỹ hồ sơ/ }))
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel')).toHaveAccessibleName(/Xem kỹ hồ sơ/)
+
+    fireEvent.keyDown(tabs[1], { key: 'ArrowDown' })
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'true')
+    expect(tabs[2]).toHaveFocus()
+    fireEvent.keyDown(tabs[2], { key: 'Home' })
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('states the product facts and lets the visitor switch the booking mode preview', () => {
+    renderHome()
+
+    // Screen readers get each final value at once, whatever the count-up animation shows.
+    const facts = screen.getByLabelText('CareConnect trong vài con số')
+    expect(within(facts).getByText('100%')).toBeInTheDocument()
+    expect(within(facts).getByText('hoàn tiền nếu trung tâm hủy lịch')).toBeInTheDocument()
+
+    const byDay = screen.getByRole('button', { name: 'Theo ngày' })
+    expect(byDay).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(byDay)
+    expect(byDay).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Theo giờ' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('switches the landing content to English', async () => {

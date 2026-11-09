@@ -15,4 +15,20 @@ if (!HTMLDialogElement.prototype.close) {
   }
 }
 
+// jsdom has no IntersectionObserver; `motion`'s whileInView / useInView need one. Nothing ever intersects here.
+if (!('IntersectionObserver' in globalThis)) {
+  class NoopIntersectionObserver {
+    readonly root = null
+    readonly rootMargin = ''
+    readonly thresholds = []
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return []
+    }
+  }
+  Object.defineProperty(globalThis, 'IntersectionObserver', { value: NoopIntersectionObserver, writable: true })
+}
+
 afterEach(cleanup)

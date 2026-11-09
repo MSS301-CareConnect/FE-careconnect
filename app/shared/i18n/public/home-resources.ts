@@ -5,6 +5,51 @@ export const publicHomeEn = {
   services: 'Care services',
   eyebrow: 'Care at home',
   title: 'Feel confident about care at home.',
+  titleRich: 'Feel confident about <accent>care</accent> at home.',
+  facts: {
+    label: 'CareConnect at a glance',
+    modes: 'ways to book: by the hour, day or shift',
+    reports: 'to get a care report after each visit',
+    refunds: 'refund if the center cancels'
+  },
+  heroChips: {
+    verified: 'Verified caregiver',
+    nextVisit: 'Next visit',
+    nextVisitTime: '08:00 · Tomorrow morning',
+    progress: 'Care progress',
+    progressValue: '{{done, number}}/{{total, number}} visits done'
+  },
+  processHint: 'Pick a step to see how it looks',
+  rail: {
+    label: 'Page sections',
+    hero: 'Overview',
+    process: 'How it works',
+    reasons: 'Why families',
+    trust: 'Get started'
+  },
+  preview: {
+    search: 'Search by service or area…',
+    caregiver: 'Caregiver',
+    verified: 'Verified',
+    experience: 'Experience',
+    certificates: 'Certificates',
+    reviews: 'Reviews',
+    years: '{{count, number}} yrs',
+    byHour: 'By the hour',
+    byDay: 'By the day',
+    byShift: 'By the shift',
+    send: 'Send request',
+    selected: 'Selected',
+    weekLoad: 'Care hours this week',
+    modeLegend: 'Choose how to book',
+    modeShort: { byHour: 'Hour', byDay: 'Day', byShift: 'Shift' },
+    thisWeek: 'This week'
+  },
+  cta: {
+    title: 'Ready to find the right caregiver?',
+    description: 'Create an account, choose a center near you and send a booking request in a few steps.',
+    customerDescription: 'Choose who, what and when — the center confirms before anything is charged.'
+  },
   description: 'Find a caregiver, review their profile, and book care by the hour or by the day with CareConnect.',
   primaryAction: 'Find a caregiver',
   createAccount: 'Create an account',
@@ -43,6 +88,51 @@ export const publicHomeVi = {
   services: 'Dịch vụ chăm sóc',
   eyebrow: 'Chăm sóc tại nhà',
   title: 'An tâm chăm sóc tại nhà.',
+  titleRich: 'An tâm <accent>chăm sóc</accent> tại nhà.',
+  facts: {
+    label: 'CareConnect trong vài con số',
+    modes: 'cách đặt lịch: theo giờ, ngày hoặc ca',
+    reports: 'để có báo cáo sau mỗi buổi chăm sóc',
+    refunds: 'hoàn tiền nếu trung tâm hủy lịch'
+  },
+  heroChips: {
+    verified: 'Người chăm sóc đã xác minh',
+    nextVisit: 'Buổi kế tiếp',
+    nextVisitTime: '08:00 · Sáng mai',
+    progress: 'Tiến độ chăm sóc',
+    progressValue: 'Đã xong {{done, number}}/{{total, number}} buổi'
+  },
+  processHint: 'Chọn một bước để xem trước',
+  rail: {
+    label: 'Các phần của trang',
+    hero: 'Giới thiệu',
+    process: 'Cách hoạt động',
+    reasons: 'Vì sao chọn',
+    trust: 'Bắt đầu'
+  },
+  preview: {
+    search: 'Tìm theo dịch vụ, khu vực…',
+    caregiver: 'Người chăm sóc',
+    verified: 'Đã xác minh',
+    experience: 'Kinh nghiệm',
+    certificates: 'Chứng chỉ',
+    reviews: 'Đánh giá',
+    years: '{{count, number}} năm',
+    byHour: 'Theo giờ',
+    byDay: 'Theo ngày',
+    byShift: 'Theo ca',
+    send: 'Gửi yêu cầu',
+    selected: 'Đã chọn',
+    weekLoad: 'Giờ chăm sóc trong tuần',
+    modeLegend: 'Chọn cách đặt lịch',
+    modeShort: { byHour: 'Giờ', byDay: 'Ngày', byShift: 'Ca' },
+    thisWeek: 'Tuần này'
+  },
+  cta: {
+    title: 'Sẵn sàng tìm người chăm sóc phù hợp?',
+    description: 'Tạo tài khoản, chọn trung tâm gần bạn và gửi yêu cầu đặt lịch chỉ trong vài bước.',
+    customerDescription: 'Chọn người, dịch vụ và thời gian — trung tâm xác nhận trước khi thu tiền.'
+  },
   description: 'Tìm người chăm sóc phù hợp, xem hồ sơ và đặt lịch theo giờ hoặc theo ngày cùng CareConnect.',
   primaryAction: 'Tìm người chăm sóc',
   createAccount: 'Tạo tài khoản',

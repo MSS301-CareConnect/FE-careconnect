@@ -30,7 +30,7 @@ export function CustomerLayout({
   const focus = FOCUS_ROUTES.includes(location.pathname)
 
   return (
-    <div className='theme-customer flex min-h-screen flex-col bg-background font-sans text-on-surface antialiased'>
+    <div className='theme-customer cc-mesh flex min-h-screen flex-col font-sans text-on-surface antialiased'>
       {navigation.state !== 'idle' ? (
         <div
           aria-hidden='true'
@@ -41,7 +41,7 @@ export function CustomerLayout({
         </div>
       ) : null}
       <CustomerHeader />
-      <main className='w-full flex-1 pb-20 lg:pb-0'>
+      <main className='w-full flex-1 pb-6'>
         <div className='cc-fade-up' key={location.pathname}>
           {children ?? <Outlet />}
         </div>
@@ -54,7 +54,7 @@ export function CustomerLayout({
       {/* AI assistant for guests and signed-in customers alike (2026-11-09). */}
       <AiChatWidget />
       {/* Action results (saved, invited…) as toasts, kept above the bottom navigation on phones. */}
-      <Toaster mobileOffset={{ bottom: 88 }} />
+      <Toaster mobileOffset={{ bottom: 100 }} />
     </div>
   )
 }

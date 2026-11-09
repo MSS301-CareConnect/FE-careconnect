@@ -50,7 +50,9 @@ export const customerLayoutEn = {
     explore: 'Explore',
     account: 'Your account',
     support: 'Support',
-    hours: 'Every day, 7:00–22:00'
+    hours: 'Every day, 7:00–22:00',
+    backToTop: 'Back to top',
+    taglineAccent: 'Care that stays <accent>close</accent> to home.'
   }
 } as const
 
@@ -106,6 +108,8 @@ export const customerLayoutVi = {
     explore: 'Khám phá',
     account: 'Tài khoản',
     support: 'Hỗ trợ',
-    hours: 'Mỗi ngày, 07:00–22:00'
+    hours: 'Mỗi ngày, 07:00–22:00',
+    backToTop: 'Lên đầu trang',
+    taglineAccent: 'Chăm sóc <accent>gần hơn</accent> với mỗi gia đình.'
   }
 } as const

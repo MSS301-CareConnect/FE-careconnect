@@ -1,192 +1,34 @@
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
-
-import { useAuthUser } from '~/features/shared/auth/auth-user-context'
-import { Icon } from '~/shared/ui/icon'
+import { Reveal } from '~/shared/ui/motion'
 
 import { CustomerDashboard } from './components/customer-dashboard'
-
-const steps = ['find', 'compare', 'book'] as const
-const trust = [
-  { id: 'verified', icon: 'verified_user' },
-  { id: 'prices', icon: 'receipt_long' },
-  { id: 'refunds', icon: 'currency_exchange' }
-] as const
-const reasons = [
-  { id: 'profiles', icon: 'badge' },
-  { id: 'schedule', icon: 'event_available' },
-  { id: 'family', icon: 'assignment' }
-] as const
-
-const container = 'mx-auto w-full max-w-[1200px] px-4 sm:px-6'
-const primaryAction =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-base font-semibold text-on-primary shadow-[var(--shadow-card)] transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-const secondaryAction =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-6 text-base font-semibold text-on-surface transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+import { HomeHero } from './components/home-hero'
+import { HomeProcess } from './components/home-process'
+import { HomeReasons } from './components/home-reasons'
+import { HomeSectionRail } from './components/home-section-rail'
+import { homeContainer } from './components/home-styles'
+import { HomeTrust } from './components/home-trust'
 
 /**
- * Home (2026-11 redesign): the app's only hero, kept short, then — for a signed-in customer — the next visit,
- * shortcuts and what their center offers, followed by how it works, a photo with three short reasons (CR-5) and why
- * families trust the service. The support hotline lives only in the footer.
+ * Home ("Soft Bento" redesign 2026-11-09, docs/2026-11-09-UI_REDESIGN_PLAN.md) on a soft mint → peach page: the bento
+ * hero, — for a signed-in customer — the next visit, shortcuts and what their center offers, then how it works as
+ * tabs, the reasons as a bento grid and the trust band with the next step. The support hotline lives only in the
+ * footer.
  */
 export function HomePage({ audience = 'public' }: { audience?: 'public' | 'customer' }) {
-  const { t } = useTranslation()
-  const user = useAuthUser()
   const isCustomer = audience === 'customer'
-  const firstName = user?.fullName?.trim().split(/\s+/).at(-1)
 
   return (
     <div className='text-on-surface'>
-      <section aria-labelledby='home-title' className='border-b border-outline-variant bg-surface-container-lowest'>
-        <div
-          className={`${container} grid items-center gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-12 lg:py-14`}
-        >
-          <div className='cc-fade-up max-w-xl'>
-            <p className='text-sm font-semibold text-primary'>
-              {isCustomer && firstName ? t('customer.home.greeting', { name: firstName }) : t('home.eyebrow')}
-            </p>
-            <h1
-              className='mt-3 text-[clamp(2rem,4vw,2.75rem)] leading-tight font-bold text-balance text-on-surface'
-              id='home-title'
-            >
-              {t('home.title')}
-            </h1>
-            <p className='mt-4 text-base leading-7 text-on-surface-variant sm:text-lg'>{t('home.description')}</p>
-            <div className='mt-7 flex flex-wrap gap-3'>
-              {isCustomer ? (
-                <>
-                  <Link className={primaryAction} to='/customer/booking'>
-                    <Icon className='text-xl' name='event_available' />
-                    {t('customer.home.book')}
-                  </Link>
-                  <Link className={secondaryAction} to='/customer/caregivers'>
-                    {t('home.primaryAction')}
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link className={primaryAction} to='/customer/caregivers'>
-                    {t('home.primaryAction')}
-                    <Icon className='text-xl' name='arrow_forward' />
-                  </Link>
-                  <Link className={secondaryAction} to='/register'>
-                    {t('home.createAccount')}
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-          <div className='cc-fade-up overflow-hidden rounded-2xl bg-surface-container-high [animation-delay:80ms]'>
-            <img
-              alt={t('home.heroAlt')}
-              className='aspect-[16/10] w-full object-cover object-[66%_center]'
-              decoding='async'
-              fetchPriority='high'
-              src='/images/care-at-home-hero.jpg'
-            />
-          </div>
-        </div>
-      </section>
-
+      <HomeHero isCustomer={isCustomer} />
       {isCustomer ? (
-        <div className={`${container} py-10`}>
+        <Reveal className={`${homeContainer} pb-6`}>
           <CustomerDashboard />
-        </div>
+        </Reveal>
       ) : null}
-
-      <section aria-labelledby='home-process-title' className={`${container} py-12`} id='how-it-works'>
-        <p className='text-sm font-semibold text-primary'>{t('home.processEyebrow')}</p>
-        <h2 className='mt-2 text-2xl font-bold text-on-surface' id='home-process-title'>
-          {t('home.processTitle')}
-        </h2>
-        <ol className='mt-8 grid gap-4 md:grid-cols-3'>
-          {steps.map((step, index) => (
-            <li className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-5' key={step}>
-              <span
-                aria-hidden='true'
-                className='grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-semibold text-on-primary'
-              >
-                {index + 1}
-              </span>
-              <h3 className='mt-4 text-lg font-semibold text-on-surface'>{t(`home.steps.${step}.title`)}</h3>
-              <p className='mt-1.5 text-sm leading-6 text-on-surface-variant'>{t(`home.steps.${step}.description`)}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section
-        aria-labelledby='home-reasons-title'
-        className='border-t border-outline-variant bg-surface-container-lowest'
-      >
-        <div
-          className={`${container} grid items-center gap-8 py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14`}
-        >
-          <div className='overflow-hidden rounded-2xl bg-surface-container-high'>
-            <img
-              alt={t('home.reasonsPhotoAlt')}
-              className='aspect-[4/3] w-full object-cover object-[68%_center] sm:aspect-[16/10]'
-              decoding='async'
-              height={900}
-              loading='lazy'
-              src='/images/care-for-families.jpg'
-              width={1600}
-            />
-          </div>
-          <div>
-            <p className='text-sm font-semibold text-primary'>{t('home.reasonsEyebrow')}</p>
-            <h2 className='mt-2 max-w-[22ch] text-2xl font-bold text-balance text-on-surface' id='home-reasons-title'>
-              {t('home.reasonsTitle')}
-            </h2>
-            <ul className='mt-7 flex flex-col gap-5'>
-              {reasons.map((reason) => (
-                <li className='flex gap-4' key={reason.id}>
-                  <span
-                    aria-hidden='true'
-                    className='grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-primary'
-                  >
-                    <Icon className='text-[22px]' name={reason.icon} />
-                  </span>
-                  <span>
-                    <span className='block font-semibold text-on-surface'>{t(`home.reasons.${reason.id}.title`)}</span>
-                    <span className='mt-0.5 block text-sm leading-6 text-on-surface-variant'>
-                      {t(`home.reasons.${reason.id}.description`)}
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby='home-trust-title' className='border-t border-outline-variant bg-brand-50/60'>
-        <div className={`${container} py-12`}>
-          <h2 className='text-2xl font-bold text-on-surface' id='home-trust-title'>
-            {t('customer.home.trust.title')}
-          </h2>
-          <ul className='mt-8 grid gap-6 md:grid-cols-3'>
-            {trust.map((item) => (
-              <li className='flex gap-4' key={item.id}>
-                <span
-                  aria-hidden='true'
-                  className='grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface-container-lowest text-primary shadow-[var(--shadow-card)]'
-                >
-                  <Icon name={item.icon} />
-                </span>
-                <span>
-                  <span className='block font-semibold text-on-surface'>
-                    {t(`customer.home.trust.${item.id}.title`)}
-                  </span>
-                  <span className='mt-1 block text-sm leading-6 text-on-surface-variant'>
-                    {t(`customer.home.trust.${item.id}.description`)}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <HomeProcess />
+      <HomeReasons />
+      <HomeTrust isCustomer={isCustomer} />
+      <HomeSectionRail />
     </div>
   )
 }

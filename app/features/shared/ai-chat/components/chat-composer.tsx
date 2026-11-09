@@ -186,7 +186,7 @@ export function ChatComposer({
             <li className='relative' key={item.url}>
               <img
                 alt={t('aiChat.imageAlt', { index: index + 1 })}
-                className='h-16 w-16 rounded-xl border border-outline-variant/60 object-cover'
+                className='h-16 w-16 rounded-2xl border border-forest-900/10 object-cover'
                 src={item.url}
               />
               <button
@@ -203,7 +203,7 @@ export function ChatComposer({
             <li>
               <button
                 aria-label={t('aiChat.addMore')}
-                className='flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50'
+                className='flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-forest-900/15 text-forest-700 hover:border-forest-700 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-forest-900 disabled:opacity-50'
                 disabled={!canAttach}
                 onClick={pickFromFolder}
                 title={t('aiChat.addMore')}
@@ -215,7 +215,7 @@ export function ChatComposer({
           ) : null}
         </ul>
       ) : null}
-      <div className='flex items-end gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-1.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20'>
+      <div className='flex items-end gap-1.5 rounded-[1.75rem] border border-forest-900/10 bg-mint-50/60 p-1.5 transition-[border-color,box-shadow,background-color] focus-within:border-forest-700/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-mint-100'>
         {quota.imagesAllowed ? (
           <>
             <input
@@ -233,7 +233,7 @@ export function ChatComposer({
             />
             <button
               aria-label={t('aiChat.attach')}
-              className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50'
+              className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-forest-700 transition-colors hover:bg-mint-100 hover:text-forest-950 focus-visible:outline-2 focus-visible:outline-forest-900 disabled:opacity-50'
               disabled={!canAttach}
               onClick={pickFromFolder}
               title={t('aiChat.attachHint', { count: quota.maxImages, size: quota.maxImageSizeMb })}
@@ -244,7 +244,7 @@ export function ChatComposer({
           </>
         ) : (
           <span
-            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-outline'
+            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-forest-800/40'
             title={t('aiChat.guestImagesLocked')}
           >
             <Icon name='lock' />
@@ -271,7 +271,7 @@ export function ChatComposer({
         />
         <button
           aria-label={t('aiChat.send')}
-          className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
+          className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-900 text-white shadow-[var(--shadow-soft)] transition-[background-color,transform] hover:bg-forest-800 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900 disabled:opacity-40'
           disabled={disabled || sending}
           type='submit'
         >
