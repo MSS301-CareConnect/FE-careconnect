@@ -2,18 +2,14 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
-import {
-  fetchCertificates,
-  fetchProviderMedia,
-  providerKeys,
-  verifyCertificateByCenter
-} from '~/entities/provider/provider-api'
+import { certificateReviewErrorKey } from '~/entities/provider/certificate-ai'
+import { CertificateFiles } from '~/entities/provider/certificate-files'
+import { fetchCertificates, providerKeys, verifyCertificateByCenter } from '~/entities/provider/provider-api'
 import { formatProviderDate } from '~/entities/provider/provider-format'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import type { ProviderCertificateRecord } from '~/shared/api/generated/contracts'
-import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
+import { apiErrorCode, apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
-import { ViewableImage } from '~/shared/ui/image-viewer'
 
 const key = 'centerManager.provider' as const
 const statusLabels = {
@@ -22,55 +18,6 @@ const statusLabels = {
   ADMIN_VERIFIED: 'verified',
   REJECTED: 'rejected'
 } as const
-
-function CertificateFiles({ certificateId }: { certificateId: string }) {
-  const { t } = useTranslation()
-  const media = useQuery({
-    queryKey: providerKeys.media('CERTIFICATE', certificateId),
-    queryFn: () => fetchProviderMedia('CERTIFICATE', certificateId),
-    retry: false
-  })
-
-  if (media.isPending) return <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.loading')}</p>
-  if (media.isError) return <p className='text-sm text-error'>{t('common.providerMedia.error')}</p>
-  if (!media.data?.length) return <p className='text-sm text-on-surface-variant'>{t('common.providerMedia.empty')}</p>
-
-  const gallery = media.data.flatMap((file) =>
-    file.downloadUrl && file.contentType?.startsWith('image/')
-      ? [{ src: file.downloadUrl, alt: file.originalFileName || t('common.providerMedia.image') }]
-      : []
-  )
-  return (
-    <ul className='flex flex-wrap gap-2'>
-      {media.data.map((file) => (
-        <li key={file.mediaFileId}>
-          {file.downloadUrl && file.contentType?.startsWith('image/') ? (
-            <ViewableImage
-              alt={file.originalFileName || t('common.providerMedia.image')}
-              className='h-20 w-20 rounded-lg border border-outline-variant/50'
-              gallery={gallery}
-              index={gallery.findIndex((image) => image.src === file.downloadUrl)}
-              src={file.downloadUrl}
-            />
-          ) : file.downloadUrl ? (
-            <a
-              className='inline-flex items-center gap-2 rounded-lg border border-outline-variant/50 bg-white px-3 py-2 text-sm font-medium text-primary hover:border-primary'
-              href={file.downloadUrl}
-              rel='noreferrer'
-              target='_blank'
-            >
-              <Icon name='attach_file' />
-              <span className='max-w-48 truncate'>{file.originalFileName || t('common.providerMedia.open')}</span>
-              <Icon className='text-base' name='open_in_new' />
-            </a>
-          ) : (
-            <span className='text-sm text-on-surface-variant'>{file.originalFileName || file.mediaFileType}</span>
-          )}
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 export function ManagerCertificates({ caregiverId }: { caregiverId: string }) {
   const { t, i18n } = useTranslation()
@@ -132,9 +79,11 @@ export function ManagerCertificates({ caregiverId }: { caregiverId: string }) {
       {confirm.isError ? (
         <p className='mt-5 text-sm text-error' role='alert'>
           {t(
-            apiErrorStatus(confirm.error) === 409
-              ? `${key}.certificateConfirmError`
-              : apiRequestErrorKey(confirm.error, `${key}.certificateActionError`)
+            apiErrorCode(confirm.error) === 4255
+              ? certificateReviewErrorKey(confirm.error)
+              : apiErrorStatus(confirm.error) === 409
+                ? `${key}.certificateConfirmError`
+                : apiRequestErrorKey(confirm.error, `${key}.certificateActionError`)
           )}
         </p>
       ) : null}
@@ -162,6 +111,12 @@ export function ManagerCertificates({ caregiverId }: { caregiverId: string }) {
               <div className='mt-4'>
                 <CertificateFiles certificateId={certificate.id} />
               </div>
+              {certificate.verificationStatus === 'CENTER_VERIFIED' && certificate.aiCheckStatus ? (
+                <p className='mt-3 flex items-center gap-2 text-sm text-on-surface-variant'>
+                  <Icon className='text-base text-primary' name='auto_awesome' />
+                  {t(`certificateReview.managerAiStatuses.${certificate.aiCheckStatus}`)}
+                </p>
+              ) : null}
               {certificate.verificationStatus === 'PENDING' ? (
                 <div className='mt-4 flex flex-wrap gap-2'>
                   <button

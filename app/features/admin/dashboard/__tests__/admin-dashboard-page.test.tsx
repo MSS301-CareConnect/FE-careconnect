@@ -74,7 +74,7 @@ describe('Admin dashboard', () => {
       within(navigation)
         .getAllByRole('list')
         .map((list) => list.getAttribute('aria-labelledby'))
-    ).toEqual([null, 'admin-nav-operations', 'admin-nav-customerCare', 'admin-nav-system'])
+    ).toEqual([null, 'admin-nav-operations', 'admin-nav-finance', 'admin-nav-customerCare', 'admin-nav-system'])
     const operations = screen.getByRole('list', { name: 'Vận hành' })
     expect(within(operations).getByRole('link', { name: /Lịch đặt/ })).toHaveAttribute('href', '/admin/bookings')
     expect(within(operations).queryByRole('button')).not.toBeInTheDocument()

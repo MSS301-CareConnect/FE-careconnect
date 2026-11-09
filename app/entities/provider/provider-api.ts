@@ -41,7 +41,10 @@ import {
   updateProviderCertificate,
   verifyProviderCertificate,
   verifyProviderCertificateByCenter,
-  listVerifiedProviderCertificates
+  listVerifiedProviderCertificates,
+  listPendingAuditProviderCertificates,
+  getPendingAuditCertificateStatistics,
+  startProviderCertificateAiCheck
 } from '~/shared/api/generated/api/provider-certificate/provider-certificate'
 import {
   archiveProviderWorkShift,
@@ -73,7 +76,9 @@ import type {
   CenterStatusUpdateRequest,
   CenterUpdateRequest,
   CaregiverStatusRequest,
+  CertificateAiCheckStatus,
   CertificateRequest,
+  CertificateRiskLevel,
   CertificateVerificationRequest,
   ListProviderCaregiverTimeOffsParams,
   TimeOffRequest,
@@ -131,6 +136,12 @@ export const providerKeys = {
   publicCaregiver: (id: string) => ['provider', 'public-caregiver', id] as const,
   serviceCaregivers: (params: SearchProviderCaregiversParams) => ['provider', 'service-caregivers', params] as const,
   certificates: (id: string) => ['provider', 'certificates', id] as const,
+  /** Prefix of the admin certificate queue and its counts: invalidate it after any certificate decision. */
+  certificateAudit: ['provider', 'certificate-audit'] as const,
+  pendingCertificates: (filters: PendingCertificateFilters) =>
+    ['provider', 'certificate-audit', 'list', filters] as const,
+  pendingCertificateStatistics: (centerId?: string) =>
+    ['provider', 'certificate-audit', 'statistics', centerId ?? 'all'] as const,
   verifiedCertificates: (id: string) => ['provider', 'verified-certificates', id] as const,
   shifts: (centerId: string) => ['provider', 'shifts', centerId] as const,
   shiftStatistics: (centerId: string) => ['provider', 'shifts', centerId, 'statistics'] as const,
@@ -241,6 +252,37 @@ export async function verifyCertificateByCenter(id: string, request: Certificate
 }
 export async function removeCertificate(id: string, version: number) {
   success(await archiveProviderCertificate(id, { version }, await writeOptions()))
+}
+
+export interface PendingCertificateFilters {
+  centerId?: string
+  riskLevel?: CertificateRiskLevel
+  aiCheckStatus?: CertificateAiCheckStatus
+  page: number
+}
+export const PENDING_CERTIFICATE_PAGE_SIZE = 20
+
+/** ADMIN: certificates the center confirmed, with the AI result — high risk first (step 5 of the review). */
+export async function fetchPendingCertificates({
+  centerId,
+  riskLevel,
+  aiCheckStatus,
+  page
+}: PendingCertificateFilters) {
+  return result(
+    await listPendingAuditProviderCertificates(
+      { centerId, riskLevel, aiCheckStatus, page, size: PENDING_CERTIFICATE_PAGE_SIZE },
+      readOptions
+    )
+  )
+}
+/** ADMIN: how many certificates wait for the final review, by AI risk level. */
+export async function fetchPendingCertificateStatistics(centerId?: string) {
+  return result(await getPendingAuditCertificateStatistics({ centerId }, readOptions))
+}
+/** ADMIN: read the photos again with AI (step 4) — the new result replaces the old one. */
+export async function startCertificateAiCheck(id: string) {
+  return result(await startProviderCertificateAiCheck(id, await writeOptions()))
 }
 
 export async function fetchWorkShifts(params: ListProviderWorkShiftsParams = {}) {

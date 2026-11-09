@@ -45,7 +45,8 @@ export const managerNavigation = [
         to: '/center-manager/policy',
         icon: 'rule'
       },
-      { key: 'feedback', label: 'centerManager.feedback', to: '/center-manager/complaints', icon: 'reviews' }
+      { key: 'feedback', label: 'centerManager.feedback', to: '/center-manager/complaints', icon: 'reviews' },
+      { key: 'wallet', label: 'wallet.nav.manager', to: '/center-manager/wallet', icon: 'account_balance_wallet' }
     ]
   }
 ] as const

@@ -167,6 +167,7 @@ export function CustomerHeader() {
                         { to: '/customer/my-profile', icon: 'person', label: t('customer.nav.account') },
                         { to: '/customer/patient-profiles', icon: 'group', label: t('customer.nav.relatives') },
                         { to: '/customer/payments', icon: 'payments', label: t('customer.nav.payments') },
+                        { to: '/customer/wallet', icon: 'account_balance_wallet', label: t('wallet.nav.customer') },
                         { to: '/customer/invitations', icon: 'mail', label: t('customer.nav.invitations') }
                       ].map((item) => (
                         <Link className={menuItem} key={item.to} onClick={() => setMenuOpen(false)} to={item.to}>

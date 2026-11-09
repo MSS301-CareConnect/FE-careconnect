@@ -7,13 +7,14 @@ import { fetchMyInvitations, managerKeys } from '~/entities/care-recipient/care-
 import { Icon } from '~/shared/ui/icon'
 import { pageContainer } from '~/shared/ui/page-header'
 
-type Section = 'personal' | 'security' | 'relatives' | 'payments' | 'invitations' | 'notifications'
+type Section = 'personal' | 'security' | 'relatives' | 'payments' | 'wallet' | 'invitations' | 'notifications'
 
 const SECTIONS: { id: Section; to: string; icon: string }[] = [
   { id: 'personal', to: '/customer/my-profile', icon: 'person' },
   { id: 'security', to: '/customer/my-profile?section=security', icon: 'lock' },
   { id: 'relatives', to: '/customer/patient-profiles', icon: 'family_restroom' },
   { id: 'payments', to: '/customer/payments', icon: 'payments' },
+  { id: 'wallet', to: '/customer/wallet', icon: 'account_balance_wallet' },
   { id: 'invitations', to: '/customer/invitations', icon: 'mail' },
   { id: 'notifications', to: '/customer/notifications', icon: 'notifications' }
 ]
@@ -23,6 +24,7 @@ function activeSection(pathname: string, search: string): Section | null {
     return new URLSearchParams(search).get('section') === 'security' ? 'security' : 'personal'
   if (pathname.startsWith('/customer/patient-profiles')) return 'relatives'
   if (pathname.startsWith('/customer/payments')) return 'payments'
+  if (pathname.startsWith('/customer/wallet')) return 'wallet'
   if (pathname.startsWith('/customer/invitations')) return 'invitations'
   if (pathname.startsWith('/customer/notifications')) return 'notifications'
   return null

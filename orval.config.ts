@@ -58,6 +58,12 @@ export default defineConfig({
               properties: {
                 file: () => new Blob([new Uint8Array(8)])
               }
+            },
+            AiChatPromptRequest: {
+              properties: {
+                request: () => new Blob(['{"prompt":"Xin chào"}'], { type: 'application/json' }),
+                images: () => [new Blob([new Uint8Array(8)], { type: 'image/png' })]
+              }
             }
           }
         }

@@ -360,7 +360,8 @@ where an open future slot is cancelled with a reason and its version; shift sign
 (registrations carry only the shift ID, so the shift is read through `GET /work-shifts/{id}`); and time off with
 dd/mm/yyyy dates in Vietnam time and a warning when it overlaps assigned visits or open slots. `/caregiver/profile` has
 Information / Certificates / Security tabs (`?tab=`): only the phone is editable (`PUT /users/me`) because
-`PUT /caregivers/{id}` is for managers; certificates are added with optional number and dates, show review and expiry
+`PUT /caregivers/{id}` is for managers; certificates are added with optional number and dates and up to five photos / PDFs (front and back) picked from a folder
+through the system file dialog ("Choose from a folder", "+" tile) or dragged in, show review and expiry
 states and can be deleted; security changes the password and names devices from their User-Agent. `/caregiver/security`
 redirects there; `/account/security` stays the shared screen of the other roles. The Center Manager
 `/center-manager/schedules` page is the center's work calendar (see below). Pages compare dates
@@ -922,6 +923,42 @@ Contract update workflow:
   EXPIRED with its booking, never a debt), and shows the customer's
   payment history (`GET /payments`, real `refundedAmount`) and refunds (`GET /refunds`).
   PaymentService error codes map to `payment.errors.e<code>` translations.
+
+- Wallets (2026-11-09, `BE/docs/2026-11-09-WALLET_PLAN.md`): `entities/wallet` wraps the generated `Wallet` and
+  `WalletWithdrawal` clients (`walletKeys` under `['wallet']`, `walletErrorKey` for codes 6040–6052) and owns one
+  `WalletDashboard` used by `/customer/wallet` (account area), `/caregiver/wallet` (account menu), `/center-manager/wallet`
+  and `/admin/wallet`: balance and held amount, a period dashboard (this month / 30 days / this year, chart drawn with CSS,
+  no chart library), the period ledger with balance before → after and — except the read-only platform wallet — the
+  owner's withdrawal requests and the centred two-column withdrawal dialog (every field checked first, the amount is held
+  on success). `/admin/withdrawals` is the admin queue (status / wallet type in URL search parameters, `?withdrawal=` opens
+  the review: copyable bank details, the requester wallet and ledger, approve, reject with a reason, confirm the transfer
+  with its bank reference); requesters show by name (Identity account, or the center for a center wallet), never by ID.
+  Customer refunds of their own cancellations go to the wallet and the refund history marks them "Refunded to wallet".
+
+- AI assistant (2026-11-09, `BE/docs/2026-11-09-AI_CHAT_AND_CERTIFICATE_AI_CHECK.md`): `features/shared/ai-chat` is a
+  floating button mounted by the customer (public pages included), caregiver, center manager and admin layouts; it opens
+  a panel (full screen on phones, Escape closes). AIService decides who is a guest through the public
+  `GET /ai/chat/quota`, so the widget never guesses from the route. A guest gets the daily free prompts (3), no images
+  and no saved history (messages stay in memory, the count updates from `remainingGuestPrompts`, then a sign-in link with
+  `?next=`). Any signed-in role keeps conversations: the answer's `conversationId` is reused for follow-ups, the history
+  view opens, renames (inline, with the conversation `version`; 409 `8203` asks to reload) and deletes (confirmation)
+  them, and up to three JPG / PNG / WebP images — picked from a folder through the system file dialog (attach
+  button or the "+" tile) or dragged onto the question box — are previewed and checked against the quota limits before
+  `POST /ai/chat` (multipart: a JSON Blob part `request` plus `images`). The chat endpoints are public but AIService still
+  reads the session cookie, so a 401 refreshes the session once and retries. Answers render light Markdown (paragraphs,
+  lists, bold) as React text, never HTML. AIService error codes map to `aiChat.errors.e<code>`.
+- Certificate review (2026-11-09): caregiver declares and uploads photos → the center manager confirms (needs at least one
+  photo, 409 `4255`) → ProviderService sends the certificate to AIService in the background → the admin decides.
+  `/admin/certificates` (menu Operations) lists `GET /certificates/pending-audit` (high risk first) with count cards from
+  `/pending-audit/statistics` that filter by risk / AI state, a center filter, URL search parameters and
+  `?certificate=<id>` for the review; the list refreshes every 10 seconds while an AI check is running.
+  `entities/provider/certificate-review-dialog.tsx` (also opened from `/admin/centers/:id/caregivers`) shows the photos
+  (`certificate-files.tsx`, shared with the manager screen), a declared / read-by-AI / result table per field, the AI risk
+  and warnings (`certificateReview.*` copy, codes never shown), the center confirmation, "run AI again"
+  (`POST /certificates/{id}/ai-check`) and approve / reject; approving without a LOW / MEDIUM AI result and every
+  rejection need a reason (400 `4256`). Only admins receive the AI result; managers see where the AI check stands. A new
+  or removed certificate photo sends the certificate back to the center, so media changes also refresh certificate
+  queries.
 
 ### Testing and debugging
 

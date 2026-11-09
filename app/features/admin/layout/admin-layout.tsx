@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
+import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
 
 import { Toaster } from '~/shared/ui/toaster'
 
@@ -34,6 +35,7 @@ export function AdminLayout() {
       </div>
       {/* Admin first (D-09); other portals adopt the same Toaster once it has proven itself here. */}
       <Toaster />
+      <AiChatWidget />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Outlet, useLocation, useNavigation } from 'react-router'
+import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
 
 import { Toaster } from '~/shared/ui/toaster'
 
@@ -50,6 +51,8 @@ export function CustomerLayout({
         <CustomerBottomNav />
       </div>
       <CenterPickerDialog />
+      {/* AI assistant for guests and signed-in customers alike (2026-11-09). */}
+      <AiChatWidget />
       {/* Action results (saved, invited…) as toasts, kept above the bottom navigation on phones. */}
       <Toaster mobileOffset={{ bottom: 88 }} />
     </div>

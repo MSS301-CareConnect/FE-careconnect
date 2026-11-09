@@ -122,7 +122,7 @@ describe('Caregiver profile — information', () => {
 })
 
 describe('Caregiver profile — certificates', () => {
-  it('creates the certificate with its details and uploads the dropped file', async () => {
+  it('creates the certificate and uploads photos picked from a folder and dropped in', async () => {
     vi.mocked(createCertificate).mockResolvedValue({
       id: 'certificate-1',
       caregiverId: 'caregiver-1',
@@ -132,12 +132,25 @@ describe('Caregiver profile — certificates', () => {
       version: 1
     })
     vi.mocked(uploadMedia).mockResolvedValue([])
+    const pickerClick = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
     renderProfile('/caregiver/profile?tab=certificates')
 
     fireEvent.click((await screen.findAllByRole('button', { name: 'Add certificate' }))[0])
     const drawer = screen.getByRole('dialog', { name: 'Add certificate' })
-    const file = new File(['sample'], 'first-aid.pdf', { type: 'application/pdf' })
-    fireEvent.change(within(drawer).getByLabelText('Certificate file'), { target: { files: [file] } })
+    // "Choose from a folder" opens the system file dialog.
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Choose from a folder' }))
+    expect(pickerClick).toHaveBeenCalledTimes(1)
+    const front = new File(['front'], 'front.pdf', { type: 'application/pdf' })
+    fireEvent.change(within(drawer).getByLabelText('Choose from a folder'), { target: { files: [front] } })
+    // A second side dragged in from Explorer / Finder joins the first one.
+    const back = new File(['back'], 'back.pdf', { type: 'application/pdf' })
+    fireEvent.drop(within(drawer).getByRole('group', { name: 'Certificate photos or files' }), {
+      dataTransfer: { files: [back] }
+    })
+    expect(within(drawer).getByRole('button', { name: 'Remove back.pdf' })).toBeInTheDocument()
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Choose more from a folder' }))
+    expect(pickerClick).toHaveBeenCalledTimes(2)
+    pickerClick.mockRestore()
     fireEvent.change(within(drawer).getByLabelText('Certificate name'), { target: { value: 'First aid' } })
     fireEvent.change(within(drawer).getByLabelText('Issued by'), { target: { value: 'Red Cross' } })
     fireEvent.click(within(drawer).getByRole('button', { name: 'Save certificate' }))
@@ -151,7 +164,7 @@ describe('Caregiver profile — certificates', () => {
         expiryDate: undefined
       })
     )
-    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [file]))
+    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [front, back]))
   })
 
   it('retries a failed file upload without creating the certificate twice', async () => {
@@ -168,7 +181,7 @@ describe('Caregiver profile — certificates', () => {
 
     fireEvent.click((await screen.findAllByRole('button', { name: 'Add certificate' }))[0])
     const drawer = screen.getByRole('dialog', { name: 'Add certificate' })
-    fireEvent.change(within(drawer).getByLabelText('Certificate file'), {
+    fireEvent.change(within(drawer).getByLabelText('Choose from a folder'), {
       target: { files: [new File(['sample'], 'first-aid.pdf', { type: 'application/pdf' })] }
     })
     fireEvent.change(within(drawer).getByLabelText('Certificate name'), { target: { value: 'First aid' } })

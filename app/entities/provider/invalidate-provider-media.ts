@@ -24,6 +24,10 @@ export async function invalidateOwnerMedia(
       options.centerId ? providerKeys.caregivers(options.centerId) : ['provider', 'caregivers']
     )
   }
+  // A new or removed certificate photo sends the certificate back to the center (ProviderService 2026-11-09).
+  if (ownerType === 'CERTIFICATE') {
+    keys.push(['provider', 'certificates'], providerKeys.certificateAudit)
+  }
   if (ownerType === 'CARE_CENTER') {
     keys.push(
       providerKeys.center(ownerId),

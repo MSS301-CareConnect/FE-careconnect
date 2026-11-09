@@ -17,7 +17,17 @@ export const adminNavigation = [
       { key: 'centers', to: '/admin/centers', icon: 'apartment' },
       { key: 'bookings', to: '/admin/bookings', icon: 'calendar_month' },
       { key: 'caregivers', to: '/admin/caregivers', icon: 'medical_services' },
+      // Step 5 of the certificate review, with the AI risk of each certificate (2026-11-09).
+      { key: 'certificates', to: '/admin/certificates', icon: 'workspace_premium' },
       { key: 'policies', to: '/admin/policies', icon: 'rule' }
+    ]
+  },
+  {
+    key: 'finance',
+    labelled: true,
+    items: [
+      { key: 'wallet', to: '/admin/wallet', icon: 'account_balance_wallet' },
+      { key: 'withdrawals', to: '/admin/withdrawals', icon: 'payments' }
     ]
   },
   {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
 
 import { CaregiverToaster } from '../ui/caregiver-toaster'
 import {
@@ -71,6 +72,7 @@ export function CaregiverLayout() {
       </div>
       <CaregiverBottomNav requests={requests} toAccept={toAccept} />
       <CaregiverToaster />
+      <AiChatWidget />
     </div>
   )
 }
