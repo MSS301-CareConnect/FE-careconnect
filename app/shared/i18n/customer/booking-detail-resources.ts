@@ -72,7 +72,8 @@ export const bookingDetailEn = {
     AWAITING_INITIAL_PAYMENT: {
       title: 'Pay to confirm',
       body: 'Your booking is on hold. Pay the initial payment of {{deposit}} by {{depositDue}}; after that it is cancelled so others can book.',
-      bodyNoAmount: 'Your booking is on hold. Pay the initial payment by {{depositDue}}; after that it is cancelled so others can book.'
+      bodyNoAmount:
+        'Your booking is on hold. Pay the initial payment by {{depositDue}}; after that it is cancelled so others can book.'
     },
     CONFIRMED: {
       title: 'Confirmed',
@@ -125,10 +126,67 @@ export const bookingDetailEn = {
     previewExpires: 'Preview valid until {{time}}',
     feeKept: 'Fee kept {{amount}}',
     policyToggle: 'How refunds are calculated',
+    allUpcoming: 'All {{count}} visits not started yet',
+    chosenCount: '{{count}} visits selected',
+    pickVisits: 'Pick visits one by one',
+    upcomingList: 'Upcoming visits ({{count}})',
+    selectAll: 'Select all',
+    selectNone: 'Clear selection',
+    recalculate: 'Recalculate',
+    breakdown: 'Refund per visit ({{count}}):',
+    previewTitle: 'Preview the exact refund',
+    previewHint: 'We calculate the refund and any amount kept for each visit you want to cancel.',
+    pickFirst: 'Select at least one visit on the left to calculate the refund.',
+    needVisits: 'Select at least 1 visit to cancel',
+    needPreview: 'Press “{{action}}” to check the refund',
+    tiers: {
+      title: 'Center refund policy',
+      more: 'Details',
+      less: 'Hide',
+      refund: 'Refund {{percent}}',
+      none: 'No refund',
+      from: '{{hours}} h or more before',
+      between: '{{from}} h to under {{to}} h',
+      under: 'Under {{hours}} h before'
+    },
     reason: 'Reason for cancelling',
     confirm: 'Cancel booking'
   },
+  reschedule: {
+    title: 'Reschedule visit #{{number}}',
+    quota: 'Rescheduled {{count}}/{{limit}} free times.',
+    back: 'Back',
+    confirm: 'Confirm new time',
+    current: 'Current time:',
+    date: 'New date',
+    time: 'Start time',
+    newSlot: 'New time:',
+    pickSlot: 'Choose a new date and time',
+    check: 'Check availability',
+    available: 'This time is free',
+    busy: 'The caregiver is busy at that time',
+    reason: 'Reason (optional)',
+    reasonPlaceholder: 'E.g. the family has an urgent matter…'
+  },
   occurrenceDetail: {
+    rescheduled: 'Rescheduled {{count}} times',
+    rescheduleAction: 'Move this visit to another time',
+    age: '({{count}} years old)',
+    reviews: '({{count}} reviews)',
+    emergency: {
+      title: 'The center arranged an emergency replacement caregiver',
+      reason: 'Reason from the center: {{reason}}',
+      accept: 'Accept the new caregiver',
+      reschedule: 'Move to another time',
+      reject: 'Decline and cancel the visit (100% refund)',
+      status: {
+        NONE: 'No answer needed',
+        PENDING_CUSTOMER: 'Waiting for your answer',
+        ACCEPTED: 'You accepted the new caregiver',
+        REJECTED_RESCHEDULE: 'You moved the visit to another time',
+        REJECTED_CANCEL: 'You declined and the visit was cancelled'
+      }
+    },
     title: 'Visit #{{number}} details',
     service: 'Service details',
     defaultService: 'Care service',
@@ -238,7 +296,8 @@ export const bookingDetailVi = {
     AWAITING_INITIAL_PAYMENT: {
       title: 'Thanh toán để xác nhận lịch',
       body: 'Lịch đang được giữ cho bạn. Hãy thanh toán khoản đầu {{deposit}} trước {{depositDue}}, quá hạn lịch sẽ tự hủy để người khác đặt.',
-      bodyNoAmount: 'Lịch đang được giữ cho bạn. Hãy thanh toán khoản đầu trước {{depositDue}}, quá hạn lịch sẽ tự hủy để người khác đặt.'
+      bodyNoAmount:
+        'Lịch đang được giữ cho bạn. Hãy thanh toán khoản đầu trước {{depositDue}}, quá hạn lịch sẽ tự hủy để người khác đặt.'
     },
     CONFIRMED: {
       title: 'Đã xác nhận',
@@ -292,10 +351,67 @@ export const bookingDetailVi = {
     previewExpires: 'Hiệu lực tới {{time}}',
     feeKept: 'Giữ lại {{amount}}',
     policyToggle: 'Cách tính tiền hoàn',
+    allUpcoming: 'Tất cả {{count}} buổi chưa bắt đầu',
+    chosenCount: 'Đã chọn {{count}} buổi',
+    pickVisits: 'Tùy chọn từng buổi',
+    upcomingList: 'Danh sách buổi sắp tới ({{count}})',
+    selectAll: 'Chọn tất cả',
+    selectNone: 'Bỏ chọn tất cả',
+    recalculate: 'Tính lại',
+    breakdown: 'Chi tiết hoàn tiền từng buổi ({{count}}):',
+    previewTitle: 'Xem trước số tiền hoàn chính xác',
+    previewHint: 'Hệ thống tính số tiền hoàn và khoản giữ lại (nếu có) cho từng buổi bạn muốn hủy.',
+    pickFirst: 'Chọn ít nhất một buổi bên trái để tính tiền hoàn.',
+    needVisits: 'Chọn ít nhất 1 buổi chăm sóc cần hủy',
+    needPreview: 'Nhấn “{{action}}” để kiểm tra số tiền hoàn',
+    tiers: {
+      title: 'Chính sách hoàn tiền trung tâm',
+      more: 'Xem chi tiết',
+      less: 'Thu gọn',
+      refund: 'Hoàn {{percent}}',
+      none: 'Không hoàn',
+      from: 'Trước ≥ {{hours}} giờ',
+      between: 'Từ {{from}} đến < {{to}} giờ',
+      under: 'Sát giờ < {{hours}} giờ'
+    },
     reason: 'Lý do hủy',
     confirm: 'Hủy lịch đặt'
   },
+  reschedule: {
+    title: 'Dời lịch buổi chăm sóc #{{number}}',
+    quota: 'Đã dời {{count}}/{{limit}} lần miễn phí.',
+    back: 'Quay lại',
+    confirm: 'Xác nhận dời lịch',
+    current: 'Lịch hiện tại:',
+    date: 'Chọn ngày mới',
+    time: 'Giờ bắt đầu',
+    newSlot: 'Khung giờ mới:',
+    pickSlot: 'Chọn ngày và giờ mới',
+    check: 'Kiểm tra lịch rảnh',
+    available: 'Khung giờ này còn trống',
+    busy: 'Người chăm sóc bận lịch khác',
+    reason: 'Lý do dời lịch (tùy chọn)',
+    reasonPlaceholder: 'Ví dụ: Gia đình có việc bận đột xuất…'
+  },
   occurrenceDetail: {
+    rescheduled: 'Đã dời {{count}} lần',
+    rescheduleAction: 'Dời buổi này sang giờ khác',
+    age: '({{count}} tuổi)',
+    reviews: '({{count}} đánh giá)',
+    emergency: {
+      title: 'Trung tâm bố trí người chăm sóc thay thế khẩn cấp',
+      reason: 'Lý do từ trung tâm: {{reason}}',
+      accept: 'Đồng ý người mới',
+      reschedule: 'Dời sang giờ khác',
+      reject: 'Từ chối và hủy buổi (hoàn 100%)',
+      status: {
+        NONE: 'Không cần trả lời',
+        PENDING_CUSTOMER: 'Chờ bạn trả lời',
+        ACCEPTED: 'Bạn đã đồng ý người mới',
+        REJECTED_RESCHEDULE: 'Bạn đã dời buổi sang giờ khác',
+        REJECTED_CANCEL: 'Bạn đã từ chối, buổi đã hủy'
+      }
+    },
     title: 'Chi tiết buổi chăm sóc #{{number}}',
     service: 'Dịch vụ thực hiện',
     defaultService: 'Dịch vụ chăm sóc',

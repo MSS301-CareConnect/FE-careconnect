@@ -68,6 +68,7 @@ const policy: CenterBookingPolicyRecord = {
   refundThresholdMinutes: 1440,
   refundPercentBeforeThreshold: 100,
   refundPercentAfterThreshold: 70,
+  lateCancelNoRefundMinutes: 120,
   overduePaymentForfeitPercent: 100
 }
 const pending: PaymentRecord = {
@@ -163,7 +164,8 @@ describe('Deposit payment flow', () => {
     const percent = new Intl.NumberFormat('vi', { style: 'percent' })
     expect(rows.slice(1).map((row) => row.textContent)).toEqual([
       `Từ 24 giờ trở lên${percent.format(1)}`,
-      `Dưới 24 giờ${percent.format(0.7)}`
+      `Từ 2 đến dưới 24 giờ${percent.format(0.7)}`,
+      'Dưới 2 giờKhông hoàn'
     ])
     expect(fetchCenterBookingPolicy).toHaveBeenCalledWith('center-1')
     expect(screen.getByText(/trung tâm giữ 100\s?% số tiền đã trả/)).toBeInTheDocument()

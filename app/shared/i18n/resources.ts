@@ -3,6 +3,7 @@ import { bookingSharedEn, bookingSharedVi } from './booking-resources'
 import { bookingScheduleEn, bookingScheduleVi } from './booking-schedule-resources'
 import { paymentSharedEn, paymentSharedVi } from './payment-resources'
 import { walletEn, walletVi } from './wallet-resources'
+import { caregiverAbsenceEn, caregiverAbsenceVi } from './caregiver-absence-resources'
 import { aiChatEn, aiChatVi } from './ai-chat-resources'
 import { certificateReviewEn, certificateReviewVi } from './certificate-review-resources'
 import { notificationEn, notificationVi } from './notification-resources'
@@ -97,6 +98,7 @@ export const resources = {
       bookingSchedule: bookingScheduleEn,
       payment: paymentSharedEn,
       wallet: walletEn,
+      caregiverAbsence: caregiverAbsenceEn,
       aiChat: aiChatEn,
       certificateReview: certificateReviewEn,
       notifications: notificationEn,
@@ -183,6 +185,7 @@ export const resources = {
       bookingSchedule: bookingScheduleVi,
       payment: paymentSharedVi,
       wallet: walletVi,
+      caregiverAbsence: caregiverAbsenceVi,
       aiChat: aiChatVi,
       certificateReview: certificateReviewVi,
       notifications: notificationVi,

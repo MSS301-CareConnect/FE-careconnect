@@ -104,6 +104,16 @@ import type {
   CareTaskResponse,
   CareTaskStatus,
   CareTaskUpdateRequest,
+  CaregiverAbsenceConclusionRequest,
+  CaregiverAbsenceExplanationRequest,
+  CaregiverAbsencePage,
+  CaregiverAbsencePageResponse,
+  CaregiverAbsenceRecord,
+  CaregiverAbsenceResponse,
+  CaregiverAbsenceSource,
+  CaregiverAbsenceStatisticsRecord,
+  CaregiverAbsenceStatisticsResponse,
+  CaregiverAbsenceStatus,
   CaregiverAssignRequest,
   CaregiverBookingRequestPage,
   CaregiverBookingRequestPageResponse,
@@ -3247,7 +3257,13 @@ export const getNotificationTypeMock = (): NotificationType =>
     'CAREGIVER_REQUEST',
     'BOOKING_HANDED_OVER',
     'BOOKING_ADDRESS_CHANGED',
-    'CENTER_ACTION_DUE'
+    'CENTER_ACTION_DUE',
+    'CAREGIVER_CHANGE_REQUEST_CREATED',
+    'CAREGIVER_CHANGE_REQUEST_DECIDED',
+    'EMERGENCY_REPLACEMENT_NOTIFIED',
+    'OCCURRENCE_RESCHEDULED_NOTIFICATION',
+    'CHECK_IN_LATE',
+    'CAREGIVER_ABSENCE_UPDATED'
   ] as const)
 
 export const getOutboxStatusMock = (): OutboxStatus =>
@@ -4027,6 +4043,7 @@ export const getCenterBookingPolicyRecordMock = (
   refundThresholdMinutes: faker.number.int(),
   refundPercentBeforeThreshold: faker.number.float({ fractionDigits: 2 }),
   refundPercentAfterThreshold: faker.number.float({ fractionDigits: 2 }),
+  lateCancelNoRefundMinutes: faker.number.int(),
   overduePaymentForfeitPercent: faker.number.float({ fractionDigits: 2 }),
   version: faker.helpers.arrayElement([faker.number.int(), undefined]),
   updatedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
@@ -4062,6 +4079,7 @@ export const getCenterBookingPolicyRequestMock = (
   refundThresholdMinutes: faker.number.int({ min: 0, max: 43200 }),
   refundPercentBeforeThreshold: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
   refundPercentAfterThreshold: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+  lateCancelNoRefundMinutes: faker.number.int({ min: 0, max: 1440 }),
   overduePaymentForfeitPercent: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
   version: faker.helpers.arrayElement([faker.number.int(), undefined]),
   ...overrideResponse
@@ -4741,6 +4759,102 @@ export const getCaregiverWithdrawalListResponseMock = (
   result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     ...getCaregiverWithdrawalRecordMock()
   })),
+  ...overrideResponse
+})
+
+export const getCaregiverAbsenceStatusMock = (): CaregiverAbsenceStatus =>
+  faker.helpers.arrayElement(['PENDING', 'EXCUSED', 'CONFIRMED'] as const)
+
+export const getCaregiverAbsenceSourceMock = (): CaregiverAbsenceSource =>
+  faker.helpers.arrayElement(['MISSED_CHECK_IN', 'NO_SHOW_REPORT_REJECTED'] as const)
+
+export const getCaregiverAbsenceExplanationRequestMock = (
+  overrideResponse: Partial<CaregiverAbsenceExplanationRequest> = {}
+): CaregiverAbsenceExplanationRequest => ({
+  explanation: faker.string.alpha({ length: { min: 10, max: 1000 } }),
+  ...overrideResponse
+})
+
+export const getCaregiverAbsenceConclusionRequestMock = (
+  overrideResponse: Partial<CaregiverAbsenceConclusionRequest> = {}
+): CaregiverAbsenceConclusionRequest => ({
+  decision: getCaregiverAbsenceStatusMock(),
+  note: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 1000 } }), undefined]),
+  ...overrideResponse
+})
+
+export const getCaregiverAbsenceRecordMock = (
+  overrideResponse: Partial<CaregiverAbsenceRecord> = {}
+): CaregiverAbsenceRecord => ({
+  id: faker.string.uuid(),
+  bookingId: faker.string.uuid(),
+  bookingCode: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  recipientName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  occurrenceId: faker.string.uuid(),
+  occurrenceNo: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  startAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  endAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  centerId: faker.string.uuid(),
+  caregiverId: faker.string.uuid(),
+  caregiverUserId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  source: getCaregiverAbsenceSourceMock(),
+  status: getCaregiverAbsenceStatusMock(),
+  explanation: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  explainedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  conclusionNote: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  concludedBy: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  concludedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  createdAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  ...overrideResponse
+})
+
+export const getCaregiverAbsencePageMock = (
+  overrideResponse: Partial<CaregiverAbsencePage> = {}
+): CaregiverAbsencePage => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getCaregiverAbsenceRecordMock()
+  })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCaregiverAbsenceStatisticsRecordMock = (
+  overrideResponse: Partial<CaregiverAbsenceStatisticsRecord> = {}
+): CaregiverAbsenceStatisticsRecord => ({
+  pending: faker.number.int(),
+  excused: faker.number.int(),
+  confirmed: faker.number.int(),
+  total: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCaregiverAbsencePageResponseMock = (
+  overrideResponse: Partial<CaregiverAbsencePageResponse> = {}
+): CaregiverAbsencePageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverAbsencePageMock() },
+  ...overrideResponse
+})
+
+export const getCaregiverAbsenceResponseMock = (
+  overrideResponse: Partial<CaregiverAbsenceResponse> = {}
+): CaregiverAbsenceResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverAbsenceRecordMock() },
+  ...overrideResponse
+})
+
+export const getCaregiverAbsenceStatisticsResponseMock = (
+  overrideResponse: Partial<CaregiverAbsenceStatisticsResponse> = {}
+): CaregiverAbsenceStatisticsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCaregiverAbsenceStatisticsRecordMock() },
   ...overrideResponse
 })
 

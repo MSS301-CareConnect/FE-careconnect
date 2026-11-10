@@ -50,6 +50,9 @@ export function CenterPolicySection({ centerId }: { centerId: string }) {
               percent: percent.format(data.refundPercentAfterThreshold / 100)
             })}
           </li>
+          {data.lateCancelNoRefundMinutes > 0 ? (
+            <li>{t(`${key}.late`, { hours: hours.format(data.lateCancelNoRefundMinutes / 60) })}</li>
+          ) : null}
           <li>{t(`${key}.centerCancel`)}</li>
         </ul>
       ) : null}

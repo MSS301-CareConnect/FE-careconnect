@@ -30,6 +30,7 @@ type FieldError =
   | 'wholeMinutes'
   | 'advanceBeforeRemaining'
   | 'afterAboveBefore'
+  | 'lateAboveThreshold'
   | 'reminders'
   | 'remindersDuplicate'
   | 'remindersTooMany'
@@ -74,7 +75,8 @@ const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn';
     fields: [
       { name: 'refundThresholdMinutes', unit: 'hours', min: 0, max: MAX_MINUTES },
       { name: 'refundPercentBeforeThreshold', unit: 'percent', min: 0, max: 100 },
-      { name: 'refundPercentAfterThreshold', unit: 'percent', min: 0, max: 100 }
+      { name: 'refundPercentAfterThreshold', unit: 'percent', min: 0, max: 100 },
+      { name: 'lateCancelNoRefundMinutes', unit: 'hours', min: 0, max: MAX_CHECK_IN_MINUTES }
     ]
   },
   {
@@ -170,6 +172,14 @@ function validate(values: Values) {
     numbers.refundPercentAfterThreshold > numbers.refundPercentBeforeThreshold
   )
     errors.refundPercentAfterThreshold = 'afterAboveBefore'
+  // At most the refund cut-off and one day; the generic "too large" text names 720 hours, wrong for this field.
+  if (
+    errors.lateCancelNoRefundMinutes === 'tooLarge' ||
+    (numbers.lateCancelNoRefundMinutes !== undefined &&
+      numbers.refundThresholdMinutes !== undefined &&
+      numbers.lateCancelNoRefundMinutes > numbers.refundThresholdMinutes)
+  )
+    errors.lateCancelNoRefundMinutes = 'lateAboveThreshold'
   return { errors, numbers, reminders: reminders.value }
 }
 

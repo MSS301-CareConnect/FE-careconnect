@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { CaregiverAbsenceQueue } from '~/entities/booking/caregiver-absence-queue'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
@@ -65,6 +66,10 @@ export function CaregiverVisitsPage() {
   return (
     <div className={cgContainer}>
       <CaregiverPageHeader description={t('caregiver.visits.subtitle')} title={t('caregiver.visits.title')} />
+
+      <div className='mb-4 empty:hidden'>
+        <CaregiverAbsenceQueue role='caregiver' />
+      </div>
 
       <PillTabs
         className='mb-4'

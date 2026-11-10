@@ -22,6 +22,8 @@ export const adminNavigation = [
       { key: 'caregivers', to: '/admin/caregivers', icon: 'medical_services' },
       // Step 5 of the certificate review, with the AI risk of each certificate (2026-11-09).
       { key: 'certificates', to: '/admin/certificates', icon: 'workspace_premium' },
+      // Caregivers who missed paid visits, platform-wide; centers conclude each one (2026-11-10).
+      { key: 'caregiverAbsences', to: '/admin/caregiver-absences', icon: 'person_off' },
       { key: 'policies', to: '/admin/policies', icon: 'rule' }
     ]
   },

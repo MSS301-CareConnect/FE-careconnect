@@ -44,6 +44,7 @@ beforeEach(async () => {
     refundThresholdMinutes: 1440,
     refundPercentBeforeThreshold: 100,
     refundPercentAfterThreshold: 70,
+    lateCancelNoRefundMinutes: 120,
     overduePaymentForfeitPercent: 100
   })
 })

@@ -20,6 +20,7 @@ import { ConfirmDialog } from '~/shared/ui/modal'
 import { ErrorState, ForbiddenState, SkeletonBlock } from '~/shared/ui/state-panels'
 
 import { BentoPageHeader } from '~/shared/ui/bento-page-header'
+import { CaregiverAbsenceHistory } from './components/caregiver-absence-history'
 import { CaregiverEditorDialog } from './components/caregiver-editor-dialog'
 import { CaregiverServicesEditor } from './components/caregiver-services-editor'
 import { CaregiverUpcomingShifts } from './components/caregiver-upcoming-shifts'
@@ -209,6 +210,7 @@ export function ManagerCaregiverDetailPage() {
         <div className='space-y-5 lg:col-span-7'>
           <CaregiverUpcomingShifts caregiverId={id} centerId={person.centerId} today={today} />
           <CaregiverTimeOffs caregiverId={id} caregiverName={person.fullName} now={now} />
+          <CaregiverAbsenceHistory caregiverId={id} />
         </div>
         <div className='space-y-5 lg:col-span-5'>
           <CaregiverServicesEditor caregiverId={id} centerId={person.centerId} />

@@ -24,6 +24,8 @@ tags:
   - name: BookingOccurrence
   - name: CaregiverWithdrawal
     description: BookingService — a caregiver withdraws from assigned visits at least 24 h ahead; the center reassigns (2026-11-09).
+  - name: CaregiverAbsence
+    description: BookingService — a caregiver missed an assigned visit; the caregiver explains, the center concludes (2026-11-10).
   - name: CareSession
   - name: CareReport
   - name: Complaint
@@ -5563,6 +5565,217 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CaregiverWithdrawalListResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+  /v1/caregiver-absences:
+    get:
+      tags:
+        - CaregiverAbsence
+      summary: CAREGIVER lists own absences; CENTER_MANAGER those of the center; ADMIN those of every center (centerId optional)
+      operationId: listCaregiverAbsences
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/CaregiverAbsenceStatus'
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: caregiverId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: bookingId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverAbsencePageResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+  /v1/caregiver-absences/statistics:
+    get:
+      tags:
+        - CaregiverAbsence
+      summary: Absence counts by conclusion in the scope of the caller
+      operationId: getCaregiverAbsenceStatistics
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: caregiverId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverAbsenceStatisticsResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+  /v1/caregiver-absences/{id}:
+    get:
+      tags:
+        - CaregiverAbsence
+      summary: One absence in the scope of the caller
+      operationId: getCaregiverAbsence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverAbsenceResponse'
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+  /v1/caregiver-absences/{id}/explanation:
+    post:
+      tags:
+        - CaregiverAbsence
+      summary: CAREGIVER explains (or rewrites the explanation of) an absence the center has not concluded
+      operationId: explainCaregiverAbsence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverAbsenceExplanationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverAbsenceResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+  /v1/caregiver-absences/{id}/conclusion:
+    post:
+      tags:
+        - CaregiverAbsence
+      summary: CENTER_MANAGER concludes an absence once as EXCUSED (note required) or CONFIRMED
+      operationId: concludeCaregiverAbsence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaregiverAbsenceConclusionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverAbsenceResponse'
         '400':
           description: BookingService error
         '401':
@@ -14430,6 +14643,12 @@ components:
         - BOOKING_HANDED_OVER
         - BOOKING_ADDRESS_CHANGED
         - CENTER_ACTION_DUE
+        - CAREGIVER_CHANGE_REQUEST_CREATED
+        - CAREGIVER_CHANGE_REQUEST_DECIDED
+        - EMERGENCY_REPLACEMENT_NOTIFIED
+        - OCCURRENCE_RESCHEDULED_NOTIFICATION
+        - CHECK_IN_LATE
+        - CAREGIVER_ABSENCE_UPDATED
     OutboxStatus:
       type: string
       enum:
@@ -15676,6 +15895,7 @@ components:
         - refundThresholdMinutes
         - refundPercentBeforeThreshold
         - refundPercentAfterThreshold
+        - lateCancelNoRefundMinutes
         - overduePaymentForfeitPercent
       properties:
         centerId:
@@ -15714,6 +15934,9 @@ components:
           type: number
         refundPercentAfterThreshold:
           type: number
+        lateCancelNoRefundMinutes:
+          type: integer
+          description: A customer cancelling less than this many minutes before a visit gets no refund
         overduePaymentForfeitPercent:
           type: number
         version:
@@ -15755,6 +15978,7 @@ components:
         - refundThresholdMinutes
         - refundPercentBeforeThreshold
         - refundPercentAfterThreshold
+        - lateCancelNoRefundMinutes
         - overduePaymentForfeitPercent
       properties:
         shiftMinAdvanceMinutes:
@@ -15816,6 +16040,11 @@ components:
           type: number
           minimum: 0
           maximum: 100
+        lateCancelNoRefundMinutes:
+          type: integer
+          minimum: 0
+          maximum: 1440
+          description: At most refundThresholdMinutes (400 5413 otherwise)
         overduePaymentForfeitPercent:
           type: number
           minimum: 0
@@ -17008,6 +17237,178 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CaregiverWithdrawalRecord'
+    CaregiverAbsenceStatus:
+      type: string
+      description: PENDING = waiting for the center; EXCUSED = justified, not a violation; CONFIRMED = violation
+      enum:
+        - PENDING
+        - EXCUSED
+        - CONFIRMED
+    CaregiverAbsenceSource:
+      type: string
+      description: MISSED_CHECK_IN = nobody checked in before the window closed; NO_SHOW_REPORT_REJECTED = the center rejected the customer no-show report of the caregiver
+      enum:
+        - MISSED_CHECK_IN
+        - NO_SHOW_REPORT_REJECTED
+    CaregiverAbsenceExplanationRequest:
+      type: object
+      required:
+        - explanation
+      properties:
+        explanation:
+          type: string
+          minLength: 10
+          maxLength: 1000
+    CaregiverAbsenceConclusionRequest:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          $ref: '#/components/schemas/CaregiverAbsenceStatus'
+        note:
+          type: string
+          maxLength: 1000
+          description: Required when decision is EXCUSED
+    CaregiverAbsenceRecord:
+      type: object
+      required:
+        - id
+        - bookingId
+        - occurrenceId
+        - startAt
+        - endAt
+        - centerId
+        - caregiverId
+        - source
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        bookingCode:
+          type: string
+        recipientName:
+          type: string
+        occurrenceId:
+          type: string
+          format: uuid
+        occurrenceNo:
+          type: integer
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        centerId:
+          type: string
+          format: uuid
+        caregiverId:
+          type: string
+          format: uuid
+        caregiverUserId:
+          type: string
+          format: uuid
+        source:
+          $ref: '#/components/schemas/CaregiverAbsenceSource'
+        status:
+          $ref: '#/components/schemas/CaregiverAbsenceStatus'
+        explanation:
+          type: string
+        explainedAt:
+          type: string
+          format: date-time
+        conclusionNote:
+          type: string
+        concludedBy:
+          type: string
+          format: uuid
+        concludedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    CaregiverAbsencePage:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaregiverAbsenceRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    CaregiverAbsenceStatisticsRecord:
+      type: object
+      required:
+        - pending
+        - excused
+        - confirmed
+        - total
+      properties:
+        pending:
+          type: integer
+        excused:
+          type: integer
+        confirmed:
+          type: integer
+        total:
+          type: integer
+    CaregiverAbsencePageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CaregiverAbsencePage'
+    CaregiverAbsenceResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CaregiverAbsenceRecord'
+    CaregiverAbsenceStatisticsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CaregiverAbsenceStatisticsRecord'
     CaregiverOccurrencePageResponse:
       type: object
       required:

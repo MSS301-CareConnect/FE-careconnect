@@ -463,7 +463,9 @@ two-column popup, caregiver picker unless one is fixed, dates and times in Vietn
 overlaps another time off), `RemoveTimeOffDialog`, and the `CaregiverTimeOffs` panel of the manager caregiver detail;
 every change invalidates `providerKeys.allTimeOffs`. The caregiver detail (redesigned 2026-11-06) is a `PageHeader` with
 breadcrumb, a profile card with the facts, then upcoming shifts of the next 14 days (`GET /care-centers/{id}/schedules`
-with `caregiverId` / dates / status) linking to the work calendar, time off, services and certificates; the profile edit
+with `caregiverId` / dates / status) linking to the work calendar, time off, missed visits (2026-11-10:
+`components/caregiver-absence-history.tsx` — counts from `GET /caregiver-absences/statistics?caregiverId=` and the latest
+five records, with a link to the bookings queue while any is pending), services and certificates; the profile edit
 is a popup. The caregiver list shows four numbers (team, awaiting verification — click filters, working today, on
 leave now), one filter row and a "Today" column (shift hours or "On leave") from one schedule read and one time-off read
 for the whole center.
@@ -940,6 +942,16 @@ Contract update workflow:
   payment history (`GET /payments`, real `refundedAmount`) and refunds (`GET /refunds`).
   PaymentService error codes map to `payment.errors.e<code>` translations.
 
+- Caregiver absences (2026-11-10, `BE/docs/2026-11-10-CAREGIVER_ABSENCE_AND_REFUND_REVIEW.md`): a visit nobody checked
+  in to becomes CAREGIVER_MISSED, the customer is refunded in full to the wallet and BookingService opens an absence
+  record (`CaregiverAbsence` tag). `entities/booking/caregiver-absence-queue.tsx` lists the pending ones of the signed-in
+  role: on `/center-manager/bookings` the manager excuses one or records a violation (with a note), on
+  `/caregiver/visits` the caregiver sends or edits the explanation. `/admin/caregiver-absences` (menu Operations) is the
+  read-only platform list with counts and a status filter in URL search parameters. The customer's visit dialog says the
+  money went to the wallet; refund previews read the `LATE_NO_REFUND` rule (cancelled inside the center's
+  `lateCancelNoRefundMinutes` window, default 2 hours, no refund). The policy form edits that window (hours, at most the
+  refund cut-off and 24 hours); the refund summary, center page, booking review and cancel dialog tiers read it from the
+  policy instead of a fixed text.
 - Wallets (2026-11-09, `BE/docs/2026-11-09-WALLET_PLAN.md`): `entities/wallet` wraps the generated `Wallet` and
   `WalletWithdrawal` clients (`walletKeys` under `['wallet']`, `walletErrorKey` for codes 6040–6052) and owns one
   `WalletDashboard` used by `/customer/wallet` (account area), `/caregiver/wallet` (account menu), `/center-manager/wallet`

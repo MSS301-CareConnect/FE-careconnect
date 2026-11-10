@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { bookingKeys, cancelBookingRequest, previewCancellation } from '~/entities/booking/booking-api'
 import { bookingErrorKey, formatDateTime, formatMoney, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
-import { RefundPolicySummary, refundRuleLabel } from '~/entities/payment/refund-policy'
+import { RefundPolicySummary, refundRuleLabel, useCenterBookingPolicy } from '~/entities/payment/refund-policy'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -24,6 +24,9 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
   const [chosen, setChosen] = useState<string[]>([])
   const [showFullPolicy, setShowFullPolicy] = useState(false)
   const occurrenceIds = scope === 'selected' ? chosen : undefined
+  const policy = useCenterBookingPolicy(booking.centerId).data
+  const percent = new Intl.NumberFormat(language, { style: 'percent', maximumFractionDigits: 2 })
+  const hours = new Intl.NumberFormat(language, { maximumFractionDigits: 1 })
 
   const preview = useMutation({ mutationFn: () => previewCancellation(booking.id, occurrenceIds) })
   const cancel = useMutation({
@@ -87,7 +90,7 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
                 {t('customer.bookingDetail.cancel.scopeAll')}
               </span>
               <span className='block text-xs text-on-surface-variant mt-0.5'>
-                Tất cả {upcoming.length} buổi chưa bắt đầu
+                {t('customer.bookingDetail.cancel.allUpcoming', { count: upcoming.length })}
               </span>
             </div>
           </button>
@@ -119,7 +122,9 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
                 {t('customer.bookingDetail.cancel.scopeSelected')}
               </span>
               <span className='block text-xs text-on-surface-variant mt-0.5'>
-                {chosen.length > 0 ? `Đã chọn ${chosen.length} buổi` : 'Tùy chọn từng buổi'}
+                {chosen.length > 0
+                  ? t('customer.bookingDetail.cancel.chosenCount', { count: chosen.length })
+                  : t('customer.bookingDetail.cancel.pickVisits')}
               </span>
             </div>
           </button>
@@ -130,9 +135,13 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
       {scope === 'selected' ? (
         <div className='rounded-xl border border-outline-variant/60 bg-surface-container-low/50 p-4'>
           <div className='mb-2.5 flex items-center justify-between text-xs'>
-            <span className='font-semibold text-on-surface text-sm'>Danh sách buổi sắp tới ({upcoming.length})</span>
+            <span className='font-semibold text-on-surface text-sm'>
+              {t('customer.bookingDetail.cancel.upcomingList', { count: upcoming.length })}
+            </span>
             <button type='button' onClick={toggleAllSelected} className='font-semibold text-primary hover:underline'>
-              {chosen.length === upcoming.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+              {chosen.length === upcoming.length
+                ? t('customer.bookingDetail.cancel.selectNone')
+                : t('customer.bookingDetail.cancel.selectAll')}
             </button>
           </div>
           <ul className='flex max-h-56 flex-col gap-2 overflow-y-auto pr-1'>
@@ -189,33 +198,64 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
         <div className='flex items-center justify-between gap-2'>
           <span className='flex items-center gap-1.5 font-semibold text-on-surface text-sm'>
             <Icon className='text-base text-primary' name='verified_user' />
-            Chính sách hoàn tiền trung tâm
+            {t('customer.bookingDetail.cancel.tiers.title')}
           </span>
           <button
             type='button'
             onClick={() => setShowFullPolicy(!showFullPolicy)}
             className='flex items-center gap-1 font-semibold text-primary hover:underline'
           >
-            {showFullPolicy ? 'Thu gọn' : 'Xem chi tiết'}
+            {t(
+              showFullPolicy ? 'customer.bookingDetail.cancel.tiers.less' : 'customer.bookingDetail.cancel.tiers.more'
+            )}
             <Icon className={`text-sm transition-transform ${showFullPolicy ? 'rotate-180' : ''}`} name='expand_more' />
           </button>
         </div>
 
-        {/* Quick 3-Tier Metric Badges */}
-        <div className='mt-3 grid grid-cols-3 gap-2.5 text-center'>
-          <div className='rounded-xl bg-emerald-50 border border-emerald-200/70 p-2.5 text-emerald-900'>
-            <span className='block font-bold text-sm text-emerald-700'>Hoàn 100%</span>
-            <span className='block text-xs text-emerald-600 mt-0.5 leading-tight'>Trước ≥ 24h</span>
+        {/* Refund tiers of the center policy; the no-refund tier exists only when its window is above zero. */}
+        {policy ? (
+          <div
+            className={`mt-3 grid ${policy.lateCancelNoRefundMinutes > 0 ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 text-center`}
+          >
+            <div className='rounded-xl bg-emerald-50 border border-emerald-200/70 p-2.5 text-emerald-900'>
+              <span className='block font-bold text-sm text-emerald-700'>
+                {t('customer.bookingDetail.cancel.tiers.refund', {
+                  percent: percent.format(policy.refundPercentBeforeThreshold / 100)
+                })}
+              </span>
+              <span className='block text-xs text-emerald-600 mt-0.5 leading-tight'>
+                {t('customer.bookingDetail.cancel.tiers.from', {
+                  hours: hours.format(policy.refundThresholdMinutes / 60)
+                })}
+              </span>
+            </div>
+            <div className='rounded-xl bg-amber-50 border border-amber-200/70 p-2.5 text-amber-900'>
+              <span className='block font-bold text-sm text-amber-700'>
+                {t('customer.bookingDetail.cancel.tiers.refund', {
+                  percent: percent.format(policy.refundPercentAfterThreshold / 100)
+                })}
+              </span>
+              <span className='block text-xs text-amber-600 mt-0.5 leading-tight'>
+                {t('customer.bookingDetail.cancel.tiers.between', {
+                  from: hours.format(policy.lateCancelNoRefundMinutes / 60),
+                  to: hours.format(policy.refundThresholdMinutes / 60)
+                })}
+              </span>
+            </div>
+            {policy.lateCancelNoRefundMinutes > 0 ? (
+              <div className='rounded-xl bg-rose-50 border border-rose-200/70 p-2.5 text-rose-900'>
+                <span className='block font-bold text-sm text-rose-700'>
+                  {t('customer.bookingDetail.cancel.tiers.none')}
+                </span>
+                <span className='block text-xs text-rose-600 mt-0.5 leading-tight'>
+                  {t('customer.bookingDetail.cancel.tiers.under', {
+                    hours: hours.format(policy.lateCancelNoRefundMinutes / 60)
+                  })}
+                </span>
+              </div>
+            ) : null}
           </div>
-          <div className='rounded-xl bg-amber-50 border border-amber-200/70 p-2.5 text-amber-900'>
-            <span className='block font-bold text-sm text-amber-700'>Giữ phí 30%</span>
-            <span className='block text-xs text-amber-600 mt-0.5 leading-tight'>Từ 2h đến &lt; 24h</span>
-          </div>
-          <div className='rounded-xl bg-rose-50 border border-rose-200/70 p-2.5 text-rose-900'>
-            <span className='block font-bold text-sm text-rose-700'>Không hoàn (0%)</span>
-            <span className='block text-xs text-rose-600 mt-0.5 leading-tight'>Sát giờ &lt; 2h</span>
-          </div>
-        </div>
+        ) : null}
 
         <div className={showFullPolicy ? 'mt-3.5 pt-3.5 border-t border-outline-variant/40' : 'hidden'}>
           <RefundPolicySummary centerId={booking.centerId} />
@@ -250,7 +290,7 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
                 className='text-xs font-semibold text-emerald-700 hover:underline inline-flex items-center gap-1'
               >
                 <Icon className='text-sm' name='refresh' />
-                Tính lại
+                {t('customer.bookingDetail.cancel.recalculate')}
               </button>
             </div>
           </div>
@@ -258,7 +298,7 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
           {/* Breakdown Items List */}
           <div>
             <span className='block mb-2 text-xs font-semibold text-on-surface-variant uppercase tracking-wider'>
-              Chi tiết hoàn tiền từng buổi ({preview.data.items.length}):
+              {t('customer.bookingDetail.cancel.breakdown', { count: preview.data.items.length })}
             </span>
             <ul className='flex max-h-60 flex-col gap-2 overflow-y-auto pr-1 text-xs'>
               {preview.data.items.map((item) => (
@@ -295,11 +335,10 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
         <div className='flex flex-col gap-2.5 rounded-xl border border-dashed border-outline-variant p-4 bg-surface-container-low/20'>
           <div className='flex items-center gap-2 font-semibold text-on-surface text-sm'>
             <Icon className='text-lg text-primary' name='calculate' />
-            Xem trước số tiền hoàn chính xác
+            {t('customer.bookingDetail.cancel.previewTitle')}
           </div>
           <p className='text-xs text-on-surface-variant leading-relaxed'>
-            Hệ thống sẽ tính toán chi tiết số tiền hoàn nhận về và các khoản phí phạt (nếu có) theo từng buổi bạn muốn
-            hủy.
+            {t('customer.bookingDetail.cancel.previewHint')}
           </p>
           <button
             className='mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all'
@@ -312,7 +351,7 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
           </button>
           {scope === 'selected' && chosen.length === 0 && (
             <span className='text-xs text-amber-600 italic text-center'>
-              * Vui lòng chọn ít nhất một buổi bên trái để tính tiền hoàn
+              {t('customer.bookingDetail.cancel.pickFirst')}
             </span>
           )}
         </div>
@@ -323,9 +362,11 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
   let missingRequirement: string | undefined
   if (paid) {
     if (scope === 'selected' && chosen.length === 0) {
-      missingRequirement = 'Chọn ít nhất 1 buổi chăm sóc cần hủy'
+      missingRequirement = t('customer.bookingDetail.cancel.needVisits')
     } else if (!preview.data) {
-      missingRequirement = 'Nhấn "Tính tiền hoàn dự kiến" để kiểm tra số tiền hoàn'
+      missingRequirement = t('customer.bookingDetail.cancel.needPreview', {
+        action: t('customer.bookingDetail.cancel.preview')
+      })
     }
   }
 

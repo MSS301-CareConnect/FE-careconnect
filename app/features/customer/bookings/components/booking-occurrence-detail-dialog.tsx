@@ -1,8 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { bookingKeys, submitReplacementConsent } from '~/entities/booking/booking-api'
-import { formatClock, formatDateTime, formatDate, formatMoney } from '~/entities/booking/booking-format'
+import {
+  bookingErrorKey,
+  formatClock,
+  formatDate,
+  formatDateTime,
+  formatMoney
+} from '~/entities/booking/booking-format'
 import { OccurrenceStatusBadge } from '~/entities/booking/booking-status-badge'
 import { calcOccurrenceDurationMinutes } from '~/entities/booking/booking-occurrence-list'
 import type {
@@ -27,7 +34,6 @@ export interface BookingOccurrenceDetailDialogProps {
   caregiverProfile?: ProviderCaregiverPublicRecord
   onClose: () => void
   onReschedule?: (occurrence: BookingOccurrenceRecord) => void
-  onCancelOccurrence?: (occurrence: BookingOccurrenceRecord) => void
 }
 
 export function BookingOccurrenceDetailDialog({
@@ -37,8 +43,7 @@ export function BookingOccurrenceDetailDialog({
   caregiverName,
   caregiverProfile,
   onClose,
-  onReschedule,
-  onCancelOccurrence
+  onReschedule
 }: BookingOccurrenceDetailDialogProps) {
   const { t, i18n } = useTranslation()
   const format = useFormat()
@@ -46,8 +51,7 @@ export function BookingOccurrenceDetailDialog({
   const queryClient = useQueryClient()
 
   const consentMutation = useMutation({
-    mutationFn: (action: 'ACCEPT' | 'REJECT_AND_CANCEL') =>
-      submitReplacementConsent(occurrence?.id ?? '', { action }),
+    mutationFn: (action: 'ACCEPT' | 'REJECT_AND_CANCEL') => submitReplacementConsent(occurrence?.id ?? '', { action }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(booking.id) })
       void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
@@ -59,7 +63,10 @@ export function BookingOccurrenceDetailDialog({
 
   const durationMinutes = calcOccurrenceDurationMinutes(occurrence)
   const isAssigned = Boolean(occurrence.caregiverId || booking.caregiverId)
-  const displayName = caregiverName || caregiverProfile?.fullName || (isAssigned ? t('booking.occurrences.assigned') : t('booking.occurrences.unassigned'))
+  const displayName =
+    caregiverName ||
+    caregiverProfile?.fullName ||
+    (isAssigned ? t('booking.occurrences.assigned') : t('booking.occurrences.unassigned'))
   const note = occurrence.note || booking.customerNote
   const isUpcoming = occurrence.status === 'SCHEDULED' || occurrence.status === 'ACKNOWLEDGED'
 
@@ -85,7 +92,8 @@ export function BookingOccurrenceDetailDialog({
             <OccurrenceStatusBadge status={occurrence.status} />
             <span className='inline-flex items-center gap-1.5 rounded-lg bg-surface-container-high px-3 py-1 text-xs font-semibold text-on-surface'>
               <Icon className='text-sm text-primary' name='calendar_month' />
-              {formatDate(occurrence.startAt, language)} · {formatClock(occurrence.startAt, language)} – {formatClock(occurrence.endAt, language)}
+              {formatDate(occurrence.startAt, language)} · {formatClock(occurrence.startAt, language)} –{' '}
+              {formatClock(occurrence.endAt, language)}
             </span>
             {durationMinutes ? (
               <span className='inline-flex items-center gap-1 rounded-lg bg-surface-container-high px-2.5 py-1 text-xs font-semibold text-on-surface-variant'>
@@ -96,7 +104,7 @@ export function BookingOccurrenceDetailDialog({
             {occurrence.rescheduleCount && occurrence.rescheduleCount > 0 ? (
               <span className='inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800'>
                 <Icon className='text-xs' name='update' />
-                Đã dời ({occurrence.rescheduleCount} lần)
+                {t(`${key}.rescheduled`, { count: occurrence.rescheduleCount })}
               </span>
             ) : null}
           </div>
@@ -110,6 +118,20 @@ export function BookingOccurrenceDetailDialog({
           ) : null}
         </div>
 
+        {/* 2026-11-10: the caregiver never came — say where the money went. */}
+        {occurrence.status === 'CAREGIVER_MISSED' ? (
+          <div className='rounded-xl border border-error/25 bg-error-container p-3.5 text-sm text-on-error-container'>
+            <div className='flex items-center gap-2 font-semibold'>
+              <Icon className='text-base' name='person_off' />
+              <span>{t('caregiverAbsence.customer.missedTitle')}</span>
+            </div>
+            <p className='mt-1 text-xs leading-relaxed'>{t('caregiverAbsence.customer.missedBody')}</p>
+            <Link className='mt-2 inline-block text-xs font-semibold underline' to='/customer/wallet'>
+              {t('caregiverAbsence.customer.openWallet')}
+            </Link>
+          </div>
+        ) : null}
+
         {/* Cancellation warning if cancelled */}
         {occurrence.cancelReason ? (
           <div className='rounded-xl border border-error/25 bg-error-container p-3.5 text-sm text-on-error-container'>
@@ -117,18 +139,14 @@ export function BookingOccurrenceDetailDialog({
               <Icon className='text-base' name='cancel' />
               <span>{t(`${key}.cancellation`)}</span>
             </div>
-            <p className='mt-1 text-xs'>
-              {t(`${key}.cancelReason`, { reason: occurrence.cancelReason })}
-            </p>
+            <p className='mt-1 text-xs'>{t(`${key}.cancelReason`, { reason: occurrence.cancelReason })}</p>
             {occurrence.cancelledAt ? (
               <p className='mt-0.5 text-xs'>
                 {t(`${key}.cancelledAt`, { time: formatDateTime(occurrence.cancelledAt, language) })}
               </p>
             ) : null}
             {occurrence.cancelledByParty ? (
-              <p className='mt-0.5 text-xs'>
-                {t(`${key}.cancelledBy`, { party: occurrence.cancelledByParty })}
-              </p>
+              <p className='mt-0.5 text-xs'>{t(`${key}.cancelledBy`, { party: occurrence.cancelledByParty })}</p>
             ) : null}
           </div>
         ) : null}
@@ -138,11 +156,11 @@ export function BookingOccurrenceDetailDialog({
           <div className='rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950'>
             <div className='flex items-center gap-2 font-bold text-amber-900'>
               <Icon className='text-lg text-amber-700' name='emergency' />
-              <span>Trung tâm bố trí chuyên viên thay thế khẩn cấp</span>
+              <span>{t(`${key}.emergency.title`)}</span>
             </div>
             {occurrence.replacementReason ? (
               <p className='mt-1 text-xs text-amber-800 leading-relaxed'>
-                Lý do từ trung tâm: <span className='font-semibold'>{occurrence.replacementReason}</span>
+                {t(`${key}.emergency.reason`, { reason: occurrence.replacementReason })}
               </p>
             ) : null}
             {occurrence.replacementConsentStatus === 'PENDING_CUSTOMER' ? (
@@ -154,7 +172,7 @@ export function BookingOccurrenceDetailDialog({
                   className='inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 disabled:opacity-50'
                 >
                   <Icon className='text-xs' name='check' />
-                  Đồng ý nhân sự mới
+                  {t(`${key}.emergency.accept`)}
                 </button>
                 {onReschedule ? (
                   <button
@@ -167,7 +185,7 @@ export function BookingOccurrenceDetailDialog({
                     className='inline-flex items-center gap-1.5 rounded-lg bg-white border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-xs hover:bg-amber-100/50 disabled:opacity-50'
                   >
                     <Icon className='text-xs' name='calendar_month' />
-                    Dời sang giờ khác
+                    {t(`${key}.emergency.reschedule`)}
                   </button>
                 ) : null}
                 <button
@@ -177,12 +195,17 @@ export function BookingOccurrenceDetailDialog({
                   className='inline-flex items-center gap-1.5 rounded-lg bg-rose-50 border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-800 shadow-xs hover:bg-rose-100 disabled:opacity-50'
                 >
                   <Icon className='text-xs' name='cancel' />
-                  Từ chối & Hủy buổi (Hoàn 100%)
+                  {t(`${key}.emergency.reject`)}
                 </button>
+                {consentMutation.error ? (
+                  <p className='w-full text-xs font-medium text-error' role='alert'>
+                    {t(bookingErrorKey(consentMutation.error))}
+                  </p>
+                ) : null}
               </div>
             ) : (
               <div className='mt-2 text-xs font-medium text-amber-800'>
-                Trạng thái: {occurrence.replacementConsentStatus === 'ACCEPTED' ? 'Đã chấp nhận nhân sự mới' : occurrence.replacementConsentStatus}
+                {t(`${key}.emergency.status.${occurrence.replacementConsentStatus ?? 'NONE'}`)}
               </div>
             )}
           </div>
@@ -195,9 +218,7 @@ export function BookingOccurrenceDetailDialog({
               <Icon className='text-base' name='person_alert' />
               <span>{t('booking.occurrences.needsReassignment')}</span>
             </div>
-            <p className='mt-1 text-xs text-on-surface-variant'>
-              {t(`${key}.needsReassignment`)}
-            </p>
+            <p className='mt-1 text-xs text-on-surface-variant'>{t(`${key}.needsReassignment`)}</p>
           </div>
         ) : null}
 
@@ -220,9 +241,7 @@ export function BookingOccurrenceDetailDialog({
                     {service?.serviceName ?? t(`${key}.defaultService`)}
                   </p>
                   {service?.planName ? (
-                    <p className='mt-0.5 text-xs text-on-surface-variant font-medium'>
-                      {service.planName}
-                    </p>
+                    <p className='mt-0.5 text-xs text-on-surface-variant font-medium'>{service.planName}</p>
                   ) : null}
                   {service?.unitPrice ? (
                     <p className='mt-1 text-xs text-on-surface-variant tabular-nums font-semibold'>
@@ -247,7 +266,9 @@ export function BookingOccurrenceDetailDialog({
                     <span className='block font-semibold text-on-surface-variant'>{t(`${key}.patient`)}</span>
                     <span className='font-bold text-on-surface text-sm'>
                       {booking.recipientSnapshot?.fullName ?? '—'}
-                      {booking.recipientSnapshot?.age ? ` (${booking.recipientSnapshot.age} tuổi)` : ''}
+                      {booking.recipientSnapshot?.age
+                        ? ` ${t(`${key}.age`, { count: booking.recipientSnapshot.age })}`
+                        : ''}
                     </span>
                   </div>
                 </li>
@@ -299,7 +320,7 @@ export function BookingOccurrenceDetailDialog({
                     <p className='flex items-center gap-1 text-xs text-on-surface-variant tabular-nums mt-0.5 font-medium'>
                       <Icon className='text-xs text-amber-500' filled name='star' />
                       <span className='font-bold text-on-surface'>{caregiverProfile.ratingAverage?.toFixed(1)}</span>
-                      <span>({caregiverProfile.ratingCount} đánh giá)</span>
+                      <span>{t(`${key}.reviews`, { count: caregiverProfile.ratingCount })}</span>
                     </p>
                   ) : null}
                   {!isAssigned ? (
@@ -313,18 +334,18 @@ export function BookingOccurrenceDetailDialog({
             <section className='rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-2xs'>
               <h3 className='text-xs font-bold uppercase tracking-wider text-on-surface-variant flex items-center gap-1.5'>
                 <Icon className='text-sm text-primary' name='schedule' />
-                Thời gian thực hiện
+                {t(`${key}.schedule`)}
               </h3>
               <div className='mt-3 space-y-2.5 text-xs'>
                 <div className='flex items-center justify-between rounded-lg bg-surface-container-low/60 px-3 py-2'>
-                  <span className='text-on-surface-variant font-medium'>Kế hoạch:</span>
+                  <span className='text-on-surface-variant font-medium'>{t(`${key}.plannedTime`)}</span>
                   <span className='font-bold text-on-surface tabular-nums'>
                     {formatClock(occurrence.startAt, language)} – {formatClock(occurrence.endAt, language)}
                   </span>
                 </div>
-                {(occurrence.actualStartAt || occurrence.actualEndAt) ? (
+                {occurrence.actualStartAt || occurrence.actualEndAt ? (
                   <div className='flex items-center justify-between rounded-lg bg-secondary/10 px-3 py-2 text-secondary'>
-                    <span className='font-medium'>Thực tế:</span>
+                    <span className='font-medium'>{t(`${key}.actualTime`)}</span>
                     <span className='font-bold tabular-nums'>
                       {occurrence.actualStartAt ? formatClock(occurrence.actualStartAt, language) : '—'}
                       {' – '}
@@ -344,7 +365,7 @@ export function BookingOccurrenceDetailDialog({
                       className='inline-flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-xs font-semibold text-on-surface hover:bg-surface-container-low transition-colors'
                     >
                       <Icon className='text-sm text-primary' name='edit_calendar' />
-                      Dời lịch buổi này sang giờ khác
+                      {t(`${key}.rescheduleAction`)}
                     </button>
                   ) : null}
                 </div>

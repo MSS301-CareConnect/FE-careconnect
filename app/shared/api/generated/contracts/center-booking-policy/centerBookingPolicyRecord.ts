@@ -24,6 +24,8 @@ export interface CenterBookingPolicyRecord {
   refundThresholdMinutes: number
   refundPercentBeforeThreshold: number
   refundPercentAfterThreshold: number
+  /** A customer cancelling less than this many minutes before a visit gets no refund */
+  lateCancelNoRefundMinutes: number
   overduePaymentForfeitPercent: number
   version?: number
   updatedAt?: string

@@ -53,7 +53,11 @@ export const bookingSharedVi = {
     retry: 'Thử lại'
   },
   dialog: {
-    minLength: 'Tối thiểu {{count}} ký tự.'
+    minLength: 'Tối thiểu {{count}} ký tự.',
+    placeholder: 'Nhập lý do cụ thể…',
+    reasonNeeded: 'Nhập lý do cụ thể',
+    reasonNeededMin: 'Nhập lý do (tối thiểu {{count}} ký tự)',
+    blockedTitle: 'Cần hoàn thành trước khi tiếp tục:'
   },
   address: {
     action: 'Đổi địa chỉ chăm sóc',
@@ -226,6 +230,7 @@ export const bookingSharedVi = {
       refundThresholdMinutes: 'Mốc hủy sớm',
       refundPercentBeforeThreshold: 'Hoàn khi hủy từ mốc trở lên',
       refundPercentAfterThreshold: 'Hoàn khi hủy dưới mốc',
+      lateCancelNoRefundMinutes: 'Hủy sát giờ, không hoàn',
       checkInEarlyMinutes: 'Check-in sớm tối đa',
       checkInLateMinutes: 'Check-in trễ tối đa'
     },
@@ -248,6 +253,7 @@ export const bookingSharedVi = {
       wholeMinutes: 'Thời lượng phải tròn phút.',
       advanceBeforeRemaining: 'Phải lớn hơn thời gian “Trả nốt trước buổi đầu”, nếu không khách không kịp thanh toán.',
       afterAboveBefore: 'Không được hoàn nhiều hơn mức hủy sớm.',
+      lateAboveThreshold: 'Không được dài hơn mốc hủy sớm (tối đa 24 giờ).',
       reminders: 'Mỗi mốc là số giờ lớn hơn 0 và không quá 720.',
       remindersDuplicate: 'Các mốc nhắc không được trùng nhau.',
       remindersTooMany: 'Tối đa 5 mốc nhắc.'
@@ -323,6 +329,8 @@ export const bookingSharedVi = {
     e5246: 'Khi chọn nhiều dịch vụ, mỗi buổi phải gắn đúng một dịch vụ.',
     e5247: 'Khung giờ phải nằm trong ca làm việc của người chăm sóc.',
     e5248: 'Người chăm sóc cần cách ít nhất 60 phút giữa hai booking khác nhau.',
+    e5250: 'Chỉ dời được buổi còn ít nhất 24 giờ nữa mới bắt đầu.',
+    e5251: 'Buổi này đã hết số lần dời lịch.',
     e5226: 'Người chăm sóc không có ca làm việc (hoặc đang nghỉ) vào thời gian đã chọn.',
     e5228: 'Bạn đang có quá nhiều lịch đặt chờ duyệt, vui lòng chờ trung tâm duyệt hoặc hủy bớt.',
     e5300: 'Chưa tải được bảng giá, vui lòng thử lại sau ít phút.',
@@ -407,7 +415,11 @@ export const bookingSharedEn = {
     retry: 'Try again'
   },
   dialog: {
-    minLength: 'At least {{count}} characters.'
+    minLength: 'At least {{count}} characters.',
+    placeholder: 'Enter a specific reason…',
+    reasonNeeded: 'Enter a specific reason',
+    reasonNeededMin: 'Enter a reason (at least {{count}} characters)',
+    blockedTitle: 'Still needed before you continue:'
   },
   address: {
     action: 'Change care address',
@@ -426,7 +438,7 @@ export const bookingSharedEn = {
     sourceTitle: 'New address',
     sourceHint: 'Pick a saved address or enter another one.',
     sourceRequired: 'Choose the new address for the selected visits.',
-    centerOutOfArea: 'The new address is outside the center\'s operating area (Center: {{province}}).',
+    centerOutOfArea: "The new address is outside the center's operating area (Center: {{province}}).",
     sourceCurrent: 'Current address',
     sourceCurrentBadge: 'In use',
     noCurrent: 'The booking has no address.',
@@ -584,6 +596,7 @@ export const bookingSharedEn = {
       refundThresholdMinutes: 'Early-cancellation cut-off',
       refundPercentBeforeThreshold: 'Refund at or before the cut-off',
       refundPercentAfterThreshold: 'Refund after the cut-off',
+      lateCancelNoRefundMinutes: 'Last-minute cancellation, no refund',
       checkInEarlyMinutes: 'Earliest check-in',
       checkInLateMinutes: 'Latest check-in'
     },
@@ -608,6 +621,7 @@ export const bookingSharedEn = {
       advanceBeforeRemaining:
         'Must be longer than “Rest due before the first visit”, or the customer cannot pay in time.',
       afterAboveBefore: 'Cannot refund more than for an early cancellation.',
+      lateAboveThreshold: 'Cannot be longer than the early-cancellation cut-off (at most 24 hours).',
       reminders: 'Each reminder is a number of hours above 0 and at most 720.',
       remindersDuplicate: 'Reminders must differ.',
       remindersTooMany: 'At most 5 reminders.'
@@ -684,6 +698,8 @@ export const bookingSharedEn = {
     e5246: 'With several services, every visit must name exactly one service.',
     e5247: 'Every time slot must fall within the caregiver’s shift.',
     e5248: 'The caregiver needs at least 60 minutes between two different bookings.',
+    e5250: 'A visit can only be moved at least 24 hours before it starts.',
+    e5251: 'This visit has no reschedules left.',
     e5226: 'The caregiver has no approved work shift (or is on leave) at that time.',
     e5228: 'You have too many bookings awaiting review. Wait for the center or cancel one.',
     e5300: 'Prices could not be loaded. Please try again in a few minutes.',

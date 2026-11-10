@@ -32,6 +32,7 @@ const defaults: CenterBookingPolicyRecord = {
   refundThresholdMinutes: 1440,
   refundPercentBeforeThreshold: 100,
   refundPercentAfterThreshold: 70,
+  lateCancelNoRefundMinutes: 120,
   overduePaymentForfeitPercent: 100
 }
 
@@ -63,12 +64,14 @@ describe('CenterBookingPolicyForm', () => {
     expect(field('SHIFT')).toHaveValue('2')
     expect(field('RECURRING')).toHaveValue('48')
     expect(field('Nhắc trả nốt (giờ trước hạn)')).toHaveValue('72, 48')
+    expect(field('Hủy sát giờ, không hoàn')).toHaveValue('2')
     // The defaults are already tight for RECURRING / CUSTOM (48h − 24h < 3 × 24h): warned, not blocked.
     expect(screen.getByRole('status')).toHaveTextContent('RECURRING')
 
     fireEvent.change(field('SHIFT'), { target: { value: '1,5' } })
     fireEvent.change(field('Tỷ lệ cọc (RECURRING / CUSTOM)'), { target: { value: '40' } })
     fireEvent.change(field('Nhắc trả nốt (giờ trước hạn)'), { target: { value: '48 72' } })
+    fireEvent.change(field('Hủy sát giờ, không hoàn'), { target: { value: '0,5' } })
     fireEvent.click(screen.getByRole('button', { name: 'Lưu chính sách' }))
 
     await waitFor(() =>
@@ -87,6 +90,7 @@ describe('CenterBookingPolicyForm', () => {
         refundThresholdMinutes: 1440,
         refundPercentBeforeThreshold: 100,
         refundPercentAfterThreshold: 70,
+        lateCancelNoRefundMinutes: 30,
         overduePaymentForfeitPercent: 100,
         version: undefined
       })
@@ -114,6 +118,11 @@ describe('CenterBookingPolicyForm', () => {
     fireEvent.change(field('Hoàn khi hủy từ mốc trở lên'), { target: { value: '90' } })
     fireEvent.click(screen.getByRole('button', { name: 'Lưu chính sách' }))
     expect(await screen.findByText('Không được hoàn nhiều hơn mức hủy sớm.')).toBeInTheDocument()
+
+    // The no-refund window cannot outlast the refund cut-off (BookingService 400 5413).
+    fireEvent.change(field('Mốc hủy sớm'), { target: { value: '1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Lưu chính sách' }))
+    expect(await screen.findByText(/Không được dài hơn mốc hủy sớm/)).toBeInTheDocument()
   })
 
   it('sends the version of an own policy and reports a concurrent change at the end of the form', async () => {

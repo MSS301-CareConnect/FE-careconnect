@@ -222,6 +222,13 @@ export function StepReview({ form }: { form: BookingForm }) {
                 })}
               </li>
               <li>{t('customer.booking.review.policy.after', { percent: policy.refundPercentAfterThreshold })}</li>
+              {policy.lateCancelNoRefundMinutes > 0 ? (
+                <li>
+                  {t('customer.booking.review.policy.late', {
+                    duration: format.duration(policy.lateCancelNoRefundMinutes)
+                  })}
+                </li>
+              ) : null}
               <li>{t('customer.booking.review.policy.overdue', { percent: policy.overduePaymentForfeitPercent })}</li>
             </>
           ) : null}

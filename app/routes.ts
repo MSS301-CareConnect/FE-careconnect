@@ -32,6 +32,7 @@ export default [
       route('bookings/:id', 'routes/admin/booking-detail.tsx'),
       route('caregivers', 'routes/admin/caregivers.tsx'),
       route('certificates', 'routes/admin/certificates.tsx'),
+      route('caregiver-absences', 'routes/admin/caregiver-absences.tsx'),
       route('notifications', 'routes/admin/notifications.tsx')
     ])
   ]),

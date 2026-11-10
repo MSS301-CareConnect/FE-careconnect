@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
@@ -8,8 +8,9 @@ import {
   rescheduleBookingOccurrence,
   type OccurrenceRescheduleResponseRecord
 } from '~/entities/booking/booking-api'
-import { formatClock, formatDate } from '~/entities/booking/booking-format'
+import { bookingErrorKey, formatClock, formatDate } from '~/entities/booking/booking-format'
 import type { BookingDetailRecord, BookingOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { useClock } from '~/shared/lib/use-clock'
 import { Button } from '~/shared/ui/button'
 import { DatePicker } from '~/shared/ui/date-picker'
 import { Icon } from '~/shared/ui/icon'
@@ -35,12 +36,11 @@ function toLocalTimeStr(date: Date) {
   return `${h}:${m}`
 }
 
-export function OccurrenceRescheduleDialog({
-  occurrence,
-  booking,
-  onClose
-}: OccurrenceRescheduleDialogProps) {
-  const { i18n } = useTranslation()
+const key = 'customer.bookingDetail.reschedule' as const
+const DAY_MS = 24 * 3600 * 1000
+
+export function OccurrenceRescheduleDialog({ occurrence, booking, onClose }: OccurrenceRescheduleDialogProps) {
+  const { t, i18n } = useTranslation()
   const language = i18n.language
   const queryClient = useQueryClient()
 
@@ -49,17 +49,14 @@ export function OccurrenceRescheduleDialog({
     return new Date(occurrence.endAt).getTime() - new Date(occurrence.startAt).getTime()
   }, [occurrence.startAt, occurrence.endAt])
 
-  const minDate = useMemo(() => {
-    const earliest = new Date(Date.now() + 24 * 3600 * 1000)
-    return toLocalDateStr(earliest)
-  }, [])
+  // BookingService moves a visit only 24 hours ahead (409 5250).
+  const now = useClock()
+  const minDate = toLocalDateStr(new Date(now + DAY_MS))
 
-  // Default to tomorrow or current start date
+  // The visit's own day, or the first day it may move to.
   const [dateStr, setDateStr] = useState(() => {
-    const d = new Date(occurrence.startAt)
-    const occDate = toLocalDateStr(d)
-    const minD = toLocalDateStr(new Date(Date.now() + 24 * 3600 * 1000))
-    return occDate < minD ? minD : occDate
+    const occDate = toLocalDateStr(new Date(occurrence.startAt))
+    return occDate < minDate ? minDate : occDate
   })
 
   const [timeStr, setTimeStr] = useState(() => {
@@ -68,7 +65,6 @@ export function OccurrenceRescheduleDialog({
   })
 
   const [reason, setReason] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [previewResult, setPreviewResult] = useState<OccurrenceRescheduleResponseRecord | null>(null)
 
   // Computed ISO timestamps for new slot
@@ -89,22 +85,16 @@ export function OccurrenceRescheduleDialog({
 
   const previewMutation = useMutation({
     mutationFn: () => {
-      if (!newSlot) throw new Error('Vui lòng chọn ngày và giờ hợp lệ')
+      if (!newSlot) throw new Error('invalid slot')
       return previewRescheduleOccurrence(occurrence.id, newSlot)
     },
-    onSuccess: (data) => {
-      setPreviewResult(data)
-      setErrorMessage(null)
-    },
-    onError: (err: any) => {
-      setErrorMessage(err?.info?.message || 'Khung giờ này không hợp lệ hoặc quá sát giờ.')
-      setPreviewResult(null)
-    }
+    onSuccess: (data) => setPreviewResult(data),
+    onError: () => setPreviewResult(null)
   })
 
   const rescheduleMutation = useMutation({
     mutationFn: () => {
-      if (!newSlot) throw new Error('Vui lòng chọn ngày và giờ hợp lệ')
+      if (!newSlot) throw new Error('invalid slot')
       return rescheduleBookingOccurrence(occurrence.id, {
         ...newSlot,
         reason: reason.trim() || undefined
@@ -114,17 +104,16 @@ export function OccurrenceRescheduleDialog({
       void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(booking.id) })
       void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
       onClose()
-    },
-    onError: (err: any) => {
-      setErrorMessage(err?.info?.message || 'Có lỗi xảy ra khi dời lịch ca trực.')
     }
   })
+  const error = rescheduleMutation.error ?? previewMutation.error
 
   function handleSlotChange(newDate: string, newTime: string) {
     setDateStr(newDate)
     setTimeStr(newTime)
     setPreviewResult(null)
-    setErrorMessage(null)
+    previewMutation.reset()
+    rescheduleMutation.reset()
   }
 
   const limit = (booking.occurrences?.length ?? 0) >= 20 ? 4 : 2
@@ -135,12 +124,10 @@ export function OccurrenceRescheduleDialog({
       dismissOnBackdrop
       footer={
         <div className='flex items-center justify-between w-full'>
-          <span className='text-xs text-on-surface-variant'>
-            Hạn mức dời: Đã dời {currentCount}/{limit} lần miễn phí.
-          </span>
+          <span className='text-xs text-on-surface-variant'>{t(`${key}.quota`, { count: currentCount, limit })}</span>
           <div className='flex gap-2.5'>
             <Button onClick={onClose} type='button' variant='secondary'>
-              Quay lại
+              {t(`${key}.back`)}
             </Button>
             <Button
               disabled={!previewResult?.available || rescheduleMutation.isPending}
@@ -149,7 +136,7 @@ export function OccurrenceRescheduleDialog({
               type='button'
               variant='primary'
             >
-              Xác nhận dời lịch
+              {t(`${key}.confirm`)}
             </Button>
           </div>
         </div>
@@ -157,24 +144,26 @@ export function OccurrenceRescheduleDialog({
       onClose={onClose}
       open
       size='lg'
-      title={`Dời lịch buổi chăm sóc #${occurrence.occurrenceNo}`}
+      title={t(`${key}.title`, { number: occurrence.occurrenceNo })}
     >
       <div className='flex flex-col gap-4 text-sm'>
-        {errorMessage && (
+        {error && (
           <div className='rounded-xl border border-error/30 bg-error-container p-3.5 text-xs font-semibold text-on-error-container flex items-center gap-2'>
             <Icon className='text-base text-error shrink-0' name='error' />
-            <span>{errorMessage}</span>
+            <span>{t(bookingErrorKey(error))}</span>
           </div>
         )}
 
         {/* Current Schedule Summary */}
         <div className='rounded-xl border border-outline-variant/60 bg-surface-container-low/50 p-3.5'>
-          <span className='text-xs font-semibold text-on-surface-variant block mb-1'>Lịch hiện tại:</span>
+          <span className='text-xs font-semibold text-on-surface-variant block mb-1'>{t(`${key}.current`)}</span>
           <div className='flex items-center gap-2 font-bold text-on-surface text-sm'>
             <Icon className='text-base text-primary' name='calendar_month' />
             <span>{formatDate(occurrence.startAt, language)}</span>
             <span>·</span>
-            <span>{formatClock(occurrence.startAt, language)} – {formatClock(occurrence.endAt, language)}</span>
+            <span>
+              {formatClock(occurrence.startAt, language)} – {formatClock(occurrence.endAt, language)}
+            </span>
           </div>
         </div>
 
@@ -182,7 +171,7 @@ export function OccurrenceRescheduleDialog({
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3.5'>
           <div>
             <label className='block font-semibold text-xs text-on-surface mb-1.5' htmlFor='reschedule-date'>
-              Chọn ngày mới
+              {t(`${key}.date`)}
             </label>
             <DatePicker
               className='w-full'
@@ -195,7 +184,7 @@ export function OccurrenceRescheduleDialog({
 
           <div>
             <label className='block font-semibold text-xs text-on-surface mb-1.5' htmlFor='reschedule-time'>
-              Giờ bắt đầu
+              {t(`${key}.time`)}
             </label>
             <TimeSelect
               className='w-full'
@@ -212,13 +201,14 @@ export function OccurrenceRescheduleDialog({
           <div className='text-xs'>
             {newSlot ? (
               <div className='flex items-center gap-1.5 text-on-surface'>
-                <span className='text-on-surface-variant'>Khung giờ mới:</span>
+                <span className='text-on-surface-variant'>{t(`${key}.newSlot`)}</span>
                 <span className='font-bold text-primary'>
-                  {formatDate(newSlot.newStartAt, language)} · {formatClock(newSlot.newStartAt, language)} – {formatClock(newSlot.newEndAt, language)}
+                  {formatDate(newSlot.newStartAt, language)} · {formatClock(newSlot.newStartAt, language)} –{' '}
+                  {formatClock(newSlot.newEndAt, language)}
                 </span>
               </div>
             ) : (
-              <span className='text-on-surface-variant'>Vui lòng chọn ngày và giờ mới</span>
+              <span className='text-on-surface-variant'>{t(`${key}.pickSlot`)}</span>
             )}
           </div>
           <Button
@@ -229,7 +219,7 @@ export function OccurrenceRescheduleDialog({
             size='sm'
             variant='primary'
           >
-            Kiểm tra lịch rảnh
+            {t(`${key}.check`)}
           </Button>
         </div>
 
@@ -244,7 +234,7 @@ export function OccurrenceRescheduleDialog({
           >
             <div className='flex items-center gap-2 font-bold'>
               <Icon className='text-base' name={previewResult.available ? 'check_circle' : 'warning'} />
-              <span>{previewResult.available ? 'Khung giờ khả dụng!' : 'Chuyên viên bận lịch khác'}</span>
+              <span>{t(previewResult.available ? `${key}.available` : `${key}.busy`)}</span>
             </div>
             <p className='mt-1 text-[11px] leading-relaxed'>{previewResult.message}</p>
           </div>
@@ -253,14 +243,14 @@ export function OccurrenceRescheduleDialog({
         {/* Reason field */}
         <div>
           <label className='block font-semibold text-xs text-on-surface mb-1.5' htmlFor='rescheduleReason'>
-            Lý do dời lịch (tùy chọn)
+            {t(`${key}.reason`)}
           </label>
           <input
             className='w-full min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25'
             id='rescheduleReason'
             maxLength={200}
             onChange={(e) => setReason(e.target.value)}
-            placeholder='Ví dụ: Gia đình có việc bận đột xuất...'
+            placeholder={t(`${key}.reasonPlaceholder`)}
             type='text'
             value={reason}
           />

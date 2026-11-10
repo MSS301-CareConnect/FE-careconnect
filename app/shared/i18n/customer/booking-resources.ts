@@ -24,7 +24,7 @@ export const bookingEn = {
     missing: {
       recipient: 'Choose who needs care',
       center: 'Choose a care center',
-      centerOutOfArea: 'The chosen center is outside the recipient\'s area — choose another center',
+      centerOutOfArea: "The chosen center is outside the recipient's area — choose another center",
       services: 'Choose at least one service',
       plans: 'Choose a price plan for every service',
       caregiverUnavailable: 'The chosen caregiver does not provide all these services — pick another',
@@ -90,7 +90,8 @@ export const bookingEn = {
     title: 'Care center',
     description: 'Services, prices and caregivers depend on the center.',
     outOfArea: 'Outside service area ({{province}})',
-    selectedOutOfArea: 'This center is outside the service area for {{province}}. Please choose a center in the same area.',
+    selectedOutOfArea:
+      'This center is outside the service area for {{province}}. Please choose a center in the same area.',
     hiddenOutOfArea_one: '{{count}} center outside {{province}} is hidden.',
     hiddenOutOfArea_other: '{{count}} centers outside {{province}} are hidden.',
     noneInArea: 'No center serves {{province}} yet. Choose another care address or contact us.'
@@ -331,6 +332,7 @@ export const bookingEn = {
       title: 'Cancellation & refund policy',
       before: 'Cancel ≥ {{duration}} before a visit: refund {{percent}}% of what you paid for it.',
       after: 'Cancel later than that: refund {{percent}}%.',
+      late: 'Cancel less than {{duration}} before a visit: no refund.',
       overdue: 'If the remaining balance is not paid in time, {{percent}}% of the deposit is kept.',
       center: 'If no caregiver can be found for a paid visit, that visit is cancelled and fully refunded.',
       close: 'Got it'
@@ -456,7 +458,8 @@ export const bookingVi = {
     title: 'Trung tâm chăm sóc',
     description: 'Dịch vụ, giá và người chăm sóc tùy theo trung tâm.',
     outOfArea: 'Ngoài khu vực phục vụ ({{province}})',
-    selectedOutOfArea: 'Trung tâm này nằm ngoài khu vực phục vụ tại {{province}}. Vui lòng chọn trung tâm trong cùng khu vực.',
+    selectedOutOfArea:
+      'Trung tâm này nằm ngoài khu vực phục vụ tại {{province}}. Vui lòng chọn trung tâm trong cùng khu vực.',
     hiddenOutOfArea_one: 'Đã ẩn {{count}} trung tâm ngoài {{province}}.',
     hiddenOutOfArea_other: 'Đã ẩn {{count}} trung tâm ngoài {{province}}.',
     noneInArea: 'Chưa có trung tâm nào phục vụ tại {{province}}. Hãy chọn địa chỉ chăm sóc khác hoặc liên hệ hỗ trợ.'
@@ -697,6 +700,7 @@ export const bookingVi = {
       title: 'Chính sách hủy & hoàn tiền',
       before: 'Hủy trước buổi chăm sóc ≥ {{duration}}: hoàn {{percent}}% số đã trả cho buổi đó.',
       after: 'Hủy muộn hơn: hoàn {{percent}}%.',
+      late: 'Hủy khi còn dưới {{duration}} trước buổi: không hoàn tiền.',
       overdue: 'Nếu không trả phần còn lại đúng hạn, trung tâm giữ {{percent}}% tiền cọc.',
       center: 'Nếu không tìm được người chăm sóc cho một buổi đã thanh toán, buổi đó được hủy và hoàn tiền đầy đủ.',
       close: 'Đã hiểu'

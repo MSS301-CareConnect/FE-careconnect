@@ -55,7 +55,17 @@ import {
   createCaregiverWithdrawals,
   listCaregiverWithdrawals
 } from '~/shared/api/generated/api/caregiver-withdrawal/caregiver-withdrawal'
+import {
+  concludeCaregiverAbsence,
+  explainCaregiverAbsence,
+  getCaregiverAbsenceStatistics,
+  listCaregiverAbsences
+} from '~/shared/api/generated/api/caregiver-absence/caregiver-absence'
 import type {
+  CaregiverAbsenceConclusionRequest,
+  CaregiverAbsenceExplanationRequest,
+  GetCaregiverAbsenceStatisticsParams,
+  ListCaregiverAbsencesParams,
   CaregiverWithdrawalRequest,
   ListCaregiverWithdrawalsParams
 } from '~/shared/api/generated/contracts'
@@ -105,7 +115,12 @@ export const bookingKeys = {
   caregiverRequests: (page: number) => ['booking', 'caregiver-requests', page] as const,
   caregiverRequest: (id: string) => ['booking', 'caregiver-request', id] as const,
   statusCounts: (centerId?: string) => ['booking', 'status-counts', centerId ?? 'own'] as const,
-  withdrawals: (params: ListCaregiverWithdrawalsParams) => ['booking', 'withdrawals', params] as const
+  withdrawals: (params: ListCaregiverWithdrawalsParams) => ['booking', 'withdrawals', params] as const,
+  /** Prefix of every absence list and count: invalidate it after an explanation or a conclusion. */
+  allAbsences: ['booking', 'absences'] as const,
+  absences: (params: ListCaregiverAbsencesParams) => ['booking', 'absences', 'list', params] as const,
+  absenceStatistics: (params: GetCaregiverAbsenceStatisticsParams) =>
+    ['booking', 'absences', 'statistics', params] as const
 }
 
 export async function fetchBookings(params: ListBookingsParams = {}) {
@@ -214,6 +229,23 @@ export async function withdrawFromVisits(request: CaregiverWithdrawalRequest) {
   return result(await createCaregiverWithdrawals(request, await writeOptions()))
 }
 
+/**
+ * 2026-11-10: a visit nobody checked in to becomes CAREGIVER_MISSED (the customer is refunded in full) and opens an
+ * absence record. The caregiver explains, the center manager concludes; BookingService scopes the lists by role.
+ */
+export async function fetchCaregiverAbsences(params: ListCaregiverAbsencesParams = {}) {
+  return result(await listCaregiverAbsences(params, readOptions))
+}
+export async function fetchCaregiverAbsenceStatistics(params: GetCaregiverAbsenceStatisticsParams = {}) {
+  return result(await getCaregiverAbsenceStatistics(params, readOptions))
+}
+export async function explainAbsence(id: string, request: CaregiverAbsenceExplanationRequest) {
+  return result(await explainCaregiverAbsence(id, request, await writeOptions()))
+}
+export async function concludeAbsence(id: string, request: CaregiverAbsenceConclusionRequest) {
+  return result(await concludeCaregiverAbsence(id, request, await writeOptions()))
+}
+
 export async function fetchMyOccurrences(params: ListMyBookingOccurrencesParams = {}) {
   return result(await listMyBookingOccurrences(params, readOptions))
 }
@@ -278,6 +310,16 @@ export interface CaregiverChangeCreatePayload {
   preferredCaregiverId?: string
 }
 
+/** Rejects like the generated client: an Error carrying the HTTP status and the response envelope as `info`. */
+async function requestError(res: Response, fallback: string) {
+  const info: unknown = await res.json().catch(() => ({}))
+  const message =
+    typeof info === 'object' && info !== null && 'message' in info && typeof info.message === 'string'
+      ? info.message
+      : fallback
+  return Object.assign(new Error(message), { info, status: res.status })
+}
+
 export async function createCaregiverChangeRequest(bookingId: string, payload: CaregiverChangeCreatePayload) {
   const options = await writeOptions({ 'Content-Type': 'application/json' })
   const res = await fetch(`${env.API_BASE_URL}/v1/bookings/${bookingId}/caregiver-change-requests`, {
@@ -285,13 +327,7 @@ export async function createCaregiverChangeRequest(bookingId: string, payload: C
     method: 'POST',
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to create caregiver change request')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to create caregiver change request')
   const json = await res.json()
   return json.result as CaregiverChangeRequestRecord
 }
@@ -309,30 +345,21 @@ export async function cancelCaregiverChangeRequest(requestId: string) {
     ...options,
     method: 'DELETE'
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to cancel request')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to cancel request')
   return true
 }
 
-export async function approveCaregiverChangeRequest(requestId: string, payload: { newCaregiverId: string; note?: string }) {
+export async function approveCaregiverChangeRequest(
+  requestId: string,
+  payload: { newCaregiverId: string; note?: string }
+) {
   const options = await writeOptions({ 'Content-Type': 'application/json' })
   const res = await fetch(`${env.API_BASE_URL}/v1/caregiver-change-requests/${requestId}/approve`, {
     ...options,
     method: 'POST',
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to approve request')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to approve request')
   const json = await res.json()
   return json.result as CaregiverChangeRequestRecord
 }
@@ -344,13 +371,7 @@ export async function rejectCaregiverChangeRequest(requestId: string, reason: st
     method: 'POST',
     body: JSON.stringify({ reason })
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to reject request')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to reject request')
   const json = await res.json()
   return json.result as CaregiverChangeRequestRecord
 }
@@ -367,13 +388,7 @@ export async function emergencyReassignBooking(
     method: 'POST',
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to emergency reassign')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to emergency reassign')
   return true
 }
 
@@ -387,13 +402,7 @@ export async function submitReplacementConsent(
     method: 'POST',
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to submit replacement consent')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to submit replacement consent')
   return true
 }
 
@@ -421,13 +430,7 @@ export async function previewRescheduleOccurrence(
     method: 'POST',
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to preview reschedule')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to preview reschedule')
   const json = await res.json()
   return json.result as OccurrenceRescheduleResponseRecord
 }
@@ -442,13 +445,7 @@ export async function rescheduleBookingOccurrence(
     method: 'POST',
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    const err: any = new Error(errorBody?.message || 'Failed to reschedule occurrence')
-    err.info = errorBody
-    err.status = res.status
-    throw err
-  }
+  if (!res.ok) throw await requestError(res, 'Failed to reschedule occurrence')
   const json = await res.json()
   return json.result as OccurrenceRescheduleResponseRecord
 }
