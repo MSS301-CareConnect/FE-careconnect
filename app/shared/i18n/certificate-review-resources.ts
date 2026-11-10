@@ -93,9 +93,11 @@ export const certificateReviewVi = {
     aiQueued: 'Đã gửi chứng chỉ {{name}} cho AI kiểm tra lại.'
   },
   errors: {
+    e4205: 'Nhập lý do từ chối.',
+    e4250: 'Không tìm thấy chứng chỉ — có thể đã bị xóa. Hãy tải lại.',
     e4251: 'Chứng chỉ vừa được cập nhật. Hãy tải lại rồi thử lại.',
     e4253: 'Chứng chỉ không còn ở bước này. Hãy tải lại.',
-    e4254: 'Chứng chỉ đã hết hạn, không thể duyệt.',
+    e4254: 'Chứng chỉ đã hết hạn, không thể xác nhận hay duyệt.',
     e4255: 'Hãy để người chăm sóc tải ảnh chứng chỉ lên trước khi xác nhận.',
     e4256: 'Kết quả AI chưa ở mức thấp hoặc trung bình — nhập lý do để duyệt.',
     e4257: 'Chỉ chạy AI được với chứng chỉ trung tâm đã xác nhận.',
@@ -196,9 +198,11 @@ export const certificateReviewEn = {
     aiQueued: 'Certificate {{name}} was sent to the AI check again.'
   },
   errors: {
+    e4205: 'Enter a reason for rejecting.',
+    e4250: 'The certificate was not found — it may have been deleted. Reload.',
     e4251: 'The certificate was just updated. Reload and try again.',
     e4253: 'The certificate is no longer at this step. Reload.',
-    e4254: 'The certificate has expired and cannot be approved.',
+    e4254: 'The certificate has expired and cannot be confirmed or approved.',
     e4255: 'Ask the caregiver to upload a photo of the certificate before confirming it.',
     e4256: 'The AI result is not low or medium — enter a reason to approve.',
     e4257: 'The AI can only check a certificate the center has confirmed.',

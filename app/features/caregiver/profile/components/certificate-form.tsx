@@ -7,14 +7,19 @@ import { createCertificate, providerKeys, uploadMedia } from '~/entities/provide
 import { validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Button } from '~/shared/ui/button'
-import { DatePicker } from '~/shared/ui/date-picker'
 import { Icon } from '~/shared/ui/icon'
 import { LocalFilePreview } from '~/shared/ui/local-file-preview'
 import { Modal } from '~/shared/ui/modal'
 
-const inputClass =
-  'min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3.5 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 aria-invalid:border-error disabled:opacity-60'
-const labelClass = 'mb-1 block text-sm font-medium text-on-surface'
+import {
+  CertificateDetailsFields,
+  EMPTY_CERTIFICATE_DETAILS,
+  certificateLabelClass as labelClass,
+  certificateRequestOf,
+  checkCertificateDetails,
+  type CertificateDetails
+} from './certificate-details-fields'
+
 // Front and back plus a few pages; the AI check reads up to five images of one certificate.
 const MAX_CERTIFICATE_FILES = 5
 
@@ -37,11 +42,7 @@ export function CertificateForm({
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [name, setName] = useState('')
-  const [issuer, setIssuer] = useState('')
-  const [number, setNumber] = useState('')
-  const [issuedDate, setIssuedDate] = useState('')
-  const [expiryDate, setExpiryDate] = useState('')
+  const [details, setDetails] = useState<CertificateDetails>(EMPTY_CERTIFICATE_DETAILS)
   const [files, setFiles] = useState<File[]>([])
   const [fileError, setFileError] = useState<'type' | 'size' | 'count' | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
@@ -49,24 +50,11 @@ export function CertificateForm({
   const [submitted, setSubmitted] = useState(false)
   const [createdId, setCreatedId] = useState<string | null>(null)
 
-  const nameMissing = !name.trim()
-  const issuerMissing = !issuer.trim()
-  const datesWrong = Boolean(issuedDate && expiryDate && expiryDate <= issuedDate)
-  const valid = !nameMissing && !issuerMissing && !datesWrong && files.length > 0
+  const valid = checkCertificateDetails(details).valid && files.length > 0
 
   const save = useMutation({
     mutationFn: async () => {
-      const certificateId =
-        createdId ??
-        (
-          await createCertificate(caregiverId, {
-            certificateName: name.trim(),
-            issuedBy: issuer.trim(),
-            credentialNumber: number.trim() || undefined,
-            issuedDate: issuedDate || undefined,
-            expiryDate: expiryDate || undefined
-          })
-        ).id
+      const certificateId = createdId ?? (await createCertificate(caregiverId, certificateRequestOf(details))).id
       setCreatedId(certificateId)
       try {
         await uploadMedia('CERTIFICATE', certificateId, files)
@@ -244,84 +232,12 @@ export function CertificateForm({
         </div>
 
         <div className='flex flex-col gap-4'>
-          <div>
-            <label className={labelClass} htmlFor='certificate-name'>
-              {t('caregiver.me.certificates.form.name')}
-            </label>
-            <input
-              aria-describedby={show(nameMissing) ? 'certificate-name-error' : undefined}
-              aria-invalid={show(nameMissing)}
-              className={inputClass}
-              disabled={Boolean(createdId)}
-              id='certificate-name'
-              maxLength={255}
-              onChange={(event) => setName(event.target.value)}
-              value={name}
-            />
-            {show(nameMissing) ? (
-              <p className='mt-1 text-sm text-error' id='certificate-name-error'>
-                {t('caregiver.me.certificates.form.required')}
-              </p>
-            ) : null}
-          </div>
-          <div>
-            <label className={labelClass} htmlFor='certificate-issuer'>
-              {t('caregiver.me.certificates.form.issuer')}
-            </label>
-            <input
-              aria-describedby={show(issuerMissing) ? 'certificate-issuer-error' : undefined}
-              aria-invalid={show(issuerMissing)}
-              className={inputClass}
-              disabled={Boolean(createdId)}
-              id='certificate-issuer'
-              maxLength={255}
-              onChange={(event) => setIssuer(event.target.value)}
-              value={issuer}
-            />
-            {show(issuerMissing) ? (
-              <p className='mt-1 text-sm text-error' id='certificate-issuer-error'>
-                {t('caregiver.me.certificates.form.required')}
-              </p>
-            ) : null}
-          </div>
-          <div>
-            <label className={labelClass} htmlFor='certificate-number'>
-              {t('caregiver.me.certificates.form.number')}
-            </label>
-            <input
-              className={inputClass}
-              disabled={Boolean(createdId)}
-              id='certificate-number'
-              maxLength={100}
-              onChange={(event) => setNumber(event.target.value)}
-              value={number}
-            />
-          </div>
-          <div className='grid gap-3 sm:grid-cols-2'>
-            <div>
-              <label className={labelClass} htmlFor='certificate-issued'>
-                {t('caregiver.me.certificates.form.issuedDate')}
-              </label>
-              <DatePicker id='certificate-issued' onChange={setIssuedDate} value={issuedDate} />
-            </div>
-            <div>
-              <label className={labelClass} htmlFor='certificate-expiry'>
-                {t('caregiver.me.certificates.form.expiryDate')}
-              </label>
-              <DatePicker
-                aria-describedby={datesWrong ? 'certificate-dates-error' : undefined}
-                aria-invalid={datesWrong}
-                id='certificate-expiry'
-                onChange={setExpiryDate}
-                value={expiryDate}
-              />
-            </div>
-            {datesWrong ? (
-              <p className='text-sm text-error sm:col-span-2' id='certificate-dates-error'>
-                {t('caregiver.me.certificates.form.expiryBeforeIssue')}
-              </p>
-            ) : null}
-          </div>
+          <CertificateDetailsFields
+            disabled={Boolean(createdId)}
+            onChange={setDetails}
+            showErrors={submitted}
+            value={details}
+          />
 
           {save.isPending ? (
             <div aria-hidden='true' className='h-1 overflow-hidden rounded-full bg-surface-container-high'>

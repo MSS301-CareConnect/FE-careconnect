@@ -370,7 +370,9 @@ dd/mm/yyyy dates in Vietnam time and a warning when it overlaps assigned visits 
 Information / Certificates / Security tabs (`?tab=`): only the phone is editable (`PUT /users/me`) because
 `PUT /caregivers/{id}` is for managers; certificates are added with optional number and dates and up to five photos / PDFs (front and back) picked from a folder
 through the system file dialog ("Choose from a folder", "+" tile) or dragged in, show review and expiry
-states and can be deleted; security changes the password and names devices from their User-Agent. `/caregiver/security`
+states, are edited in a one-column dialog (`certificate-edit-form.tsx`, `PUT /certificates/{id}` with the version; a
+certificate past PENDING warns and asks again because saving sends it back to the center; photos stay in the files
+drawer) and can be deleted only while PENDING or REJECTED (ProviderService 409 `4253` otherwise); security changes the password and names devices from their User-Agent. `/caregiver/security`
 redirects there; `/account/security` stays the shared screen of the other roles. The Center Manager
 `/center-manager/schedules` page is the center's work calendar (see below). Pages compare dates
 against a "now" from `useNow` because `react-hooks/purity` forbids `Date.now()` during render.
@@ -971,8 +973,8 @@ Contract update workflow:
   and warnings (`certificateReview.*` copy, codes never shown), the center confirmation, "run AI again"
   (`POST /certificates/{id}/ai-check`) and approve / reject; approving without a LOW / MEDIUM AI result and every
   rejection need a reason (400 `4256`). Only admins receive the AI result; managers see where the AI check stands. A new
-  or removed certificate photo sends the certificate back to the center, so media changes also refresh certificate
-  queries.
+  or removed certificate photo, or an edit of its details, sends the certificate back to the center, so media changes
+  also refresh certificate queries; the caregiver deletes a certificate only while PENDING or REJECTED (2026-11-10).
 
 ### Testing and debugging
 

@@ -8,7 +8,7 @@ import { fetchCertificates, providerKeys, verifyCertificateByCenter } from '~/en
 import { formatProviderDate } from '~/entities/provider/provider-format'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import type { ProviderCertificateRecord } from '~/shared/api/generated/contracts'
-import { apiErrorCode, apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
+import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'centerManager.provider' as const
@@ -79,7 +79,8 @@ export function ManagerCertificates({ caregiverId }: { caregiverId: string }) {
       {confirm.isError ? (
         <p className='mt-5 text-sm text-error' role='alert'>
           {t(
-            apiErrorCode(confirm.error) === 4255
+            // Known ProviderService codes (4255 no photo, 4254 expired, 4251 version…) read precisely; others by status.
+            certificateReviewErrorKey(confirm.error) !== 'certificateReview.errors.generic'
               ? certificateReviewErrorKey(confirm.error)
               : apiErrorStatus(confirm.error) === 409
                 ? `${key}.certificateConfirmError`

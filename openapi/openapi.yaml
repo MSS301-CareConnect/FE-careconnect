@@ -1373,6 +1373,8 @@ paths:
           description: ProviderService error
         '404':
           description: ProviderService error
+        '409':
+          description: ProviderService error
         '500':
           description: ProviderService error
         '503':
@@ -1408,6 +1410,8 @@ paths:
         '403':
           description: ProviderService error
         '404':
+          description: ProviderService error
+        '409':
           description: ProviderService error
         '500':
           description: ProviderService error
@@ -1445,6 +1449,8 @@ paths:
         '403':
           description: ProviderService error
         '404':
+          description: ProviderService error
+        '409':
           description: ProviderService error
         '500':
           description: ProviderService error
@@ -9118,6 +9124,8 @@ paths:
         '403':
           description: ProviderService error
         '404':
+          description: ProviderService error
+        '409':
           description: ProviderService error
         '500':
           description: ProviderService error

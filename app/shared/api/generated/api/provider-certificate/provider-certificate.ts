@@ -395,6 +395,11 @@ export type updateProviderCertificateResponse404 = {
   status: 404
 }
 
+export type updateProviderCertificateResponse409 = {
+  data: void
+  status: 409
+}
+
 export type updateProviderCertificateResponse500 = {
   data: void
   status: 500
@@ -413,6 +418,7 @@ export type updateProviderCertificateResponseError = (
   | updateProviderCertificateResponse401
   | updateProviderCertificateResponse403
   | updateProviderCertificateResponse404
+  | updateProviderCertificateResponse409
   | updateProviderCertificateResponse500
   | updateProviderCertificateResponse503
 ) & {
@@ -535,6 +541,11 @@ export type archiveProviderCertificateResponse404 = {
   status: 404
 }
 
+export type archiveProviderCertificateResponse409 = {
+  data: void
+  status: 409
+}
+
 export type archiveProviderCertificateResponse500 = {
   data: void
   status: 500
@@ -553,6 +564,7 @@ export type archiveProviderCertificateResponseError = (
   | archiveProviderCertificateResponse401
   | archiveProviderCertificateResponse403
   | archiveProviderCertificateResponse404
+  | archiveProviderCertificateResponse409
   | archiveProviderCertificateResponse500
   | archiveProviderCertificateResponse503
 ) & {
@@ -687,6 +699,11 @@ export type verifyProviderCertificateResponse404 = {
   status: 404
 }
 
+export type verifyProviderCertificateResponse409 = {
+  data: void
+  status: 409
+}
+
 export type verifyProviderCertificateResponse500 = {
   data: void
   status: 500
@@ -705,6 +722,7 @@ export type verifyProviderCertificateResponseError = (
   | verifyProviderCertificateResponse401
   | verifyProviderCertificateResponse403
   | verifyProviderCertificateResponse404
+  | verifyProviderCertificateResponse409
   | verifyProviderCertificateResponse500
   | verifyProviderCertificateResponse503
 ) & {
@@ -1577,6 +1595,11 @@ export type verifyProviderCertificateByCenterResponse404 = {
   status: 404
 }
 
+export type verifyProviderCertificateByCenterResponse409 = {
+  data: void
+  status: 409
+}
+
 export type verifyProviderCertificateByCenterResponse500 = {
   data: void
   status: 500
@@ -1595,6 +1618,7 @@ export type verifyProviderCertificateByCenterResponseError = (
   | verifyProviderCertificateByCenterResponse401
   | verifyProviderCertificateByCenterResponse403
   | verifyProviderCertificateByCenterResponse404
+  | verifyProviderCertificateByCenterResponse409
   | verifyProviderCertificateByCenterResponse500
   | verifyProviderCertificateByCenterResponse503
 ) & {

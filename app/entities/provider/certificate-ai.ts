@@ -101,7 +101,7 @@ export function isDateField(field: CertificateField) {
   return field === 'ISSUED_DATE' || field === 'EXPIRY_DATE'
 }
 
-const REVIEW_ERROR_CODES = [4251, 4253, 4254, 4255, 4256, 4257] as const
+const REVIEW_ERROR_CODES = [4205, 4250, 4251, 4253, 4254, 4255, 4256, 4257] as const
 export type CertificateReviewErrorKey =
   `certificateReview.errors.e${(typeof REVIEW_ERROR_CODES)[number]}` | 'certificateReview.errors.generic'
 

@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 
 import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
 import { providerKeys, removeCertificate } from '~/entities/provider/provider-api'
-import { apiRequestErrorKey } from '~/shared/api/error-details'
+import { apiErrorCode, apiRequestErrorKey } from '~/shared/api/error-details'
 import type { ProviderCertificateRecord } from '~/shared/api/generated/contracts'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
@@ -15,6 +15,7 @@ import { StatusBadge, type StatusTone } from '~/shared/ui/status-badge'
 
 import { useCaregiverFormat } from '../../ui/caregiver-format'
 import { CaregiverEmpty, CaregiverError, cgCard } from '../../ui/caregiver-page'
+import { CertificateEditForm } from './certificate-edit-form'
 import { CertificateForm } from './certificate-form'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -41,7 +42,12 @@ export function certificateState(certificate: ProviderCertificateRecord, now: nu
   return certificate.verificationStatus
 }
 
-/** Certificates as a grid of cards with their review state, files in a drawer, add and delete. */
+/** ProviderService lets a caregiver delete only a certificate not yet confirmed or already rejected (2026-11-10). */
+function canDelete(certificate: ProviderCertificateRecord) {
+  return certificate.verificationStatus === 'PENDING' || certificate.verificationStatus === 'REJECTED'
+}
+
+/** Certificates as a grid of cards with their review state, files in a drawer, add, edit and delete. */
 export function CertificatesTab({
   caregiverId,
   certificates,
@@ -58,12 +64,19 @@ export function CertificatesTab({
   const [formKey, setFormKey] = useState(0)
   const [viewing, setViewing] = useState<ProviderCertificateRecord | null>(null)
   const [deleting, setDeleting] = useState<ProviderCertificateRecord | null>(null)
+  const [editing, setEditing] = useState<ProviderCertificateRecord | null>(null)
   const remove = useMutation({
     mutationFn: (certificate: ProviderCertificateRecord) => removeCertificate(certificate.id, certificate.version),
     onSuccess: async () => {
       toast.success(t('caregiver.me.certificates.deleted'))
       setDeleting(null)
       await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
+    },
+    // 4253: the center confirmed it meanwhile; refresh so the card shows its new state without the delete action.
+    onError: async (error) => {
+      if (apiErrorCode(error) === 4253) {
+        await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
+      }
     }
   })
 
@@ -155,18 +168,29 @@ export function CertificatesTab({
                     {t('caregiver.me.certificates.files')}
                   </Button>
                   <Button
-                    aria-label={`${t('caregiver.me.certificates.delete')} ${certificate.certificateName}`}
-                    className='text-error'
-                    leftIcon={<Icon className='text-lg' name='delete' />}
-                    onClick={() => {
-                      remove.reset()
-                      setDeleting(certificate)
-                    }}
+                    aria-label={`${t('caregiver.me.certificates.edit')} ${certificate.certificateName}`}
+                    leftIcon={<Icon className='text-lg' name='edit' />}
+                    onClick={() => setEditing(certificate)}
                     size='sm'
                     variant='ghost'
                   >
-                    {t('caregiver.me.certificates.delete')}
+                    {t('caregiver.me.certificates.edit')}
                   </Button>
+                  {canDelete(certificate) ? (
+                    <Button
+                      aria-label={`${t('caregiver.me.certificates.delete')} ${certificate.certificateName}`}
+                      className='text-error'
+                      leftIcon={<Icon className='text-lg' name='delete' />}
+                      onClick={() => {
+                        remove.reset()
+                        setDeleting(certificate)
+                      }}
+                      size='sm'
+                      variant='ghost'
+                    >
+                      {t('caregiver.me.certificates.delete')}
+                    </Button>
+                  ) : null}
                 </div>
               </li>
             )
@@ -195,8 +219,27 @@ export function CertificatesTab({
           size='lg'
           title={t('caregiver.me.certificates.filesTitle', { name: viewing.certificateName })}
         >
+          {viewing.verificationStatus !== 'PENDING' ? (
+            <p className='mb-4 flex items-start gap-2.5 rounded-xl border border-warning/30 bg-warning-container px-4 py-3 text-sm leading-5 text-on-warning-container'>
+              <Icon className='mt-0.5 shrink-0 text-lg' name='info' />
+              <span>{t('caregiver.me.certificates.filesResetNotice')}</span>
+            </p>
+          ) : null}
           <ProviderMediaPanel embedded ownerId={viewing.id} ownerType='CERTIFICATE' />
         </Modal>
+      ) : null}
+
+      {editing ? (
+        <CertificateEditForm
+          caregiverId={caregiverId}
+          certificate={editing}
+          key={editing.id}
+          onClose={() => setEditing(null)}
+          onManagePhotos={() => {
+            setEditing(null)
+            setViewing(editing)
+          }}
+        />
       ) : null}
 
       <ConfirmDialog
@@ -204,7 +247,15 @@ export function CertificatesTab({
         description={
           deleting ? t('caregiver.me.certificates.deleteDescription', { name: deleting.certificateName }) : undefined
         }
-        error={remove.isError ? t(apiRequestErrorKey(remove.error, 'caregiver.provider.actionError')) : undefined}
+        error={
+          remove.isError
+            ? t(
+                apiErrorCode(remove.error) === 4253
+                  ? 'caregiver.me.certificates.deleteBlocked'
+                  : apiRequestErrorKey(remove.error, 'caregiver.provider.actionError')
+              )
+            : undefined
+        }
         loading={remove.isPending}
         onClose={() => setDeleting(null)}
         onConfirm={() => {
