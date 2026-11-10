@@ -74,7 +74,13 @@ describe('Admin dashboard', () => {
       within(navigation)
         .getAllByRole('list')
         .map((list) => list.getAttribute('aria-labelledby'))
-    ).toEqual([null, 'admin-nav-operations', 'admin-nav-customerCare', 'admin-nav-system'])
+    ).toEqual([
+      null,
+      'admin-sidebar-operations',
+      'admin-sidebar-finance',
+      'admin-sidebar-customerCare',
+      'admin-sidebar-system'
+    ])
     const operations = screen.getByRole('list', { name: 'Vận hành' })
     expect(within(operations).getByRole('link', { name: /Lịch đặt/ })).toHaveAttribute('href', '/admin/bookings')
     expect(within(operations).queryByRole('button')).not.toBeInTheDocument()
@@ -83,6 +89,25 @@ describe('Admin dashboard', () => {
     expect(within(system).getByRole('link', { name: /Tài khoản/ })).toHaveAttribute('href', '/admin/accounts')
     expect(within(system).getByRole('link', { name: /Sự cố/ })).toHaveAttribute('href', '/admin/incidents')
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
+  })
+
+  it('opens and closes a parent section and remembers the choice', () => {
+    localStorage.removeItem('careconnect.admin.navOpenGroups')
+    const { unmount } = renderAdmin()
+    const operations = screen.getByRole('button', { name: 'Vận hành' })
+    expect(operations).toHaveAttribute('aria-expanded', 'true')
+
+    fireEvent.click(operations)
+    expect(operations).toHaveAttribute('aria-expanded', 'false')
+    expect(document.getElementById(operations.getAttribute('aria-controls') ?? '')).toHaveAttribute('inert')
+    expect(JSON.parse(localStorage.getItem('careconnect.admin.navOpenGroups') ?? '{}')).toEqual({ operations: false })
+
+    unmount()
+    renderAdmin()
+    expect(screen.getByRole('button', { name: 'Vận hành' })).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(screen.getByRole('button', { name: 'Vận hành' }))
+    expect(screen.getByRole('button', { name: 'Vận hành' })).toHaveAttribute('aria-expanded', 'true')
+    localStorage.removeItem('careconnect.admin.navOpenGroups')
   })
 
   it('opens the sidebar as a drawer and closes it on Escape or navigation', () => {

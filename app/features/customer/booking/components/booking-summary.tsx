@@ -34,7 +34,7 @@ function Total({ form, large = false }: { form: BookingForm; large?: boolean }) 
     )
   return (
     <span
-      className={`cc-flash rounded font-bold text-on-surface tabular-nums ${large ? 'text-2xl' : 'text-lg'}`}
+      className={`cc-flash rounded font-extrabold tracking-tight text-forest-950 tabular-nums ${large ? 'text-[1.75rem]' : 'text-lg'}`}
       key={facts.total}
     >
       {format.money(shown)}
@@ -113,8 +113,8 @@ function SummaryBody({ form, onNavigate }: { form: BookingForm; onNavigate?: () 
       ) : null}
 
       {form.request ? (
-        <div className='rounded-xl bg-surface-container-low p-4'>
-          <p className='text-xs font-medium text-on-surface-variant'>{t('customer.booking.summary.total')}</p>
+        <div className='rounded-2xl bg-mint-50 p-4 ring-1 ring-mint-100'>
+          <p className='text-xs font-semibold text-forest-700'>{t('customer.booking.summary.total')}</p>
           <div className='mt-1'>
             <Total form={form} large />
           </div>
@@ -144,8 +144,8 @@ function SummaryBody({ form, onNavigate }: { form: BookingForm; onNavigate?: () 
           ) : null}
         </div>
       ) : (
-        <div className='rounded-xl bg-surface-container-low p-4'>
-          <p className='text-sm font-semibold text-on-surface'>{t('customer.booking.summary.missingTitle')}</p>
+        <div className='rounded-2xl bg-peach-50 p-4 ring-1 ring-peach-100'>
+          <p className='text-sm font-semibold text-forest-950'>{t('customer.booking.summary.missingTitle')}</p>
           <ul className='mt-2 flex flex-col gap-1.5 text-sm'>
             {missing.map((item) => (
               <li
@@ -210,9 +210,9 @@ export function BookingSummaryAside({ form }: { form: BookingForm }) {
   return (
     <aside
       aria-labelledby='booking-summary-title'
-      className='hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] lg:sticky lg:top-24 lg:block'
+      className='hidden rounded-3xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-soft)] lg:sticky lg:top-24 lg:block'
     >
-      <h2 className='mb-3 text-base font-semibold text-on-surface' id='booking-summary-title'>
+      <h2 className='mb-3 text-base font-bold tracking-tight text-forest-950' id='booking-summary-title'>
         {t('customer.booking.summary.title')}
       </h2>
       <SummaryBody form={form} />

@@ -1,377 +1,202 @@
-import { useMutation } from '@tanstack/react-query'
-import { useEffect, useState, type FormEvent } from 'react'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { Link } from 'react-router'
 
-import { LanguageSwitch } from '~/shared/ui/language-switch'
+import { Icon } from '~/shared/ui/icon'
 
+import { AuthMessage, AuthSteps, AuthTextField } from './auth-form-parts'
+import { AuthSwap } from './auth-shell'
+import { authDescription, authLink, authSubmit, authTitle } from './auth-styles'
 import { PasswordField } from './password-field'
-import { validPassword } from '~/entities/identity/password-rules'
-import { beginRegistration, registrationErrorKey, resendOtp, verifyRegistration } from './registration-api'
-
-const inputClass =
-  'mt-2 h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
-
-type ValidationKey =
-  | 'auth.registration.invalidName'
-  | 'auth.registration.invalidEmail'
-  | 'auth.registration.invalidPhone'
-  | 'auth.registration.passwordRules'
-  | 'auth.registration.passwordMismatch'
-  | 'auth.registration.invalidOtp'
-
-function validEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
+import { registrationErrorKey } from './registration-api'
+import { useRegistrationFlow } from './use-registration-flow'
 
 export function RegistrationPage() {
   const { t } = useTranslation()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [validationError, setValidationError] = useState<ValidationKey | null>(null)
-  const [resendSeconds, setResendSeconds] = useState(0)
-  const [resent, setResent] = useState(false)
-  const [completed, setCompleted] = useState(false)
-  const verifying = searchParams.get('step') === 'verify'
-
-  const register = useMutation({
-    mutationFn: beginRegistration,
-    onSuccess: (result) => {
-      setEmail(result.email)
-      setPassword('')
-      setConfirmPassword('')
-      setValidationError(null)
-      setResendSeconds(result.resendAfterSeconds)
-      setSearchParams({ step: 'verify' })
-    }
-  })
-  const verify = useMutation({
-    mutationFn: verifyRegistration,
-    onSuccess: () => {
-      setOtpCode('')
-      setCompleted(true)
-    }
-  })
-  const resend = useMutation({
-    mutationFn: resendOtp,
-    onSuccess: (result) => {
-      setResendSeconds(result.resendAfterSeconds)
-      setResent(true)
-      setValidationError(null)
-    }
-  })
-
-  useEffect(() => {
-    if (resendSeconds <= 0) return
-    const timer = window.setTimeout(() => setResendSeconds((seconds) => Math.max(0, seconds - 1)), 1000)
-    return () => window.clearTimeout(timer)
-  }, [resendSeconds])
-
-  function handleRegister(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const name = fullName.trim()
-    const address = email.trim()
-    const phone = phoneNumber.trim()
-    let error: ValidationKey | null = null
-    if (!name || name.length > 255) error = 'auth.registration.invalidName'
-    else if (!validEmail(address)) error = 'auth.registration.invalidEmail'
-    else if (phone && !/^[0-9]{10,11}$/.test(phone)) error = 'auth.registration.invalidPhone'
-    else if (!validPassword(password)) error = 'auth.registration.passwordRules'
-    else if (password !== confirmPassword) error = 'auth.registration.passwordMismatch'
-    setValidationError(error)
-    if (error) return
-    register.mutate({ fullName: name, email: address, password, ...(phone ? { phoneNumber: phone } : {}) })
-  }
-
-  function handleVerify(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    let error: ValidationKey | null = null
-    if (!validEmail(email.trim())) error = 'auth.registration.invalidEmail'
-    else if (!/^[0-9]{6}$/.test(otpCode)) error = 'auth.registration.invalidOtp'
-    setValidationError(error)
-    if (error) return
-    verify.mutate({ email: email.trim(), otpCode })
-  }
-
-  function handleResend() {
-    if (!validEmail(email.trim())) {
-      setValidationError('auth.registration.invalidEmail')
-      return
-    }
-    setValidationError(null)
-    setResent(false)
-    resend.mutate({ email: email.trim() })
-  }
+  const flow = useRegistrationFlow()
+  const { fields, set } = flow
+  const step = flow.completed ? 'done' : flow.verifying ? 'verify' : 'details'
+  const steps = [t('auth.shell.steps.details'), t('auth.shell.steps.verify')]
 
   return (
-    <main className='min-h-screen bg-surface-container-low px-4 py-6 text-on-surface sm:px-6 lg:py-12'>
-      <div className='mx-auto max-w-6xl'>
-        <header className='mb-8 flex items-center justify-between gap-4'>
-          <Link className='text-xl font-bold tracking-tight text-primary' to='/'>
-            {t('common.brand')}
-          </Link>
-          <div className='flex items-center gap-4'>
-            <LanguageSwitch />
-            <Link className='text-sm font-semibold text-primary hover:underline' to='/login'>
-              {t('auth.registration.signIn')}
+    <>
+      <AuthSwap key={step}>
+        {step === 'done' ? (
+          <section aria-labelledby='registration-title' className='py-4 text-center'>
+            <motion.span
+              animate={{ scale: 1, opacity: 1 }}
+              aria-hidden='true'
+              className='mx-auto grid h-16 w-16 place-items-center rounded-full bg-mint-100 text-mint-500 ring-8 ring-mint-50'
+              initial={{ scale: 0.6, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.15 }}
+            >
+              <Icon className='text-3xl' filled name='check_circle' />
+            </motion.span>
+            <h1 className={`${authTitle} mt-5`} id='registration-title'>
+              {t('auth.registration.completeTitle')}
+            </h1>
+            <p className={`${authDescription} mx-auto max-w-sm`}>{t('auth.registration.completeDescription')}</p>
+            <Link className={`${authSubmit} mt-7`} to='/login'>
+              {t('auth.registration.goToLogin')}
+              <Icon className='text-lg' name='arrow_forward' />
             </Link>
-          </div>
-        </header>
-
-        <div className='grid overflow-hidden rounded-3xl border border-outline-variant/30 bg-white shadow-lg lg:grid-cols-[0.9fr_1.1fr]'>
-          <aside className='bg-primary px-7 py-10 text-white sm:px-10 lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-14'>
-            <div>
-              <p className='text-xs font-bold tracking-[0.18em] uppercase text-white/75'>
-                {t('auth.registration.eyebrow')}
-              </p>
-              <h2 className='mt-5 max-w-md text-3xl font-semibold leading-tight tracking-tight sm:text-4xl'>
-                {t('auth.registration.introduction')}
-              </h2>
-            </div>
-            <ul className='mt-9 grid gap-4 text-sm leading-6 text-white/90 lg:mt-16'>
-              <li className='flex gap-3'>
-                <span aria-hidden='true'>✓</span>
-                {t('auth.registration.benefitOne')}
-              </li>
-              <li className='flex gap-3'>
-                <span aria-hidden='true'>✓</span>
-                {t('auth.registration.benefitTwo')}
-              </li>
-              <li className='flex gap-3'>
-                <span aria-hidden='true'>✓</span>
-                {t('auth.registration.benefitThree')}
-              </li>
-            </ul>
-          </aside>
-
-          <section className='px-6 py-9 sm:px-10 sm:py-12 lg:px-14' aria-labelledby='registration-title'>
-            {completed ? (
-              <div className='flex min-h-96 flex-col justify-center'>
-                <div
-                  aria-hidden='true'
-                  className='mb-6 grid size-14 place-items-center rounded-full bg-primary/10 text-2xl text-primary'
-                >
-                  ✓
-                </div>
-                <h1 id='registration-title' className='text-3xl font-bold tracking-tight'>
-                  {t('auth.registration.completeTitle')}
-                </h1>
-                <p className='mt-3 max-w-md text-on-surface-variant'>{t('auth.registration.completeDescription')}</p>
-                <Link
-                  className='mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 font-semibold text-white hover:opacity-90'
-                  to='/login'
-                >
-                  {t('auth.registration.goToLogin')}
-                </Link>
-              </div>
-            ) : verifying ? (
-              <>
-                <h1 id='registration-title' className='text-3xl font-bold tracking-tight'>
-                  {t('auth.registration.verifyTitle')}
-                </h1>
-                <p className='mt-2 max-w-md text-sm leading-6 text-on-surface-variant'>
-                  {t('auth.registration.verifyDescription')}
-                </p>
-                <form className='mt-8 space-y-5' noValidate onSubmit={handleVerify}>
-                  <div>
-                    <label className='block text-sm font-semibold' htmlFor='register-email-verify'>
-                      {t('auth.email')}
-                    </label>
-                    <input
-                      autoComplete='email'
-                      className={inputClass}
-                      id='register-email-verify'
-                      onChange={(event) => setEmail(event.target.value)}
-                      required
-                      type='email'
-                      value={email}
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-semibold' htmlFor='register-otp'>
-                      {t('auth.registration.otpCode')}
-                    </label>
-                    <input
-                      autoComplete='one-time-code'
-                      className={inputClass}
-                      id='register-otp'
-                      inputMode='numeric'
-                      maxLength={6}
-                      onChange={(event) => setOtpCode(event.target.value.replace(/[^0-9]/g, ''))}
-                      required
-                      value={otpCode}
-                    />
-                  </div>
-                  {validationError && (
-                    <p className='rounded-xl bg-error/10 p-3 text-sm text-error' role='alert'>
-                      {t(validationError)}
-                    </p>
-                  )}
-                  {verify.isError && (
-                    <p className='rounded-xl bg-error/10 p-3 text-sm text-error' role='alert'>
-                      {t(registrationErrorKey(verify.error, 'verify'))}
-                    </p>
-                  )}
-                  <button
-                    className='h-12 w-full rounded-xl bg-primary font-semibold text-white hover:opacity-90 disabled:opacity-60'
-                    disabled={verify.isPending}
-                    type='submit'
-                  >
-                    {verify.isPending ? t('auth.registration.verifying') : t('auth.registration.verify')}
-                  </button>
-                </form>
-                <div className='mt-6 space-y-3 text-sm'>
-                  {resent && (
-                    <p className='text-primary' role='status'>
-                      {t('auth.registration.resent')}
-                    </p>
-                  )}
-                  {resend.isError && (
-                    <p className='rounded-xl bg-error/10 p-3 text-error' role='alert'>
-                      {t(registrationErrorKey(resend.error, 'resend'))}
-                    </p>
-                  )}
-                  <button
-                    className='font-semibold text-primary underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-60'
-                    disabled={resendSeconds > 0 || resend.isPending}
-                    onClick={handleResend}
-                    type='button'
-                  >
-                    {resend.isPending
-                      ? t('auth.registration.resending')
-                      : resendSeconds > 0
-                        ? t('auth.registration.resendCountdown', { seconds: resendSeconds })
-                        : t('auth.registration.resend')}
-                  </button>
-                </div>
+          </section>
+        ) : step === 'verify' ? (
+          <section aria-labelledby='registration-title'>
+            <AuthSteps current={1} steps={steps} />
+            <h1 className={authTitle} id='registration-title'>
+              {t('auth.registration.verifyTitle')}
+            </h1>
+            <p className={authDescription}>{t('auth.registration.verifyDescription')}</p>
+            <form className='mt-6 space-y-4' noValidate onSubmit={flow.handleVerify}>
+              <AuthTextField
+                autoComplete='email'
+                icon='mail'
+                id='register-email-verify'
+                placeholder={t('auth.shell.placeholders.email')}
+                label={t('auth.email')}
+                onChange={(event) => set.setEmail(event.target.value)}
+                required
+                type='email'
+                value={fields.email}
+              />
+              <AuthTextField
+                autoComplete='one-time-code'
+                icon='pin'
+                id='register-otp'
+                placeholder={t('auth.shell.placeholders.otp')}
+                inputClassName='text-lg font-bold tracking-[0.45em] tabular-nums'
+                inputMode='numeric'
+                label={t('auth.registration.otpCode')}
+                maxLength={6}
+                onChange={(event) => set.setOtpCode(event.target.value.replace(/[^0-9]/g, ''))}
+                required
+                value={fields.otpCode}
+              />
+              {flow.validationError ? <AuthMessage tone='error'>{t(flow.validationError)}</AuthMessage> : null}
+              {flow.verify.isError ? (
+                <AuthMessage tone='error'>{t(registrationErrorKey(flow.verify.error, 'verify'))}</AuthMessage>
+              ) : null}
+              <button className={`${authSubmit} mt-2`} disabled={flow.verify.isPending} type='submit'>
+                {flow.verify.isPending ? t('auth.registration.verifying') : t('auth.registration.verify')}
+              </button>
+            </form>
+            <div className='mt-5 space-y-3 text-sm'>
+              {flow.resent ? <AuthMessage tone='notice'>{t('auth.registration.resent')}</AuthMessage> : null}
+              {flow.resend.isError ? (
+                <AuthMessage tone='error'>{t(registrationErrorKey(flow.resend.error, 'resend'))}</AuthMessage>
+              ) : null}
+              <div className='flex flex-wrap items-center justify-between gap-3 pt-2'>
                 <button
-                  className='mt-8 block text-sm font-semibold text-on-surface-variant hover:underline'
-                  onClick={() => {
-                    setValidationError(null)
-                    setSearchParams({})
-                  }}
+                  className='inline-flex items-center gap-1 font-semibold text-forest-800/70 transition-colors hover:text-forest-950 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900'
+                  onClick={() => flow.goToStep('details')}
                   type='button'
                 >
+                  <Icon className='text-base' name='arrow_back' />
                   {t('auth.registration.backToRegister')}
                 </button>
-              </>
-            ) : (
-              <>
-                <h1 id='registration-title' className='text-3xl font-bold tracking-tight'>
-                  {t('auth.registration.title')}
-                </h1>
-                <p className='mt-2 text-sm leading-6 text-on-surface-variant'>{t('auth.registration.description')}</p>
-                <form className='mt-7 space-y-4' noValidate onSubmit={handleRegister}>
-                  <div>
-                    <label className='block text-sm font-semibold' htmlFor='register-name'>
-                      {t('auth.registration.fullName')}
-                    </label>
-                    <input
-                      autoComplete='name'
-                      className={inputClass}
-                      id='register-name'
-                      maxLength={255}
-                      onChange={(event) => setFullName(event.target.value)}
-                      required
-                      value={fullName}
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-semibold' htmlFor='register-email'>
-                      {t('auth.email')}
-                    </label>
-                    <input
-                      autoComplete='email'
-                      className={inputClass}
-                      id='register-email'
-                      onChange={(event) => setEmail(event.target.value)}
-                      required
-                      type='email'
-                      value={email}
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-semibold' htmlFor='register-phone'>
-                      {t('auth.registration.phoneNumber')}
-                    </label>
-                    <input
-                      autoComplete='tel'
-                      className={inputClass}
-                      id='register-phone'
-                      inputMode='tel'
-                      onChange={(event) => setPhoneNumber(event.target.value)}
-                      type='tel'
-                      value={phoneNumber}
-                    />
-                  </div>
-                  <div>
-                    <PasswordField
-                      autoComplete='new-password'
-                      id='register-password'
-                      label={t('auth.registration.password')}
-                      onChange={setPassword}
-                      value={password}
-                    />
-                    <p className='mt-2 text-xs leading-5 text-on-surface-variant'>
-                      {t('auth.registration.passwordHint')}
-                    </p>
-                  </div>
-                  <PasswordField
-                    autoComplete='new-password'
-                    id='register-confirm'
-                    label={t('auth.registration.confirmPassword')}
-                    onChange={setConfirmPassword}
-                    value={confirmPassword}
-                  />
-                  {validationError && (
-                    <p className='rounded-xl bg-error/10 p-3 text-sm text-error' role='alert'>
-                      {t(validationError)}
-                    </p>
-                  )}
-                  {register.isError && (
-                    <p className='rounded-xl bg-error/10 p-3 text-sm text-error' role='alert'>
-                      {t(registrationErrorKey(register.error, 'register'))}
-                    </p>
-                  )}
-                  <button
-                    className='mt-2 h-12 w-full rounded-xl bg-primary font-semibold text-white hover:opacity-90 disabled:opacity-60'
-                    disabled={register.isPending}
-                    type='submit'
-                  >
-                    {register.isPending ? t('auth.registration.submitting') : t('auth.registration.submit')}
-                  </button>
-                </form>
-                <div className='mt-6 space-y-3 text-center text-sm text-on-surface-variant'>
-                  <p>
-                    {t('auth.registration.haveAccount')}{' '}
-                    <Link className='font-semibold text-primary hover:underline' to='/login'>
-                      {t('auth.registration.signIn')}
-                    </Link>
-                  </p>
-                  <p>
-                    {t('auth.registration.haveCode')}{' '}
-                    <button
-                      className='font-semibold text-primary hover:underline'
-                      onClick={() => {
-                        setValidationError(null)
-                        setSearchParams({ step: 'verify' })
-                      }}
-                      type='button'
-                    >
-                      {t('auth.registration.verifyLink')}
-                    </button>
-                  </p>
-                </div>
-              </>
-            )}
+                <button
+                  className={`${authLink} tabular-nums`}
+                  disabled={flow.resendSeconds > 0 || flow.resend.isPending}
+                  onClick={flow.handleResend}
+                  type='button'
+                >
+                  {flow.resend.isPending
+                    ? t('auth.registration.resending')
+                    : flow.resendSeconds > 0
+                      ? t('auth.registration.resendCountdown', { seconds: flow.resendSeconds })
+                      : t('auth.registration.resend')}
+                </button>
+              </div>
+            </div>
           </section>
-        </div>
-      </div>
-    </main>
+        ) : (
+          <section aria-labelledby='registration-title'>
+            <AuthSteps current={0} steps={steps} />
+            <h1 className={authTitle} id='registration-title'>
+              {t('auth.registration.title')}
+            </h1>
+            <p className={authDescription}>{t('auth.registration.description')}</p>
+            <form className='mt-5 space-y-3.5' noValidate onSubmit={flow.handleRegister}>
+              <div className='grid gap-3 sm:grid-cols-2'>
+                <AuthTextField
+                  autoComplete='name'
+                  icon='person'
+                  id='register-name'
+                  placeholder={t('auth.shell.placeholders.fullName')}
+                  label={t('auth.registration.fullName')}
+                  maxLength={255}
+                  onChange={(event) => set.setFullName(event.target.value)}
+                  required
+                  value={fields.fullName}
+                />
+                <AuthTextField
+                  autoComplete='tel'
+                  icon='call'
+                  id='register-phone'
+                  placeholder={t('auth.shell.placeholders.phone')}
+                  inputMode='tel'
+                  label={t('auth.registration.phoneNumber')}
+                  onChange={(event) => set.setPhoneNumber(event.target.value)}
+                  type='tel'
+                  value={fields.phoneNumber}
+                />
+              </div>
+              <AuthTextField
+                autoComplete='email'
+                icon='mail'
+                id='register-email'
+                placeholder={t('auth.shell.placeholders.email')}
+                label={t('auth.email')}
+                onChange={(event) => set.setEmail(event.target.value)}
+                required
+                type='email'
+                value={fields.email}
+              />
+              <div className='grid gap-3 sm:grid-cols-2'>
+                <PasswordField
+                  autoComplete='new-password'
+                  id='register-password'
+                  placeholder={t('auth.shell.placeholders.newPassword')}
+                  label={t('auth.registration.password')}
+                  onChange={set.setPassword}
+                  value={fields.password}
+                  variant='auth'
+                />
+                <PasswordField
+                  autoComplete='new-password'
+                  id='register-confirm'
+                  placeholder={t('auth.shell.placeholders.confirmPassword')}
+                  label={t('auth.registration.confirmPassword')}
+                  onChange={set.setConfirmPassword}
+                  value={fields.confirmPassword}
+                  variant='auth'
+                />
+              </div>
+              <p className='text-xs leading-5 text-forest-800/60'>{t('auth.registration.passwordHint')}</p>
+              {flow.validationError ? <AuthMessage tone='error'>{t(flow.validationError)}</AuthMessage> : null}
+              {flow.register.isError ? (
+                <AuthMessage tone='error'>{t(registrationErrorKey(flow.register.error, 'register'))}</AuthMessage>
+              ) : null}
+              <button className={`${authSubmit} mt-2`} disabled={flow.register.isPending} type='submit'>
+                {flow.register.isPending ? t('auth.registration.submitting') : t('auth.registration.submit')}
+              </button>
+            </form>
+            <p className='mt-5 text-center text-sm text-forest-800/70'>
+              {t('auth.registration.haveAccount')}{' '}
+              <Link className='font-bold text-forest-950 hover:underline underline-offset-4' to='/login'>
+                {t('auth.shell.signInTab')}
+              </Link>
+            </p>
+            <p className='mt-2 text-center text-xs text-forest-800/60'>
+              {t('auth.registration.haveCode')}{' '}
+              <button className={`${authLink} font-semibold`} onClick={() => flow.goToStep('verify')} type='button'>
+                {t('auth.registration.verifyLink')}
+              </button>
+            </p>
+          </section>
+        )}
+      </AuthSwap>
+    </>
   )
 }

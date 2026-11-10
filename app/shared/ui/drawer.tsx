@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from './icon'
+import './dialog-motion.css'
 
 export interface DrawerProps {
   open: boolean
@@ -38,16 +39,16 @@ export function Drawer({ open, title, description, children, footer, onClose, pl
     <dialog
       aria-describedby={description ? descriptionId : undefined}
       aria-labelledby={titleId}
-      className={`m-0 open:flex max-h-none max-w-none flex-col border-outline-variant bg-surface-container-lowest p-0 text-on-surface shadow-2xl ${side ? 'cc-sheet cc-side top-auto bottom-0 h-[88dvh] w-full rounded-t-2xl sm:top-0 sm:right-0 sm:left-auto sm:h-dvh sm:w-[min(30rem,100vw)] sm:rounded-none sm:border-l' : 'cc-sheet top-auto bottom-0 max-h-[88dvh] w-full rounded-t-2xl'}`}
+      className={`m-0 open:flex max-h-none max-w-none flex-col border-outline-variant bg-surface-container-lowest p-0 text-on-surface shadow-[var(--shadow-float)] ${side ? 'cc-sheet cc-side top-auto bottom-0 h-[88dvh] w-full rounded-t-[1.75rem] sm:top-3 sm:right-3 sm:bottom-3 sm:left-auto sm:h-[calc(100dvh-1.5rem)] sm:w-[min(30rem,calc(100vw-1.5rem))] sm:rounded-[1.75rem]' : 'cc-sheet top-auto bottom-0 max-h-[88dvh] w-full rounded-t-[1.75rem]'}`}
       onClose={onClose}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) ref.current?.close()
       }}
       ref={ref}
     >
-      <div className='flex items-start justify-between gap-3 border-b border-outline-variant px-5 py-4'>
+      <div className='flex items-start justify-between gap-3 border-b border-outline-variant/50 px-6 py-5'>
         <div className='min-w-0'>
-          <h2 className='text-lg font-semibold text-on-surface' id={titleId}>
+          <h2 className='text-xl font-bold tracking-tight text-forest-950' id={titleId}>
             {title}
           </h2>
           {description ? (
@@ -58,16 +59,16 @@ export function Drawer({ open, title, description, children, footer, onClose, pl
         </div>
         <button
           aria-label={t('common.kit.closePanel')}
-          className='grid h-10 w-10 shrink-0 place-items-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary'
+          className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface-container-low text-on-surface-variant transition-[background-color,color,transform] duration-200 hover:rotate-90 hover:bg-mint-100 hover:text-forest-900 focus-visible:outline-2 focus-visible:outline-primary'
           onClick={() => ref.current?.close()}
           type='button'
         >
           <Icon name='close' />
         </button>
       </div>
-      <div className='min-h-0 flex-1 overflow-y-auto px-5 py-5'>{children}</div>
+      <div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>{children}</div>
       {footer ? (
-        <div className='flex flex-wrap items-center justify-end gap-2 border-t border-outline-variant px-5 py-3'>
+        <div className='flex flex-wrap items-center justify-end gap-2 border-t border-outline-variant/50 bg-mint-50/60 px-6 py-4'>
           {footer}
         </div>
       ) : null}

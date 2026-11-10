@@ -1,0 +1,164 @@
+/*
+ * Center Manager portal in "Soft Bento" (2026-11-09, docs/2026-11-09-UI_REDESIGN_PLAN.md phase 4). Manager screens are
+ * written against the semantic tokens (primary, surface-container-*, outline-variant, brand-*) and the shared
+ * primitives, so remapping them here restyles every manager page at once: deep forest for primary actions and links,
+ * mint for selected / soft fills, rounder bento cards with soft shadows — the same values as `.theme-customer` and
+ * `.theme-caregiver`. Scoped to `.theme-ops` (set by CenterManagerLayout); no other portal changes.
+ */
+.theme-ops {
+  --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #123b33; /* forest-800 */
+  --color-primary-container: #0c2b25; /* forest-900, hover of primary */
+  --color-primary-fixed: #d7f3e7; /* mint-100 */
+  --color-on-primary-fixed: #0c2b25;
+  --color-secondary: #1b4d42;
+  --color-secondary-container: #effaf5;
+  --color-on-secondary-container: #123b33;
+
+  --color-background: #f6f8f5;
+  --color-surface: #f6f8f5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f0f5f1;
+  --color-surface-container: #e6eee8;
+  --color-surface-container-high: #d9e5dd;
+  --color-outline-variant: #e1e8e3;
+  --color-on-surface: #13221d;
+  --color-on-surface-variant: #55655e;
+
+  --color-success: #1b4d42;
+  --color-success-container: #effaf5;
+  --color-on-success-container: #123b33;
+
+  --color-brand-50: #effaf5;
+  --color-brand-100: #d7f3e7;
+  --color-brand-200: #b4e7d3;
+  --color-brand-300: #84d6b9;
+  --color-brand-400: #4fbf9b;
+  --color-brand-500: #2ea482;
+  --color-brand-600: #1b4d42;
+  --color-brand-700: #123b33;
+  --color-brand-800: #0c2b25;
+  --color-brand-900: #071d18;
+
+  /* Bento geometry: cards 24 px, controls 12–16 px, soft layered shadows (also behind `shadow-xs` / `shadow-sm`). */
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --shadow-xs: 0 1px 2px rgb(12 43 37 / 0.04), 0 10px 28px -20px rgb(12 43 37 / 0.22);
+  --shadow-sm: 0 1px 2px rgb(12 43 37 / 0.04), 0 12px 30px -20px rgb(12 43 37 / 0.26);
+  --shadow-card: 0 1px 2px rgb(12 43 37 / 0.04), 0 10px 28px -18px rgb(12 43 37 / 0.22);
+  --shadow-raised: 0 18px 40px -22px rgb(12 43 37 / 0.3), 0 2px 6px rgb(12 43 37 / 0.05);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+
+/* Element defaults sit in the base layer so a component's own utilities (a white title on a forest card…) still win. */
+@layer base {
+  .theme-ops :where(input:not([type='checkbox'], [type='radio'], [type='range']), select) {
+    line-height: 1.3;
+  }
+
+  .theme-ops :where(textarea) {
+    line-height: 1.5;
+  }
+
+  .theme-ops :where(h1, h2, h3, h4) {
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  /* Page titles: heavier and tighter, like the landing. */
+  .theme-ops :where(main h1) {
+    letter-spacing: -0.025em;
+    font-weight: 800;
+  }
+
+  /* Dialogs render in the top layer but stay inside the theme element, so they follow its radius. */
+  .theme-ops :where(dialog) {
+    border-radius: var(--radius-3xl);
+  }
+}
+
+/* Tappable cards lift 4 px with the soft shadow; lists and grids rise in one after another. */
+.theme-ops .cc-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft);
+}
+
+@keyframes ops-bento-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.theme-ops .cc-stagger > *,
+.ops-stagger > * {
+  animation: ops-bento-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.theme-ops .cc-stagger > :nth-child(2),
+.ops-stagger > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.theme-ops .cc-stagger > :nth-child(3),
+.ops-stagger > :nth-child(3) {
+  animation-delay: 120ms;
+}
+.theme-ops .cc-stagger > :nth-child(4),
+.ops-stagger > :nth-child(4) {
+  animation-delay: 180ms;
+}
+.theme-ops .cc-stagger > :nth-child(5),
+.ops-stagger > :nth-child(5) {
+  animation-delay: 240ms;
+}
+.theme-ops .cc-stagger > :nth-child(n + 6),
+.ops-stagger > :nth-child(n + 6) {
+  animation-delay: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-ops .cc-lift:hover {
+    transform: none;
+  }
+  .theme-ops .cc-stagger > *,
+  .ops-stagger > * {
+    animation: none;
+  }
+}
+
+/* Stat rows ("Soft Bento"): the first tile of a row is the dark forest block of the reference; its quiet texts turn
+   light and its icon chip mint. Unlayered on purpose so it wins over the tile's own colour utilities. */
+.ops-stat-dark {
+  background-color: var(--color-forest-900);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--shadow-float);
+}
+.ops-stat-dark :is(.text-on-surface-variant, .text-outline, .text-forest-950, .text-on-surface) {
+  color: rgb(255 255 255 / 0.72);
+}
+.ops-stat-dark .ops-stat-value {
+  color: #fff;
+}
+.ops-stat-dark .ops-stat-icon {
+  background-color: var(--color-mint-300);
+  color: var(--color-forest-950);
+}
+.ops-stat-dark .bg-surface-container {
+  background-color: rgb(255 255 255 / 0.12);
+}
+.ops-stat-dark .bg-primary {
+  background-color: var(--color-mint-300);
+}
+.ops-stat-dark .cc-skeleton {
+  opacity: 0.18;
+}

@@ -5,6 +5,10 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { CertificateAiCheckStatus } from './certificateAiCheckStatus'
+import type { CertificateAiExtracted } from './certificateAiExtracted'
+import type { CertificateAiWarning } from './certificateAiWarning'
+import type { CertificateRiskLevel } from './certificateRiskLevel'
 import type { ProviderCertificateRecordVerificationStatus } from './providerCertificateRecordVerificationStatus'
 
 export interface ProviderCertificateRecord {
@@ -18,6 +22,21 @@ export interface ProviderCertificateRecord {
   /** Two-step review — the center confirms (CENTER_VERIFIED), then an admin approves (ADMIN_VERIFIED). */
   verificationStatus: ProviderCertificateRecordVerificationStatus
   verificationReason?: string
+  caregiverName?: string
+  centerId?: string
+  centerName?: string
+  verifiedAt?: string
+  centerVerifiedAt?: string
+  centerVerificationReason?: string
+  aiCheckStatus?: CertificateAiCheckStatus
+  /** ADMIN only; null for every other role. */
+  aiRiskLevel?: CertificateRiskLevel
+  /** ADMIN only. */
+  aiWarnings?: CertificateAiWarning[]
+  /** ADMIN only — what the AI read on the photos. */
+  aiExtracted?: CertificateAiExtracted
+  aiCheckedAt?: string
   version: number
   createdAt?: string
+  updatedAt?: string
 }

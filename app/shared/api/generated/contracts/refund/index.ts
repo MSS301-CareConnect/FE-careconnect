@@ -7,6 +7,7 @@
  */
 
 export * from './listRefundsParams'
+export * from './refundChannel'
 export * from './refundPageRecord'
 export * from './refundPageResponse'
 export * from './refundRecord'

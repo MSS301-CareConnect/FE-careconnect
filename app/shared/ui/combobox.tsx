@@ -16,6 +16,7 @@ import { foldText } from '~/shared/lib/fold-text'
 import { baseControlClass } from './form-field'
 import { Icon } from './icon'
 import { popoverAttribute, popoverPanelClass, stopLabelForwarding, useAnchoredPopover } from './use-anchored-popover'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 export interface ComboboxOption {
   value: string
@@ -85,7 +86,8 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
   useImperativeHandle(ref, () => triggerRef.current as HTMLButtonElement)
 
   const dismiss = useCallback(() => setOpen(false), [])
-  const side = useAnchoredPopover({ open, anchorRef: triggerRef, panelRef, rootRef, onDismiss: dismiss })
+  const { present, state: panelState } = useExitPresence(open)
+  const side = useAnchoredPopover({ open: present, anchorRef: triggerRef, panelRef, rootRef, onDismiss: dismiss })
 
   const selected = options.find((option) => option.value === value)
   const searchable = useMemo(
@@ -191,9 +193,11 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
           name='expand_more'
         />
       </button>
-      {open ? (
+      {present ? (
         <div
-          className={`${popoverPanelClass} cc-scale-in flex max-w-[calc(100vw-1rem)] min-w-[16rem] flex-col overflow-hidden ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+          className={`${popoverPanelClass} cc-dropdown flex max-w-[calc(100vw-1rem)] min-w-[16rem] flex-col overflow-hidden ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+          data-side={side}
+          data-state={panelState}
           onClick={(event) => stopLabelForwarding(event)}
           popover={popoverAttribute}
           ref={panelRef}

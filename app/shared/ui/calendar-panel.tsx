@@ -37,6 +37,8 @@ export interface CalendarPanelProps {
   id: string
   panelRef: RefObject<HTMLDivElement | null>
   side: PopoverSide
+  /** `open` or `closed` from `useExitPresence`, for the open / close animation. */
+  state?: 'open' | 'closed'
   value: string
   min?: string
   max?: string
@@ -59,6 +61,7 @@ export function CalendarPanel({
   id,
   panelRef,
   side,
+  state = 'open',
   value,
   min,
   max,
@@ -175,7 +178,9 @@ export function CalendarPanel({
   return (
     <div
       aria-label={t('common.kit.openCalendar')}
-      className={`${popoverPanelClass} cc-scale-in w-[20.5rem] max-w-[calc(100vw-1rem)] p-3 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+      className={`${popoverPanelClass} cc-dropdown w-[20.5rem] max-w-[calc(100vw-1rem)] p-3 ${side === 'top' ? 'origin-bottom-left' : 'origin-top-left'}`}
+      data-side={side}
+      data-state={state}
       id={id}
       onClick={stopLabelForwarding}
       onKeyDown={onPanelKey}

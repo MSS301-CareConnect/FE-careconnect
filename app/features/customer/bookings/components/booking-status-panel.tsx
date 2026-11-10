@@ -1,8 +1,10 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { bookingKeys } from '~/entities/booking/booking-api'
 import { isPastDeadline } from '~/entities/booking/booking-deadline'
+import { HoldCountdown } from '~/entities/booking/hold-countdown'
 import { formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import {
   fetchOpenInvoiceOfBooking,
@@ -18,12 +20,13 @@ import { Icon } from '~/shared/ui/icon'
 
 import { awaitsRemaining } from '../booking-lifecycle'
 
+const SHORT_HOLD_MS = 15 * 60_000
 const primaryAction =
-  'group mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-xs transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:bg-outline'
+  'group mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-peach-300 px-5 py-2.5 text-sm font-semibold text-forest-950 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)] transition-[background-color,transform] hover:bg-peach-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 disabled:bg-outline disabled:text-white disabled:shadow-none'
 
 // Statuses that wait on the customer get the attention colour; closed ones stay quiet.
 const TONES: Partial<Record<BookingStatus, string>> = {
-  AWAITING_INITIAL_PAYMENT: 'border-caution/40 bg-caution-container/40',
+  AWAITING_INITIAL_PAYMENT: 'border-peach-300/70 bg-peach-50',
   REJECTED: 'border-outline-variant bg-surface-container-low',
   CANCELLED: 'border-outline-variant bg-surface-container-low',
   EXPIRED: 'border-outline-variant bg-surface-container-low'
@@ -55,8 +58,19 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   const depositKnown = deposit.amount !== undefined
   const awaitingRemaining = awaitsRemaining(booking)
   const now = useClock(30_000)
+  const queryClient = useQueryClient()
   // Past its deadline but not closed by BookingService yet: say it is closing instead of "still waiting".
   const closing = isPastDeadline(booking, now)
+  // 2026-11-09: a new booking is held 5 minutes for its first payment — a live mm:ss countdown. Older bookings
+  // (accepted before) keep a long payment window and the deadline sentence below.
+  const shortHold =
+    booking.status === 'AWAITING_INITIAL_PAYMENT' &&
+    Boolean(booking.depositDueAt) &&
+    new Date(booking.depositDueAt ?? '').getTime() - now <= SHORT_HOLD_MS
+  // Paid before a caregiver was found (2026-11-09): the system keeps looking.
+  const waitingForCaregiver = (booking.occurrences ?? []).some(
+    (visit) => visit.status === 'PENDING_ASSIGNMENT' || visit.needsReassignment
+  )
   const firstService = booking.services?.[0]
   const rebook = new URLSearchParams({ center: booking.centerId ?? '', patient: booking.recipientId ?? '' })
   if (firstService?.careServiceId) rebook.set('service', firstService.careServiceId)
@@ -86,13 +100,13 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   return (
     <section
       aria-labelledby='booking-next-title'
-      className={`rounded-2xl border p-5 shadow-[var(--shadow-card)] ${closing ? 'border-outline-variant bg-surface-container-low' : (TONES[booking.status] ?? (awaitingRemaining ? 'border-caution/40 bg-caution-container/40' : 'border-outline-variant bg-surface-container-lowest'))}`}
+      className={`rounded-2xl border p-5 shadow-[var(--shadow-card)] ${closing ? 'border-outline-variant bg-surface-container-low' : (TONES[booking.status] ?? (awaitingRemaining ? 'border-peach-300/70 bg-peach-50' : 'border-forest-900/[0.06] bg-white'))}`}
     >
       <div className='flex items-start gap-3'>
-        <span className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-primary'>
+        <span className='grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-forest-900 text-mint-300'>
           <Icon className='text-xl' name={closing ? 'timer_off' : ICONS[booking.status]} />
         </span>
-        <h2 className='pt-1.5 text-base leading-snug font-semibold text-on-surface' id='booking-next-title'>
+        <h2 className='pt-1.5 text-base leading-snug font-bold tracking-tight text-forest-950' id='booking-next-title'>
           {closing
             ? t('customer.bookingDetail.next.closing.title')
             : t(`customer.bookingDetail.next.${booking.status}.title`)}
@@ -113,7 +127,9 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
                 ? t('customer.bookingDetail.next.AWAITING_INITIAL_PAYMENT.bodyNoAmount', values)
                 : awaitingRemaining
                   ? t('customer.bookingDetail.next.CONFIRMED.bodyRemaining', values)
-                  : t(`customer.bookingDetail.next.${booking.status}.body`, values)}
+                  : booking.status === 'CONFIRMED' && waitingForCaregiver
+                    ? t('customer.bookingDetail.next.CONFIRMED.bodyAssigning')
+                    : t(`customer.bookingDetail.next.${booking.status}.body`, values)}
         </p>
         {booking.status === 'EXPIRED' || booking.status === 'REJECTED' || closing ? (
           <div className='mt-4 flex flex-col gap-2'>
@@ -122,7 +138,7 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
               {t('customer.bookingDetail.next.rebook')}
             </Link>
             <Link
-              className='flex min-h-11 items-center justify-center gap-2 rounded-xl border border-outline-variant px-5 text-sm font-semibold text-on-surface hover:bg-surface-container-low'
+              className='flex min-h-11 items-center justify-center gap-2 rounded-full border border-forest-900/10 bg-white px-5 text-sm font-semibold text-forest-900 hover:bg-mint-50'
               to='/customer/centers'
             >
               <Icon className='text-lg' name='storefront' />
@@ -161,7 +177,15 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
             {t(paymentErrorKey(payRemaining.error))}
           </p>
         ) : null}
-        {booking.status === 'AWAITING_INITIAL_PAYMENT' ? (
+        {shortHold && booking.depositDueAt ? (
+          <div className='mt-4'>
+            <HoldCountdown
+              dueAt={booking.depositDueAt}
+              onExpire={() => void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(booking.id) })}
+            />
+          </div>
+        ) : null}
+        {booking.status === 'AWAITING_INITIAL_PAYMENT' && !closing ? (
           <Link className={primaryAction} to={`/customer/bookings/${booking.id}/deposit`}>
             {depositKnown
               ? t('customer.bookingDetail.payDeposit', values)

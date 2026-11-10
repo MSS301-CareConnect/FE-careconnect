@@ -16,7 +16,8 @@ import { FormField, Textarea } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 import { StatusBadge } from '~/shared/ui/status-badge'
-import { Tabs, tabPanelId } from '~/shared/ui/tabs'
+import { PillTabs } from '~/shared/ui/pill-tabs'
+import { tabPanelId } from '~/shared/ui/tabs'
 
 const k = 'centerManager.workShifts.detail' as const
 type Group = 'PENDING' | 'APPROVED' | 'OTHER'
@@ -132,7 +133,7 @@ export function ShiftRegistrations({
         <Icon className='text-base text-primary' name='how_to_reg' />
         {t(`${k}.registrations`)}
       </h3>
-      <Tabs
+      <PillTabs
         idBase='shift-registrations'
         items={(['PENDING', 'APPROVED', 'OTHER'] as Group[]).map((group) => ({
           value: group,

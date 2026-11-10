@@ -51,6 +51,7 @@ export const customerCentersVi = {
       deposit: 'Lịch định kỳ hoặc tùy chọn đặt cọc {{percent}}; lịch theo ca thanh toán đủ khi đặt.',
       before: 'Hủy trước {{hours}} giờ so với buổi chăm sóc: hoàn {{percent}}.',
       after: 'Hủy trong vòng {{hours}} giờ: hoàn {{percent}}.',
+      late: 'Hủy khi còn dưới {{hours}} giờ: không hoàn tiền.',
       centerCancel: 'Trung tâm hủy lịch: hoàn toàn bộ số đã thanh toán.',
       error: 'Chưa tải được quy định đặt cọc và hoàn tiền.',
       signIn: 'Đăng nhập để xem quy định đặt cọc và hoàn tiền của trung tâm.'
@@ -111,6 +112,7 @@ export const customerCentersEn = {
       deposit: 'Recurring or custom bookings take a {{percent}} deposit; shift bookings are paid in full.',
       before: 'Cancel {{hours}} hours or more before a visit: {{percent}} refunded.',
       after: 'Cancel within {{hours}} hours: {{percent}} refunded.',
+      late: 'Cancel less than {{hours}} hours before: no refund.',
       centerCancel: 'If the center cancels, everything you paid is refunded.',
       error: 'The deposit and refund rules could not be loaded.',
       signIn: 'Sign in to see this center’s deposit and refund rules.'

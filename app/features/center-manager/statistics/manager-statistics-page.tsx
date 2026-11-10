@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { OperationalStatisticsPanel } from '~/entities/statistics/statistics-panels'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
+
 import { CenterRevenuePanel } from './components/center-revenue-panel'
 
 export function ManagerStatisticsPage() {
@@ -10,13 +12,13 @@ export function ManagerStatisticsPage() {
   useDocumentTitle(t('centerManager.statisticsPage.documentTitle'))
 
   return (
-    <div className='mx-auto max-w-7xl space-y-7 px-4 py-7 sm:px-6'>
-      <header>
-        <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>
-          {t('centerManager.statisticsPage.title')}
-        </h1>
-        <p className='mt-2 text-sm text-on-surface-variant'>{t('centerManager.statisticsPage.subtitle')}</p>
-      </header>
+    <div className={`${bentoContainer} space-y-7`}>
+      <BentoPageHeader
+        description={t('centerManager.statisticsPage.subtitle')}
+        icon='monitoring'
+        title={t('centerManager.statisticsPage.title')}
+        variant='hero'
+      />
       <OperationalStatisticsPanel scope='center' />
       <CenterRevenuePanel />
     </div>

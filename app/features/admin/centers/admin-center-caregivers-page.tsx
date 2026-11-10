@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
+import { CertificateAiBadge } from '~/entities/provider/certificate-ai-badge'
+import { CertificateReviewDialog } from '~/entities/provider/certificate-review-dialog'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { baseControlClass } from '~/shared/ui/form-field'
 import { useActionToast } from '~/shared/ui/use-action-toast'
@@ -16,14 +18,14 @@ import {
   fetchCenter,
   fetchCertificates,
   providerKeys,
-  verifyCaregiver,
-  verifyCertificate
+  verifyCaregiver
 } from '~/entities/provider/provider-api'
+import { BentoPageHeader, bentoBackLink, bentoContainer } from '~/shared/ui/bento-page-header'
 
 const key = 'admin.provider' as const
 const statusKeys = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
 const verificationKeys = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
-// Certificates are reviewed in two steps: the center confirms, then the admin approves.
+// Certificates: the center confirms, the AI reads the photos, then the admin decides in the review dialog (2026-11-09).
 const certificateKeys = {
   PENDING: 'pending',
   CENTER_VERIFIED: 'centerVerified',
@@ -37,9 +39,8 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
   // The reason belongs to one rejection at a time; it is asked inside that rejection's dialog (A-07).
   const [reason, setReason] = useState('')
   const [reasonMissing, setReasonMissing] = useState(false)
-  const [confirmReject, setConfirmReject] = useState<
-    { type: 'caregiver' } | { type: 'certificate'; certificateId: string; version: number } | null
-  >(null)
+  const [confirmReject, setConfirmReject] = useState<{ type: 'caregiver' } | null>(null)
+  const [reviewingId, setReviewingId] = useState<string | null>(null)
   const caregiver = useQuery({ queryKey: providerKeys.caregiver(id), queryFn: () => fetchCaregiver(id), retry: false })
   const certificates = useQuery({
     queryKey: providerKeys.certificates(id),
@@ -69,24 +70,7 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
       notify.systemError(error, t('admin.toast.caregivers.actions.review'))
     }
   })
-  const reviewCertificate = useMutation({
-    mutationFn: ({ certificateId, approved, version }: { certificateId: string; approved: boolean; version: number }) =>
-      verifyCertificate(certificateId, { approved, reason: approved ? undefined : reason.trim(), version }),
-    onSuccess: async (_saved, { certificateId, approved }) => {
-      setConfirmReject(null)
-      const name = certificates.data?.find((item) => item.id === certificateId)?.certificateName ?? ''
-      notify.success(
-        t(approved ? 'admin.toast.caregivers.certificateVerified' : 'admin.toast.caregivers.certificateRejected', {
-          name
-        })
-      )
-      await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(id) })
-    },
-    onError: (error) => {
-      setConfirmReject(null)
-      notify.systemError(error, t('admin.toast.caregivers.actions.certificate'))
-    }
-  })
+  const reviewingCertificate = certificates.data?.find((item) => item.id === reviewingId)
   if (caregiver.isPending) return <p role='status'>{t(`${key}.loading`)}</p>
   if (caregiver.isError)
     return (
@@ -163,71 +147,43 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
                     <ProviderStatusBadge status={certificate.verificationStatus}>
                       {t(`${key}.${certificateKeys[certificate.verificationStatus]}`)}
                     </ProviderStatusBadge>
+                    {certificate.verificationStatus === 'CENTER_VERIFIED' ? (
+                      <CertificateAiBadge certificate={certificate} />
+                    ) : null}
                   </p>
                 </div>
                 <div className='flex gap-2'>
                   {certificate.verificationStatus === 'PENDING' ? (
                     <span className='text-xs text-on-surface-variant'>{t(`${key}.awaitingCenter`)}</span>
                   ) : null}
-                  <button
-                    className='text-primary underline disabled:opacity-50'
-                    disabled={reviewCertificate.isPending || certificate.verificationStatus !== 'CENTER_VERIFIED'}
-                    onClick={() =>
-                      reviewCertificate.mutate({
-                        certificateId: certificate.id,
-                        approved: true,
-                        version: certificate.version
-                      })
-                    }
-                    type='button'
-                  >
-                    {t(`${key}.verify`)}
-                  </button>
-                  <button
-                    className='text-error underline disabled:opacity-50'
-                    disabled={reviewCertificate.isPending}
-                    onClick={() => {
-                      setReason('')
-                      setReasonMissing(false)
-                      setConfirmReject({
-                        type: 'certificate',
-                        certificateId: certificate.id,
-                        version: certificate.version
-                      })
-                    }}
-                    type='button'
-                  >
-                    {t(`${key}.reject`)}
-                  </button>
+                  {certificate.verificationStatus === 'CENTER_VERIFIED' ||
+                  certificate.verificationStatus === 'ADMIN_VERIFIED' ? (
+                    <button
+                      className='text-primary underline'
+                      onClick={() => setReviewingId(certificate.id)}
+                      type='button'
+                    >
+                      {t('admin.certificatesPage.open')}
+                    </button>
+                  ) : null}
                 </div>
               </li>
             ))}
           </ul>
-        ) : null}
-        {reviewCertificate.isError ? (
-          <p role='alert'>{t(apiRequestErrorKey(reviewCertificate.error, `${key}.actionError`))}</p>
         ) : null}
       </div>
       <ConfirmDialog
         cancelLabel={t(`${key}.cancel`)}
         confirmLabel={t(`${key}.reject`)}
         description={t(`${key}.confirmReject`)}
-        loading={review.isPending || reviewCertificate.isPending}
+        loading={review.isPending}
         onClose={() => setConfirmReject(null)}
         onConfirm={() => {
           if (!reason.trim()) {
             setReasonMissing(true)
             return
           }
-          if (confirmReject?.type === 'caregiver') {
-            review.mutate('REJECTED')
-          } else if (confirmReject?.type === 'certificate') {
-            reviewCertificate.mutate({
-              certificateId: confirmReject.certificateId,
-              approved: false,
-              version: confirmReject.version
-            })
-          }
+          if (confirmReject?.type === 'caregiver') review.mutate('REJECTED')
         }}
         open={Boolean(confirmReject)}
         title={t(`${key}.reject`)}
@@ -254,6 +210,9 @@ function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
           </p>
         ) : null}
       </ConfirmDialog>
+      {reviewingCertificate ? (
+        <CertificateReviewDialog certificate={reviewingCertificate} onClose={() => setReviewingId(null)} />
+      ) : null}
     </section>
   )
 }
@@ -285,23 +244,20 @@ export function AdminCenterCaregiversPage() {
     })
   }
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <Link
-        className='inline-flex items-center gap-2 rounded-lg bg-surface-container-low px-4 py-2 text-sm font-semibold text-primary'
-        to={`/admin/centers/${id}?tab=staff`}
-      >
+    <main className={`${bentoContainer} space-y-6`}>
+      <Link className={bentoBackLink} to={`/admin/centers/${id}?tab=staff`}>
         <Icon name='arrow_back' />
         {center.data?.centerName ?? t(`${key}.backToCenters`)}
       </Link>
-      <header className='flex flex-wrap items-center justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.caregiverTitle`)}</h1>
-          {center.isSuccess ? <p className='mt-2 text-sm text-on-surface-variant'>{center.data.centerName}</p> : null}
-        </div>
-        <span className='rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-primary'>
-          {caregivers.data?.totalElements ?? 0}
-        </span>
-      </header>
+      <BentoPageHeader
+        actions={
+          <span className='rounded-full bg-mint-100 px-3.5 py-1.5 text-sm font-bold text-forest-900 tabular-nums'>
+            {caregivers.data?.totalElements ?? 0}
+          </span>
+        }
+        description={center.isSuccess ? center.data.centerName : undefined}
+        title={t(`${key}.caregiverTitle`)}
+      />
       {center.isError ? <p role='alert'>{t(`${key}.centerLoadError`)}</p> : null}
       {caregivers.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
       {caregivers.isError ? (
@@ -313,7 +269,7 @@ export function AdminCenterCaregiversPage() {
         </div>
       ) : null}
       {caregivers.isSuccess ? (
-        <section className='overflow-hidden rounded-xl bg-white shadow-sm'>
+        <section className='overflow-hidden rounded-2xl border border-forest-900/[0.06] bg-white shadow-[var(--shadow-card)]'>
           {caregivers.data.items.length === 0 ? (
             <p className='p-5'>{t(`${key}.caregiverEmpty`)}</p>
           ) : (

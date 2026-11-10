@@ -18,7 +18,7 @@ export const caregiverNavigation = [
     key: 'profile',
     to: '/caregiver/profile',
     icon: 'person',
-    paths: ['/caregiver/profile', '/caregiver/security', '/caregiver/earnings']
+    paths: ['/caregiver/profile', '/caregiver/security', '/caregiver/earnings', '/caregiver/wallet']
   }
 ] as const
 

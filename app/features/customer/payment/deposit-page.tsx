@@ -13,7 +13,8 @@ import {
 import { RefundPolicySummary } from '~/entities/payment/refund-policy'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
 import { DepositBooking } from './components/deposit-booking'
@@ -50,7 +51,7 @@ export function DepositPage({ bookingId }: { bookingId: string }) {
 
   return (
     <div className={`${pageContainer} pt-6 pb-16 sm:pt-8`}>
-      <PageHeader
+      <CustomerPageHeader
         breadcrumb={breadcrumb}
         description={
           data ? t(`${key}.lead`, { code: data.bookingCode, name: data.recipientSnapshot?.fullName ?? '—' }) : undefined

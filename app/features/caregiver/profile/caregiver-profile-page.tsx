@@ -6,7 +6,8 @@ import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { fetchCaregiverServices, fetchCertificates, providerKeys } from '~/entities/provider/provider-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
-import { Tabs, tabPanelId } from '~/shared/ui/tabs'
+import { PillTabs } from '~/shared/ui/pill-tabs'
+import { tabPanelId } from '~/shared/ui/tabs'
 
 import { useMyAvatar, useMyCaregiverProfile } from '../data/caregiver-queries'
 import { CaregiverError, CaregiverPageHeader, cgContainer } from '../ui/caregiver-page'
@@ -87,7 +88,7 @@ export function CaregiverProfilePage() {
             onAvatarExpired={() => void avatar.media.refetch()}
             profile={profile.data}
           />
-          <Tabs
+          <PillTabs
             className='print:hidden'
             idBase='caregiver-profile'
             items={TABS.map((value) => ({ value, label: t(`caregiver.me.tabs.${value}`) }))}

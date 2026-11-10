@@ -33,7 +33,7 @@ export function CenterCaregiversSection({ centerId }: { centerId: string }) {
   return (
     <section aria-labelledby='center-caregivers-title' className='flex flex-col gap-4'>
       <div className='flex flex-wrap items-baseline justify-between gap-3'>
-        <h2 className='text-xl font-semibold text-on-surface' id='center-caregivers-title'>
+        <h2 className='text-xl font-bold tracking-tight text-forest-950' id='center-caregivers-title'>
           {t(`${key}.title`)}
         </h2>
         {caregivers.isSuccess && total > SHOWN && selected?.id === centerId ? (

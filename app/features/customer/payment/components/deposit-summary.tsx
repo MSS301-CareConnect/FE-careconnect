@@ -2,14 +2,17 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { timeLeft } from '~/entities/booking/booking-deadline'
+import { formatCountdown } from '~/entities/booking/hold-countdown'
 import type { initialPaymentOf } from '~/entities/payment/payment-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
-import { useClock } from '~/shared/lib/use-clock'
+import { useServerClock } from '~/shared/lib/use-clock'
 import { Icon } from '~/shared/ui/icon'
 
 const key = 'customer.payment.deposit' as const
 const URGENT_MS = 3 * 60 * 60_000
+// 2026-11-09: the 5-minute hold of a new booking counts down in mm:ss.
+const SHORT_HOLD_MS = 15 * 60_000
 
 /**
  * The amount paid now, the payment plan (initial payment now, the rest before the first visit — or everything at once
@@ -30,29 +33,32 @@ export function DepositSummary({
 }) {
   const { t } = useTranslation()
   const format = useFormat()
-  const now = useClock(30_000)
+  const now = useServerClock(1_000)
   const full = deposit.percent === undefined || deposit.percent >= 100
-  const left = booking.depositDueAt ? timeLeft(booking.depositDueAt, now) : null
-  const urgent = booking.depositDueAt ? new Date(booking.depositDueAt).getTime() - now < URGENT_MS : false
+  const msLeft = booking.depositDueAt ? new Date(booking.depositDueAt).getTime() - now : 0
+  const left = booking.depositDueAt && msLeft > 0 ? timeLeft(booking.depositDueAt, now) : null
+  const urgent = booking.depositDueAt ? msLeft < URGENT_MS : false
   const leftText = !booking.depositDueAt
     ? undefined
     : !left
       ? t(`${key}.timeUp`)
-      : t(`${key}.timeLeft`, {
-          time:
-            left.days > 0
-              ? t('customer.bookingDetail.lifecycle.leftDays', { days: left.days, hours: left.hours })
-              : left.hours > 0
-                ? t('customer.bookingDetail.lifecycle.leftHours', { hours: left.hours, minutes: left.minutes })
-                : t('customer.bookingDetail.lifecycle.leftMinutes', { minutes: Math.max(1, left.minutes) })
-        })
+      : msLeft <= SHORT_HOLD_MS
+        ? t('bookingSchedule.hold.leftLabel', { time: formatCountdown(msLeft) })
+        : t(`${key}.timeLeft`, {
+            time:
+              left.days > 0
+                ? t('customer.bookingDetail.lifecycle.leftDays', { days: left.days, hours: left.hours })
+                : left.hours > 0
+                  ? t('customer.bookingDetail.lifecycle.leftHours', { hours: left.hours, minutes: left.minutes })
+                  : t('customer.bookingDetail.lifecycle.leftMinutes', { minutes: Math.max(1, left.minutes) })
+          })
   const amount = deposit.amount !== undefined ? format.money(deposit.amount) : undefined
 
   return (
     <div className='flex flex-col gap-3 lg:sticky lg:top-24'>
       <aside
         aria-labelledby='deposit-summary'
-        className='flex flex-col gap-5 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'
+        className='flex flex-col gap-5 rounded-3xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-soft)] sm:p-6'
       >
         <div>
           <div className='flex flex-wrap items-center justify-between gap-2'>
@@ -146,7 +152,7 @@ export function DepositSummary({
         ) : null}
         <div className='flex flex-col gap-2'>
           <button
-            className='group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:bg-outline'
+            className='group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-peach-300 px-5 py-3 text-sm font-bold text-forest-950 transition-[background-color,transform] hover:bg-peach-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 disabled:cursor-not-allowed disabled:bg-outline disabled:text-white disabled:shadow-none shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)]'
             disabled={paying || (Boolean(booking.depositDueAt) && !left)}
             onClick={onPay}
             type='button'
@@ -156,7 +162,10 @@ export function DepositSummary({
               : amount && !deposit.estimated
                 ? t(`${key}.payVnpay`, { amount })
                 : t(`${key}.payNoAmount`)}
-            <Icon className='text-lg transition-transform duration-300 group-hover:translate-x-1' name='arrow_forward' />
+            <Icon
+              className='text-lg transition-transform duration-300 group-hover:translate-x-1'
+              name='arrow_forward'
+            />
           </button>
           <p className='flex items-center justify-center gap-1.5 text-center text-xs text-on-surface-variant'>
             <Icon className='text-sm' name='lock' />

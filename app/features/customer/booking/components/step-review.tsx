@@ -29,7 +29,7 @@ export function StepReview({ form }: { form: BookingForm }) {
   return (
     <div className='flex flex-col gap-6'>
       <div>
-        <h2 className='text-lg font-semibold text-on-surface'>{t('customer.booking.review.title')}</h2>
+        <h2 className='text-lg font-bold tracking-tight text-forest-950'>{t('customer.booking.review.title')}</h2>
         <p className='mt-0.5 text-sm text-on-surface-variant'>{t('customer.booking.review.description')}</p>
       </div>
 
@@ -175,11 +175,7 @@ export function StepReview({ form }: { form: BookingForm }) {
         <h3 className='font-semibold text-on-surface' id='review-next'>
           {t('customer.booking.review.nextTitle')}
         </h3>
-        <NextSteps
-          assign={!form.selectedCaregiverId}
-          confirmMinutes={policy?.confirmationTimeoutMinutes}
-          held={form.schedule.bookingType === 'SHIFT'}
-        />
+        <NextSteps assign={!form.selectedCaregiverId} />
       </section>
 
       <label className='flex cursor-pointer items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary'>
@@ -226,6 +222,13 @@ export function StepReview({ form }: { form: BookingForm }) {
                 })}
               </li>
               <li>{t('customer.booking.review.policy.after', { percent: policy.refundPercentAfterThreshold })}</li>
+              {policy.lateCancelNoRefundMinutes > 0 ? (
+                <li>
+                  {t('customer.booking.review.policy.late', {
+                    duration: format.duration(policy.lateCancelNoRefundMinutes)
+                  })}
+                </li>
+              ) : null}
               <li>{t('customer.booking.review.policy.overdue', { percent: policy.overduePaymentForfeitPercent })}</li>
             </>
           ) : null}

@@ -7,15 +7,19 @@ import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { tabId, tabPanelId } from '~/shared/ui/tabs'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { ManagerBookingQuickAction, type ManagerBookingAction } from './components/manager-booking-action-dialog'
 import { BOOKING_LIST_TABS, ManagerBookingFilters } from './components/manager-booking-filters'
 import { ManagerBookingQueue } from './components/manager-booking-queue'
 import { ManagerBookingTable } from './components/manager-booking-table'
+import { CaregiverAbsenceQueue } from '~/entities/booking/caregiver-absence-queue'
+
+import { ManagerWithdrawalQueue } from './components/manager-withdrawal-queue'
+import { useCenterCaregivers } from './hooks/use-center-caregivers'
 import { useManagerBookings } from './hooks/use-manager-bookings'
 
 /**
@@ -31,10 +35,11 @@ export function ManagerBookingManagementPage() {
   const [quick, setQuick] = useState<{ id: string; action: ManagerBookingAction } | null>(null)
   useDocumentTitle(t(`${key}.documentTitle`))
   const actionCount = list.groupCount('action')
+  const { nameOf: caregiverNameOf } = useCenterCaregivers()
 
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <Button
             leftIcon={<Icon className='text-lg' name='refresh' />}
@@ -63,6 +68,8 @@ export function ManagerBookingManagementPage() {
       />
 
       <ManagerBookingQueue list={list} />
+      <ManagerWithdrawalQueue />
+      <CaregiverAbsenceQueue nameOf={caregiverNameOf} role='manager' />
       <ManagerBookingFilters key={list.keyword} list={list} total={bookings.data?.totalElements} />
 
       <div aria-labelledby={tabId(BOOKING_LIST_TABS, list.group)} id={tabPanelId(BOOKING_LIST_TABS)} role='tabpanel'>

@@ -5,7 +5,9 @@ import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
+import { peachPill } from '~/features/customer/ui/bento-styles'
 import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
@@ -17,8 +19,7 @@ import { BookingSummaryCard } from './components/booking-summary-card'
 import { useCustomerBookings } from './hooks/use-customer-bookings'
 
 const key = 'customer.myBookings' as const
-const bookAction =
-  'inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-on-primary shadow-xs transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+const bookAction = peachPill
 
 export function CustomerBookingsPage() {
   const { t } = useTranslation()
@@ -29,7 +30,7 @@ export function CustomerBookingsPage() {
 
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
+      <CustomerPageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
 
       {nothingYet ? null : <BookingListToolbar list={list} />}
 

@@ -17,11 +17,11 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { toastSuccess, toastSystemError } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { CancelShiftDialog } from './components/cancel-shift-dialog'
 import { ShiftDetailDialog } from './components/shift-detail-dialog'
 import { ShiftFiltersBar } from './components/shift-filters'
@@ -143,7 +143,7 @@ export function ManagerWorkShiftsPage() {
   const items = shifts.data?.items ?? []
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
-      <PageHeader
+      <BentoPageHeader
         actions={
           <Button leftIcon={<Icon name='add' />} onClick={() => setDialog({ kind: 'form', mode: 'create' })}>
             {t(`${k}.create`)}

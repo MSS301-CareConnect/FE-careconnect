@@ -92,9 +92,7 @@ export function VisitCard({
   ]
 
   return (
-    <article
-      className={`${cgCard} cg-press group relative flex flex-col gap-3 p-4 hover:border-brand-200 hover:shadow-[var(--cg-shadow-2)] sm:p-5`}
-    >
+    <article className={`${cgCard} cg-lift group relative flex flex-col gap-3 p-5 hover:border-mint-200`}>
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
           <p className='text-[22px] leading-tight font-bold text-on-surface tabular-nums'>
@@ -110,6 +108,9 @@ export function VisitCard({
           {visit.noShowReportedAt && !visit.noShowDecidedAt ? (
             <StatusBadge tone='warning'>{t('caregiver.visits.noShowPending')}</StatusBadge>
           ) : null}
+          {visit.needsReassignment ? (
+            <StatusBadge tone='caution'>{t('caregiver.booking.badge.replacing')}</StatusBadge>
+          ) : null}
         </div>
       </div>
 
@@ -117,7 +118,7 @@ export function VisitCard({
         <h3 className='text-base font-semibold text-on-surface'>
           <Link
             aria-label={t('caregiver.visits.openLabel', { name, number: visit.occurrenceNo })}
-            className='after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-primary'
+            className='after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-primary'
             to={detail}
           >
             {name}

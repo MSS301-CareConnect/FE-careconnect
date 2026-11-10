@@ -79,6 +79,12 @@ export interface CenterBookingPolicyRequest {
    */
   refundPercentAfterThreshold: number
   /**
+   * At most refundThresholdMinutes (400 5413 otherwise)
+   * @minimum 0
+   * @maximum 1440
+   */
+  lateCancelNoRefundMinutes: number
+  /**
    * @minimum 0
    * @maximum 100
    */

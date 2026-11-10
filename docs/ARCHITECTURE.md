@@ -88,15 +88,19 @@ center chip, the notification bell (which also pins pending profile invitations)
 bottom navigation. `/customer/my-profile`, `/customer/patient-profiles`, `/customer/patient-profiles/:id`,
 `/customer/payments` and `/customer/invitations` share an account shell (`routes/customer/account-layout.tsx` →
 `features/customer/layout/account-shell.tsx`): a sidebar on desktop, a row of tabs on phones, with a badge of pending
-invitations. Action results are sonner toasts (the shared `Toaster`, mounted in `CustomerLayout` above the bottom
+invitations. Since the "Soft Bento" restyle (2026-11-09) `features/customer/layout/customer-theme.css` remaps the
+semantic tokens inside `.theme-customer` (forest primary, mint fills, 24 px cards) and customer pages use
+`features/customer/ui` (`CustomerPageHeader`, `bento-styles.ts`) instead of the shared `PageHeader`. Action results are sonner toasts (the shared `Toaster`, mounted in `CustomerLayout` above the bottom
 navigation).
 Caregiver search, caregiver detail, and services under `/customer` use a public browse
 layout outside the Customer portal guard. Guests see the same navigation style with
 Home, Find Caregivers, Services, and Sign in; active Customers also see bookings and
 their account menu. The `/customer` index, booking routes, and personal and patient
-profiles remain guarded. The current backend requires an authenticated session for
-caregiver search and detail, verified certificates, catalog items, center offerings,
-and price plans. Guest browse routes remain reachable, but their data requests return 401.
+profiles remain guarded. Since 2026-11-09 guests read the caregiver catalog (`GET /caregivers`), the public caregiver
+profile (`GET /caregivers/{id}/public`), catalog items, center offerings and their price plans without signing in: the
+gateway's `OPTIONAL_AUTH_GET_ENDPOINTS` and the matching ProviderService / CareCatalogService matchers permit anonymous
+GETs but still forward and verify a token when one is present, so admins and managers keep their full view (an
+anonymous caller is treated like a customer). Verified certificate files and caregiver search still need a session.
 
 The Customer header carries a center selector beside the logo, and the public `/` home
 page uses the same Customer layout so the selector appears from the first visit.
@@ -176,6 +180,10 @@ Medication name fields on the create form and the detail medication form use
 dates are never suggested. Matching ignores case and Vietnamese diacritics and accepts
 the start of the name or of any word in it. Free text stays allowed, and a chosen entry
 fills only an empty route field.
+
+`/login`, `/register` and `/forgot-password` share the layout route `routes/auth-layout.tsx` →
+`features/shared/auth/auth-shell.tsx`, which stays mounted so on desktop the forest card and the form slide past each
+other and the page (outlet) swaps while they cross; the pages render only their form.
 
 Public customer registration uses `/api/v1/auth/register` to send an email OTP. The
 account is created only after `/api/v1/auth/register/verify` succeeds; verification
@@ -360,8 +368,11 @@ where an open future slot is cancelled with a reason and its version; shift sign
 (registrations carry only the shift ID, so the shift is read through `GET /work-shifts/{id}`); and time off with
 dd/mm/yyyy dates in Vietnam time and a warning when it overlaps assigned visits or open slots. `/caregiver/profile` has
 Information / Certificates / Security tabs (`?tab=`): only the phone is editable (`PUT /users/me`) because
-`PUT /caregivers/{id}` is for managers; certificates are added with optional number and dates, show review and expiry
-states and can be deleted; security changes the password and names devices from their User-Agent. `/caregiver/security`
+`PUT /caregivers/{id}` is for managers; certificates are added with optional number and dates and up to five photos / PDFs (front and back) picked from a folder
+through the system file dialog ("Choose from a folder", "+" tile) or dragged in, show review and expiry
+states, are edited in a one-column dialog (`certificate-edit-form.tsx`, `PUT /certificates/{id}` with the version; a
+certificate past PENDING warns and asks again because saving sends it back to the center; photos stay in the files
+drawer) and can be deleted only while PENDING or REJECTED (ProviderService 409 `4253` otherwise); security changes the password and names devices from their User-Agent. `/caregiver/security`
 redirects there; `/account/security` stays the shared screen of the other roles. The Center Manager
 `/center-manager/schedules` page is the center's work calendar (see below). Pages compare dates
 against a "now" from `useNow` because `react-hooks/purity` forbids `Date.now()` during render.
@@ -452,7 +463,9 @@ two-column popup, caregiver picker unless one is fixed, dates and times in Vietn
 overlaps another time off), `RemoveTimeOffDialog`, and the `CaregiverTimeOffs` panel of the manager caregiver detail;
 every change invalidates `providerKeys.allTimeOffs`. The caregiver detail (redesigned 2026-11-06) is a `PageHeader` with
 breadcrumb, a profile card with the facts, then upcoming shifts of the next 14 days (`GET /care-centers/{id}/schedules`
-with `caregiverId` / dates / status) linking to the work calendar, time off, services and certificates; the profile edit
+with `caregiverId` / dates / status) linking to the work calendar, time off, missed visits (2026-11-10:
+`components/caregiver-absence-history.tsx` — counts from `GET /caregiver-absences/statistics?caregiverId=` and the latest
+five records, with a link to the bookings queue while any is pending), services and certificates; the profile edit
 is a popup. The caregiver list shows four numbers (team, awaiting verification — click filters, working today, on
 leave now), one filter row and a "Today" column (shift hours or "On leave") from one schedule read and one time-off read
 for the whole center.
@@ -538,6 +551,12 @@ The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts`
 menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue and
 quality previews keep their routes but are left out of the menu until a backend exists (D26). `/admin/policies` is
 live since booking spec v1.0 (2026-11-02): the admin picks an active center and edits its booking policy.
+Each labelled group is a parent section (2026-11-09, after the EXE admin sidebar; `NavRailGroup` `icon` + `collapsible`,
+`shared/ui/nav-rail-group.tsx`): a bold heading with its icon opens and closes its indented items, the choice is kept in
+`localStorage` (`careconnect.admin.navOpenGroups`, open by default) and navigating into a closed section opens it; on
+the collapsed rail a section is one icon whose items open in a flyout beside the rail (hover, click or ↓, Esc closes);
+the icon is the section's own until one of its pages is open, then that page's icon on a round mint badge. The phone
+drawer keeps the headings. Manager and caregiver rails do not use it.
 At `lg` and wider the sidebar is fixed and scrolls on its own. On smaller screens the same
 navigation opens as a drawer from the topbar toggle and closes on Escape, the backdrop or
 navigation. The topbar holds the language switch, notifications and the account menu;
@@ -922,6 +941,52 @@ Contract update workflow:
   EXPIRED with its booking, never a debt), and shows the customer's
   payment history (`GET /payments`, real `refundedAmount`) and refunds (`GET /refunds`).
   PaymentService error codes map to `payment.errors.e<code>` translations.
+
+- Caregiver absences (2026-11-10, `BE/docs/2026-11-10-CAREGIVER_ABSENCE_AND_REFUND_REVIEW.md`): a visit nobody checked
+  in to becomes CAREGIVER_MISSED, the customer is refunded in full to the wallet and BookingService opens an absence
+  record (`CaregiverAbsence` tag). `entities/booking/caregiver-absence-queue.tsx` lists the pending ones of the signed-in
+  role: on `/center-manager/bookings` the manager excuses one or records a violation (with a note), on
+  `/caregiver/visits` the caregiver sends or edits the explanation. `/admin/caregiver-absences` (menu Operations) is the
+  read-only platform list with counts and a status filter in URL search parameters. The customer's visit dialog says the
+  money went to the wallet; refund previews read the `LATE_NO_REFUND` rule (cancelled inside the center's
+  `lateCancelNoRefundMinutes` window, default 2 hours, no refund). The policy form edits that window (hours, at most the
+  refund cut-off and 24 hours); the refund summary, center page, booking review and cancel dialog tiers read it from the
+  policy instead of a fixed text.
+- Wallets (2026-11-09, `BE/docs/2026-11-09-WALLET_PLAN.md`): `entities/wallet` wraps the generated `Wallet` and
+  `WalletWithdrawal` clients (`walletKeys` under `['wallet']`, `walletErrorKey` for codes 6040–6052) and owns one
+  `WalletDashboard` used by `/customer/wallet` (account area), `/caregiver/wallet` (account menu), `/center-manager/wallet`
+  and `/admin/wallet`: balance and held amount, a period dashboard (this month / 30 days / this year, chart drawn with CSS,
+  no chart library), the period ledger with balance before → after and — except the read-only platform wallet — the
+  owner's withdrawal requests and the centred two-column withdrawal dialog (every field checked first, the amount is held
+  on success). `/admin/withdrawals` is the admin queue (status / wallet type in URL search parameters, `?withdrawal=` opens
+  the review: copyable bank details, the requester wallet and ledger, approve, reject with a reason, confirm the transfer
+  with its bank reference); requesters show by name (Identity account, or the center for a center wallet), never by ID.
+  Customer refunds of their own cancellations go to the wallet and the refund history marks them "Refunded to wallet".
+
+- AI assistant (2026-11-09, `BE/docs/2026-11-09-AI_CHAT_AND_CERTIFICATE_AI_CHECK.md`): `features/shared/ai-chat` is a
+  floating button mounted by the customer (public pages included), caregiver, center manager and admin layouts; it opens
+  a panel (full screen on phones, Escape closes). AIService decides who is a guest through the public
+  `GET /ai/chat/quota`, so the widget never guesses from the route. A guest gets the daily free prompts (3), no images
+  and no saved history (messages stay in memory, the count updates from `remainingGuestPrompts`, then a sign-in link with
+  `?next=`). Any signed-in role keeps conversations: the answer's `conversationId` is reused for follow-ups, the history
+  view opens, renames (inline, with the conversation `version`; 409 `8203` asks to reload) and deletes (confirmation)
+  them, and up to three JPG / PNG / WebP images — picked from a folder through the system file dialog (attach
+  button or the "+" tile) or dragged onto the question box — are previewed and checked against the quota limits before
+  `POST /ai/chat` (multipart: a JSON Blob part `request` plus `images`). The chat endpoints are public but AIService still
+  reads the session cookie, so a 401 refreshes the session once and retries. Answers render light Markdown (paragraphs,
+  lists, bold) as React text, never HTML. AIService error codes map to `aiChat.errors.e<code>`.
+- Certificate review (2026-11-09): caregiver declares and uploads photos → the center manager confirms (needs at least one
+  photo, 409 `4255`) → ProviderService sends the certificate to AIService in the background → the admin decides.
+  `/admin/certificates` (menu Operations) lists `GET /certificates/pending-audit` (high risk first) with count cards from
+  `/pending-audit/statistics` that filter by risk / AI state, a center filter, URL search parameters and
+  `?certificate=<id>` for the review; the list refreshes every 10 seconds while an AI check is running.
+  `entities/provider/certificate-review-dialog.tsx` (also opened from `/admin/centers/:id/caregivers`) shows the photos
+  (`certificate-files.tsx`, shared with the manager screen), a declared / read-by-AI / result table per field, the AI risk
+  and warnings (`certificateReview.*` copy, codes never shown), the center confirmation, "run AI again"
+  (`POST /certificates/{id}/ai-check`) and approve / reject; approving without a LOW / MEDIUM AI result and every
+  rejection need a reason (400 `4256`). Only admins receive the AI result; managers see where the AI check stands. A new
+  or removed certificate photo, or an edit of its details, sends the certificate back to the center, so media changes
+  also refresh certificate queries; the caregiver deletes a certificate only while PENDING or REJECTED (2026-11-10).
 
 ### Testing and debugging
 

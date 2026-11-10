@@ -91,15 +91,15 @@ export function BookingLifecycleStepper({ booking }: { booking: BookingDetailRec
         })}
       />
       {detail || countdown ? (
-        <div className='mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl bg-surface-container-low px-4 py-2.5 text-sm'>
+        <div className='mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-forest-900 px-4 py-3 text-sm text-white shadow-[var(--shadow-soft)]'>
           <p className='flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5'>
-            <Icon className='text-lg text-primary' name={STEP_ICONS[position.current]} />
-            <span className='font-semibold text-on-surface'>{currentLabel}</span>
-            {detail ? <span className='text-on-surface-variant tabular-nums'>{detail}</span> : null}
+            <Icon className='text-lg text-mint-300' name={STEP_ICONS[position.current]} />
+            <span className='font-semibold text-white'>{currentLabel}</span>
+            {detail ? <span className='text-white/70 tabular-nums'>{detail}</span> : null}
           </p>
           {countdown ? (
             <span
-              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums ${urgent ? 'bg-caution-container text-caution' : 'bg-brand-50 text-primary'}`}
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums ${urgent ? 'bg-peach-300 text-forest-950' : 'bg-mint-300 text-forest-950'}`}
             >
               <Icon className='text-sm' name='schedule' />
               {countdown}

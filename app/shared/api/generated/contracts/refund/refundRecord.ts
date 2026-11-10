@@ -5,6 +5,7 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { RefundChannel } from './refundChannel'
 import type { RefundStatus } from './refundStatus'
 
 export interface RefundRecord {
@@ -17,6 +18,7 @@ export interface RefundRecord {
   feeAmount: number
   reason: string
   status: RefundStatus
+  channel?: RefundChannel
   /** @nullable */
   refundedAt?: string | null
   createdAt?: string

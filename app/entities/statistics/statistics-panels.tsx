@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import type { ResponsivenessStatisticsRecord } from '~/shared/api/generated/contracts'
+import { CountUp, easeSoft, revealVariants, staggerVariants } from '~/shared/ui/motion'
 
 import { fetchCenterStatistics, fetchProviderStatistics, fetchSystemStatistics, statisticsKeys } from './statistics-api'
 
@@ -12,7 +14,7 @@ function QueryMessage({ retry, error }: { retry: () => void; error: boolean }) {
   const { t } = useTranslation()
   return (
     <div
-      className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs'
+      className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'
       role={error ? 'alert' : 'status'}
     >
       <p className={error ? 'text-sm font-medium text-error' : 'text-sm text-on-surface-variant'}>
@@ -20,7 +22,7 @@ function QueryMessage({ retry, error }: { retry: () => void; error: boolean }) {
       </p>
       {error ? (
         <button
-          className='mt-3 min-h-9 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-xs font-semibold text-primary hover:bg-surface-container-low'
+          className='mt-3 min-h-9 rounded-full border border-forest-900/10 bg-white px-4 py-1.5 text-xs font-semibold text-forest-900 hover:bg-mint-50'
           onClick={retry}
           type='button'
         >
@@ -52,12 +54,12 @@ function ResponsivenessCard({
     { key: 'expired', value: number(data.expiredCount ?? 0), tone: data.expiredCount ? 'text-error' : 'text-primary' }
   ] as const
   return (
-    <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
+    <div className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'>
       <h3 className='font-bold text-on-surface'>{t('statistics.responsiveness.title')}</h3>
       <p className='mt-1 text-sm text-on-surface-variant'>{t('statistics.responsiveness.hint')}</p>
       <dl className='mt-4 grid gap-3 sm:grid-cols-3'>
         {items.map((item) => (
-          <div className='rounded-xl bg-surface-container-low px-4 py-3' key={item.key}>
+          <div className='rounded-2xl bg-mint-50 px-4 py-3' key={item.key}>
             <dt className='text-xs font-semibold text-on-surface-variant'>
               {t(`statistics.responsiveness.${item.key}`)}
             </dt>
@@ -89,54 +91,75 @@ export function OperationalStatisticsPanel({ scope, centerId }: { scope: Operati
   const data = query.data
   const totalBookings = Object.values(data.bookingsByStatus ?? {}).reduce((sum, count) => sum + count, 0)
   const outcomes = [
-    { key: 'completed', count: data.occurrences?.completed ?? 0, color: 'bg-primary' },
-    { key: 'cancelled', count: data.occurrences?.cancelled ?? 0, color: 'bg-error' },
+    { key: 'completed', count: data.occurrences?.completed ?? 0, color: 'bg-forest-700' },
+    { key: 'cancelled', count: data.occurrences?.cancelled ?? 0, color: 'bg-peach-400' },
     { key: 'missed', count: data.occurrences?.missed ?? 0, color: 'bg-warning' },
     { key: 'noShow', count: data.occurrences?.customerNoShow ?? 0, color: 'bg-outline' }
   ] as const
   const totalOutcomes = outcomes.reduce((sum, item) => sum + item.count, 0)
   const completionRate = totalOutcomes ? Math.round((outcomes[0].count / totalOutcomes) * 100) : 0
+  const whole = (value: number) => number(Math.round(value))
   const metrics = [
-    { key: 'bookings', value: number(totalBookings) },
-    { key: 'completed', value: number(outcomes[0].count) },
-    { key: 'completionRate', value: `${number(completionRate)}%` },
-    { key: 'rating', value: number(data.avgRating ?? 0) },
-    { key: 'complaints', value: number(data.complaints?.open ?? 0) }
+    { key: 'bookings', value: totalBookings, format: whole },
+    { key: 'completed', value: outcomes[0].count, format: whole },
+    { key: 'completionRate', value: completionRate, format: (value: number) => `${whole(value)}%` },
+    { key: 'rating', value: data.avgRating ?? 0, format: (value: number) => number(Math.round(value * 10) / 10) },
+    { key: 'complaints', value: data.complaints?.open ?? 0, format: whole }
   ] as const
 
   return (
     <section aria-label={t('statistics.title')} className='space-y-4'>
       <div>
-        <h2 className='text-xl font-bold text-on-surface'>{t('statistics.title')}</h2>
+        <h2 className='text-[22px] font-bold tracking-tight text-forest-950'>{t('statistics.title')}</h2>
         <p className='text-sm text-on-surface-variant'>{t('statistics.period')}</p>
       </div>
-      <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-5'>
-        {metrics.map((metric) => (
-          <div
-            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-xs'
+      <motion.div
+        className='grid gap-3 sm:grid-cols-2 xl:grid-cols-5'
+        initial='hidden'
+        variants={staggerVariants(0.06)}
+        viewport={{ once: true, amount: 0.3 }}
+        whileInView='shown'
+      >
+        {metrics.map((metric, index) => (
+          <motion.div
+            className={
+              index === 0
+                ? 'rounded-2xl bg-forest-900 p-5 text-white shadow-[var(--shadow-float)]'
+                : 'rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'
+            }
             key={metric.key}
+            variants={revealVariants}
           >
-            <p className='text-xs font-semibold text-on-surface-variant'>{t(`statistics.${metric.key}`)}</p>
-            <p className='mt-2 text-2xl font-extrabold tabular-nums text-primary'>{metric.value}</p>
-          </div>
+            <p className={`text-xs font-semibold ${index === 0 ? 'text-white/70' : 'text-on-surface-variant'}`}>
+              {t(`statistics.${metric.key}`)}
+            </p>
+            <p
+              className={`mt-3 text-[30px] leading-none font-extrabold tracking-tight ${index === 0 ? 'text-white' : 'text-forest-950'}`}
+            >
+              <CountUp format={metric.format} value={metric.value} />
+            </p>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
       {data.responsiveness ? <ResponsivenessCard data={data.responsiveness} number={number} /> : null}
-      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'>
+      <div className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'>
         <h3 className='font-bold text-on-surface'>{t('statistics.occurrences')}</h3>
         {totalOutcomes ? (
           <>
             <div
-              className='mt-4 flex h-3.5 overflow-hidden rounded-full bg-surface-container'
+              className='mt-4 flex h-4 gap-1 overflow-hidden rounded-full bg-surface-container'
               role='img'
               aria-label={t('statistics.occurrences')}
             >
               {outcomes.map((item) =>
                 item.count ? (
-                  <div
-                    className={item.color}
+                  <motion.div
+                    className={`rounded-full ${item.color}`}
+                    initial={{ width: 0 }}
                     key={item.key}
-                    style={{ width: `${(item.count / totalOutcomes) * 100}%` }}
+                    transition={{ duration: 0.8, ease: easeSoft }}
+                    viewport={{ once: true }}
+                    whileInView={{ width: `${(item.count / totalOutcomes) * 100}%` }}
                   />
                 ) : null
               )}
@@ -144,10 +167,13 @@ export function OperationalStatisticsPanel({ scope, centerId }: { scope: Operati
             <dl className='mt-4 grid gap-3 sm:grid-cols-4'>
               {outcomes.map((item) => (
                 <div
-                  className='flex items-center justify-between gap-3 rounded-xl bg-surface-container-low px-3 py-2 text-sm'
+                  className='flex items-center justify-between gap-3 rounded-full bg-surface-container-low px-4 py-2 text-sm'
                   key={item.key}
                 >
-                  <dt className='text-on-surface-variant'>{t(`statistics.${item.key}`)}</dt>
+                  <dt className='flex items-center gap-2 text-on-surface-variant'>
+                    <span aria-hidden='true' className={`h-2.5 w-2.5 rounded-full ${item.color}`} />
+                    {t(`statistics.${item.key}`)}
+                  </dt>
                   <dd className='font-bold tabular-nums text-on-surface'>{number(item.count)}</dd>
                 </div>
               ))}
@@ -186,24 +212,41 @@ export function ProviderStatusPanel() {
 
   return (
     <section aria-label={t('statistics.providerTitle')} className='space-y-4'>
-      <h2 className='text-xl font-bold text-on-surface'>{t('statistics.providerTitle')}</h2>
+      <h2 className='text-[22px] font-bold tracking-tight text-forest-950'>{t('statistics.providerTitle')}</h2>
       <div className='grid gap-4 lg:grid-cols-3'>
         {groups.map((group) => (
           <div
-            className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'
+            className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'
             key={group.key}
           >
             <h3 className='font-bold text-on-surface'>{t(`statistics.${group.key}`)}</h3>
             {Object.entries(group.counts ?? {}).length ? (
               <dl className='mt-4 space-y-2.5'>
-                {Object.entries(group.counts ?? {}).map(([status, count]) => (
-                  <div className='flex items-center justify-between gap-3 text-sm' key={status}>
-                    <dt>
-                      <ProviderStatusBadge label={statusLabels[status] ?? status} status={status} />
-                    </dt>
-                    <dd className='font-bold tabular-nums text-on-surface'>{number(count)}</dd>
-                  </div>
-                ))}
+                {Object.entries(group.counts ?? {}).map(([status, count]) => {
+                  const total = Object.values(group.counts ?? {}).reduce((sum, value) => sum + value, 0)
+                  return (
+                    <div className='text-sm' key={status}>
+                      <div className='flex items-center justify-between gap-3'>
+                        <dt>
+                          <ProviderStatusBadge label={statusLabels[status] ?? status} status={status} />
+                        </dt>
+                        <dd className='font-bold tabular-nums text-on-surface'>{number(count)}</dd>
+                      </div>
+                      <div
+                        aria-hidden='true'
+                        className='mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-container'
+                      >
+                        <motion.div
+                          className='h-full rounded-full bg-mint-400'
+                          initial={{ width: 0 }}
+                          transition={{ duration: 0.8, ease: easeSoft }}
+                          viewport={{ once: true }}
+                          whileInView={{ width: `${total ? (count / total) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
               </dl>
             ) : (
               <p className='mt-4 text-sm text-outline'>{t('statistics.noData')}</p>

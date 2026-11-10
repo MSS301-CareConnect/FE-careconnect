@@ -30,6 +30,7 @@ type FieldError =
   | 'wholeMinutes'
   | 'advanceBeforeRemaining'
   | 'afterAboveBefore'
+  | 'lateAboveThreshold'
   | 'reminders'
   | 'remindersDuplicate'
   | 'remindersTooMany'
@@ -74,7 +75,8 @@ const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn';
     fields: [
       { name: 'refundThresholdMinutes', unit: 'hours', min: 0, max: MAX_MINUTES },
       { name: 'refundPercentBeforeThreshold', unit: 'percent', min: 0, max: 100 },
-      { name: 'refundPercentAfterThreshold', unit: 'percent', min: 0, max: 100 }
+      { name: 'refundPercentAfterThreshold', unit: 'percent', min: 0, max: 100 },
+      { name: 'lateCancelNoRefundMinutes', unit: 'hours', min: 0, max: MAX_CHECK_IN_MINUTES }
     ]
   },
   {
@@ -170,6 +172,14 @@ function validate(values: Values) {
     numbers.refundPercentAfterThreshold > numbers.refundPercentBeforeThreshold
   )
     errors.refundPercentAfterThreshold = 'afterAboveBefore'
+  // At most the refund cut-off and one day; the generic "too large" text names 720 hours, wrong for this field.
+  if (
+    errors.lateCancelNoRefundMinutes === 'tooLarge' ||
+    (numbers.lateCancelNoRefundMinutes !== undefined &&
+      numbers.refundThresholdMinutes !== undefined &&
+      numbers.lateCancelNoRefundMinutes > numbers.refundThresholdMinutes)
+  )
+    errors.lateCancelNoRefundMinutes = 'lateAboveThreshold'
   return { errors, numbers, reminders: reminders.value }
 }
 
@@ -265,17 +275,19 @@ function PolicyEditor({ policy }: { policy: CenterBookingPolicyRecord }) {
 
   return (
     <form className='flex flex-col gap-6' noValidate onSubmit={submit} ref={formRef}>
-      <p className='rounded-xl bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant'>
+      <p className='rounded-2xl bg-mint-50 px-5 py-3.5 text-sm text-forest-800 ring-1 ring-mint-100'>
         {policy.customized && policy.updatedAt
           ? t(`${key}.customized`, { time: formatDateTime(policy.updatedAt, i18n.language) })
           : t(`${key}.defaultInUse`)}
       </p>
       {GROUPS.map((group) => (
         <fieldset
-          className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-xs'
+          className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'
           key={group.key}
         >
-          <legend className='px-1 text-base font-bold text-on-surface'>{t(`${key}.groups.${group.key}`)}</legend>
+          <legend className='px-1 text-lg font-bold tracking-tight text-forest-950'>
+            {t(`${key}.groups.${group.key}`)}
+          </legend>
           <p className='mt-1 text-xs leading-5 text-on-surface-variant'>{t(`${key}.groupHints.${group.key}`)}</p>
           <div className='mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
             {group.fields.map((spec) => (
@@ -320,7 +332,7 @@ function PolicyEditor({ policy }: { policy: CenterBookingPolicyRecord }) {
       ))}
       {warnings.length > 0 ? (
         <div
-          className='rounded-xl border border-warning/30 bg-warning-container px-4 py-3 text-sm text-on-warning-container'
+          className='rounded-2xl border border-peach-200 bg-peach-50 px-5 py-3.5 text-sm text-peach-700'
           role='status'
         >
           <p className='font-semibold'>{t(`${key}.tightTitle`)}</p>

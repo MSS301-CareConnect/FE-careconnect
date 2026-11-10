@@ -1,0 +1,83 @@
+/*
+ * "Soft Bento" dialog motion (2026-11-09, docs/2026-11-09-UI_REDESIGN_PLAN.md phase 2): a `Modal` grows in from 96 %,
+ * fades and unblurs over a forest backdrop that fades and blurs the page; `data-state='closed'` plays it backwards
+ * while the component keeps the dialog for its exit. Loaded by `modal.tsx`; reduced motion turns it off.
+ */
+@keyframes cc-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes cc-modal-out {
+  from {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+    filter: blur(4px);
+  }
+}
+
+@keyframes cc-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cc-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+dialog.cc-modal[open] {
+  animation: cc-modal-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+dialog.cc-modal::backdrop {
+  background-color: rgb(7 29 24 / 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: cc-backdrop-in 240ms ease-out both;
+}
+
+dialog.cc-modal[data-state='closed'] {
+  animation: cc-modal-out 150ms ease-in both;
+}
+
+dialog.cc-modal[data-state='closed']::backdrop {
+  animation: cc-backdrop-out 150ms ease-in both;
+}
+
+/* Drawers and bottom sheets share the forest backdrop. */
+dialog.cc-sheet::backdrop {
+  background-color: rgb(7 29 24 / 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.cc-modal[open],
+  dialog.cc-modal::backdrop,
+  dialog.cc-modal[data-state='closed'],
+  dialog.cc-modal[data-state='closed']::backdrop {
+    animation: none;
+  }
+}

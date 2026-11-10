@@ -17,6 +17,7 @@ import type { CenterOfferingRecord, PricePlanRecord } from '~/shared/api/generat
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 import { DeleteOfferingDialog, DeletePlanDialog } from './components/delete-dialogs'
 import { OfferingList } from './components/offering-list'
 import { PlansHeading, PricePlanTable } from './components/price-plan-table'
@@ -117,24 +118,24 @@ export function ManagerServicesPage() {
   }
 
   return (
-    <div className='mx-auto max-w-7xl space-y-7 px-4 py-7 sm:px-6 lg:py-10'>
-      <header className='grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end'>
-        <div>
-          <p className='mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary'>{t(`${key}.eyebrow`)}</p>
-          <h1 className='text-3xl font-bold tracking-tight sm:text-4xl'>{t(`${key}.title`)}</h1>
-          <p className='mt-3 max-w-2xl text-sm leading-6 text-on-surface-variant sm:text-base'>
-            {t(`${key}.subtitle`)}
-          </p>
-        </div>
-        <button
-          className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white transition-transform hover:opacity-95 active:translate-y-0.5 disabled:opacity-50'
-          disabled={!centerId || !offerings.isSuccess}
-          onClick={() => setOfferingEditor('create')}
-          type='button'
-        >
-          <Icon name='add' /> {t(`${key}.addOffering`)}
-        </button>
-      </header>
+    <div className={`${bentoContainer} space-y-7`}>
+      <BentoPageHeader
+        actions={
+          <button
+            className='inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-peach-300 px-6 text-sm font-bold text-forest-950 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)] transition-[background-color,transform] hover:bg-peach-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-200 active:scale-[0.97] disabled:opacity-50'
+            disabled={!centerId || !offerings.isSuccess}
+            onClick={() => setOfferingEditor('create')}
+            type='button'
+          >
+            <Icon name='add' /> {t(`${key}.addOffering`)}
+          </button>
+        }
+        description={t(`${key}.subtitle`)}
+        eyebrow={t(`${key}.eyebrow`)}
+        icon='medical_information'
+        title={t(`${key}.title`)}
+        variant='hero'
+      />
 
       {!centerId ? (
         <div

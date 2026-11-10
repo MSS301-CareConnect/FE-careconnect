@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import type { ServiceCenterOption } from '~/entities/care-center/care-center-api'
+import { bentoCard } from '~/features/customer/ui/bento-styles'
 import { Icon } from '~/shared/ui/icon'
 
 import { CenterFacts } from './center-facts'
@@ -23,7 +24,10 @@ export function CenterPhoto({ center, className }: { center: ServiceCenterOption
       />
     )
   return (
-    <span aria-hidden='true' className={`grid place-items-center bg-brand-50 text-primary ${className}`}>
+    <span
+      aria-hidden='true'
+      className={`grid place-items-center bg-[radial-gradient(120%_120%_at_0%_0%,var(--color-mint-200),transparent_60%),radial-gradient(120%_120%_at_100%_100%,var(--color-peach-100),transparent_60%)] bg-mint-50 text-forest-800 ${className}`}
+    >
       <Icon className='text-4xl' name='home_health' />
     </span>
   )
@@ -34,13 +38,18 @@ export function CenterCard({ center }: { center: ServiceCenterOption }) {
   const { t } = useTranslation()
 
   return (
-    <article className='cc-lift group relative flex flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-card)] hover:border-brand-200'>
-      <CenterPhoto center={center} className='aspect-[16/9] w-full' />
+    <article className={`cc-lift group relative flex flex-col overflow-hidden ${bentoCard} hover:border-mint-200`}>
+      <div className='m-2 mb-0 overflow-hidden rounded-[1.1rem]'>
+        <CenterPhoto
+          center={center}
+          className='aspect-[16/9] w-full transition-transform duration-500 group-hover:scale-105'
+        />
+      </div>
       <div className='flex flex-1 flex-col p-5'>
-        <h2 className='text-lg leading-snug font-semibold text-on-surface'>
+        <h2 className='text-lg leading-snug font-bold tracking-tight text-forest-950'>
           <Link
             aria-label={t(`${key}.viewNamed`, { name: center.name })}
-            className='rounded after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+            className='rounded after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
             to={`/customer/centers/${center.id}`}
           >
             {center.name}
@@ -49,8 +58,12 @@ export function CenterCard({ center }: { center: ServiceCenterOption }) {
         <CenterFacts center={center} className='mt-3' />
         <div className='mt-auto pt-5'>
           <div className='flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant pt-4'>
-            <span aria-hidden='true' className='text-sm font-medium text-primary group-hover:underline'>
+            <span
+              aria-hidden='true'
+              className='inline-flex items-center gap-1 text-sm font-semibold text-forest-800 transition-[gap] group-hover:gap-2'
+            >
               {t(`${key}.view`)}
+              <Icon className='text-base' name='arrow_forward' />
             </span>
             <ChooseCenterButton center={center} size='sm' />
           </div>

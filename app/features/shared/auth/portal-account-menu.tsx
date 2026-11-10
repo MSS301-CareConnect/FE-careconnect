@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 import { Icon } from '~/shared/ui/icon'
 import { useAuthUser } from './auth-user-context'
 import { SignOutButton } from './sign-out-button'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 export function PortalAccountMenu({
   roleLabel,
@@ -22,6 +23,7 @@ export function PortalAccountMenu({
   const { t } = useTranslation()
   const user = useAuthUser()
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -88,10 +90,11 @@ export function PortalAccountMenu({
         </span>
         <Icon className='hidden text-base text-on-surface-variant sm:block' name='expand_more' />
       </button>
-      {open && (
+      {present && (
         <nav
           aria-label={t('common.accountMenu')}
-          className='absolute top-full right-0 z-50 mt-2 w-60 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
+          data-state={panelState}
+          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-60 origin-top-right rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
           id='portal-account-menu'
         >
           <div className='border-b border-outline-variant/30 px-3 py-2 sm:hidden'>

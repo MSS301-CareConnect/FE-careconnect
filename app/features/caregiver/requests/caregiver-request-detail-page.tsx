@@ -90,7 +90,7 @@ function RequestDetail({
   const summary = useRequestSummary(request)
 
   return (
-    <div className={`${cgContainer} pb-28 lg:pb-8`}>
+    <div className={`${cgContainer} pb-32 lg:pb-8`}>
       <CaregiverPageHeader
         back={back}
         description={<span className='tabular-nums'>{summary.when}</span>}

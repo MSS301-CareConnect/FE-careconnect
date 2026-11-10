@@ -23,11 +23,13 @@ export function notificationTarget(
         return bookingId ? `/customer/bookings/${bookingId}` : '/customer/payments'
       return bookingId ? `/customer/bookings/${bookingId}` : undefined
     case 'center-manager':
+      if (type === 'CAREGIVER_ABSENCE_UPDATED') return '/center-manager/bookings'
       if (refType === 'COMPLAINT' || type === 'COMPLAINT_UPDATED') return '/center-manager/complaints'
       if (refType === 'CARE_CENTER') return '/center-manager'
       return bookingId ? `/center-manager/bookings/${bookingId}` : undefined
     case 'caregiver':
       if (type === 'CAREGIVER_REQUEST') return '/caregiver/requests'
+      if (type === 'CAREGIVER_ABSENCE_UPDATED') return '/caregiver/visits'
       if (occurrenceId) return `/caregiver/visits/${occurrenceId}`
       if (type === 'REVIEW_CREATED' || type === 'REVIEW_REPLIED') return '/caregiver/profile'
       return bookingId ? '/caregiver/visits' : undefined
@@ -52,8 +54,14 @@ export function notificationIcon(type: NotificationType) {
   if (type === 'BOOKING_REJECTED') return 'block'
   if (type === 'SESSION_STARTED' || type === 'SESSION_ENDED' || type === 'SESSION_AUTO_CLOSED')
     return 'medical_services'
-  if (type === 'OCCURRENCE_MISSED' || type === 'NO_SHOW_REPORTED' || type === 'NO_SHOW_AUTO_ACCEPTED')
+  if (
+    type === 'OCCURRENCE_MISSED' ||
+    type === 'NO_SHOW_REPORTED' ||
+    type === 'NO_SHOW_AUTO_ACCEPTED' ||
+    type === 'CAREGIVER_ABSENCE_UPDATED'
+  )
     return 'person_off'
+  if (type === 'CHECK_IN_LATE') return 'alarm'
   if (type === 'REVIEW_CREATED' || type === 'REVIEW_REPLIED') return 'star'
   if (type === 'PAYMENT_SUCCEEDED' || type === 'REFUND_COMPLETED' || type === 'REMAINING_OVERDUE') return 'payments'
   if (type === 'COMPLAINT_UPDATED') return 'report'
@@ -83,6 +91,8 @@ export function notificationTone(type: NotificationType): NotificationTone {
     case 'SHIFT_REMINDER':
     case 'NO_SHOW_REPORTED':
     case 'CAREGIVER_REQUEST':
+    case 'CHECK_IN_LATE':
+    case 'CAREGIVER_ABSENCE_UPDATED':
       return 'warning'
     case 'BOOKING_ACCEPTED':
     case 'BOOKING_CONFIRMED':

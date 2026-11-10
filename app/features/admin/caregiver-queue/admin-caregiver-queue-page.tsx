@@ -9,6 +9,7 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { useActionToast } from '~/shared/ui/use-action-toast'
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 
 import { PendingCaregiverCard } from './components/pending-caregiver-card'
 
@@ -44,11 +45,11 @@ export function AdminCaregiverQueuePage() {
   })
 
   return (
-    <div className='flex flex-col gap-4 p-5 lg:p-8'>
-      <div>
-        <h1 className='text-2xl font-bold'>{t('admin.caregiverQueuePage.title')}</h1>
-        <p className='mt-1 text-sm text-on-surface-variant'>{t('admin.caregiverQueuePage.description')}</p>
-      </div>
+    <div className={bentoContainer}>
+      <BentoPageHeader
+        description={t('admin.caregiverQueuePage.description')}
+        title={t('admin.caregiverQueuePage.title')}
+      />
       {decide.isError && classifyApiError(decide.error).kind !== 'system' ? (
         <p className='text-sm text-error' role='alert'>
           {t('admin.caregiverQueuePage.decideError')}

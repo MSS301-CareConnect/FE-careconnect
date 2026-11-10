@@ -19,7 +19,7 @@ export function SignInHint({ title, text }: { title?: string; text: string }) {
         </span>
       </p>
       <Link
-        className='inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+        className='inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
         to={`/login?next=${next}`}
       >
         <Icon aria-hidden='true' className='text-lg' name='login' />

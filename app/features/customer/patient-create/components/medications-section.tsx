@@ -180,7 +180,7 @@ export function MedicationsSection({
             type='button'
             onClick={onSubmit}
             disabled={isSubmitting}
-            className='inline-flex w-1/2 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow disabled:opacity-60 sm:w-auto'
+            className='inline-flex w-1/2 items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow disabled:opacity-60 sm:w-auto'
           >
             <Icon name='check_circle' className='text-lg' />
             <span>

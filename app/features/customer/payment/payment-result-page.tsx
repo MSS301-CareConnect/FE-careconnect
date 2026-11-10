@@ -13,12 +13,7 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
 
-import {
-  PaymentShell,
-  paymentStatusTone,
-  primaryAction,
-  secondaryAction
-} from './components/payment-shell'
+import { PaymentShell, paymentStatusTone, primaryAction, secondaryAction } from './components/payment-shell'
 
 export type PaymentOutcome = 'success' | 'failure'
 type ResultState = 'pending' | 'success' | 'failure'
@@ -137,7 +132,10 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
         </div>
       ) : null}
       {payment.isError ? (
-        <div className='mx-auto max-w-2xl rounded-2xl bg-error-container p-6 text-sm text-on-error-container shadow-sm' role='alert'>
+        <div
+          className='mx-auto max-w-2xl rounded-2xl bg-error-container p-6 text-sm text-on-error-container shadow-sm'
+          role='alert'
+        >
           <div className='flex items-start gap-3'>
             <Icon className='text-2xl text-error' name='error' />
             <div>
@@ -300,7 +298,9 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                     <span>{t('customer.payment.paymentMethod')}</span>
                   </dt>
                   <dd className='flex items-center gap-2 font-medium text-on-surface'>
-                    <span className='rounded bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700'>VNPay</span>
+                    <span className='rounded bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700'>
+                      {t('customer.payment.vnpayBadge')}
+                    </span>
                     <span>{t('customer.payment.paymentMethodVnpay')}</span>
                   </dd>
                 </div>
@@ -360,7 +360,10 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                 {state === 'failure' && canRetry ? (
                   <Link className={primaryAction} to={retryLink}>
                     {remaining ? t('customer.payment.failure.payInvoiceAgain') : t('customer.payment.failure.retry')}
-                    <Icon className='text-lg transition-transform duration-300 group-hover:translate-x-1' name='refresh' />
+                    <Icon
+                      className='text-lg transition-transform duration-300 group-hover:translate-x-1'
+                      name='refresh'
+                    />
                   </Link>
                 ) : null}
 
@@ -428,7 +431,9 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                           <Icon className='text-xl' name='person_search' />
                         </div>
                         <div className='min-w-0'>
-                          <p className='text-xs font-medium text-on-surface-variant'>{t('customer.payment.caregiver')}</p>
+                          <p className='text-xs font-medium text-on-surface-variant'>
+                            {t('customer.payment.caregiver')}
+                          </p>
                           <p className='text-sm font-semibold text-on-surface'>
                             {t('customer.payment.caregiverWaiting')}
                           </p>
@@ -443,7 +448,9 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                         <div className='min-w-0 flex-1'>
                           <p className='font-semibold text-on-surface'>
                             {booking.data.startDate ? formatDateTime(booking.data.startDate, language) : '—'}
-                            {booking.data.startTime ? ` (${booking.data.startTime} - ${booking.data.endTime ?? ''})` : ''}
+                            {booking.data.startTime
+                              ? ` (${booking.data.startTime} - ${booking.data.endTime ?? ''})`
+                              : ''}
                           </p>
                           <p className='mt-0.5'>
                             {booking.data.occurrences?.length
@@ -483,14 +490,20 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                 aria-labelledby='next-steps-title'
                 className='flex flex-col gap-4 rounded-3xl border border-outline-variant/60 bg-white p-6 shadow-[var(--shadow-card)]'
               >
-                <h3 className='flex items-center gap-2 border-b border-outline-variant/50 pb-3 text-base font-bold text-on-surface' id='next-steps-title'>
+                <h3
+                  className='flex items-center gap-2 border-b border-outline-variant/50 pb-3 text-base font-bold text-on-surface'
+                  id='next-steps-title'
+                >
                   <Icon className='text-xl text-primary' name='alt_route' />
                   <span>{t('customer.payment.nextStepsTitle')}</span>
                 </h3>
                 <ol className='relative flex flex-col space-y-4 pl-1 text-sm'>
                   {/* Step 1 */}
                   <li className='relative flex gap-3.5'>
-                    <span aria-hidden='true' className='absolute top-6 bottom-0 left-[11px] w-0.5 bg-outline-variant/60' />
+                    <span
+                      aria-hidden='true'
+                      className='absolute top-6 bottom-0 left-[11px] w-0.5 bg-outline-variant/60'
+                    />
                     <span
                       className={`relative mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold ${
                         state === 'success'
@@ -510,9 +523,12 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
 
                   {/* Step 2 */}
                   <li className='relative flex gap-3.5'>
-                    <span aria-hidden='true' className='absolute top-6 bottom-0 left-[11px] w-0.5 bg-outline-variant/60' />
+                    <span
+                      aria-hidden='true'
+                      className='absolute top-6 bottom-0 left-[11px] w-0.5 bg-outline-variant/60'
+                    />
                     <span className='relative mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-container-high text-xs font-bold text-on-surface-variant'>
-                      2
+                      {2}
                     </span>
                     <div className='min-w-0 flex-1 pb-1'>
                       <p className='font-bold text-on-surface'>{t('customer.payment.step2Title')}</p>
@@ -525,7 +541,7 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                   {/* Step 3 */}
                   <li className='relative flex gap-3.5'>
                     <span className='relative mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-container-high text-xs font-bold text-on-surface-variant'>
-                      3
+                      {3}
                     </span>
                     <div className='min-w-0 flex-1'>
                       <p className='font-bold text-on-surface'>{t('customer.payment.step3Title')}</p>

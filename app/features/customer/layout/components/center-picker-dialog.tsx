@@ -47,7 +47,7 @@ export function CenterPickerDialog() {
           <div className='flex items-start justify-between gap-4 px-6 pt-6 sm:px-7 sm:pt-7'>
             <span
               aria-hidden='true'
-              className='grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary text-on-primary'
+              className='grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-on-primary'
             >
               <Icon className='text-2xl' name='home_health' />
             </span>

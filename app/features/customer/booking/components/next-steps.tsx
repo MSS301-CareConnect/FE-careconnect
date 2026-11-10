@@ -1,38 +1,25 @@
 import { useTranslation } from 'react-i18next'
 
-import { useFormat } from '~/shared/lib/format'
 import { Icon } from '~/shared/ui/icon'
 
 /**
- * "What happens next": confirm → (assign) → pay → care begins. A SHIFT booking (`held`, 2026-11-05) is held at once on
- * the caregiver's own shift, so it starts with "held" and goes straight to paying.
+ * "What happens next" (2026-11-09): every booking is held 5 minutes right after sending → the customer pays the first
+ * part → (a caregiver is assigned, when none was chosen or picked yet) → care begins. No center confirmation step.
  */
-export function NextSteps({
-  assign,
-  confirmMinutes,
-  held = false
-}: {
-  assign: boolean
-  confirmMinutes?: number
-  held?: boolean
-}) {
+export function NextSteps({ assign }: { assign: boolean }) {
   const { t } = useTranslation()
-  const format = useFormat()
   const steps = [
-    held
-      ? {
-          icon: 'event_available',
-          title: t('customer.booking.review.next.held'),
-          hint: t('customer.booking.review.next.heldHint')
-        }
-      : {
-          icon: 'fact_check',
-          title: t('customer.booking.review.next.confirm'),
-          hint: confirmMinutes
-            ? t('customer.booking.review.next.confirmHint', { duration: format.duration(confirmMinutes) })
-            : ''
-        },
-    ...(assign && !held
+    {
+      icon: 'timer',
+      title: t('customer.booking.review.next.held'),
+      hint: t('customer.booking.review.next.heldHint')
+    },
+    {
+      icon: 'credit_card',
+      title: t('customer.booking.review.next.pay'),
+      hint: t('customer.booking.review.next.payHint')
+    },
+    ...(assign
       ? [
           {
             icon: 'person_check',
@@ -41,11 +28,6 @@ export function NextSteps({
           }
         ]
       : []),
-    {
-      icon: 'credit_card',
-      title: t('customer.booking.review.next.pay'),
-      hint: t('customer.booking.review.next.payHint')
-    },
     {
       icon: 'favorite',
       title: t('customer.booking.review.next.start'),

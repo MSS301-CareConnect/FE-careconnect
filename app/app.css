@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400..600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 @import 'tailwindcss';
 
@@ -80,6 +81,30 @@
   --color-brand-700: #0b4a30;
   --color-brand-800: #093b26;
   --color-brand-900: #062a1b;
+
+  /* "Soft Bento" redesign (2026-11-09, docs/2026-11-09-UI_REDESIGN_PLAN.md): deep forest blocks, mint highlights and
+     peach calls to action over a soft mint→peach page. */
+  --font-accent: 'Fraunces', ui-serif, Georgia, serif;
+  --color-forest-950: #071d18;
+  --color-forest-900: #0c2b25;
+  --color-forest-800: #123b33;
+  --color-forest-700: #1b4d42;
+  --color-forest-600: #256152;
+  --color-mint-50: #effaf5;
+  --color-mint-100: #d7f3e7;
+  --color-mint-200: #b4e7d3;
+  --color-mint-300: #84d6b9;
+  --color-mint-400: #4fbf9b;
+  --color-mint-500: #2ea482;
+  --color-peach-50: #fff5ee;
+  --color-peach-100: #ffe6d5;
+  --color-peach-200: #ffcdb0;
+  --color-peach-300: #fdb088;
+  --color-peach-400: #f6925f;
+  --color-peach-700: #a8481b;
+  --radius-bento: 1.5rem;
+  --shadow-soft: 0 18px 40px -22px rgb(12 43 37 / 0.28), 0 2px 6px rgb(12 43 37 / 0.05);
+  --shadow-float: 0 24px 60px -24px rgb(12 43 37 / 0.35);
 
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-card: 0 1px 2px rgb(16 24 20 / 0.05), 0 1px 3px rgb(16 24 20 / 0.04);
@@ -538,24 +563,34 @@ dialog[open] {
       background: var(--color-surface-container-lowest);
       color: var(--color-on-surface);
       box-shadow: var(--shadow-raised);
+      /* Same open / close motion as the custom dropdowns (`.cc-dropdown`): grow, fade and unblur; reversed on close. */
       opacity: 0;
-      translate: 0 -4px;
+      translate: 0 -6px;
+      scale: 0.96;
+      filter: blur(4px);
+      transform-origin: top center;
       transition:
-        opacity 160ms var(--ease-out-soft),
-        translate 160ms var(--ease-out-soft),
-        display 160ms allow-discrete,
-        overlay 160ms allow-discrete;
+        opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        translate 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        scale 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        display 180ms allow-discrete,
+        overlay 180ms allow-discrete;
     }
 
     select:not([multiple], [size]):open::picker(select) {
       opacity: 1;
       translate: 0 0;
+      scale: 1;
+      filter: none;
     }
 
     @starting-style {
       select:not([multiple], [size]):open::picker(select) {
         opacity: 0;
-        translate: 0 -4px;
+        translate: 0 -6px;
+        scale: 0.96;
+        filter: blur(4px);
       }
     }
 
@@ -614,6 +649,192 @@ dialog[open] {
 @media (prefers-reduced-motion: reduce) {
   select::picker(select),
   select::picker-icon {
+    transition: none;
+  }
+}
+
+/*
+ * Pointer cursor on everything clickable (2026-11-09). Tailwind's preflight leaves buttons on the default arrow; every
+ * button, link, summary, tab, option, label of a control and toggle input shows the hand, and a disabled one shows
+ * "not allowed". Kept in the base layer so a component's own `cursor-*` utility still wins.
+ */
+@layer base {
+  :where(
+    button,
+    a[href],
+    summary,
+    label[for],
+    select,
+    [role='button'],
+    [role='tab'],
+    [role='option'],
+    [role='menuitem'],
+    [role='menuitemradio'],
+    [role='menuitemcheckbox'],
+    [role='switch'],
+    [role='checkbox'],
+    [role='radio'],
+    input[type='checkbox'],
+    input[type='radio'],
+    input[type='file'],
+    input[type='color'],
+    input[type='range'],
+    input[type='submit'],
+    input[type='button'],
+    input[type='reset']
+  ):not(:disabled, [aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  :where(button, select, input, textarea, [role='button'], [role='option'], [role='tab']):is(
+    :disabled,
+    [aria-disabled='true']
+  ) {
+    cursor: not-allowed;
+  }
+
+  /* A label wrapping a checkbox / radio card (ChoiceCard and the like) is clickable as a whole. */
+  label:has(> input:is([type='checkbox'], [type='radio']):not(:disabled)) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * Dropdown panels (2026-11-09): every custom dropdown — date, time, combobox, "⋯" menus, filter chips, account menus,
+ * notification bells, the center selector — gets `cc-dropdown` with `data-state` from `useExitPresence` and
+ * `data-side` from `useAnchoredPopover`. Opening grows out of the trigger with a short fade and blur; closing plays it
+ * backwards while `useExitPresence` keeps the panel mounted for the exit.
+ */
+@keyframes cc-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--cc-drop-y, -6px)) scale(0.96);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes cc-dropdown-out {
+  from {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--cc-drop-y, -6px)) scale(0.96);
+    filter: blur(4px);
+  }
+}
+
+.cc-dropdown {
+  animation: cc-dropdown-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cc-dropdown[data-side='top'] {
+  --cc-drop-y: 6px;
+}
+
+.cc-dropdown[data-state='closed'] {
+  animation: cc-dropdown-out 140ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-dropdown,
+  .cc-dropdown[data-state='closed'] {
+    animation: none;
+  }
+}
+
+/* Soft Bento utilities (2026-11-09). */
+.cc-mesh {
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(60rem 36rem at 0% 0%, rgb(180 231 211 / 0.55), transparent 60%),
+    radial-gradient(48rem 32rem at 100% 30%, rgb(255 230 213 / 0.6), transparent 60%),
+    radial-gradient(50rem 30rem at 30% 100%, rgb(215 243 231 / 0.5), transparent 60%);
+}
+
+.cc-glass {
+  background-color: rgb(255 255 255 / 0.72);
+  border: 1px solid rgb(255 255 255 / 0.65);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* The landing's section rail replaces the page scrollbar on large screens (wheel, keys and touch still scroll). */
+@media (min-width: 64rem) {
+  html.cc-rail-page {
+    scrollbar-width: none;
+  }
+  html.cc-rail-page::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.cc-accent-serif {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Auth frame (2026-11-09): the forest panel and the form trade halves when
+   /login ↔ /register change. Transform, border-radius and shadow smoothly transition. */
+.cc-auth-slide {
+  transition: transform 720ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+.cc-auth-card-slide {
+  /* Tailwind v4 translate-x-* sets the `translate` property, not `transform`. */
+  transition:
+    translate 760ms cubic-bezier(0.65, 0, 0.35, 1),
+    transform 760ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: translate;
+}
+
+.cc-auth-card-left,
+.cc-auth-card-right {
+  transition:
+    border-radius 760ms cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 760ms ease;
+}
+
+.cc-auth-card-left {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 24% 50%;
+  border-bottom-right-radius: 24% 50%;
+  box-shadow: 24px 0 60px -15px rgba(7, 29, 24, 0.32);
+}
+
+.cc-auth-card-right {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 24% 50%;
+  border-bottom-left-radius: 24% 50%;
+  box-shadow: -24px 0 60px -15px rgba(7, 29, 24, 0.32);
+}
+
+.cc-auth-form-slide {
+  transition:
+    translate 700ms cubic-bezier(0.65, 0, 0.35, 1),
+    transform 700ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: translate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-auth-slide,
+  .cc-auth-card-slide,
+  .cc-auth-card-left,
+  .cc-auth-card-right,
+  .cc-auth-form-slide {
     transition: none;
   }
 }

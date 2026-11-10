@@ -11,6 +11,7 @@ import {
   fetchProviderMedia,
   removeCertificate,
   removeMedia,
+  saveCertificate,
   uploadMedia
 } from '~/entities/provider/provider-api'
 import { fetchWebSessions, revokeSession } from '~/features/shared/auth/security-api'
@@ -28,6 +29,7 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchProviderMedia: vi.fn(),
   removeCertificate: vi.fn(),
   removeMedia: vi.fn(),
+  saveCertificate: vi.fn(),
   uploadMedia: vi.fn()
 }))
 vi.mock('~/features/shared/auth/security-api', async (importOriginal) => ({
@@ -122,7 +124,7 @@ describe('Caregiver profile — information', () => {
 })
 
 describe('Caregiver profile — certificates', () => {
-  it('creates the certificate with its details and uploads the dropped file', async () => {
+  it('creates the certificate and uploads photos picked from a folder and dropped in', async () => {
     vi.mocked(createCertificate).mockResolvedValue({
       id: 'certificate-1',
       caregiverId: 'caregiver-1',
@@ -132,12 +134,25 @@ describe('Caregiver profile — certificates', () => {
       version: 1
     })
     vi.mocked(uploadMedia).mockResolvedValue([])
+    const pickerClick = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
     renderProfile('/caregiver/profile?tab=certificates')
 
     fireEvent.click((await screen.findAllByRole('button', { name: 'Add certificate' }))[0])
     const drawer = screen.getByRole('dialog', { name: 'Add certificate' })
-    const file = new File(['sample'], 'first-aid.pdf', { type: 'application/pdf' })
-    fireEvent.change(within(drawer).getByLabelText('Certificate file'), { target: { files: [file] } })
+    // "Choose from a folder" opens the system file dialog.
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Choose from a folder' }))
+    expect(pickerClick).toHaveBeenCalledTimes(1)
+    const front = new File(['front'], 'front.pdf', { type: 'application/pdf' })
+    fireEvent.change(within(drawer).getByLabelText('Choose from a folder'), { target: { files: [front] } })
+    // A second side dragged in from Explorer / Finder joins the first one.
+    const back = new File(['back'], 'back.pdf', { type: 'application/pdf' })
+    fireEvent.drop(within(drawer).getByRole('group', { name: 'Certificate photos or files' }), {
+      dataTransfer: { files: [back] }
+    })
+    expect(within(drawer).getByRole('button', { name: 'Remove back.pdf' })).toBeInTheDocument()
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Choose more from a folder' }))
+    expect(pickerClick).toHaveBeenCalledTimes(2)
+    pickerClick.mockRestore()
     fireEvent.change(within(drawer).getByLabelText('Certificate name'), { target: { value: 'First aid' } })
     fireEvent.change(within(drawer).getByLabelText('Issued by'), { target: { value: 'Red Cross' } })
     fireEvent.click(within(drawer).getByRole('button', { name: 'Save certificate' }))
@@ -151,7 +166,7 @@ describe('Caregiver profile — certificates', () => {
         expiryDate: undefined
       })
     )
-    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [file]))
+    await waitFor(() => expect(uploadMedia).toHaveBeenCalledWith('CERTIFICATE', 'certificate-1', [front, back]))
   })
 
   it('retries a failed file upload without creating the certificate twice', async () => {
@@ -168,7 +183,7 @@ describe('Caregiver profile — certificates', () => {
 
     fireEvent.click((await screen.findAllByRole('button', { name: 'Add certificate' }))[0])
     const drawer = screen.getByRole('dialog', { name: 'Add certificate' })
-    fireEvent.change(within(drawer).getByLabelText('Certificate file'), {
+    fireEvent.change(within(drawer).getByLabelText('Choose from a folder'), {
       target: { files: [new File(['sample'], 'first-aid.pdf', { type: 'application/pdf' })] }
     })
     fireEvent.change(within(drawer).getByLabelText('Certificate name'), { target: { value: 'First aid' } })
@@ -187,7 +202,7 @@ describe('Caregiver profile — certificates', () => {
         caregiverId: 'caregiver-1',
         certificateName: 'First aid',
         issuedBy: 'Red Cross',
-        verificationStatus: 'ADMIN_VERIFIED',
+        verificationStatus: 'REJECTED',
         expiryDate: '2020-01-01',
         version: 3
       }
@@ -201,7 +216,119 @@ describe('Caregiver profile — certificates', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
     await waitFor(() => expect(removeCertificate).toHaveBeenCalledWith('certificate-1', 3))
   })
+
+  it('offers delete only before the center confirms or after a rejection', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([
+      certificateOf('pending', 'Pending one', 'PENDING'),
+      certificateOf('rejected', 'Rejected one', 'REJECTED'),
+      certificateOf('center', 'Center one', 'CENTER_VERIFIED'),
+      certificateOf('verified', 'Verified one', 'ADMIN_VERIFIED')
+    ])
+    renderProfile('/caregiver/profile?tab=certificates')
+
+    expect(await screen.findByRole('button', { name: 'Delete Pending one' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete Rejected one' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete Center one' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete Verified one' })).not.toBeInTheDocument()
+    // Every certificate can still be corrected.
+    expect(screen.getByRole('button', { name: 'Edit Verified one' })).toBeInTheDocument()
+  })
+
+  it('explains a delete the backend refused because the center confirmed meanwhile', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([certificateOf('pending', 'First aid', 'PENDING')])
+    vi.mocked(removeCertificate).mockRejectedValue(
+      Object.assign(new Error('Conflict'), { status: 409, info: { code: 4253 } })
+    )
+    renderProfile('/caregiver/profile?tab=certificates')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete First aid' }))
+    const dialog = screen.getByRole('dialog', { name: 'Delete this certificate?' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
+    expect(
+      await within(dialog).findByText(
+        'This certificate is being reviewed or is already verified, so it can no longer be deleted.'
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('saves edited details of a pending certificate with its version', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([certificateOf('pending', 'First aid', 'PENDING')])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([mediaOf('photo-1')])
+    vi.mocked(saveCertificate).mockResolvedValue(certificateOf('pending', 'First aid level 2', 'PENDING'))
+    renderProfile('/caregiver/profile?tab=certificates')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit First aid' }))
+    const dialog = screen.getByRole('dialog', { name: 'Edit certificate' })
+    expect(await within(dialog).findByText('Files attached: 1')).toBeInTheDocument()
+    const save = within(dialog).getByRole('button', { name: 'Save changes' })
+    // Nothing changed yet: saving would only send the certificate back for review.
+    expect(save).toBeDisabled()
+    fireEvent.change(within(dialog).getByLabelText('Certificate name'), { target: { value: 'First aid level 2' } })
+    fireEvent.click(save)
+
+    await waitFor(() =>
+      expect(saveCertificate).toHaveBeenCalledWith('pending', {
+        certificateName: 'First aid level 2',
+        issuedBy: 'Red Cross',
+        credentialNumber: undefined,
+        issuedDate: undefined,
+        expiryDate: undefined,
+        version: 4
+      })
+    )
+  })
+
+  it('warns and asks again before editing a verified certificate', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([certificateOf('verified', 'First aid', 'ADMIN_VERIFIED')])
+    vi.mocked(saveCertificate).mockResolvedValue(certificateOf('verified', 'First aid', 'PENDING'))
+    renderProfile('/caregiver/profile?tab=certificates')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit First aid' }))
+    const dialog = screen.getByRole('dialog', { name: 'Edit certificate' })
+    expect(within(dialog).getByText(/Families will not see it as verified/)).toBeInTheDocument()
+    expect(await within(dialog).findByText(/No photo yet/)).toBeInTheDocument()
+    fireEvent.change(within(dialog).getByLabelText('Issued by'), { target: { value: 'Red Cross Vietnam' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }))
+    expect(saveCertificate).not.toHaveBeenCalled()
+
+    const confirm = screen.getByRole('dialog', { name: 'Send for review again?' })
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Save and send for review' }))
+    await waitFor(() =>
+      expect(saveCertificate).toHaveBeenCalledWith(
+        'verified',
+        expect.objectContaining({ issuedBy: 'Red Cross Vietnam' })
+      )
+    )
+  })
+
+  it('reads a version conflict while editing as a reload request', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([certificateOf('pending', 'First aid', 'PENDING')])
+    vi.mocked(saveCertificate).mockRejectedValue(
+      Object.assign(new Error('Conflict'), { status: 409, info: { code: 4251 } })
+    )
+    renderProfile('/caregiver/profile?tab=certificates')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit First aid' }))
+    const dialog = screen.getByRole('dialog', { name: 'Edit certificate' })
+    fireEvent.change(within(dialog).getByLabelText('Certificate name'), { target: { value: 'CPR' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }))
+    expect(
+      await within(dialog).findByText('The certificate was just updated. Reload and try again.')
+    ).toBeInTheDocument()
+  })
 })
+
+function certificateOf(
+  id: string,
+  certificateName: string,
+  verificationStatus: 'PENDING' | 'CENTER_VERIFIED' | 'ADMIN_VERIFIED' | 'REJECTED'
+) {
+  return { id, caregiverId: 'caregiver-1', certificateName, issuedBy: 'Red Cross', verificationStatus, version: 4 }
+}
+
+function mediaOf(mediaFileId: string) {
+  return { mediaFileId, mediaFileType: 'IMAGE' as const, displayOrder: 0, downloadUrl: '/front.jpg' }
+}
 
 describe('Caregiver profile — security', () => {
   it('names devices from their browser, keeps this device first and signs out the others', async () => {

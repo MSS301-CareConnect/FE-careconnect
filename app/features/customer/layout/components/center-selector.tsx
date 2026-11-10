@@ -6,6 +6,7 @@ import { Icon } from '~/shared/ui/icon'
 
 import { usePickCenter } from '../hooks/use-pick-center'
 import { CenterOptions } from './center-options'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const key = 'customer.centerPicker' as const
 
@@ -15,6 +16,7 @@ export function CenterSelector() {
   const center = useCurrentCenter()
   const pickCenter = usePickCenter()
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const containerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -43,7 +45,7 @@ export function CenterSelector() {
         aria-controls='customer-center-menu'
         aria-expanded={open}
         aria-haspopup='true'
-        className={`flex min-h-11 min-w-0 max-w-[11rem] items-center gap-2 rounded-xl border px-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:max-w-[15rem] xl:max-w-[18rem] ${open ? 'border-primary bg-surface-container-lowest' : 'border-outline-variant bg-surface-container-lowest/80 hover:border-outline hover:bg-surface-container-lowest'}`}
+        className={`flex min-h-11 min-w-0 max-w-[11rem] items-center gap-2 rounded-full border px-3.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:max-w-[15rem] xl:max-w-[18rem] ${open ? 'border-forest-900/30 bg-white' : 'border-forest-900/10 bg-white/70 hover:border-forest-900/25 hover:bg-white'}`}
         onClick={() => setOpen((value) => !value)}
         ref={buttonRef}
         type='button'
@@ -65,10 +67,11 @@ export function CenterSelector() {
           name='expand_more'
         />
       </button>
-      {open ? (
+      {present ? (
         <div
           aria-label={t(`${key}.menu`)}
-          className='absolute top-full left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
+          data-state={panelState}
+          className='cc-dropdown absolute top-full left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] origin-top-left rounded-3xl border border-white/70 bg-white/95 p-2 shadow-[var(--shadow-float)] backdrop-blur-xl'
           id='customer-center-menu'
           role='region'
         >

@@ -5,7 +5,8 @@ import { Link, useBlocker } from 'react-router'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ConfirmDialog } from '~/shared/ui/modal'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { Stepper, type StepState } from '~/shared/ui/stepper'
 
 import { BookingSuccess } from './components/booking-success'
@@ -73,7 +74,7 @@ export function CustomerBookingPage() {
 
   return (
     <div className={`${pageContainer} pb-36 lg:pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         breadcrumb={[
           { label: t('customer.booking.breadcrumb.home'), to: '/customer' },
           { label: t('customer.booking.breadcrumb.current') }
@@ -85,7 +86,7 @@ export function CustomerBookingPage() {
 
       {form.hasDebt ? (
         <div
-          className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error-container p-4 text-sm text-on-error-container'
+          className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-error/30 bg-error-container p-4 text-sm text-on-error-container'
           role='alert'
         >
           <p className='flex items-start gap-2 font-medium'>
@@ -101,7 +102,7 @@ export function CustomerBookingPage() {
         </div>
       ) : null}
 
-      <div className='mb-8'>
+      <div className='cc-glass mb-8 rounded-3xl px-4 py-4 shadow-[var(--shadow-card)] sm:px-6 sm:py-5'>
         <Stepper
           label={t('customer.booking.steps.label')}
           onSelect={(id) => form.goTo((STEP_IDS.indexOf(id as (typeof STEP_IDS)[number]) + 1) as WizardStep)}
@@ -110,7 +111,11 @@ export function CustomerBookingPage() {
       </div>
 
       <div className='grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]'>
-        <div className='min-w-0 scroll-mt-24 outline-none' ref={contentRef} tabIndex={-1}>
+        <div
+          className='min-w-0 scroll-mt-24 rounded-3xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] outline-none sm:p-7'
+          ref={contentRef}
+          tabIndex={-1}
+        >
           <div className={form.direction === 'back' ? 'cc-step-back' : 'cc-step-forward'} key={form.step}>
             {form.step === 1 ? <StepRecipient form={form} /> : null}
             {form.step === 2 ? <StepCare form={form} /> : null}

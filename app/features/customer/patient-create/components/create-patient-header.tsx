@@ -49,7 +49,7 @@ export function CreatePatientHeader({ onCancel, onSubmit, isSubmitting }: Create
             type='button'
             onClick={onSubmit}
             disabled={isSubmitting}
-            className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow disabled:opacity-60'
+            className='inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container hover:shadow disabled:opacity-60'
           >
             <Icon name='verified' className='text-base' />
             <span>

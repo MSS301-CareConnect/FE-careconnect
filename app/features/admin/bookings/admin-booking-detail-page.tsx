@@ -15,6 +15,8 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { classifyApiError } from '~/shared/api/api-error'
 import { SectionCard } from '~/shared/ui/section-card'
 import { useActionToast } from '~/shared/ui/use-action-toast'
+import { bentoBackLink, bentoContainer } from '~/shared/ui/bento-page-header'
+import { Icon } from '~/shared/ui/icon'
 
 // Statuses that still hold a schedule; BookingService rejects a cancel outside them.
 const CANCELLABLE: ReadonlySet<BookingStatus> = new Set([
@@ -71,13 +73,14 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
   const data = booking.data
   const language = i18n.language
   return (
-    <div className='flex flex-col gap-5 p-5 lg:p-8'>
-      <Link className='text-sm font-semibold text-primary' to='/admin/bookings'>
+    <div className={bentoContainer}>
+      <Link className={bentoBackLink} to='/admin/bookings'>
+        <Icon className='text-lg' name='arrow_back' />
         {t('admin.bookingsPage.back')}
       </Link>
-      <header className='flex flex-wrap items-start justify-between gap-4'>
+      <header className='flex flex-wrap items-start justify-between gap-4 rounded-[1.75rem] border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6'>
         <div>
-          <h1 className='text-2xl font-bold'>
+          <h1 className='text-[24px] leading-tight text-forest-950 sm:text-[30px]'>
             {data.recipientSnapshot?.fullName ?? t('admin.bookingsPage.noRecipient')} · #{data.bookingCode}
           </h1>
           <p className='mt-2 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant'>
@@ -88,7 +91,7 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
         </div>
         {CANCELLABLE.has(data.status) ? (
           <button
-            className='rounded-lg border border-error px-4 py-2.5 text-sm font-semibold text-error'
+            className='min-h-11 rounded-full border border-error/40 px-5 text-sm font-semibold text-error hover:bg-error-container/50'
             onClick={() => setCancelling(true)}
             type='button'
           >

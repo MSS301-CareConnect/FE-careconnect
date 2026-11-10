@@ -21,6 +21,12 @@ import { PlanDiscount } from '~/entities/care-catalog/plan-discount'
 export function StepCare({ form }: { form: BookingForm }) {
   const { t } = useTranslation()
   const count = Object.keys(form.services).length
+  // Only centers that serve the care address's province are offered (the chosen one stays visible so its warning
+  // makes sense); the rest are hidden, with a one-line note of how many.
+  const inAreaCenters = form.centers.filter(
+    (center) => center.id === form.centerId || isCenterInServiceArea(center.address, form.careProvince, form.units.data)
+  )
+  const hiddenCount = form.centers.length - inAreaCenters.length
 
   return (
     <div className='flex flex-col gap-10'>
@@ -43,10 +49,15 @@ export function StepCare({ form }: { form: BookingForm }) {
               </p>
             </div>
           ) : null}
+          {inAreaCenters.length === 0 ? (
+            <p className='rounded-2xl bg-peach-50 p-4 text-sm text-forest-950 ring-1 ring-peach-100' role='status'>
+              {t('customer.booking.center.noneInArea', { province: form.careProvince })}
+            </p>
+          ) : null}
           <fieldset>
             <legend className='sr-only'>{t('customer.booking.center.title')}</legend>
             <div className='grid gap-3 sm:grid-cols-2'>
-              {form.centers.map((center) => {
+              {inAreaCenters.map((center) => {
                 const inArea = isCenterInServiceArea(center.address, form.careProvince, form.units.data)
                 const centerProvince = getCenterProvinceName(center.address, form.units.data)
                 return (
@@ -75,6 +86,12 @@ export function StepCare({ form }: { form: BookingForm }) {
               })}
             </div>
           </fieldset>
+          {hiddenCount > 0 && inAreaCenters.length > 0 ? (
+            <p className='mt-3 flex items-center gap-1.5 text-xs text-on-surface-variant'>
+              <Icon className='text-sm' name='location_on' />
+              {t('customer.booking.center.hiddenOutOfArea', { count: hiddenCount, province: form.careProvince })}
+            </p>
+          ) : null}
         </WizardSection>
       ) : null}
 

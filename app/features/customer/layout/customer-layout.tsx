@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Outlet, useLocation, useNavigation } from 'react-router'
+import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
 
 import { Toaster } from '~/shared/ui/toaster'
 
@@ -8,6 +9,7 @@ import { SiteFooter } from '~/shared/ui/site-footer'
 import { CenterPickerDialog } from './components/center-picker-dialog'
 import { CustomerBottomNav } from './components/customer-bottom-nav'
 import { CustomerHeader } from './components/customer-header'
+import './customer-theme.css'
 
 /** Routes that hide the footer so the customer can focus on one task. */
 const FOCUS_ROUTES = ['/customer/booking']
@@ -29,7 +31,7 @@ export function CustomerLayout({
   const focus = FOCUS_ROUTES.includes(location.pathname)
 
   return (
-    <div className='theme-customer flex min-h-screen flex-col bg-background font-sans text-on-surface antialiased'>
+    <div className='theme-customer cc-mesh flex min-h-screen flex-col font-sans text-on-surface antialiased'>
       {navigation.state !== 'idle' ? (
         <div
           aria-hidden='true'
@@ -40,8 +42,8 @@ export function CustomerLayout({
         </div>
       ) : null}
       <CustomerHeader />
-      <main className='w-full flex-1 pb-20 lg:pb-0'>
-        <div className='cc-fade-up' key={location.pathname}>
+      <main className='w-full flex-1 pb-6'>
+        <div className='cc-fade-up cc-page-enter' key={location.pathname}>
           {children ?? <Outlet />}
         </div>
       </main>
@@ -50,8 +52,10 @@ export function CustomerLayout({
         <CustomerBottomNav />
       </div>
       <CenterPickerDialog />
+      {/* AI assistant for guests and signed-in customers alike (2026-11-09). */}
+      <AiChatWidget />
       {/* Action results (saved, invited…) as toasts, kept above the bottom navigation on phones. */}
-      <Toaster mobileOffset={{ bottom: 88 }} />
+      <Toaster mobileOffset={{ bottom: 100 }} />
     </div>
   )
 }

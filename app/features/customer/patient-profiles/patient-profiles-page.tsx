@@ -9,7 +9,7 @@ import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
-import { PageHeader } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { SearchInput } from '~/shared/ui/search-input'
 
 import { PatientList, addProfileClass } from './components/patient-list'
@@ -30,7 +30,7 @@ export function PatientProfilesPage() {
 
   return (
     <div>
-      <PageHeader
+      <CustomerPageHeader
         actions={
           <Link className={addProfileClass} to='/customer/patient-profiles/new'>
             <Icon className='text-lg' name='person_add' />

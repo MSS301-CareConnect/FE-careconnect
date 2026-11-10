@@ -124,7 +124,7 @@ export const commonEn = {
         type: 'This file type is not supported.',
         size: 'Files cannot be empty and must be no larger than {{maxSize}} MB.',
         hintImage: 'JPG, PNG or WEBP, up to 5 MB each, 10 files at a time',
-        hintCertificate: 'PDF, JPG or PNG, up to 10 MB each, 10 files at a time'
+        hintCertificate: 'Choose from a folder or drag in · PDF, JPG or PNG, up to 10 MB each, 10 files at a time'
       }
     },
     language: {
@@ -376,7 +376,7 @@ export const commonVi = {
         type: 'Loại tệp này không được hỗ trợ.',
         size: 'Tệp không được để trống và không vượt quá {{maxSize}} MB.',
         hintImage: 'JPG, PNG hoặc WEBP, mỗi tệp tối đa 5 MB, tối đa 10 tệp mỗi lần',
-        hintCertificate: 'PDF, JPG hoặc PNG, mỗi tệp tối đa 10 MB, tối đa 10 tệp mỗi lần'
+        hintCertificate: 'Chọn từ thư mục hoặc kéo thả · PDF, JPG hoặc PNG, mỗi tệp tối đa 10 MB, tối đa 10 tệp mỗi lần'
       }
     },
     language: {

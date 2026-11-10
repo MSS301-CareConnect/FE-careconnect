@@ -33,6 +33,8 @@ export interface CaregiverOccurrenceRecord {
   bookingType?: BookingType
   /** SHIFT — the caregiver's work-shift schedule this visit holds */
   caregiverScheduleId?: string
+  /** Waiting for the center to assign another caregiver (withdrawn or locked caregiver); check-in is blocked */
+  needsReassignment?: boolean
   /** Price of this visit at booking time */
   priceAmount?: number
   centerId?: string

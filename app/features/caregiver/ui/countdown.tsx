@@ -15,12 +15,15 @@ export function Countdown({
   target,
   kind,
   warnMs = 24 * HOUR,
-  className = ''
+  className = '',
+  onDark = false
 }: {
   target: string
   kind: 'startsIn' | 'closesIn' | 'endsIn'
   warnMs?: number
   className?: string
+  /** Glass pill for a forest card. */
+  onDark?: boolean
 }) {
   const { t } = useTranslation()
   const format = useCaregiverFormat()
@@ -29,11 +32,15 @@ export function Countdown({
   const done = left <= 0
   const soon = !done && left < warnMs
   const doneKey = kind === 'startsIn' ? 'startsNow' : kind === 'closesIn' ? 'closed' : 'ended'
-  const tone = done
-    ? 'bg-neutral-container text-on-neutral-container'
-    : soon
-      ? 'bg-warning-container text-on-warning-container'
-      : 'bg-brand-50 text-primary'
+  const tone = onDark
+    ? soon
+      ? 'bg-peach-300 text-forest-950'
+      : 'bg-white/10 text-mint-100 ring-1 ring-white/15'
+    : done
+      ? 'bg-neutral-container text-on-neutral-container'
+      : soon
+        ? 'bg-warning-container text-on-warning-container'
+        : 'bg-brand-50 text-primary'
 
   return (
     <span

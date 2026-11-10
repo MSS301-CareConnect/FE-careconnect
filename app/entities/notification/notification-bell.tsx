@@ -16,6 +16,7 @@ import {
 } from './notification-api'
 import { notificationIcon, notificationsPath, notificationTarget, type NotificationPortal } from './notification-target'
 import { useNotificationStream } from './use-notification-stream'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const MAX_BADGE = 99
 
@@ -37,6 +38,7 @@ export function NotificationBell({
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const panelRef = useRef<HTMLDivElement>(null)
   useNotificationStream(true)
   const unread = useQuery({ queryKey: notificationKeys.unread, queryFn: fetchUnreadCount, retry: false })
@@ -89,10 +91,11 @@ export function NotificationBell({
           </span>
         ) : null}
       </button>
-      {open ? (
+      {present ? (
         <section
           aria-label={t('notifications.title')}
-          className='absolute top-full right-0 z-20 mt-2 w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-lg'
+          className='cc-dropdown absolute top-full right-0 z-20 mt-2 w-96 max-w-[calc(100vw-2rem)] origin-top-right overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-lg'
+          data-state={panelState}
         >
           <div className='flex items-center justify-between border-b border-outline-variant/50 px-4 py-3'>
             <h2 className='text-sm font-bold'>{t('notifications.title')}</h2>

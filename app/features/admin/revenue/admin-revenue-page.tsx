@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 import { RevenueAnalytics } from './components/revenue-analytics'
 import { RevenueFilters } from './components/revenue-filters'
 import { RevenueTable } from './components/revenue-table'
@@ -67,20 +68,11 @@ export function AdminRevenuePage() {
     URL.revokeObjectURL(url)
   }
   return (
-    <div className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-start justify-between gap-4'>
-        <div>
-          <div className='flex flex-wrap items-center gap-3'>
-            <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
-            <span className='rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-primary'>
-              {t(`${key}.period`)}
-            </span>
-          </div>
-          <p className='mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
-        </div>
-        <div className='flex flex-wrap gap-2'>
+    <div className={`${bentoContainer} space-y-6`}>
+      <BentoPageHeader
+        actions={
           <button
-            className='rounded-lg bg-surface-container px-3 py-2.5 text-sm font-semibold disabled:opacity-50'
+            className='inline-flex min-h-11 items-center gap-1 rounded-full border border-forest-900/10 bg-white px-4 text-sm font-semibold text-forest-900 hover:bg-mint-50 disabled:opacity-50'
             disabled={!list.filtered.length}
             onClick={exportCsv}
             type='button'
@@ -88,23 +80,31 @@ export function AdminRevenuePage() {
             <Icon className='mr-1 text-base' name='download' />
             {t(`${key}.export`)}
           </button>
-        </div>
-      </header>
-      <p className='rounded-lg bg-secondary-container/40 px-4 py-3 text-xs leading-5 text-primary'>
+        }
+        description={t(`${key}.subtitle`)}
+        eyebrow={t(`${key}.period`)}
+        title={t(`${key}.title`)}
+      />
+      <p className='rounded-2xl bg-peach-50 px-4 py-3 text-xs leading-5 text-peach-700 ring-1 ring-peach-200'>
         {t('admin.preview')}
       </p>
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
-        {stats.map((stat) => (
-          <section className='rounded-xl bg-white p-5 shadow-sm' key={stat.key}>
+      <div className='ops-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+        {stats.map((stat, index) => (
+          <section
+            className={`rounded-2xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] ${index === 0 ? 'ops-stat-dark' : ''}`}
+            key={stat.key}
+          >
             <div className='flex items-center justify-between gap-3'>
               <h2 className='text-xs font-bold uppercase tracking-wide text-on-surface-variant'>
                 {t(`${key}.kpis.${stat.key}`)}
               </h2>
-              <span className='flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-primary'>
+              <span className='ops-stat-icon flex h-10 w-10 items-center justify-center rounded-full bg-mint-50 text-primary'>
                 <Icon name={stat.icon} />
               </span>
             </div>
-            <p className='mt-4 text-2xl font-extrabold tabular-nums'>{stat.value}</p>
+            <p className='ops-stat-value mt-4 text-[26px] font-extrabold tracking-tight text-forest-950 tabular-nums'>
+              {stat.value}
+            </p>
             <p className='mt-2 text-xs text-outline'>{t(`${key}.kpis.${stat.key}Hint`)}</p>
           </section>
         ))}

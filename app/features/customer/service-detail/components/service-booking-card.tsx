@@ -37,7 +37,7 @@ export function ServiceBookingCard({ centerId, careServiceId, fromPrice, center,
 
   return (
     <aside className='flex flex-col gap-4 lg:sticky lg:top-24'>
-      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs'>
+      <div className='rounded-3xl border border-forest-900/[0.06] bg-white p-6 shadow-[var(--shadow-soft)]'>
         <h2 className='text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant'>
           {t(`${key}.center.title`)}
         </h2>
@@ -60,7 +60,7 @@ export function ServiceBookingCard({ centerId, careServiceId, fromPrice, center,
           </>
         ) : null}
       </div>
-      <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 shadow-xs'>
+      <div className='rounded-3xl bg-mint-50 p-6 ring-1 ring-mint-100'>
         <p className='text-sm text-on-surface-variant tabular-nums'>
           {fromPrice === undefined ? (
             t(`${key}.booking.contactPrice`)
@@ -74,7 +74,7 @@ export function ServiceBookingCard({ centerId, careServiceId, fromPrice, center,
           )}
         </p>
         <Link
-          className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-xs transition-colors hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          className='mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-peach-300 px-5 py-3 text-sm font-bold text-forest-950 transition-colors hover:bg-peach-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)]'
           to={`/customer/booking?${params.toString()}`}
         >
           <Icon className='text-lg' name='calendar_add_on' />

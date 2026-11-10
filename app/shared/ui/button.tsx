@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
+/** `accent` is the one warm call to action of a screen (peach); `dark` is the deep forest action of the Soft Bento style. */
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'accent' | 'dark'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,7 +21,10 @@ const variantClasses: Record<ButtonVariant, string> = {
     'border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low focus-visible:outline-primary',
   danger: 'bg-error text-on-error shadow-xs hover:bg-error/90 focus-visible:outline-error',
   ghost:
-    'bg-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-primary'
+    'bg-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface focus-visible:outline-primary',
+  accent:
+    'bg-peach-300 text-forest-950 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)] hover:bg-peach-200 focus-visible:outline-peach-300',
+  dark: 'bg-forest-900 text-white shadow-[var(--shadow-soft)] hover:bg-forest-800 focus-visible:outline-forest-900'
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -47,7 +51,7 @@ export function Button({
   return (
     <button
       aria-busy={loading || undefined}
-      className={`inline-flex items-center justify-center font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-out active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={isDisabled}
       type={type}
       {...rest}

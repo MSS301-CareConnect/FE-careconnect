@@ -20,7 +20,7 @@ export function ChooseCenterButton({ center, size = 'md' }: { center: ServiceCen
   if (selected?.id === center.id)
     return (
       <span
-        className={`inline-flex ${height} items-center gap-1.5 rounded-lg bg-brand-50 text-sm font-semibold text-primary`}
+        className={`inline-flex ${height} items-center gap-1.5 rounded-full bg-mint-100 text-sm font-semibold text-forest-800`}
       >
         <Icon aria-hidden='true' className='text-lg' name='check_circle' />
         {t(`${key}.selected`)}
@@ -30,7 +30,7 @@ export function ChooseCenterButton({ center, size = 'md' }: { center: ServiceCen
   return (
     <button
       aria-label={t(`${key}.chooseNamed`, { name: center.name })}
-      className={`relative z-10 inline-flex ${height} items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-primary transition-colors hover:border-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary`}
+      className={`relative z-10 inline-flex ${height} items-center gap-1.5 rounded-full border border-forest-900/10 bg-white text-sm font-semibold text-forest-900 transition-colors hover:border-forest-900/25 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary`}
       onClick={() => chooseCenter({ id: center.id, name: center.name })}
       type='button'
     >

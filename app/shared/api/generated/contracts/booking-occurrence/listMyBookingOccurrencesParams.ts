@@ -11,6 +11,10 @@ export type ListMyBookingOccurrencesParams = {
   from?: string
   to?: string
   status?: OccurrenceStatus
+  /**
+   * Only the visits of one booking (the caregiver's booking page, 2026-11-09)
+   */
+  bookingId?: string
   page?: number
   size?: number
 }

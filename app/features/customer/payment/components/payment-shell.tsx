@@ -50,7 +50,7 @@ export function PaymentShell({ title, subtitle, crumb, bookingId, bookingCode, c
 
 export const paymentPanel = 'rounded-2xl border border-outline-variant bg-white p-5 sm:p-7'
 export const primaryAction =
-  'group inline-flex min-h-13 items-center justify-center gap-3 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-[transform,background-color] duration-300 hover:bg-primary-container active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:bg-outline disabled:active:scale-100'
+  'group inline-flex min-h-13 items-center justify-center gap-3 rounded-full bg-peach-300 px-5 py-3 text-sm font-bold text-forest-950 transition-[transform,background-color] duration-300 hover:bg-peach-200 active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 disabled:cursor-not-allowed disabled:bg-outline disabled:text-white disabled:shadow-none disabled:active:scale-100 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)]'
 export const secondaryAction =
   'inline-flex min-h-13 items-center justify-center gap-2 rounded-lg border border-outline-variant bg-white px-5 py-3 text-sm font-bold text-primary transition-colors hover:bg-secondary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 

@@ -61,7 +61,7 @@ describe('Customer caregiver profile', () => {
     const photo = screen.getByRole('button', { name: 'View image Profile photo of Lan Nguyen' })
     expect(photo.querySelector('img')).toHaveAttribute('src', '/avatars/lan.png')
     expect(screen.getByText('Twelve years of hospital nursing.')).toBeInTheDocument()
-    expect(screen.getByText('12 years of experience')).toBeInTheDocument()
+    expect(screen.getByText('Years of experience').nextElementSibling).toHaveTextContent('12')
     expect(screen.getByText('Elderly care at home')).toBeInTheDocument()
     expect(screen.getByText('First aid')).toBeInTheDocument()
     expect(screen.getByText('Issued by Red Cross')).toBeInTheDocument()

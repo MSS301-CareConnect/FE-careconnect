@@ -6,6 +6,7 @@ import { useServiceCenters } from '~/entities/care-center/care-center-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Select } from '~/shared/ui/form-field'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
+import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 
 const key = 'admin.policiesPage' as const
 
@@ -21,11 +22,8 @@ export function AdminPoliciesPage() {
   useDocumentTitle(t(`${key}.documentTitle`))
 
   return (
-    <div className='mx-auto max-w-5xl space-y-6 px-4 py-7 sm:px-6'>
-      <header>
-        <h1 className='text-2xl font-bold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
-        <p className='mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant'>{t(`${key}.intro`)}</p>
-      </header>
+    <div className='mx-auto w-full max-w-5xl space-y-6 px-4 pb-10 sm:px-6'>
+      <BentoPageHeader description={t(`${key}.intro`)} icon='rule' title={t(`${key}.title`)} variant='hero' />
       {centers.isPending ? (
         <p className='text-sm text-on-surface-variant' role='status'>
           {t(`${key}.loadingCenters`)}

@@ -7,6 +7,7 @@ import { SignOutButton } from '~/features/shared/auth/sign-out-button'
 import { setAppLanguage, type SupportedLanguage } from '~/shared/i18n/i18n'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
+import { useExitPresence } from '~/shared/lib/use-exit-presence'
 
 const LANGUAGES: SupportedLanguage[] = ['vi', 'en']
 
@@ -15,6 +16,7 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
   const { t, i18n } = useTranslation()
   const user = useAuthUser()
   const [open, setOpen] = useState(false)
+  const { present, state: panelState } = useExitPresence(open)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const displayName = name || user?.fullName || user?.email || t('caregiver.identity.role')
@@ -49,7 +51,7 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
         aria-expanded={open}
         aria-haspopup='true'
         aria-label={t('caregiver.account.menu')}
-        className='cg-press flex min-h-11 items-center gap-2 rounded-full p-1 hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary lg:rounded-xl lg:pr-2'
+        className='cg-press flex min-h-11 items-center gap-2 rounded-full bg-white/85 p-1 shadow-[var(--cg-shadow-1)] ring-1 ring-forest-900/5 hover:bg-white focus-visible:outline-2 focus-visible:outline-primary lg:pr-3'
         onClick={() => setOpen((value) => !value)}
         ref={buttonRef}
         type='button'
@@ -61,10 +63,11 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
         </span>
         <Icon className='hidden text-lg text-on-surface-variant lg:block' name='expand_more' />
       </button>
-      {open ? (
+      {present ? (
         <nav
           aria-label={t('caregiver.account.menu')}
-          className='cg-pop absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
+          data-state={panelState}
+          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-2xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[var(--cg-shadow-2)]'
           id='caregiver-account-menu'
         >
           <div className='flex items-center gap-3 border-b border-outline-variant px-3 pt-2 pb-3'>
@@ -78,6 +81,10 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
             <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/profile'>
               <Icon className='text-lg text-primary' name='person' />
               {t('caregiver.nav.profile')}
+            </Link>
+            <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/wallet'>
+              <Icon className='text-lg text-primary' name='account_balance_wallet' />
+              {t('wallet.nav.caregiver')}
             </Link>
             <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/earnings'>
               <Icon className='text-lg text-primary' name='savings' />

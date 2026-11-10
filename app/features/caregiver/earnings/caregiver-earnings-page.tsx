@@ -5,11 +5,19 @@ import { calendarDayOf, useFormat } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { CountUp } from '~/shared/ui/motion'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
 
 import { useKeptDeposits } from '../data/caregiver-queries'
 import { useCaregiverFormat } from '../ui/caregiver-format'
-import { CaregiverEmpty, CaregiverError, CaregiverPageHeader, cgCard, cgContainer } from '../ui/caregiver-page'
+import {
+  CaregiverEmpty,
+  CaregiverError,
+  CaregiverPageHeader,
+  cgCard,
+  cgContainer,
+  cgForestCard
+} from '../ui/caregiver-page'
 import { VisitListSkeleton } from '../ui/visit-skeleton'
 
 type Period = 'month' | 'last30' | 'year'
@@ -59,16 +67,25 @@ export function CaregiverEarningsPage() {
         value={period}
       />
 
-      <section aria-live='polite' className={`${cgCard} mb-5 flex items-center gap-4 p-5`}>
-        <span aria-hidden='true' className='grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-primary'>
-          <Icon className='text-2xl' name='savings' />
+      <section aria-live='polite' className={`${cgForestCard} mb-5 flex items-center gap-5 p-6 sm:p-7`}>
+        <span
+          aria-hidden='true'
+          className='grid h-14 w-14 shrink-0 place-items-center rounded-full bg-mint-300 text-forest-950 shadow-[0_10px_22px_-10px_rgb(132_214_185/0.9)]'
+        >
+          <Icon className='text-[28px]' name='savings' />
         </span>
-        <div>
-          <p className='text-sm text-on-surface-variant'>{t('caregiver.earnings.total')}</p>
-          <p className='text-2xl font-bold text-on-surface tabular-nums'>
-            {summary.isPending ? t('caregiver.earnings.loading') : money(summary.data?.caregiverAmount ?? 0)}
+        <div className='min-w-0'>
+          <p className='text-sm font-medium text-white/70'>{t('caregiver.earnings.total')}</p>
+          <p className='text-[30px] leading-tight font-bold tracking-tight tabular-nums sm:text-[38px]'>
+            {summary.isPending ? (
+              t('caregiver.earnings.loading')
+            ) : (
+              <CountUp format={(n) => money(Math.round(n))} value={summary.data?.caregiverAmount ?? 0} />
+            )}
           </p>
-          <p className='text-xs text-on-surface-variant'>{t('caregiver.earnings.count', { count })}</p>
+          <p className='mt-1 inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-mint-100'>
+            {t('caregiver.earnings.count', { count })}
+          </p>
         </div>
       </section>
 
@@ -93,7 +110,7 @@ export function CaregiverEarningsPage() {
         <>
           <ul className={`${cgCard} divide-y divide-outline-variant`}>
             {items.map((item) => (
-              <li className='flex flex-wrap items-center justify-between gap-2 px-4 py-3' key={item.id}>
+              <li className='flex flex-wrap items-center justify-between gap-2 px-5 py-3.5' key={item.id}>
                 <div className='min-w-0'>
                   <p className='font-semibold text-on-surface'>
                     {t('caregiver.earnings.visit', { date: format.shortDateTime(item.occurrenceStartAt) })}

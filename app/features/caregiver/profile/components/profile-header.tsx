@@ -5,10 +5,11 @@ import { validateProviderFiles } from '~/entities/provider/provider-media-panel'
 import type { ProviderCaregiverRecord, ProviderMediaRecord } from '~/shared/api/generated/contracts'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
+import { CountUp } from '~/shared/ui/motion'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
 import { OverflowMenu } from '../../ui/action-bits'
-import { cgCard } from '../../ui/caregiver-page'
+import { cgForestCard } from '../../ui/caregiver-page'
 import { useAvatarUpload } from '../hooks/use-avatar-upload'
 
 const VERIFICATION_TONE = { PENDING: 'warning', VERIFIED: 'success', REJECTED: 'error' } as const
@@ -19,8 +20,9 @@ export interface CompletenessItem {
 }
 
 /**
- * Round photo (tap to change, camera badge, local preview while uploading), name, verification, center and role, and
- * how complete the profile is with what is still missing.
+ * The profile hero ("Soft Bento", 2026-11-09, like the reference's dark member card): round photo (tap to change,
+ * camera badge, local preview while uploading), name, verification, center and role on deep forest, three glass
+ * tiles (rating, experience, completeness), and what is still missing. Prints as a plain light block.
  */
 export function ProfileHeader({
   profile,
@@ -35,38 +37,43 @@ export function ProfileHeader({
   onAvatarExpired: () => void
   completeness: CompletenessItem[]
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const input = useRef<HTMLInputElement>(null)
   const [fileError, setFileError] = useState<'count' | 'type' | 'size' | null>(null)
   const { upload, preview } = useAvatarUpload(profile, media)
   const done = completeness.filter((item) => item.done).length
   const percent = Math.round((done / completeness.length) * 100)
   const missing = completeness.filter((item) => !item.done)
+  const ratingFormat = new Intl.NumberFormat(i18n.language, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+  const tile =
+    'rounded-2xl bg-white/[0.07] px-4 py-3 ring-1 ring-white/10 print:bg-transparent print:ring-outline-variant'
 
   return (
-    <section className={`${cgCard} p-4 sm:p-6`}>
-      <div className='flex items-start gap-4 sm:gap-5'>
+    <section
+      className={`${cgForestCard} p-5 sm:p-7 print:bg-transparent print:text-on-surface print:shadow-none print:before:hidden`}
+    >
+      <div className='flex items-start gap-4 sm:gap-6'>
         <div className='relative shrink-0'>
           <button
             aria-label={t('caregiver.me.header.changePhoto')}
-            className='group relative block rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:cursor-wait print:pointer-events-none'
+            className='group relative block rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mint-300 disabled:cursor-wait print:pointer-events-none'
             disabled={upload.isPending || !media}
             onClick={() => input.current?.click()}
             type='button'
           >
             <Avatar
-              className={`h-20 w-20 rounded-full text-2xl ring-4 ring-surface-container-lowest sm:h-24 sm:w-24 ${upload.isPending ? 'opacity-70' : ''}`}
+              className={`h-20 w-20 rounded-full text-2xl ring-4 ring-mint-300/60 sm:h-28 sm:w-28 sm:text-3xl ${upload.isPending ? 'opacity-70' : ''}`}
               decorative
               name={profile.fullName}
               onExpired={onAvatarExpired}
               src={preview ?? avatarUrl}
             />
-            <span className='absolute inset-0 grid place-items-center rounded-full bg-on-surface/0 text-white opacity-0 transition-[opacity,background-color] duration-200 group-hover:bg-on-surface/40 group-hover:opacity-100 print:hidden'>
+            <span className='absolute inset-0 grid place-items-center rounded-full bg-forest-950/0 text-white opacity-0 transition-[opacity,background-color] duration-200 group-hover:bg-forest-950/45 group-hover:opacity-100 print:hidden'>
               <Icon className='text-2xl' name='photo_camera' />
             </span>
             <span
               aria-hidden='true'
-              className='absolute right-0 bottom-0 grid h-8 w-8 place-items-center rounded-full border-2 border-surface-container-lowest bg-primary text-on-primary print:hidden'
+              className='absolute right-0 bottom-0 grid h-9 w-9 place-items-center rounded-full border-[3px] border-forest-900 bg-peach-300 text-forest-950 print:hidden'
             >
               <Icon className='text-base' name='photo_camera' />
             </span>
@@ -74,9 +81,9 @@ export function ProfileHeader({
           {upload.isPending ? (
             <span
               aria-hidden='true'
-              className='absolute inset-x-2 -bottom-2 h-1 overflow-hidden rounded-full bg-surface-container-high'
+              className='absolute inset-x-2 -bottom-2 h-1 overflow-hidden rounded-full bg-white/15'
             >
-              <span className='cg-progress-bar block h-full w-full bg-primary' />
+              <span className='cg-progress-bar block h-full w-full bg-mint-300' />
             </span>
           ) : null}
           <input
@@ -103,12 +110,12 @@ export function ProfileHeader({
               <StatusBadge dot tone={VERIFICATION_TONE[profile.verificationStatus]}>
                 {t(`caregiver.me.header.verification.${profile.verificationStatus}`)}
               </StatusBadge>
-              <h2 className='mt-1.5 text-xl font-bold text-on-surface sm:text-2xl'>{profile.fullName}</h2>
-              <p className='text-sm text-on-surface-variant'>
+              <h2 className='mt-2 text-2xl font-bold tracking-tight sm:text-[32px]'>{profile.fullName}</h2>
+              <p className='mt-0.5 text-sm text-white/70 print:text-on-surface-variant'>
                 {[t('caregiver.identity.role'), profile.centerName].filter(Boolean).join(' · ')}
               </p>
             </div>
-            <div className='print:hidden'>
+            <div className='rounded-full bg-white/90 print:hidden'>
               <OverflowMenu
                 actions={[
                   {
@@ -128,22 +135,63 @@ export function ProfileHeader({
             </div>
           </div>
           {upload.isPending ? (
-            <p className='mt-1 text-sm text-on-surface-variant' role='status'>
+            <p className='mt-1 text-sm text-white/75' role='status'>
               {t('caregiver.me.header.uploading')}
             </p>
           ) : null}
           {fileError ? (
-            <p className='mt-1 text-sm text-error' role='alert'>
+            <p className='mt-2 inline-block rounded-full bg-peach-100 px-3 py-1 text-sm text-peach-700' role='alert'>
               {t(`common.providerMedia.validation.${fileError}`, { maxSize: 5 })}
             </p>
           ) : null}
         </div>
       </div>
 
+      <dl aria-label={t('caregiver.me.header.stats.label')} className='mt-6 grid grid-cols-3 gap-2 sm:gap-3'>
+        <div className={tile}>
+          <dt className='text-xs font-medium text-white/65 print:text-on-surface-variant'>
+            {t('caregiver.me.header.stats.rating')}
+          </dt>
+          <dd className='mt-1'>
+            {profile.ratingAverage ? (
+              <>
+                <span className='flex items-center gap-1 text-xl font-bold sm:text-2xl'>
+                  <Icon className='text-lg text-peach-300' filled name='star' />
+                  <CountUp format={(n) => ratingFormat.format(n)} value={profile.ratingAverage} />
+                </span>
+                <span className='block truncate text-xs text-white/60 print:text-on-surface-variant'>
+                  {t('caregiver.me.header.stats.reviews', { count: profile.ratingCount ?? 0 })}
+                </span>
+              </>
+            ) : (
+              <span className='block pt-1 text-sm font-semibold text-white/80 print:text-on-surface'>
+                {t('caregiver.me.header.stats.noRating')}
+              </span>
+            )}
+          </dd>
+        </div>
+        <div className={tile}>
+          <dt className='text-xs font-medium text-white/65 print:text-on-surface-variant'>
+            {t('caregiver.me.header.stats.experience')}
+          </dt>
+          <dd className='mt-1 text-xl font-bold sm:text-2xl'>
+            {profile.experienceYears !== undefined
+              ? t('caregiver.me.header.stats.years', { count: profile.experienceYears })
+              : '—'}
+          </dd>
+        </div>
+        <div className={`${tile} print:hidden`}>
+          <dt className='text-xs font-medium text-white/65'>{t('caregiver.me.header.stats.completeness')}</dt>
+          <dd className='mt-1 text-xl font-bold sm:text-2xl'>
+            <CountUp format={(n) => `${Math.round(n)}%`} value={percent} />
+          </dd>
+        </div>
+      </dl>
+
       <div className='mt-5 print:hidden'>
         <div className='flex items-center justify-between text-sm'>
-          <span className='font-semibold text-on-surface'>{t('caregiver.me.header.completeness', { percent })}</span>
-          <span className='text-on-surface-variant tabular-nums'>
+          <span className='font-semibold'>{t('caregiver.me.header.completeness', { percent })}</span>
+          <span className='text-white/65 tabular-nums'>
             {done}/{completeness.length}
           </span>
         </div>
@@ -152,17 +200,17 @@ export function ProfileHeader({
           aria-valuemax={100}
           aria-valuemin={0}
           aria-valuenow={percent}
-          className='mt-1.5 h-2 overflow-hidden rounded-full bg-surface-container-high'
+          className='mt-2 h-2 overflow-hidden rounded-full bg-white/10'
           role='progressbar'
         >
           <div
-            className='h-full rounded-full bg-primary transition-[width] duration-500 ease-[var(--cg-ease)]'
+            className='h-full rounded-full bg-gradient-to-r from-mint-300 to-mint-200 transition-[width] duration-700 ease-[var(--cg-ease)]'
             style={{ width: `${percent}%` }}
           />
         </div>
         {missing.length ? (
-          <p className='mt-2 text-sm text-on-surface-variant'>
-            <span className='font-medium'>{t('caregiver.me.header.missingLabel')}: </span>
+          <p className='mt-2.5 text-sm text-white/70'>
+            <span className='font-semibold text-white/90'>{t('caregiver.me.header.missingLabel')}: </span>
             {missing.map((item) => t(`caregiver.me.header.missing.${item.key}`)).join(' · ')}
           </p>
         ) : null}

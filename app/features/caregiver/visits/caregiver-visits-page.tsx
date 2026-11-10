@@ -1,18 +1,19 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { CaregiverAbsenceQueue } from '~/entities/booking/caregiver-absence-queue'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { StatusBadge } from '~/shared/ui/status-badge'
-import { Tabs, tabPanelId } from '~/shared/ui/tabs'
+import { PillTabs } from '~/shared/ui/pill-tabs'
+import { tabPanelId } from '~/shared/ui/tabs'
 
 import { useBookingRequests, useToday, useVisitsToAccept } from '../data/caregiver-queries'
 import { BookingRequestsList } from '../requests/booking-requests-list'
 import { CaregiverEmpty, CaregiverError, CaregiverPageHeader, cgContainer } from '../ui/caregiver-page'
-import { useNow } from '../ui/use-now'
 import { VisitListSkeleton } from '../ui/visit-skeleton'
-import { VisitDayGroups } from './components/visit-day-groups'
+import { VisitBookingGroups } from './components/visit-booking-groups'
 import { VisitRangeFilter } from './components/visit-range-filter'
 import { VISIT_TABS, useVisitList, type VisitTab } from './hooks/use-visit-list'
 
@@ -53,7 +54,6 @@ function SourceHeading({
 export function CaregiverVisitsPage() {
   const { t } = useTranslation()
   const today = useToday()
-  const now = useNow()
   const list = useVisitList(today)
   const toAccept = useVisitsToAccept(today).data?.totalElements ?? 0
   const requests = useBookingRequests()
@@ -67,7 +67,11 @@ export function CaregiverVisitsPage() {
     <div className={cgContainer}>
       <CaregiverPageHeader description={t('caregiver.visits.subtitle')} title={t('caregiver.visits.title')} />
 
-      <Tabs
+      <div className='mb-4 empty:hidden'>
+        <CaregiverAbsenceQueue role='caregiver' />
+      </div>
+
+      <PillTabs
         className='mb-4'
         idBase='caregiver-visits'
         items={VISIT_TABS.map((value) => ({
@@ -146,8 +150,8 @@ export function CaregiverVisitsPage() {
             title={t(`caregiver.visits.empty.${list.tab}`)}
           />
         ) : null}
-        {pages.isSuccess && list.groups.length > 0 ? (
-          <VisitDayGroups groups={list.groups} now={now} today={today} />
+        {pages.isSuccess && list.bookingGroups.length > 0 ? (
+          <VisitBookingGroups groups={list.bookingGroups} tab={list.tab} today={today} />
         ) : null}
         {pages.hasNextPage ? (
           <div className='mt-5 flex justify-center'>

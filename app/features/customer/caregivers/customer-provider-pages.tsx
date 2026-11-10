@@ -10,8 +10,8 @@ import type { ProviderCaregiverCardRecord } from '~/shared/api/generated/contrac
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { ActiveFilters, FilterMenuChip } from '~/shared/ui/filter-menu-chip'
-import { Icon } from '~/shared/ui/icon'
-import { PageHeader, pageContainer } from '~/shared/ui/page-header'
+import { pageContainer } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { Pagination } from '~/shared/ui/pagination'
 import { SearchInput } from '~/shared/ui/search-input'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
@@ -88,7 +88,7 @@ export function CustomerProviderCatalogPage() {
 
   return (
     <div className={`${pageContainer} pb-16`}>
-      <PageHeader
+      <CustomerPageHeader
         breadcrumb={[{ label: t(`${key}.list.breadcrumb.home`), to: '/customer' }, { label: t(`${key}.list.title`) }]}
         breadcrumbLabel={t(`${key}.list.breadcrumb.label`)}
         description={t(`${key}.list.subtitle`)}

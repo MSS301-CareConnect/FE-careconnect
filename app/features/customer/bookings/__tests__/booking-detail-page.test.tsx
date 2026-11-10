@@ -93,6 +93,7 @@ beforeEach(async () => {
     refundThresholdMinutes: 1440,
     refundPercentBeforeThreshold: 100,
     refundPercentAfterThreshold: 70,
+    lateCancelNoRefundMinutes: 120,
     overduePaymentForfeitPercent: 100
   })
   await setAppLanguage('vi', false)
@@ -112,7 +113,7 @@ describe('CustomerBookingDetailPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Bà Lan' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Đang chờ trung tâm xác nhận' })).toBeInTheDocument()
-    expect(screen.getByText(/Buổi 1/)).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: /Lịch \d+ buổi chăm sóc/ })).toBeInTheDocument()
     expect(await screen.findByText('Lịch đặt được cập nhật trạng thái')).toBeInTheDocument()
   })
 
@@ -176,8 +177,11 @@ describe('CustomerBookingDetailPage', () => {
     expect(within(dialog).queryByText(/AFTER_THRESHOLD/)).not.toBeInTheDocument()
     // The policy panel reads the center booking policy (spec §10.2), not the old platform tiers.
     expect(within(dialog).getByText('Từ 24 giờ trở lên')).toBeInTheDocument()
-    expect(within(dialog).getByText('Dưới 24 giờ')).toBeInTheDocument()
-    expect(within(dialog).getByText(/70\s?%/)).toBeInTheDocument()
+    expect(within(dialog).getByText('Từ 2 đến dưới 24 giờ')).toBeInTheDocument()
+    expect(within(dialog).getByText('Dưới 2 giờ')).toBeInTheDocument()
+    // Tier badges come from the same policy: no-refund window of 2 hours, not a fixed text.
+    expect(within(dialog).getByText('Sát giờ < 2 giờ')).toBeInTheDocument()
+    expect(within(dialog).getAllByText(/70\s?%/).length).toBeGreaterThan(0)
     await waitFor(() => expect(confirm).toBeEnabled())
     fireEvent.click(confirm)
     await waitFor(() =>
@@ -278,7 +282,7 @@ describe('CustomerBookingDetailPage', () => {
     })
     renderPage()
 
-    const viewDetailBtn = await screen.findByRole('button', { name: 'Xem chi tiết' })
+    const viewDetailBtn = (await screen.findAllByRole('button', { name: 'Xem buổi 1' }))[0]
     fireEvent.click(viewDetailBtn)
 
     const dialog = await screen.findByRole('dialog', { name: 'Chi tiết buổi chăm sóc #1' })

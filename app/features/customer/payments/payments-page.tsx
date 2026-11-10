@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router'
 import { fetchOutstandingDebt, paymentErrorKey, paymentKeys } from '~/entities/payment/payment-api'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
-import { PageHeader } from '~/shared/ui/page-header'
+import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 import { Tabs, tabId, tabPanelId } from '~/shared/ui/tabs'
 
 import { DueSection } from './components/due-section'
@@ -55,7 +55,7 @@ export function PaymentsPage() {
 
   return (
     <div>
-      <PageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
+      <CustomerPageHeader description={t(`${key}.subtitle`)} title={t(`${key}.title`)} />
 
       {outstanding.data?.hasDebt ? (
         <div

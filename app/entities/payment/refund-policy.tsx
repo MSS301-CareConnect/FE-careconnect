@@ -11,6 +11,7 @@ const NAMED_RULES = [
   'NOT_CANCELLABLE',
   'BEFORE_THRESHOLD',
   'AFTER_THRESHOLD',
+  'LATE_NO_REFUND',
   'FULL_REFUND_CENTER',
   'FULL_REFUND_MISSED',
   'FULL_REFUND_SYSTEM',
@@ -43,6 +44,8 @@ export function RefundPolicySummary({ centerId }: { centerId: string | undefined
   const hours = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
   const data = policy.data
   const threshold = data ? hours.format(data.refundThresholdMinutes / 60) : ''
+  // Under this window nothing is refunded; 0 means the "under the cut-off" rate applies until the visit starts.
+  const late = data && data.lateCancelNoRefundMinutes > 0 ? hours.format(data.lateCancelNoRefundMinutes / 60) : null
 
   return (
     <section aria-labelledby='refund-policy-title' className='flex flex-col gap-3 text-sm'>
@@ -81,12 +84,24 @@ export function RefundPolicySummary({ centerId }: { centerId: string | undefined
               </tr>
               <tr>
                 <td className='border-b border-outline-variant/50 py-2 pr-3'>
-                  {t('payment.refundPolicy.under', { hours: threshold })}
+                  {late
+                    ? t('payment.refundPolicy.between', { from: late, to: threshold })
+                    : t('payment.refundPolicy.under', { hours: threshold })}
                 </td>
                 <td className='border-b border-outline-variant/50 py-2 font-semibold tabular-nums'>
                   {percent.format(data.refundPercentAfterThreshold / 100)}
                 </td>
               </tr>
+              {late ? (
+                <tr>
+                  <td className='border-b border-outline-variant/50 py-2 pr-3'>
+                    {t('payment.refundPolicy.under', { hours: late })}
+                  </td>
+                  <td className='border-b border-outline-variant/50 py-2 font-semibold'>
+                    {t('payment.refundPolicy.none')}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
           <ul className='flex flex-col gap-1.5 leading-6 text-on-surface-variant'>

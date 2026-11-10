@@ -2,15 +2,19 @@ import { type RouteConfig, index, layout, prefix, route } from '@react-router/de
 
 export default [
   index('routes/home.tsx'),
-  route('login', 'routes/login.tsx'),
-  route('register', 'routes/register.tsx'),
-  route('forgot-password', 'routes/forgot-password.tsx'),
+  layout('routes/auth-layout.tsx', [
+    route('login', 'routes/login.tsx'),
+    route('register', 'routes/register.tsx'),
+    route('forgot-password', 'routes/forgot-password.tsx')
+  ]),
   route('account/security', 'routes/account/security.tsx'),
   ...prefix('admin', [
     layout('routes/admin/layout.tsx', [
       index('routes/admin/index.tsx'),
       route('dashboard', 'routes/admin/dashboard.tsx'),
       route('revenue', 'routes/admin/revenue.tsx'),
+      route('wallet', 'routes/admin/wallet.tsx'),
+      route('withdrawals', 'routes/admin/withdrawals.tsx'),
       route('services', 'routes/admin/services.tsx'),
       route('centers', 'routes/admin/centers.tsx'),
       route('centers/:id', 'routes/admin/center-detail.tsx'),
@@ -27,6 +31,8 @@ export default [
       route('bookings', 'routes/admin/bookings.tsx'),
       route('bookings/:id', 'routes/admin/booking-detail.tsx'),
       route('caregivers', 'routes/admin/caregivers.tsx'),
+      route('certificates', 'routes/admin/certificates.tsx'),
+      route('caregiver-absences', 'routes/admin/caregiver-absences.tsx'),
       route('notifications', 'routes/admin/notifications.tsx')
     ])
   ]),
@@ -43,6 +49,7 @@ export default [
       route('bookings', 'routes/center-manager/bookings.tsx'),
       route('bookings/:id', 'routes/center-manager/booking-detail.tsx'),
       route('policy', 'routes/center-manager/policy.tsx'),
+      route('wallet', 'routes/center-manager/wallet.tsx'),
       route('complaints', 'routes/center-manager/complaints.tsx'),
       route('notifications', 'routes/center-manager/notifications.tsx')
     ])
@@ -56,9 +63,11 @@ export default [
       route('time-off', 'routes/caregiver/time-off.tsx'),
       route('visits', 'routes/caregiver/visits.tsx'),
       route('visits/:id', 'routes/caregiver/visit-detail.tsx'),
+      route('visits/bookings/:bookingId', 'routes/caregiver/booking.tsx'),
       route('requests', 'routes/caregiver/requests.tsx'),
       route('requests/:id', 'routes/caregiver/request-detail.tsx'),
       route('earnings', 'routes/caregiver/earnings.tsx'),
+      route('wallet', 'routes/caregiver/wallet.tsx'),
       route('profile', 'routes/caregiver/profile.tsx'),
       route('security', 'routes/caregiver/security.tsx'),
       route('notifications', 'routes/caregiver/notifications.tsx')
@@ -89,6 +98,7 @@ export default [
         route('patient-profiles', 'routes/customer/patient-profiles.tsx'),
         route('patient-profiles/:id', 'routes/customer/patient-detail.tsx'),
         route('payments', 'routes/customer/payments.tsx'),
+        route('wallet', 'routes/customer/wallet.tsx'),
         route('invitations', 'routes/customer/invitations.tsx'),
         route('notifications', 'routes/customer/notifications.tsx')
       ])

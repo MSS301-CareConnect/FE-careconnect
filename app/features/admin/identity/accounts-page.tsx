@@ -15,9 +15,11 @@ import type {
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { CountUp } from '~/shared/ui/motion'
 import { Pagination } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
+import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 
 import { AccountAvatar } from './components/account-avatar'
 import { CreateAccountDialog } from './components/create-account-dialog'
@@ -85,28 +87,37 @@ export function AccountsPage() {
   const hasFilters = Boolean(keyword || role || status)
 
   return (
-    <main className='mx-auto max-w-7xl space-y-6 px-4 py-7 sm:px-6'>
-      <header className='flex flex-wrap items-start justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl font-extrabold tracking-tight sm:text-3xl'>{t(`${key}.title`)}</h1>
-          <p className='mt-2 text-sm text-on-surface-variant'>{t(`${key}.subtitle`)}</p>
-        </div>
-        {canCreate ? (
-          <Button leftIcon={<Icon name='person_add' />} onClick={() => setCreating(true)}>
-            {t(`${key}.create`)}
-          </Button>
-        ) : null}
-      </header>
+    <main className={`${bentoContainer} space-y-6`}>
+      <BentoPageHeader
+        actions={
+          canCreate ? (
+            <Button leftIcon={<Icon name='person_add' />} onClick={() => setCreating(true)}>
+              {t(`${key}.create`)}
+            </Button>
+          ) : undefined
+        }
+        description={t(`${key}.subtitle`)}
+        title={t(`${key}.title`)}
+      />
 
-      <section aria-label={t(`${key}.metrics.title`)} className='grid grid-cols-2 gap-3 xl:grid-cols-4'>
-        {metrics.map((metric) => (
-          <div className='rounded-xl border border-outline-variant/40 bg-white px-5 py-4' key={metric.name}>
-            <p className='flex items-center justify-between text-sm font-medium text-on-surface-variant'>
+      <section aria-label={t(`${key}.metrics.title`)} className='ops-stagger grid grid-cols-2 gap-3 xl:grid-cols-4'>
+        {metrics.map((metric, index) => (
+          <div
+            className={`flex min-h-[8.5rem] flex-col rounded-2xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] ${index === 0 ? 'ops-stat-dark' : ''}`}
+            key={metric.name}
+          >
+            <p className='flex items-center justify-between gap-2 text-sm font-medium text-on-surface-variant'>
               {t(`${key}.metrics.${metric.name}`)}
-              <Icon className='text-xl text-primary' name={metric.icon} />
+              <span className='ops-stat-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mint-50'>
+                <Icon className='text-xl text-primary' name={metric.icon} />
+              </span>
             </p>
-            <strong className='mt-2 block text-2xl tabular-nums'>
-              {statistics.isSuccess ? number.format(metric.value) : '—'}
+            <strong className='ops-stat-value mt-auto block pt-3 text-[34px] leading-none font-bold tracking-tight text-forest-950'>
+              {statistics.isSuccess ? (
+                <CountUp format={(n) => number.format(Math.round(n))} value={metric.value} />
+              ) : (
+                '—'
+              )}
             </strong>
           </div>
         ))}

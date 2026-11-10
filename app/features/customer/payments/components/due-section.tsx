@@ -14,7 +14,7 @@ import { INVOICE_STATUS_TONES, MoneyRow, PaymentListSection } from './payments-u
 
 const key = 'customer.payments' as const
 const linkButton =
-  'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary shadow-xs transition-[background-color,transform] hover:bg-primary-container active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+  'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-peach-300 px-4 text-sm font-semibold text-forest-950 transition-[background-color,transform] hover:bg-peach-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-400 shadow-[0_10px_24px_-12px_rgb(246_146_95/0.8)]'
 
 /**
  * Everything the customer still has to pay: deposits of bookings the center accepted, then remaining-balance

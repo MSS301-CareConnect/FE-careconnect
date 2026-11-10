@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -8,6 +8,7 @@ import {
   fetchCaregivers,
   fetchCenter,
   fetchCertificates,
+  fetchProviderMedia,
   verifyCertificate
 } from '~/entities/provider/provider-api'
 import type { ProviderCaregiverRecord, ProviderCertificateRecord } from '~/shared/api/generated/contracts'
@@ -21,6 +22,7 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchCaregivers: vi.fn(),
   fetchCaregiver: vi.fn(),
   fetchCertificates: vi.fn(),
+  fetchProviderMedia: vi.fn(),
   verifyCertificate: vi.fn()
 }))
 
@@ -72,19 +74,31 @@ beforeEach(async () => {
 })
 
 describe('Admin certificate review (two steps)', () => {
-  it('approves only a certificate the center confirmed, sending approved instead of a status', async () => {
-    vi.mocked(fetchCertificates).mockResolvedValue([certificate('a', 'PENDING'), certificate('b', 'CENTER_VERIFIED')])
+  it('reviews only a certificate the center confirmed, in the review dialog with the AI state', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([
+      certificate('a', 'PENDING'),
+      { ...certificate('b', 'CENTER_VERIFIED'), aiCheckStatus: 'FAILED' }
+    ])
     vi.mocked(verifyCertificate).mockResolvedValue(certificate('b', 'ADMIN_VERIFIED'))
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
     renderPage()
 
     expect(await screen.findByText('Waiting for the center to confirm first')).toBeInTheDocument()
     expect(screen.getByText('Confirmed by center')).toBeInTheDocument()
-    const approve = screen.getAllByRole('button', { name: 'Approve' })
-    // Caregiver approve button + one per certificate: the PENDING certificate stays disabled.
-    const enabled = approve.filter((button) => !(button as HTMLButtonElement).disabled)
-    fireEvent.click(enabled.at(-1)!)
+    expect(screen.getByText('AI check failed')).toBeInTheDocument()
+    // Only the confirmed certificate opens the review (the PENDING one waits for the center).
+    fireEvent.click(screen.getByRole('button', { name: 'Review' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Review certificate: Cert b' })
+
+    // Without a LOW / MEDIUM AI result the admin must write why the certificate is approved (ProviderService 4256).
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Approve certificate' }))
+    expect(
+      await within(dialog).findByText('The AI result is not low or medium — enter a reason to approve.')
+    ).toBeInTheDocument()
+    fireEvent.change(within(dialog).getByLabelText('Reason / note'), { target: { value: 'Original seen' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Approve certificate' }))
     await waitFor(() =>
-      expect(verifyCertificate).toHaveBeenCalledWith('b', { approved: true, reason: undefined, version: 3 })
+      expect(verifyCertificate).toHaveBeenCalledWith('b', { approved: true, reason: 'Original seen', version: 3 })
     )
     expect(verifyCertificate).not.toHaveBeenCalledWith('a', expect.anything())
   })

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { bookingErrorKey } from '~/entities/booking/booking-format'
@@ -16,7 +16,7 @@ import {
   useVisitsToAccept
 } from '../data/caregiver-queries'
 import { addDays, calendarDayOf, useCaregiverFormat, weekStart } from '../ui/caregiver-format'
-import { CaregiverEmpty, CaregiverError, cgContainer } from '../ui/caregiver-page'
+import { CaregiverEmpty, CaregiverError, cgContainer, cgForestAction, cgOutlineAction } from '../ui/caregiver-page'
 import { useNow } from '../ui/use-now'
 import { NeedsAttention } from './components/needs-attention'
 import { NextVisitCard } from './components/next-visit-card'
@@ -50,17 +50,22 @@ export function CaregiverTodayPage() {
 
   return (
     <div className={cgContainer}>
-      <header className='mb-5'>
-        <p className='text-sm font-medium text-on-surface-variant tabular-nums'>
+      <header className='mb-6'>
+        <p className='inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-[13px] font-semibold text-forest-700 tabular-nums ring-1 ring-forest-900/5'>
+          <span aria-hidden='true' className='h-1.5 w-1.5 rounded-full bg-mint-400' />
           {t('caregiver.today.dateLine', { weekday: format.weekdayLong(today), date: format.date(today) })}
         </p>
-        <h1 className='mt-0.5 text-[22px] font-bold text-on-surface sm:text-[28px]'>
-          {t(`caregiver.today.greeting.${greetingKey(now, format.language)}`, { name: givenName })}
+        <h1 className='mt-3 text-[28px] leading-tight text-forest-950 sm:text-[40px]'>
+          <Trans
+            components={{ accent: <span className='cc-accent-serif text-forest-700' /> }}
+            i18nKey={`caregiver.today.greeting.${greetingKey(now, format.language)}`}
+            values={{ name: givenName }}
+          />
         </h1>
       </header>
 
-      <div className='grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]'>
-        <div className='flex min-w-0 flex-col gap-4'>
+      <div className='grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]'>
+        <div className='cg-stagger flex min-w-0 flex-col gap-5'>
           {upcoming.isPending ? (
             <SkeletonGroup className='flex flex-col gap-4' label={t('caregiver.ui.states.loading')}>
               <Skeleton className='h-80 rounded-2xl' />
@@ -79,16 +84,10 @@ export function CaregiverTodayPage() {
             <CaregiverEmpty
               action={
                 <div className='flex flex-wrap justify-center gap-2'>
-                  <Link
-                    className='cg-press inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-                    to='/caregiver/work-shifts'
-                  >
+                  <Link className={cgForestAction} to='/caregiver/work-shifts'>
                     {t('caregiver.today.empty.action')}
                   </Link>
-                  <Link
-                    className='cg-press inline-flex min-h-11 items-center rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary'
-                    to='/caregiver/visits'
-                  >
+                  <Link className={cgOutlineAction} to='/caregiver/visits'>
                     {t('caregiver.today.empty.upcoming')}
                   </Link>
                 </div>
@@ -106,7 +105,7 @@ export function CaregiverTodayPage() {
           ) : null}
         </div>
 
-        <div className='flex flex-col gap-4'>
+        <div className='cg-stagger flex flex-col gap-5'>
           <NeedsAttention
             centerId={profile.data?.centerId}
             now={now}
@@ -114,8 +113,8 @@ export function CaregiverTodayPage() {
             requests={requests}
             toAccept={toAccept}
           />
-          {week.isSuccess ? <WeekStats visits={week.data.items} /> : null}
-          {week.isPending ? <Skeleton className='h-32 rounded-xl' /> : null}
+          {week.isSuccess ? <WeekStats today={today} visits={week.data.items} /> : null}
+          {week.isPending ? <Skeleton className='h-56 rounded-2xl' /> : null}
         </div>
       </div>
     </div>

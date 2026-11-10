@@ -1,6 +1,8 @@
 /**
- * Admin sidebar items grouped by area; every item opens a live screen (Đợt 5). Revenue and quality previews stay
- * routable but are left out of the menu until their backend exists (D26); booking policies are live (spec §8).
+ * Admin sidebar items grouped by area. A labelled group is a parent section with its own icon: it opens and closes in
+ * the expanded sidebar and becomes one icon with a flyout when the sidebar is collapsed (2026-11-09).
+ * Every item opens a live screen (Đợt 5). Revenue and quality previews stay routable but are left out of the menu
+ * until their backend exists (D26); booking policies are live (spec §8).
  */
 export const adminNavigation = [
   {
@@ -12,17 +14,32 @@ export const adminNavigation = [
   {
     key: 'operations',
     labelled: true,
+    icon: 'settings_suggest',
     items: [
       { key: 'services', to: '/admin/services', icon: 'medical_information' },
       { key: 'centers', to: '/admin/centers', icon: 'apartment' },
       { key: 'bookings', to: '/admin/bookings', icon: 'calendar_month' },
       { key: 'caregivers', to: '/admin/caregivers', icon: 'medical_services' },
+      // Step 5 of the certificate review, with the AI risk of each certificate (2026-11-09).
+      { key: 'certificates', to: '/admin/certificates', icon: 'workspace_premium' },
+      // Caregivers who missed paid visits, platform-wide; centers conclude each one (2026-11-10).
+      { key: 'caregiverAbsences', to: '/admin/caregiver-absences', icon: 'person_off' },
       { key: 'policies', to: '/admin/policies', icon: 'rule' }
+    ]
+  },
+  {
+    key: 'finance',
+    labelled: true,
+    icon: 'account_balance',
+    items: [
+      { key: 'wallet', to: '/admin/wallet', icon: 'account_balance_wallet' },
+      { key: 'withdrawals', to: '/admin/withdrawals', icon: 'payments' }
     ]
   },
   {
     key: 'customerCare',
     labelled: true,
+    icon: 'support_agent',
     items: [
       { key: 'customers', to: '/admin/customers', icon: 'groups' },
       { key: 'reviewsComplaints', to: '/admin/reviews-complaints', icon: 'forum' }
@@ -31,6 +48,7 @@ export const adminNavigation = [
   {
     key: 'system',
     labelled: true,
+    icon: 'shield_person',
     items: [
       { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
       { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },

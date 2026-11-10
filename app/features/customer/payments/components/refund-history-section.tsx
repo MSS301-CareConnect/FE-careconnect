@@ -68,6 +68,9 @@ export function RefundHistorySection({ labels }: { labels: ReadonlyMap<string, B
                   {t(`${key}.refunds.fee`, { amount: format.money(refund.feeAmount) })}
                 </span>
               ) : null}
+              {refund.channel === 'WALLET' ? (
+                <StatusBadge tone='info'>{t('wallet.refundToWallet')}</StatusBadge>
+              ) : null}
               <StatusBadge tone={REFUND_STATUS_TONES[refund.status]}>
                 {t(`payment.refundStatus.${refund.status}`)}
               </StatusBadge>

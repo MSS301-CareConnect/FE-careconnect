@@ -131,6 +131,7 @@ beforeEach(async () => {
     refundThresholdMinutes: 1440,
     refundPercentBeforeThreshold: 100,
     refundPercentAfterThreshold: 70,
+    lateCancelNoRefundMinutes: 120,
     overduePaymentForfeitPercent: 100
   }))
   vi.mocked(fetchBookableSchedules).mockResolvedValue([
@@ -368,7 +369,7 @@ describe('CustomerBookingPage', () => {
     })
     expect(request.slots).toHaveLength(1)
     expect(request).not.toHaveProperty('startTime')
-    expect(await screen.findByText('Đặt cọc (30%) sau khi có người chăm sóc')).toBeInTheDocument()
+    expect(await screen.findByText('Đặt cọc (30%) ngay khi gửi')).toBeInTheDocument()
     // Unit price, quantity and amount of each service, in the review and in the summary column.
     expect(screen.getAllByText('Đơn giá: 100.000 ₫ / giờ').length).toBe(2)
     expect(screen.getAllByText('2 giờ × 1 buổi').length).toBe(2)
@@ -686,7 +687,7 @@ describe('CustomerBookingPage', () => {
     expect(screen.getAllByRole('button', { name: 'Gửi yêu cầu đặt lịch' })[0]).toBeDisabled()
   })
 
-  it('disables centers outside the recipient province and shows an out of area badge', async () => {
+  it('hides centers outside the recipient province and says how many were hidden', async () => {
     vi.mocked(fetchCareRecipients).mockResolvedValue({
       items: [{ id: 'rec-1', fullName: 'Bà Lan', age: 81, province: 'Thành phố Hà Nội', status: 'ACTIVE' }],
       page: 0,
@@ -708,10 +709,8 @@ describe('CustomerBookingPage', () => {
     await next()
 
     expect(await screen.findByRole('heading', { name: 'Dịch vụ' })).toBeInTheDocument()
-    await waitFor(() => {
-      const outOfAreaCenter = screen.getByRole('radio', { name: /TT Bình An/ })
-      expect(outOfAreaCenter).toBeDisabled()
-    })
-    expect(screen.getByText(/Ngoài khu vực phục vụ/)).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('radio', { name: /TT Bình An/ })).not.toBeInTheDocument())
+    expect(screen.getByRole('radio', { name: /TT An Tâm/ })).toBeInTheDocument()
+    expect(screen.getByText('Đã ẩn 1 trung tâm ngoài Thành phố Hà Nội.')).toBeInTheDocument()
   })
 })

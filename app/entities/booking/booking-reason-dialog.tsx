@@ -68,37 +68,38 @@ export function BookingReasonDialog({
   }
   if (isReasonMissing) {
     missingList.push(
-      minLength > 1
-        ? `Nhập lý do hủy (tối thiểu ${minLength} ký tự)`
-        : 'Nhập lý do cụ thể'
+      minLength > 1 ? t('booking.dialog.reasonNeededMin', { count: minLength }) : t('booking.dialog.reasonNeeded')
     )
   }
   const tooltipText = isConfirmDisabled
     ? pending
       ? t('booking.actions.working')
-      : `Chưa thể ${confirmLabel}:\n• ` + missingList.join('\n• ')
+      : [t('booking.dialog.blockedTitle'), ...missingList.map((item) => `• ${item}`)].join('\n')
     : undefined
 
   const reasonField = (
     <div>
-      <label className='flex items-center gap-1 font-semibold text-on-surface' htmlFor={fieldId}>
-        <span>{label}</span>
-        <span aria-hidden='true' className='text-rose-600 font-bold'>*</span>
-      </label>
+      {/* The star stays outside the label so the field's accessible name is the label alone. */}
+      <div className='flex items-center gap-1'>
+        <label className='font-semibold text-on-surface' htmlFor={fieldId}>
+          {label}
+        </label>
+        <span aria-hidden='true' className='text-rose-600 font-bold'>
+          *
+        </span>
+      </div>
       <textarea
         className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 font-normal text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 transition-all'
         id={fieldId}
         maxLength={maxLength}
         onChange={(event) => setReason(event.target.value)}
-        placeholder='Nhập lý do cụ thể...'
+        placeholder={t('booking.dialog.placeholder')}
         required
         rows={4}
         value={reason}
       />
       {minLength > 1 ? (
-        <p className='mt-1 text-xs text-on-surface-variant'>
-          {t('booking.dialog.minLength', { count: minLength })}
-        </p>
+        <p className='mt-1 text-xs text-on-surface-variant'>{t('booking.dialog.minLength', { count: minLength })}</p>
       ) : null}
     </div>
   )
@@ -153,7 +154,10 @@ export function BookingReasonDialog({
             </div>
           )}
           {error ? (
-            <p className='mt-4 rounded-xl bg-error-container p-3 text-sm font-medium text-on-error-container' role='alert'>
+            <p
+              className='mt-4 rounded-xl bg-error-container p-3 text-sm font-medium text-on-error-container'
+              role='alert'
+            >
               {error}
             </p>
           ) : null}
@@ -170,7 +174,9 @@ export function BookingReasonDialog({
             <button
               aria-busy={pending || undefined}
               className={`min-h-11 rounded-xl px-5 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ${
-                danger ? 'bg-error hover:bg-error/90 active:scale-[0.98]' : 'bg-primary hover:bg-primary-container active:scale-[0.98]'
+                danger
+                  ? 'bg-error hover:bg-error/90 active:scale-[0.98]'
+                  : 'bg-primary hover:bg-primary-container active:scale-[0.98]'
               }`}
               disabled={isConfirmDisabled}
               type='submit'
@@ -181,7 +187,7 @@ export function BookingReasonDialog({
               <div className='pointer-events-none absolute bottom-full right-0 mb-2.5 hidden w-max max-w-xs rounded-xl bg-neutral-900/95 p-3 text-xs font-normal text-white shadow-2xl ring-1 ring-white/10 group-hover:block z-50 whitespace-pre-line leading-relaxed backdrop-blur-xs'>
                 <div className='font-bold text-amber-300 mb-1 flex items-center gap-1.5'>
                   <Icon className='text-sm' name='info' />
-                  <span>Cần hoàn thành trước khi hủy:</span>
+                  <span>{t('booking.dialog.blockedTitle')}</span>
                 </div>
                 <div className='space-y-1 text-neutral-200'>
                   {missingList.map((item, idx) => (
