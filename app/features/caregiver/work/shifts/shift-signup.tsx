@@ -14,10 +14,12 @@ import type { ProviderShiftRegistrationRecord, ProviderWorkShiftRecord } from '~
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
+import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
 import { useMyCaregiverProfile, useMyRegistrations, useOpenShifts } from '../../data/caregiver-queries'
 import { CaregiverEmpty, CaregiverError, cgCard } from '../../ui/caregiver-page'
+import { useClientPage } from '../../ui/use-client-page'
 import { useNow } from '../../ui/use-now'
 import { ShiftCard, type ShiftState, type ShiftView } from './shift-card'
 import { RegisterShiftDialog, WithdrawShiftDialog, shiftErrorKey } from './shift-dialogs'
@@ -25,6 +27,7 @@ import { RegisterShiftDialog, WithdrawShiftDialog, shiftErrorKey } from './shift
 const FILTERS = ['open', 'pending', 'approved', 'history'] as const
 type Filter = (typeof FILTERS)[number]
 const ACTIVE = new Set(['PENDING', 'APPROVED'])
+const SHIFTS_PER_PAGE = 9
 
 /** Three small steps explaining what a sign-up turns into. */
 function ProcessSteps() {
@@ -146,6 +149,9 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
     approved: registrations.isSuccess ? lists.approved.length : undefined,
     history: undefined
   }
+  // Nine cards a page (three rows on wide screens) so a long season of shifts does not stretch the page.
+  const openPage = useClientPage(openShifts, SHIFTS_PER_PAGE, filter)
+  const listPage = useClientPage(filter === 'open' ? [] : lists[filter], SHIFTS_PER_PAGE, filter)
   const loading = filter === 'open' ? shifts.isPending && Boolean(centerId) : registrations.isPending
   const error = filter === 'open' ? shifts.isError : registrations.isError
 
@@ -198,8 +204,8 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
             title={t('caregiver.work.shifts.empty.open')}
           />
         ) : (
-          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
-            {openShifts.map((shift) => (
+          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3' key={`open-${openPage.page}`}>
+            {openPage.items.map((shift) => (
               <li key={shift.id}>
                 <ShiftCard
                   now={now}
@@ -215,13 +221,21 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
           </ul>
         )
       ) : null}
+      {filter === 'open' && shifts.isSuccess ? (
+        <Pagination
+          ariaLabel={t('caregiver.work.shifts.pagination')}
+          onPageChange={openPage.setPage}
+          page={openPage.page}
+          totalPages={openPage.totalPages}
+        />
+      ) : null}
 
       {filter !== 'open' && registrations.isSuccess ? (
         lists[filter].length === 0 ? (
           <CaregiverEmpty icon='fact_check' title={t(`caregiver.work.shifts.empty.${filter}`)} />
         ) : (
-          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
-            {lists[filter].map((item) => (
+          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3' key={`${filter}-${listPage.page}`}>
+            {listPage.items.map((item) => (
               <li key={item.id}>
                 <ShiftCard
                   now={now}
@@ -242,6 +256,14 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
             ))}
           </ul>
         )
+      ) : null}
+      {filter !== 'open' && registrations.isSuccess ? (
+        <Pagination
+          ariaLabel={t('caregiver.work.shifts.pagination')}
+          onPageChange={listPage.setPage}
+          page={listPage.page}
+          totalPages={listPage.totalPages}
+        />
       ) : null}
 
       {registering ? (

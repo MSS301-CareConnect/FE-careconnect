@@ -8,10 +8,15 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { CaregiverOccurrencePageResponse, CaregiverOccurrenceResponse } from '../../contracts'
+import type {
+  CaregiverOccurrenceListResponse,
+  CaregiverOccurrencePageResponse,
+  CaregiverOccurrenceResponse
+} from '../../contracts'
 
 import {
   getAcknowledgeBookingOccurrenceResponseMock,
+  getAcknowledgeBookingOccurrencesResponseMock,
   getDecideBookingOccurrenceNoShowResponseMock,
   getGetBookingOccurrenceResponseMock,
   getListMyBookingOccurrencesResponseMock,
@@ -21,6 +26,7 @@ import {
 export {
   getListMyBookingOccurrencesResponseMock,
   getGetBookingOccurrenceResponseMock,
+  getAcknowledgeBookingOccurrencesResponseMock,
   getAcknowledgeBookingOccurrenceResponseMock,
   getReportBookingOccurrenceNoShowResponseMock,
   getDecideBookingOccurrenceNoShowResponseMock
@@ -71,6 +77,32 @@ export const getGetBookingOccurrenceMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getGetBookingOccurrenceResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getAcknowledgeBookingOccurrencesMockHandler = (
+  overrideResponse?:
+    | CaregiverOccurrenceListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<CaregiverOccurrenceListResponse> | CaregiverOccurrenceListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/booking-occurrences/acknowledgements',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAcknowledgeBookingOccurrencesResponseMock(),
         { status: 200 }
       )
     },
@@ -158,6 +190,7 @@ export const getDecideBookingOccurrenceNoShowMockHandler = (
 export const getBookingOccurrenceMock = () => [
   getListMyBookingOccurrencesMockHandler(),
   getGetBookingOccurrenceMockHandler(),
+  getAcknowledgeBookingOccurrencesMockHandler(),
   getAcknowledgeBookingOccurrenceMockHandler(),
   getReportBookingOccurrenceNoShowMockHandler(),
   getDecideBookingOccurrenceNoShowMockHandler()

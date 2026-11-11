@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { acknowledgeOccurrence, bookingKeys, checkIn } from '~/entities/booking/booking-api'
+import { acknowledgeOccurrence, acknowledgeOccurrences, bookingKeys, checkIn } from '~/entities/booking/booking-api'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
 
@@ -73,4 +73,29 @@ export function useVisitActions(visit: CaregiverOccurrenceRecord, onStarted?: ()
   })
 
   return { accept, start }
+}
+
+/** Visits of one booking the caregiver can still accept: assigned, not confirmed, not started, not being replaced. */
+export function acceptableVisits(visits: CaregiverOccurrenceRecord[], now: number) {
+  return visits.filter(
+    (visit) => visit.status === 'SCHEDULED' && !visit.needsReassignment && new Date(visit.startAt).getTime() > now
+  )
+}
+
+/**
+ * Accept several visits of one booking at once (2026-11-10, `POST /booking-occurrences/acknowledgements`, all or
+ * nothing), with a toast and the booking cache refreshed.
+ */
+export function useAcceptVisits(onDone?: () => void) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (visits: CaregiverOccurrenceRecord[]) => acknowledgeOccurrences(visits.map((visit) => visit.id)),
+    onSuccess: async (accepted) => {
+      toast.success(t('caregiver.booking.accept.done', { count: accepted.length }))
+      onDone?.()
+      await queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+    },
+    onError: (error) => toast.error(t(bookingErrorKey(error)))
+  })
 }

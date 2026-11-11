@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -80,6 +80,32 @@ describe('Caregiver today', () => {
     expect(screen.getAllByRole('button', { name: 'Nhận buổi' }).length).toBeGreaterThan(0)
     expect(await screen.findByText('1 buổi đang chờ bạn nhận')).toBeInTheDocument()
     expect(await screen.findByText('Hồ sơ của bạn chưa có chứng chỉ nào')).toBeInTheDocument()
+  })
+
+  it('shows a day of the week chart when its column is hovered or focused (2026-11-10)', async () => {
+    const start = new Date(Date.now() + 5 * 60_000)
+    const visitToday: CaregiverOccurrenceRecord = {
+      id: 'occ-2',
+      occurrenceNo: 1,
+      bookingId: 'bk-1',
+      status: 'ACKNOWLEDGED',
+      startAt: start.toISOString(),
+      endAt: new Date(start.getTime() + 90 * 60_000).toISOString(),
+      recipientName: 'Bà Lan'
+    }
+    vi.mocked(fetchMyOccurrences).mockImplementation(async (params) =>
+      params?.status === 'SCHEDULED' ? empty : { ...empty, items: [visitToday], totalElements: 1 }
+    )
+    renderToday()
+
+    const column = await screen.findByRole('button', { name: /1 buổi, 1,5 giờ/ })
+    fireEvent.mouseEnter(column)
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent('Số buổi1')
+    expect(tooltip).toHaveTextContent('Giờ chăm sóc1,5')
+    fireEvent.focus(screen.getByRole('button', { name: 'Tuần sau' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Tuần sau' }))
+    expect(await screen.findByRole('button', { name: 'Về tuần này' })).toBeInTheDocument()
   })
 
   it('invites the caregiver to sign up for shifts when today is free', async () => {

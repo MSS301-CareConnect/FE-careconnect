@@ -21,8 +21,8 @@ import { WeekGrid } from './week-grid'
 type View = 'week' | 'month'
 
 const DOT: Record<CalendarItem['kind'], string> = {
-  availability: 'bg-brand-300',
-  visit: 'bg-primary',
+  availability: 'bg-mint-300',
+  visit: 'bg-forest-900',
   timeOff: 'bg-outline'
 }
 
@@ -33,7 +33,7 @@ function shiftMonth(day: string, amount: number) {
 }
 
 const navButton =
-  'cg-press grid h-11 w-11 place-items-center rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
+  'cg-press grid h-11 w-11 place-items-center rounded-full border border-forest-900/10 bg-white text-forest-900 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-forest-900'
 
 /**
  * "Lịch của tôi": availability (light green), assigned visits (solid) and time off (striped). Desktop shows a week or

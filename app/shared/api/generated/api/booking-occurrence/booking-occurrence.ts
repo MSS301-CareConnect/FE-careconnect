@@ -22,11 +22,13 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
+  CaregiverOccurrenceListResponse,
   CaregiverOccurrencePageResponse,
   CaregiverOccurrenceResponse,
   ListMyBookingOccurrencesParams,
   NoShowDecisionRequest,
-  NoShowReportRequest
+  NoShowReportRequest,
+  OccurrenceAcknowledgementRequest
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -428,6 +430,147 @@ export function useGetBookingOccurrence<
   return withQueryKey(query, queryOptions.queryKey)
 }
 
+export type acknowledgeBookingOccurrencesResponse200 = {
+  data: CaregiverOccurrenceListResponse
+  status: 200
+}
+
+export type acknowledgeBookingOccurrencesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type acknowledgeBookingOccurrencesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type acknowledgeBookingOccurrencesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type acknowledgeBookingOccurrencesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type acknowledgeBookingOccurrencesResponse409 = {
+  data: void
+  status: 409
+}
+
+export type acknowledgeBookingOccurrencesResponseSuccess = acknowledgeBookingOccurrencesResponse200 & {
+  headers: Headers
+}
+export type acknowledgeBookingOccurrencesResponseError = (
+  | acknowledgeBookingOccurrencesResponse400
+  | acknowledgeBookingOccurrencesResponse401
+  | acknowledgeBookingOccurrencesResponse403
+  | acknowledgeBookingOccurrencesResponse404
+  | acknowledgeBookingOccurrencesResponse409
+) & {
+  headers: Headers
+}
+
+export const getAcknowledgeBookingOccurrencesUrl = () => {
+  return `${env.API_BASE_URL}/v1/booking-occurrences/acknowledgements`
+}
+
+/**
+ * @summary CAREGIVER acknowledges several SCHEDULED visits of one booking at once (all or nothing)
+ */
+export const acknowledgeBookingOccurrences = async (
+  occurrenceAcknowledgementRequest: OccurrenceAcknowledgementRequest,
+  options?: RequestInit
+): Promise<acknowledgeBookingOccurrencesResponseSuccess> => {
+  const res = await fetch(getAcknowledgeBookingOccurrencesUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(occurrenceAcknowledgementRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: acknowledgeBookingOccurrencesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: acknowledgeBookingOccurrencesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: acknowledgeBookingOccurrencesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as acknowledgeBookingOccurrencesResponseSuccess
+}
+
+export const getAcknowledgeBookingOccurrencesMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof acknowledgeBookingOccurrences>>,
+    TError,
+    { data: OccurrenceAcknowledgementRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof acknowledgeBookingOccurrences>>,
+  TError,
+  { data: OccurrenceAcknowledgementRequest },
+  TContext
+> => {
+  const mutationKey = ['acknowledgeBookingOccurrences']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof acknowledgeBookingOccurrences>>,
+    { data: OccurrenceAcknowledgementRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return acknowledgeBookingOccurrences(data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type AcknowledgeBookingOccurrencesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof acknowledgeBookingOccurrences>>
+>
+export type AcknowledgeBookingOccurrencesMutationBody = OccurrenceAcknowledgementRequest
+export type AcknowledgeBookingOccurrencesMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CAREGIVER acknowledges several SCHEDULED visits of one booking at once (all or nothing)
+ */
+export const useAcknowledgeBookingOccurrences = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof acknowledgeBookingOccurrences>>,
+      TError,
+      { data: OccurrenceAcknowledgementRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof acknowledgeBookingOccurrences>>,
+  TError,
+  { data: OccurrenceAcknowledgementRequest },
+  TContext
+> => {
+  return useMutation(getAcknowledgeBookingOccurrencesMutationOptions(options), queryClient)
+}
 export type acknowledgeBookingOccurrenceResponse200 = {
   data: CaregiverOccurrenceResponse
   status: 200

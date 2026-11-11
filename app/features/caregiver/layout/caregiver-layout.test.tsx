@@ -39,7 +39,7 @@ function renderCaregiver(path = '/caregiver/schedule') {
       {
         path: '/caregiver',
         element: <CaregiverLayout />,
-        children: ['today', 'visits', 'schedule', 'work-shifts', 'profile'].map((child) => ({
+        children: ['today', 'visits', 'schedule', 'work-shifts', 'profile', 'wallet'].map((child) => ({
           path: child,
           element: page
         }))
@@ -84,6 +84,15 @@ describe('Caregiver shell', () => {
     // Visits to confirm and booking requests share one "needs your answer" badge on Care visits.
     expect(await within(sidebar).findByLabelText(/need your answer/)).toBeInTheDocument()
     expect(fetchMyOccurrences).toHaveBeenCalledWith(expect.objectContaining({ status: 'SCHEDULED' }))
+  })
+
+  it('selects no section on the wallet page and names the page in the phone topbar (2026-11-10)', () => {
+    renderCaregiver('/caregiver/wallet')
+    const sidebar = screen.getByRole('navigation', { name: 'Caregiver navigation' })
+    for (const link of within(sidebar).getAllByRole('link')) expect(link).not.toHaveAttribute('aria-current')
+    const bottom = screen.getByRole('navigation', { name: 'Main sections' })
+    for (const link of within(bottom).getAllByRole('link')) expect(link).not.toHaveAttribute('aria-current')
+    expect(screen.getByText('My wallet')).toBeInTheDocument()
   })
 
   it('collapses the desktop sidebar to an icon rail', () => {

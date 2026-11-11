@@ -12,6 +12,7 @@ import { OverflowMenu, type MenuAction } from './action-bits'
 import { calendarDayOf, directionsUrl, minutesBetweenInstants, useCaregiverFormat } from './caregiver-format'
 import { Countdown } from './countdown'
 import { cgCard } from './caregiver-page'
+import { VisitAbsenceBadge } from './visit-absence-badge'
 import { VisitStatusBadge } from './visit-status-badge'
 
 /** Who and where a visit is for, from the booking snapshot when the caregiver may read it. */
@@ -105,6 +106,7 @@ export function VisitCard({
         </div>
         <div className='flex shrink-0 flex-col items-end gap-1'>
           <VisitStatusBadge status={visit.status} />
+          <VisitAbsenceBadge visit={visit} />
           {visit.noShowReportedAt && !visit.noShowDecidedAt ? (
             <StatusBadge tone='warning'>{t('caregiver.visits.noShowPending')}</StatusBadge>
           ) : null}

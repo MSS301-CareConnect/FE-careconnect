@@ -181,15 +181,15 @@ describe('Work schedule — my calendar', () => {
     vi.mocked(updateCaregiverSchedule).mockResolvedValue({} as never)
     renderWork('calendar')
 
-    expect(await screen.findByText('1 khung rảnh tuần này')).toBeInTheDocument()
+    expect(await screen.findByText('1 khung giờ làm việc tuần này')).toBeInTheDocument()
     fireEvent.click(screen.getAllByRole('button', { name: /23:00–23:59/ })[0])
-    const drawer = screen.getByRole('dialog', { name: 'Khung rảnh' })
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Hủy khung rảnh' }))
-    const confirm = screen.getByRole('dialog', { name: 'Hủy khung rảnh này?' })
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Hủy khung rảnh' }))
+    const drawer = screen.getByRole('dialog', { name: 'Khung giờ làm việc' })
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Hủy khung giờ làm việc' }))
+    const confirm = screen.getByRole('dialog', { name: 'Hủy khung giờ làm việc này?' })
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Hủy khung giờ làm việc' }))
     expect(await within(confirm).findByText('Nhập lý do hủy.')).toBeInTheDocument()
     fireEvent.change(within(confirm).getByLabelText('Lý do'), { target: { value: 'Bận việc nhà' } })
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Hủy khung rảnh' }))
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Hủy khung giờ làm việc' }))
     await waitFor(() =>
       expect(updateCaregiverSchedule).toHaveBeenCalledWith('slot-1', {
         status: 'CANCELLED',

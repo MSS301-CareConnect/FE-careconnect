@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 import {
   bookingKeys,
+  fetchCaregiverAbsences,
   fetchCaregiverBookingRequest,
   fetchCaregiverBookingRequests,
   fetchMyOccurrences
@@ -19,6 +20,8 @@ import {
 import { pickAvatar } from '~/entities/provider/provider-avatar'
 import { fetchDepositForfeitureSummary, fetchDepositForfeitures, paymentKeys } from '~/entities/payment/payment-api'
 import type {
+  CaregiverAbsenceRecord,
+  CaregiverOccurrenceRecord,
   ListMyBookingOccurrencesParams,
   OccurrenceStatus,
   ProviderScheduleRecord
@@ -83,16 +86,59 @@ export function useVisitPages(params: Omit<ListMyBookingOccurrencesParams, 'page
   })
 }
 
+const BOOKING_VISIT_MAX_PAGES = 10
+
+/**
+ * Every visit of one booking assigned to the caregiver (2026-11-10), soonest first: pages of 100 are collected (up to
+ * 1,000) so the day list and the month calendar of the booking page see the whole schedule.
+ */
+export function useBookingVisits(bookingId: string) {
+  return useQuery({
+    queryKey: [...bookingKeys.occurrences({ bookingId }), 'all'],
+    queryFn: async () => {
+      const items: CaregiverOccurrenceRecord[] = []
+      for (let page = 0; page < BOOKING_VISIT_MAX_PAGES; page += 1) {
+        const result = await fetchMyOccurrences({ bookingId, page, size: VISIT_PAGE_SIZE })
+        items.push(...result.items)
+        if (page + 1 >= result.totalPages) break
+      }
+      return items.sort((first, second) => first.startAt.localeCompare(second.startAt))
+    },
+    retry: false
+  })
+}
+
+/**
+ * The caregiver's absence records (every status, newest 100; optionally one booking) keyed by visit, so a missed visit
+ * shows where its record stands (2026-11-10). Only read when a screen has a missed visit to mark.
+ */
+export function useAbsencesByVisit(enabled: boolean, bookingId?: string) {
+  const params = { bookingId, page: 0, size: 100 }
+  const query = useQuery({
+    queryKey: bookingKeys.absences(params),
+    queryFn: () => fetchCaregiverAbsences(params),
+    enabled,
+    retry: false
+  })
+  const byVisit = new Map<string, CaregiverAbsenceRecord>()
+  for (const item of query.data?.items ?? []) byVisit.set(item.occurrenceId, item)
+  return { query, byVisit }
+}
+
 /** Visits from today the center assigned but the caregiver has not accepted yet. */
 export function useVisitsToAccept(today: string) {
   return useVisitPage({ from: today, status: 'SCHEDULED', page: 0, size: VISIT_PAGE_SIZE })
 }
 
-/** CR-3: bookings customers sent straight to this caregiver, still waiting for an answer (newest 50). */
-export function useBookingRequests() {
+/**
+ * CR-3: bookings customers sent straight to this caregiver, still waiting for an answer. Counts read the first page of
+ * 50; the list pages through them (2026-11-10).
+ */
+export function useBookingRequests(page = 0, size = 50) {
   return useQuery({
-    queryKey: bookingKeys.caregiverRequests(0),
-    queryFn: () => fetchCaregiverBookingRequests(0),
+    queryKey: size === 50 ? bookingKeys.caregiverRequests(page) : [...bookingKeys.caregiverRequests(page), size],
+    queryFn: () => fetchCaregiverBookingRequests(page, size),
+    placeholderData: (previous) => previous,
     retry: false,
     refetchInterval: 60_000
   })
@@ -147,18 +193,17 @@ export function useVisitShift(scheduleId: string | undefined) {
   return { schedule, shift: shift.data, loading: schedules.isPending && Boolean(scheduleId) }
 }
 
-/** CR-4: the caregiver's share of deposits kept from customers in a period, with the rows page by page. */
-export function useKeptDeposits(from: string, to: string) {
+/** CR-4: the caregiver's share of deposits kept from customers in a period, and one page of its rows (2026-11-10). */
+export function useKeptDeposits(from: string, to: string, page: number) {
   const summary = useQuery({
     queryKey: paymentKeys.forfeitureSummary(from, to),
     queryFn: () => fetchDepositForfeitureSummary(from, to),
     retry: false
   })
-  const rows = useInfiniteQuery({
-    queryKey: [...paymentKeys.forfeitures(from, to, 0), 'pages'],
-    queryFn: ({ pageParam }) => fetchDepositForfeitures(from, to, pageParam),
-    initialPageParam: 0,
-    getNextPageParam: (last) => (last.page + 1 < last.totalPages ? last.page + 1 : undefined),
+  const rows = useQuery({
+    queryKey: paymentKeys.forfeitures(from, to, page),
+    queryFn: () => fetchDepositForfeitures(from, to, page),
+    placeholderData: (previous) => previous,
     retry: false
   })
   return { summary, rows }

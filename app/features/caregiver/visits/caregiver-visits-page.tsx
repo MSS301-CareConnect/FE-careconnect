@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { CaregiverAbsenceQueue } from '~/entities/booking/caregiver-absence-queue'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
@@ -13,6 +12,7 @@ import { useBookingRequests, useToday, useVisitsToAccept } from '../data/caregiv
 import { BookingRequestsList } from '../requests/booking-requests-list'
 import { CaregiverEmpty, CaregiverError, CaregiverPageHeader, cgContainer } from '../ui/caregiver-page'
 import { VisitListSkeleton } from '../ui/visit-skeleton'
+import { AbsencePanel } from './components/absence-panel'
 import { VisitBookingGroups } from './components/visit-booking-groups'
 import { VisitRangeFilter } from './components/visit-range-filter'
 import { VISIT_TABS, useVisitList, type VisitTab } from './hooks/use-visit-list'
@@ -68,7 +68,7 @@ export function CaregiverVisitsPage() {
       <CaregiverPageHeader description={t('caregiver.visits.subtitle')} title={t('caregiver.visits.title')} />
 
       <div className='mb-4 empty:hidden'>
-        <CaregiverAbsenceQueue role='caregiver' />
+        <AbsencePanel />
       </div>
 
       <PillTabs
@@ -151,7 +151,7 @@ export function CaregiverVisitsPage() {
           />
         ) : null}
         {pages.isSuccess && list.bookingGroups.length > 0 ? (
-          <VisitBookingGroups groups={list.bookingGroups} tab={list.tab} today={today} />
+          <VisitBookingGroups groups={list.bookingGroups} key={list.tab} tab={list.tab} today={today} />
         ) : null}
         {pages.hasNextPage ? (
           <div className='mt-5 flex justify-center'>

@@ -1,7 +1,7 @@
 export const caregiverWorkEn = {
   documentTitle: 'Work schedule | CareConnect',
   title: 'Work schedule',
-  subtitle: 'Your availability, assigned visits and time off in one place.',
+  subtitle: 'Your working hours, assigned visits and time off in one place.',
   tabsLabel: 'Work schedule sections',
   tabs: { calendar: 'My calendar', shifts: 'Shift sign-up', timeOff: 'Time off' },
   calendar: {
@@ -13,19 +13,21 @@ export const caregiverWorkEn = {
     nextMonth: 'Next month',
     today: 'Today',
     weekOf: '{{from}} – {{to}}',
-    slotsThisWeek: '{{count}} open slots this week',
-    slotsThisMonth: '{{count}} open slots this month',
+    slotsThisWeek: '{{count}} working-hour slots this week',
+    slotsThisMonth: '{{count}} working-hour slots this month',
     legend: 'Legend',
-    layers: { availability: 'Availability', visit: 'Assigned visit', timeOff: 'Time off' },
+    layers: { availability: 'Working hours', visit: 'Assigned visit', timeOff: 'Time off' },
     dayLabel: '{{day}}: {{count}} items',
     dayStrip: 'Days of the week',
     emptyDay: 'Nothing on this day.',
-    emptyDayHint: 'Availability appears when your center approves a shift you signed up for.',
+    emptyDayHint: 'Working hours appear when your center approves a shift you signed up for.',
     signUp: 'Sign up for shifts',
     loadError: 'Could not load your calendar.',
     more: '+{{count}} more',
+    visitCount: '{{count}} visits',
+    free: 'Free',
     slot: {
-      title: 'Availability',
+      title: 'Working hours',
       status: 'Status',
       open: 'Open',
       past: 'Past',
@@ -33,13 +35,13 @@ export const caregiverWorkEn = {
       note: 'Note',
       cancelledReason: 'Reason: {{reason}}',
       explain: 'Families can book you inside this slot.',
-      cancel: 'Cancel this slot',
-      cancelTitle: 'Cancel this availability?',
+      cancel: 'Cancel these working hours',
+      cancelTitle: 'Cancel these working hours?',
       cancelDescription:
         '{{date}}, {{start}}–{{end}}. Families will no longer be able to book you in this slot. A slot that already has a visit cannot be cancelled.',
       reason: 'Reason',
       reasonRequired: 'Enter a reason for cancelling.',
-      cancelledToast: 'Availability cancelled'
+      cancelledToast: 'Working hours cancelled'
     },
     timeOffDetail: 'Time off · {{range}}',
     manageTimeOff: 'Manage time off'
@@ -50,9 +52,10 @@ export const caregiverWorkEn = {
       label: 'How it works',
       register: 'Sign up',
       review: 'Center reviews',
-      available: 'Becomes your availability'
+      available: 'Becomes your working hours'
     },
     filterLabel: 'Shift filter',
+    pagination: 'Shift pages',
     filters: { open: 'Open shifts', pending: 'Awaiting review', approved: 'Approved', history: 'History' },
     type: { DAILY: 'Daily', WEEKLY: 'Weekly' },
     capacity: '{{approved}}/{{capacity}} caregivers',
@@ -61,7 +64,7 @@ export const caregiverWorkEn = {
     status: {
       none: 'Not signed up',
       PENDING: 'Signed up · awaiting review',
-      APPROVED: 'Approved · now availability',
+      APPROVED: 'Approved · now working hours',
       REJECTED: 'Not approved',
       CANCELLED: 'You cancelled',
       expired: 'Sign-up closed'
@@ -69,7 +72,7 @@ export const caregiverWorkEn = {
     register: 'Sign up',
     registerTitle: 'Sign up for this shift?',
     registerDescription:
-      '{{date}} · {{start}}–{{end}}. Your center reviews the request; once approved it becomes availability families can book.',
+      '{{date}} · {{start}}–{{end}}. Your center reviews the request; once approved it becomes working hours families can book.',
     note: 'Note for the center (optional)',
     notePlaceholder: 'e.g. I can arrive 15 minutes early',
     registered: 'Signed up. Your center will review it.',
@@ -95,7 +98,7 @@ export const caregiverWorkEn = {
     withdraw: 'Withdraw',
     withdrawTitle: 'Withdraw from this approved shift?',
     withdrawDescription:
-      '{{date}} · {{start}}–{{end}}. This time slot stops being your availability. It is not possible once a family has booked a visit in it — then ask your center.',
+      '{{date}} · {{start}}–{{end}}. These hours stop being your working hours. It is not possible once a family has booked a visit in it — then ask your center.',
     withdrawReason: 'Reason',
     withdrawReasonPlaceholder: 'e.g. Family matter',
     withdrawReasonRequired: 'Enter a reason (500 characters at most).',
@@ -144,17 +147,18 @@ export const caregiverWorkEn = {
       inPast: 'The start cannot be in the past.',
       conflictVisits:
         'You have {{count}} assigned visits in this period. The center must reassign them before you can take this time off.',
-      conflictSlots: 'This overlaps {{count}} open availability slots; families will not be able to book them.',
+      conflictSlots: 'This overlaps {{count}} working-hour slots; families will not be able to book them.',
       save: 'Save time off'
     },
-    loadError: 'Could not load your time off.'
+    loadError: 'Could not load your time off.',
+    pagination: 'Time off pages'
   }
 }
 
 export const caregiverWorkVi = {
   documentTitle: 'Lịch làm việc | CareConnect',
   title: 'Lịch làm việc',
-  subtitle: 'Khung rảnh, buổi được giao và ngày nghỉ của bạn ở cùng một nơi.',
+  subtitle: 'Khung giờ làm việc, buổi được giao và ngày nghỉ của bạn ở cùng một nơi.',
   tabsLabel: 'Các mục lịch làm việc',
   tabs: { calendar: 'Lịch của tôi', shifts: 'Đăng ký ca', timeOff: 'Ngày nghỉ' },
   calendar: {
@@ -166,19 +170,21 @@ export const caregiverWorkVi = {
     nextMonth: 'Tháng sau',
     today: 'Hôm nay',
     weekOf: '{{from}} – {{to}}',
-    slotsThisWeek: '{{count}} khung rảnh tuần này',
-    slotsThisMonth: '{{count}} khung rảnh tháng này',
+    slotsThisWeek: '{{count}} khung giờ làm việc tuần này',
+    slotsThisMonth: '{{count}} khung giờ làm việc tháng này',
     legend: 'Chú thích',
-    layers: { availability: 'Khung rảnh', visit: 'Buổi được giao', timeOff: 'Ngày nghỉ' },
+    layers: { availability: 'Khung giờ làm việc', visit: 'Buổi được giao', timeOff: 'Ngày nghỉ' },
     dayLabel: '{{day}}: {{count}} mục',
     dayStrip: 'Các ngày trong tuần',
     emptyDay: 'Ngày này chưa có lịch.',
-    emptyDayHint: 'Khung rảnh xuất hiện khi trung tâm duyệt ca bạn đã đăng ký.',
+    emptyDayHint: 'Khung giờ làm việc xuất hiện khi trung tâm duyệt ca bạn đã đăng ký.',
     signUp: 'Đăng ký ca',
     loadError: 'Không tải được lịch của bạn.',
     more: '+{{count}} mục',
+    visitCount: '{{count}} buổi',
+    free: 'Trống',
     slot: {
-      title: 'Khung rảnh',
+      title: 'Khung giờ làm việc',
       status: 'Trạng thái',
       open: 'Đang mở',
       past: 'Đã qua',
@@ -186,13 +192,13 @@ export const caregiverWorkVi = {
       note: 'Ghi chú',
       cancelledReason: 'Lý do: {{reason}}',
       explain: 'Khách đặt được bạn trong khung giờ này.',
-      cancel: 'Hủy khung rảnh',
-      cancelTitle: 'Hủy khung rảnh này?',
+      cancel: 'Hủy khung giờ làm việc',
+      cancelTitle: 'Hủy khung giờ làm việc này?',
       cancelDescription:
         '{{date}}, {{start}}–{{end}}. Khách sẽ không đặt được bạn trong khung này nữa. Khung đã có buổi được giao thì không hủy được.',
       reason: 'Lý do',
       reasonRequired: 'Nhập lý do hủy.',
-      cancelledToast: 'Đã hủy khung rảnh'
+      cancelledToast: 'Đã hủy khung giờ làm việc'
     },
     timeOffDetail: 'Ngày nghỉ · {{range}}',
     manageTimeOff: 'Quản lý ngày nghỉ'
@@ -203,9 +209,10 @@ export const caregiverWorkVi = {
       label: 'Quy trình',
       register: 'Đăng ký ca',
       review: 'Trung tâm duyệt',
-      available: 'Thành khung rảnh để khách đặt'
+      available: 'Thành khung giờ làm việc để khách đặt'
     },
     filterLabel: 'Lọc ca',
+    pagination: 'Trang danh sách ca',
     filters: { open: 'Ca mở', pending: 'Chờ duyệt', approved: 'Đã duyệt', history: 'Lịch sử' },
     type: { DAILY: 'Theo ngày', WEEKLY: 'Theo tuần' },
     capacity: '{{approved}}/{{capacity}} người',
@@ -214,7 +221,7 @@ export const caregiverWorkVi = {
     status: {
       none: 'Chưa đăng ký',
       PENDING: 'Đã đăng ký · chờ duyệt',
-      APPROVED: 'Đã duyệt · thành khung rảnh',
+      APPROVED: 'Đã duyệt · thành khung giờ làm việc',
       REJECTED: 'Bị từ chối',
       CANCELLED: 'Bạn đã hủy',
       expired: 'Hết hạn đăng ký'
@@ -222,7 +229,7 @@ export const caregiverWorkVi = {
     register: 'Đăng ký',
     registerTitle: 'Đăng ký ca này?',
     registerDescription:
-      '{{date}} · {{start}}–{{end}}. Trung tâm sẽ duyệt; khi được duyệt, khung giờ này thành khung rảnh để khách đặt.',
+      '{{date}} · {{start}}–{{end}}. Trung tâm sẽ duyệt; khi được duyệt, khung giờ này thành khung giờ làm việc để khách đặt.',
     note: 'Ghi chú cho trung tâm (không bắt buộc)',
     notePlaceholder: 'VD: Em có thể tới sớm 15 phút',
     registered: 'Đã đăng ký. Trung tâm sẽ duyệt.',
@@ -248,7 +255,7 @@ export const caregiverWorkVi = {
     withdraw: 'Rút khỏi ca',
     withdrawTitle: 'Rút khỏi ca đã được duyệt?',
     withdrawDescription:
-      '{{date}} · {{start}}–{{end}}. Khung giờ này sẽ không còn là khung rảnh của bạn. Không rút được khi khách đã đặt buổi trong khung này — khi đó hãy báo trung tâm.',
+      '{{date}} · {{start}}–{{end}}. Khung giờ này sẽ không còn là khung giờ làm việc của bạn. Không rút được khi khách đã đặt buổi trong khung này — khi đó hãy báo trung tâm.',
     withdrawReason: 'Lý do',
     withdrawReasonPlaceholder: 'VD: Việc gia đình',
     withdrawReasonRequired: 'Nhập lý do (tối đa 500 ký tự).',
@@ -297,9 +304,10 @@ export const caregiverWorkVi = {
       inPast: 'Không chọn thời điểm bắt đầu trong quá khứ.',
       conflictVisits:
         'Bạn có {{count}} buổi đã giao trong khoảng này. Trung tâm cần giao lại các buổi đó trước khi bạn nghỉ.',
-      conflictSlots: 'Khoảng này trùng {{count}} khung rảnh đang mở; khách sẽ không đặt được các khung đó.',
+      conflictSlots: 'Khoảng này trùng {{count}} khung giờ làm việc đang mở; khách sẽ không đặt được các khung đó.',
       save: 'Lưu ngày nghỉ'
     },
-    loadError: 'Không tải được ngày nghỉ.'
+    loadError: 'Không tải được ngày nghỉ.',
+    pagination: 'Trang ngày nghỉ'
   }
 }

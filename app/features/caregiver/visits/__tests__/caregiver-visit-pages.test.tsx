@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   acknowledgeOccurrence,
+  acknowledgeOccurrences,
   checkIn,
   checkOut,
   fetchCareSession,
@@ -28,6 +29,7 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
   fetchOccurrence: vi.fn(),
   fetchCareSession: vi.fn(),
   acknowledgeOccurrence: vi.fn(),
+  acknowledgeOccurrences: vi.fn(),
   checkIn: vi.fn(),
   checkOut: vi.fn(),
   saveSessionTask: vi.fn(),
@@ -83,7 +85,10 @@ beforeEach(async () => {
 describe('Caregiver care visits list', () => {
   it('gathers the visits of one booking into one card that opens the booking (2026-11-09)', async () => {
     vi.mocked(fetchMyOccurrences).mockResolvedValue(
-      page([visit, { ...visit, id: 'occ-2', occurrenceNo: 2, startAt: new Date(Date.now() + 2 * 86_400_000).toISOString() }])
+      page([
+        visit,
+        { ...visit, id: 'occ-2', occurrenceNo: 2, startAt: new Date(Date.now() + 2 * 86_400_000).toISOString() }
+      ])
     )
     renderWith(<CaregiverVisitsPage />)
 
@@ -129,32 +134,114 @@ describe('Caregiver care visits list', () => {
 
 describe('Caregiver booking page', () => {
   it('lists every visit of the booking, accepts from a card and withdraws from the visits more than a day away', async () => {
-    const far = { ...visit, id: 'far', occurrenceNo: 2, startAt: new Date(Date.now() + 3 * 86_400_000).toISOString(), endAt: new Date(Date.now() + 3 * 86_400_000 + 7_200_000).toISOString() }
+    const far = {
+      ...visit,
+      id: 'far',
+      occurrenceNo: 2,
+      startAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+      endAt: new Date(Date.now() + 3 * 86_400_000 + 7_200_000).toISOString()
+    }
     vi.mocked(fetchMyOccurrences).mockResolvedValue(page([visit, far]))
     vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
     vi.mocked(withdrawFromVisits).mockResolvedValue([])
     renderWith(<CaregiverBookingPage bookingId='bk-1' />, '/caregiver/visits/bookings/bk-1')
 
-    expect(await screen.findByRole('link', { name: 'Mở buổi 1 của Bà Lan' })).toHaveAttribute('href', '/caregiver/visits/occ-1')
+    expect(await screen.findByRole('link', { name: 'Mở buổi 1: Chăm sóc người già tại nhà' })).toHaveAttribute(
+      'href',
+      '/caregiver/visits/occ-1'
+    )
     expect(fetchMyOccurrences).toHaveBeenCalledWith({ bookingId: 'bk-1', page: 0, size: 100 })
     fireEvent.click(screen.getAllByRole('button', { name: 'Nhận buổi' })[0])
     await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
 
     fireEvent.click(screen.getByRole('button', { name: 'Xin hủy các buổi còn lại' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Xin hủy buổi chăm sóc' })
+    const dialog = await screen.findByRole('dialog', { name: 'Xin hủy các buổi còn lại' })
     // The visit starting in 10 minutes stays with the caregiver.
-    expect(within(dialog).getByText('Các buổi còn dưới 24 giờ — bạn vẫn phụ trách')).toBeInTheDocument()
-    fireEvent.click(within(dialog).getByRole('radio', { name: 'Lý do khác' }))
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu hủy' }))
+    expect(within(dialog).getByText('1 buổi bạn vẫn phụ trách')).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('radio', { name: /Lý do khác/ }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu hủy (1 buổi)' }))
     expect(within(dialog).getByText('Vui lòng ghi rõ lý do.')).toBeInTheDocument()
     expect(withdrawFromVisits).not.toHaveBeenCalled()
     fireEvent.change(within(dialog).getByRole('textbox', { name: 'Ghi chú cho trung tâm' }), {
       target: { value: 'Con ốm' }
     })
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu hủy' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu hủy (1 buổi)' }))
     await waitFor(() =>
-      expect(withdrawFromVisits).toHaveBeenCalledWith({ occurrenceIds: ['far'], reasonCode: 'OTHER', reasonDetail: 'Con ốm' })
+      expect(withdrawFromVisits).toHaveBeenCalledWith({
+        occurrenceIds: ['far'],
+        reasonCode: 'OTHER',
+        reasonDetail: 'Con ốm'
+      })
     )
+  })
+
+  it('accepts every waiting visit at once and withdraws a day with several visits as a whole (2026-11-10)', async () => {
+    const dayStart = Date.now() + 3 * 86_400_000
+    const morning = {
+      ...visit,
+      id: 'morning',
+      occurrenceNo: 1,
+      startAt: new Date(dayStart).toISOString(),
+      endAt: new Date(dayStart + 3_600_000).toISOString()
+    }
+    const afternoon = {
+      ...visit,
+      id: 'afternoon',
+      occurrenceNo: 2,
+      startAt: new Date(dayStart + 3_600_000).toISOString(),
+      endAt: new Date(dayStart + 7_200_000).toISOString(),
+      services: [{ careServiceId: 'svc-2', serviceName: 'Tắm rửa' }]
+    }
+    vi.mocked(fetchMyOccurrences).mockResolvedValue(page([morning, afternoon]))
+    vi.mocked(acknowledgeOccurrences).mockResolvedValue([])
+    vi.mocked(withdrawFromVisits).mockResolvedValue([])
+    renderWith(<CaregiverBookingPage bookingId='bk-1' />, '/caregiver/visits/bookings/bk-1')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nhận tất cả (2 buổi)' }))
+    const accept = await screen.findByRole('dialog', { name: 'Nhận 2 buổi' })
+    fireEvent.click(within(accept).getByRole('button', { name: 'Nhận 2 buổi' }))
+    await waitFor(() => expect(acknowledgeOccurrences).toHaveBeenCalledWith(['morning', 'afternoon']))
+
+    // The day names the services done that day and offers only the whole-day withdrawal.
+    expect(screen.getByRole('list', { name: 'Dịch vụ trong ngày' })).toHaveTextContent('Tắm rửa')
+    fireEvent.click(screen.getByRole('button', { name: 'Xin hủy cả ngày' }))
+    const withdraw = await screen.findByRole('dialog', { name: /Xin hủy cả ngày/ })
+    expect(within(withdraw).getByText('Ngày có nhiều buổi được hủy cùng nhau, không tách lẻ.')).toBeInTheDocument()
+    fireEvent.click(within(withdraw).getByRole('button', { name: 'Gửi yêu cầu hủy (2 buổi)' }))
+    await waitFor(() =>
+      expect(withdrawFromVisits).toHaveBeenCalledWith({
+        occurrenceIds: ['morning', 'afternoon'],
+        reasonCode: 'PERSONAL',
+        reasonDetail: undefined
+      })
+    )
+  })
+
+  it('shows the booking as a month calendar with one summary chip per day', async () => {
+    const dayStart = Date.now() + 3 * 86_400_000
+    vi.mocked(fetchMyOccurrences).mockResolvedValue(
+      page([
+        {
+          ...visit,
+          id: 'a',
+          startAt: new Date(dayStart).toISOString(),
+          endAt: new Date(dayStart + 3_600_000).toISOString()
+        },
+        {
+          ...visit,
+          id: 'b',
+          occurrenceNo: 2,
+          startAt: new Date(dayStart + 3_600_000).toISOString(),
+          endAt: new Date(dayStart + 7_200_000).toISOString()
+        }
+      ])
+    )
+    renderWith(<CaregiverBookingPage bookingId='bk-1' />, '/caregiver/visits/bookings/bk-1?view=calendar')
+
+    const day = await screen.findByRole('button', { name: /2 buổi, Chờ bạn nhận/ })
+    expect(day).toHaveAttribute('aria-pressed', 'true')
+    expect(within(day).getByText('2 buổi')).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Mở buổi/ })).toHaveLength(2)
   })
 })
 

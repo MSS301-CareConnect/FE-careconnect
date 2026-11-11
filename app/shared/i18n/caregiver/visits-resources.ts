@@ -55,6 +55,26 @@ export const caregiverVisitsEn = {
     acceptError: 'Could not accept the visit. Please try again.',
     copyAddress: 'Copy address',
     addressCopied: 'Address copied'
+  },
+  absence: {
+    badge: {
+      PENDING: 'Missed · not explained',
+      EXPLAINED: 'Missed · waiting for the center',
+      EXCUSED: 'Missed · excused',
+      CONFIRMED: 'Missed · violation'
+    },
+    summary: '{{bookings}} bookings · {{unexplained}} still to explain',
+    missedCount: '{{count}} missed visits',
+    waiting: '{{count}} to explain',
+    openBooking: 'Open booking',
+    expand: 'Show visits',
+    collapse: 'Hide',
+    visitLine: 'Visit {{number}} · {{day}} · {{time}}',
+    pagination: 'Absence pages',
+    detailTitle: 'You were recorded absent',
+    yourExplanation: 'Your explanation',
+    centerConclusion: 'Center conclusion',
+    notConcluded: 'The center has not concluded yet.'
   }
 }
 
@@ -115,5 +135,25 @@ export const caregiverVisitsVi = {
     acceptError: 'Không nhận được buổi. Vui lòng thử lại.',
     copyAddress: 'Sao chép địa chỉ',
     addressCopied: 'Đã sao chép địa chỉ'
+  },
+  absence: {
+    badge: {
+      PENDING: 'Vắng ca · chưa giải trình',
+      EXPLAINED: 'Vắng ca · chờ trung tâm xét',
+      EXCUSED: 'Vắng ca · có lý do',
+      CONFIRMED: 'Vắng ca · vi phạm'
+    },
+    summary: '{{bookings}} lịch · {{unexplained}} buổi chưa giải trình',
+    missedCount: '{{count}} buổi vắng',
+    waiting: '{{count}} chưa giải trình',
+    openBooking: 'Mở lịch',
+    expand: 'Xem các buổi',
+    collapse: 'Thu gọn',
+    visitLine: 'Buổi {{number}} · {{day}} · {{time}}',
+    pagination: 'Trang hồ sơ vắng ca',
+    detailTitle: 'Bạn bị ghi nhận vắng buổi này',
+    yourExplanation: 'Giải trình của bạn',
+    centerConclusion: 'Kết luận của trung tâm',
+    notConcluded: 'Trung tâm chưa kết luận.'
   }
 }

@@ -19,7 +19,9 @@ export const caregiverLayoutEn = {
     requests: 'Requests',
     requestsWaiting: '{{count}} booking requests waiting',
     needsResponse: '{{count}} need your answer',
-    earnings: 'Kept deposits'
+    earnings: 'Kept deposits',
+    wallet: 'My wallet',
+    notifications: 'Notifications'
   },
   identity: {
     role: 'Caregiver'
@@ -52,7 +54,9 @@ export const caregiverLayoutVi = {
     requests: 'Yêu cầu',
     requestsWaiting: '{{count}} yêu cầu đặt lịch đang chờ',
     needsResponse: '{{count}} việc cần phản hồi',
-    earnings: 'Tiền cọc được hưởng'
+    earnings: 'Tiền cọc được hưởng',
+    wallet: 'Ví của tôi',
+    notifications: 'Thông báo'
   },
   identity: {
     role: 'Điều dưỡng viên'

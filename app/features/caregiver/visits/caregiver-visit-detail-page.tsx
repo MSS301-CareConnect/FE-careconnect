@@ -14,6 +14,7 @@ import { CaregiverError, CaregiverPageHeader, cgCard, cgContainer } from '../ui/
 import { visitPeople } from '../ui/visit-card'
 import { VisitStatusBadge } from '../ui/visit-status-badge'
 import { AllergyCallout, CareProfile } from './components/care-profile'
+import { VisitAbsence } from './components/visit-absence'
 import { VisitActions } from './components/visit-actions'
 import { VisitChecklist } from './components/visit-checklist'
 import { BookingVisits } from './components/visit-booking'
@@ -81,6 +82,7 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
         {allergies ? <AllergyCallout value={allergies} /> : null}
         <div className='grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]'>
           <div className='flex min-w-0 flex-col gap-4'>
+            <VisitAbsence visit={data} />
             {data.sessionId ? <VisitChecklist sessionId={data.sessionId} /> : <VisitActions visit={data} />}
             <VisitWithdraw visit={data} />
             <CareProfile visit={data} />

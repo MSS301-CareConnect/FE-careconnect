@@ -20,6 +20,7 @@ import {
 } from '~/shared/api/generated/api/booking/booking'
 import {
   acknowledgeBookingOccurrence,
+  acknowledgeBookingOccurrences,
   decideBookingOccurrenceNoShow,
   getBookingOccurrence,
   listMyBookingOccurrences,
@@ -205,8 +206,8 @@ export async function updateServiceAddressRequest(id: string, request: ServiceAd
   return result(await updateBookingServiceAddress(id, request, await writeOptions()))
 }
 /** CR-3: bookings a customer sent straight to this caregiver, waiting for an answer (area only, no care profile). */
-export async function fetchCaregiverBookingRequests(page = 0) {
-  return result(await listCaregiverBookingRequests({ page, size: 50 }, readOptions))
+export async function fetchCaregiverBookingRequests(page = 0, size = 50) {
+  return result(await listCaregiverBookingRequests({ page, size }, readOptions))
 }
 export async function fetchCaregiverBookingRequest(id: string) {
   return result(await getCaregiverBookingRequest(id, readOptions))
@@ -254,6 +255,10 @@ export async function fetchOccurrence(id: string) {
 }
 export async function acknowledgeOccurrence(id: string) {
   return result(await acknowledgeBookingOccurrence(id, await writeOptions()))
+}
+/** Accepts several assigned visits of one booking at once (2026-11-10); all or nothing. */
+export async function acknowledgeOccurrences(occurrenceIds: string[]) {
+  return result(await acknowledgeBookingOccurrences({ occurrenceIds }, await writeOptions()))
 }
 export async function reportNoShow(id: string, note: string) {
   return result(await reportBookingOccurrenceNoShow(id, { note }, await writeOptions()))

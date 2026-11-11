@@ -24,7 +24,7 @@ export function CaregiverBottomNav({ toAccept, requests }: { toAccept: number; r
     >
       <ul className='mx-auto flex h-16 max-w-md items-center justify-around rounded-[2rem] border border-white/80 bg-white/95 px-1.5 shadow-[var(--shadow-float)] backdrop-blur-xl'>
         {caregiverNavigation.map((item) => {
-          const current = active.key === item.key
+          const current = active?.key === item.key
           const badge = item.key === 'visits' ? toAccept + requests : 0
           const badgeLabel = t('caregiver.nav.needsResponse', { count: badge })
           return (

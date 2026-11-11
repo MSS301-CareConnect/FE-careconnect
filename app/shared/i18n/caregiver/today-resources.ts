@@ -31,16 +31,45 @@ export const caregiverTodayEn = {
     noCertificates: 'Your profile has no certificate yet',
     expiredCertificate: '{{count}} certificates expired or expiring',
     certificateAction: 'Add certificate',
-    allClear: 'All caught up — nothing needs your attention.'
+    allClear: 'All caught up — nothing needs your attention.',
+    absences: '{{count}} missed visits to explain',
+    absencesAction: 'Explain'
+  },
+  glance: {
+    label: 'Today at a glance',
+    today: 'Today {{count}} visits · {{duration}}',
+    left: '{{count}} left',
+    waiting: '{{count}} waiting for your answer'
   },
   week: {
     title: 'This week',
+    otherWeek: 'Selected week',
+    range: '{{from}} → {{to}}',
+    previous: 'Previous week',
+    next: 'Next week',
+    backToThisWeek: 'This week',
     visits: 'Visits',
     hours: 'Care hours',
     done: 'Done',
-    chart: 'Visits per day this week',
-    dayCount_one: '{{day}}: {{count}} visit',
-    dayCount_other: '{{day}}: {{count}} visits'
+    chart: 'Care hours per day this week — hover or tap a column for its numbers',
+    dayCount: '{{day}}: {{count}} visits, {{hours}} hours',
+    tooltip: {
+      visits: 'Visits',
+      hours: 'Care hours',
+      done: 'Done',
+      upcoming: 'Not done yet',
+      missed: 'Missed',
+      workHours: 'Working hours'
+    },
+    legend: {
+      done: 'Done',
+      upcoming: 'Not done yet',
+      missed: 'Missed',
+      workHours: 'Working hours'
+    },
+    fill: 'Working hours filled',
+    fillDetail: '{{booked}} / {{registered}} h',
+    fillLabel: '{{percent}}% of this week’s working hours are booked'
   },
   empty: {
     title: 'You have no visit today',
@@ -86,16 +115,45 @@ export const caregiverTodayVi = {
     noCertificates: 'Hồ sơ của bạn chưa có chứng chỉ nào',
     expiredCertificate: '{{count}} chứng chỉ đã hoặc sắp hết hạn',
     certificateAction: 'Thêm chứng chỉ',
-    allClear: 'Mọi việc đã ổn — không có gì cần xử lý.'
+    allClear: 'Mọi việc đã ổn — không có gì cần xử lý.',
+    absences: '{{count}} buổi vắng ca chưa giải trình',
+    absencesAction: 'Giải trình'
+  },
+  glance: {
+    label: 'Tóm tắt hôm nay',
+    today: 'Hôm nay {{count}} buổi · {{duration}}',
+    left: 'Còn {{count}} buổi',
+    waiting: '{{count}} việc chờ bạn trả lời'
   },
   week: {
     title: 'Tuần này',
+    otherWeek: 'Tuần đang xem',
+    range: '{{from}} → {{to}}',
+    previous: 'Tuần trước',
+    next: 'Tuần sau',
+    backToThisWeek: 'Về tuần này',
     visits: 'Số buổi',
     hours: 'Giờ chăm sóc',
     done: 'Đã xong',
-    chart: 'Số buổi theo ngày trong tuần',
-    dayCount_one: '{{day}}: {{count}} buổi',
-    dayCount_other: '{{day}}: {{count}} buổi'
+    chart: 'Giờ chăm sóc theo ngày trong tuần — rê chuột hoặc chạm vào cột để xem số liệu',
+    dayCount: '{{day}}: {{count}} buổi, {{hours}} giờ',
+    tooltip: {
+      visits: 'Số buổi',
+      hours: 'Giờ chăm sóc',
+      done: 'Đã xong',
+      upcoming: 'Chưa làm',
+      missed: 'Vắng ca',
+      workHours: 'Khung giờ làm việc'
+    },
+    legend: {
+      done: 'Đã xong',
+      upcoming: 'Chưa làm',
+      missed: 'Vắng ca',
+      workHours: 'Khung giờ làm việc'
+    },
+    fill: 'Mức kín khung giờ làm việc',
+    fillDetail: '{{booked}} / {{registered}} giờ',
+    fillLabel: 'Đã kín {{percent}}% khung giờ làm việc trong tuần'
   },
   empty: {
     title: 'Hôm nay bạn chưa có buổi nào',
