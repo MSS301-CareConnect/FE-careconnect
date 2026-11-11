@@ -1,16 +1,32 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchProviderStatistics, fetchSystemStatistics } from '~/entities/statistics/statistics-api'
+import { fetchAccountStatistics } from '~/entities/identity/account-api'
+import { fetchRevenue } from '~/entities/payment/payment-api'
+import { fetchProviderStatistics, fetchSystemStatisticsBetween } from '~/entities/statistics/statistics-api'
+import { fetchMyWalletStatistics, fetchWithdrawalStatistics } from '~/entities/wallet/wallet-api'
 import { AdminLayout } from '~/features/admin/layout/admin-layout'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 import { AdminDashboardPage } from '../admin-dashboard-page'
 
 vi.mock('~/entities/statistics/statistics-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/statistics/statistics-api')>()),
-  fetchSystemStatistics: vi.fn(),
+  fetchSystemStatisticsBetween: vi.fn(),
   fetchProviderStatistics: vi.fn()
+}))
+vi.mock('~/entities/identity/account-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/identity/account-api')>()),
+  fetchAccountStatistics: vi.fn()
+}))
+vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
+  fetchRevenue: vi.fn()
+}))
+vi.mock('~/entities/wallet/wallet-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/wallet/wallet-api')>()),
+  fetchMyWalletStatistics: vi.fn(),
+  fetchWithdrawalStatistics: vi.fn()
 }))
 
 function Location() {
@@ -39,7 +55,61 @@ function renderAdmin(path = '/admin/dashboard') {
 
 describe('Admin dashboard', () => {
   beforeEach(async () => {
-    vi.mocked(fetchSystemStatistics).mockResolvedValue({ bookingsByStatus: {}, occurrences: {} })
+    vi.mocked(fetchSystemStatisticsBetween).mockResolvedValue({
+      bookingsByStatus: { CONFIRMED: 3, PENDING_CENTER_CONFIRMATION: 1 },
+      occurrences: { completed: 4, cancelled: 1 },
+      complaints: { escalated: 2 },
+      completionRate: 80,
+      avgRating: 4.5,
+      reviewCount: 2,
+      ratingDistribution: { '5': 1, '4': 1 },
+      trendGroupBy: 'DAY',
+      trend: [{ period: '2026-11-01', bookings: 4, completedVisits: 4, cancelledVisits: 1, missedVisits: 0 }],
+      byCenter: { items: [], page: 0, size: 100, totalElements: 0, totalPages: 0 }
+    })
+    vi.mocked(fetchAccountStatistics).mockResolvedValue({
+      usersByRole: { CUSTOMER: 10, CAREGIVER: 4 },
+      usersByStatus: { ACTIVE: 14 },
+      newCustomers: 3
+    })
+    vi.mocked(fetchRevenue).mockResolvedValue({
+      successfulPaymentCount: 5,
+      grossRevenue: 5000000,
+      totalRefunded: 500000,
+      totalRevenue: 4500000,
+      averagePayment: 900000
+    })
+    vi.mocked(fetchMyWalletStatistics).mockResolvedValue({
+      ownerType: 'PLATFORM',
+      from: '2026-11-01T00:00:00Z',
+      to: '2026-11-10T00:00:00Z',
+      groupBy: 'DAY',
+      availableBalance: 450000,
+      heldBalance: 0,
+      totalIncome: 450000,
+      totalWithdrawn: 0,
+      bookingCount: 4,
+      byType: [],
+      series: [{ period: '2026-11-01', income: 450000, withdrawn: 0 }],
+      commissionIncome: 450000,
+      liabilities: [{ ownerType: 'CUSTOMER', walletCount: 2, availableBalance: 300000, heldBalance: 0 }]
+    })
+    vi.mocked(fetchWithdrawalStatistics).mockResolvedValue({
+      scope: 'REVIEW',
+      from: '2026-11-01T00:00:00Z',
+      to: '2026-11-10T00:00:00Z',
+      groupBy: 'DAY',
+      pendingCount: 1,
+      pendingAmount: 200000,
+      requestedCount: 1,
+      requestedAmount: 200000,
+      completedCount: 0,
+      completedAmount: 0,
+      rejectedCount: 0,
+      rejectedAmount: 0,
+      byOwnerType: [],
+      series: []
+    })
     vi.mocked(fetchProviderStatistics).mockResolvedValue({
       centersByStatus: {},
       caregiversByStatus: {},
@@ -53,7 +123,9 @@ describe('Admin dashboard', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tổng quan nền tảng')
     expect(screen.getByRole('navigation', { name: 'Menu quản trị hệ thống' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Tổng quan/ })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: /Khách hàng/ })).toHaveAttribute('href', '/admin/customers')
+    // "Khách hàng" and "Tài khoản" were the same list: one "Tài khoản" item under the Khách hàng section (2026-11-10).
+    expect(screen.queryByRole('link', { name: /^Khách hàng$/ })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /^Tài khoản$/ })).toHaveLength(1)
     expect(screen.getByRole('link', { name: /^Trung tâm$/ })).toHaveAttribute('href', '/admin/centers')
     expect(screen.getByRole('link', { name: /^Dịch vụ$/ })).toHaveAttribute('href', '/admin/services')
     // Pages without a backend stay out of the menu (D26).
@@ -65,6 +137,30 @@ describe('Admin dashboard', () => {
     expect(screen.queryByRole('link', { name: 'Xem báo cáo doanh thu' })).not.toBeInTheDocument()
     await act(() => setAppLanguage('en', false))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Platform overview')
+  })
+
+  it('shows the admin queues, live operations and platform money for the chosen period', async () => {
+    renderAdmin()
+    expect(await screen.findByRole('heading', { name: 'Việc cần xử lý' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Mở Yêu cầu rút của trung tâm' })).toHaveAttribute(
+      'href',
+      '/admin/withdrawals'
+    )
+    expect(screen.getByRole('link', { name: 'Mở Khiếu nại chuyển lên admin' })).toHaveAttribute(
+      'href',
+      '/admin/reviews-complaints'
+    )
+    expect(await screen.findByText('Hoa hồng nền tảng', { selector: 'p' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Xu hướng lịch đặt & buổi chăm sóc' })).toBeInTheDocument()
+    const [fromDate, toDate] = vi.mocked(fetchSystemStatisticsBetween).mock.calls[0]
+    expect(fromDate).toMatch(/-01$/)
+    expect(toDate >= fromDate).toBe(true)
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Năm nay' }))
+    expect(screen.getByTestId('location')).toHaveTextContent('/admin/dashboard?period=year')
+    await waitFor(() =>
+      expect(vi.mocked(fetchSystemStatisticsBetween).mock.calls.some(([from]) => from.endsWith('-01-01'))).toBe(true)
+    )
   })
 
   it('groups the sidebar menu without a topbar breadcrumb', () => {
@@ -85,8 +181,10 @@ describe('Admin dashboard', () => {
     expect(within(operations).getByRole('link', { name: /Lịch đặt/ })).toHaveAttribute('href', '/admin/bookings')
     expect(within(operations).queryByRole('button')).not.toBeInTheDocument()
     expect(within(operations).getByRole('link', { name: /^Dịch vụ$/ })).toHaveAttribute('href', '/admin/services')
+    const customerCare = screen.getByRole('list', { name: 'Khách hàng' })
+    expect(within(customerCare).getByRole('link', { name: /Tài khoản/ })).toHaveAttribute('href', '/admin/accounts')
     const system = screen.getByRole('list', { name: 'Hệ thống' })
-    expect(within(system).getByRole('link', { name: /Tài khoản/ })).toHaveAttribute('href', '/admin/accounts')
+    expect(within(system).queryByRole('link', { name: /Tài khoản/ })).not.toBeInTheDocument()
     expect(within(system).getByRole('link', { name: /Sự cố/ })).toHaveAttribute('href', '/admin/incidents')
     expect(screen.getAllByRole('navigation')).toHaveLength(1)
   })

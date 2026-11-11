@@ -106,6 +106,15 @@
   --shadow-soft: 0 18px 40px -22px rgb(12 43 37 / 0.28), 0 2px 6px rgb(12 43 37 / 0.05);
   --shadow-float: 0 24px 60px -24px rgb(12 43 37 / 0.35);
 
+  /* Chart categorical palette (2026-11-10, shared/ui/charts): fixed order, checked with the dataviz validator against the
+     light surface (lightness band, chroma, CVD ΔE ≥ 8, normal-vision floor). Contrast < 3:1 is relieved by legends and
+     labelled values, never colour alone. */
+  --color-chart-1: #2e9e7e;
+  --color-chart-2: #e07040;
+  --color-chart-3: #4a7fd4;
+  --color-chart-4: #b8901a;
+  --color-chart-5: #9b6fd1;
+
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-card: 0 1px 2px rgb(16 24 20 / 0.05), 0 1px 3px rgb(16 24 20 / 0.04);
   --shadow-raised: 0 4px 12px rgb(16 24 20 / 0.08), 0 2px 4px rgb(16 24 20 / 0.04);
