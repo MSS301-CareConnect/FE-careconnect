@@ -12,6 +12,12 @@ export const commonEn = {
       discount: '−{{percent}}%',
       original: 'Original price {{price}}'
     },
+    charts: {
+      empty: 'No data in this period yet.',
+      total: 'Total',
+      share: '{{percent}} of the total',
+      point: '{{label}}: {{values}}'
+    },
     kit: {
       ratingNew: 'New',
       ratingLabel: 'Rated {{rating}} out of 5 from {{count}} reviews',
@@ -264,6 +270,12 @@ export const commonVi = {
     price: {
       discount: '−{{percent}}%',
       original: 'Giá gốc {{price}}'
+    },
+    charts: {
+      empty: 'Chưa có dữ liệu trong kỳ này.',
+      total: 'Tổng',
+      share: '{{percent}} tổng số',
+      point: '{{label}}: {{values}}'
     },
     kit: {
       ratingNew: 'Mới',

@@ -15,7 +15,7 @@ export function ManagerWalletPage() {
   return (
     <div className={`${bentoContainer} space-y-6`}>
       <BentoPageHeader description={t('wallet.subtitles.CENTER')} title={t('wallet.titles.CENTER')} />
-      <WalletDashboard bookingHref={bookingHref} />
+      <WalletDashboard bookingHref={bookingHref} withdrawalQueueHref='/center-manager/withdrawals' />
     </div>
   )
 }

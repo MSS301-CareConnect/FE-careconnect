@@ -8,24 +8,28 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { WalletWithdrawalPageResponse, WalletWithdrawalResponse } from '../../contracts'
+import type {
+  WalletWithdrawalPageResponse,
+  WalletWithdrawalResponse,
+  WalletWithdrawalStatisticsResponse
+} from '../../contracts'
 
 import {
-  getApproveWalletWithdrawalResponseMock,
-  getCompleteWalletWithdrawalResponseMock,
   getCreateWalletWithdrawalResponseMock,
   getGetWalletWithdrawalResponseMock,
+  getGetWalletWithdrawalStatisticsResponseMock,
   getListWalletWithdrawalsResponseMock,
-  getRejectWalletWithdrawalResponseMock
+  getRejectWalletWithdrawalResponseMock,
+  getTransferWalletWithdrawalResponseMock
 } from './wallet-withdrawal.faker'
 
 export {
   getListWalletWithdrawalsResponseMock,
   getCreateWalletWithdrawalResponseMock,
   getGetWalletWithdrawalResponseMock,
-  getApproveWalletWithdrawalResponseMock,
   getRejectWalletWithdrawalResponseMock,
-  getCompleteWalletWithdrawalResponseMock
+  getTransferWalletWithdrawalResponseMock,
+  getGetWalletWithdrawalStatisticsResponseMock
 } from './wallet-withdrawal.faker'
 
 export const getListWalletWithdrawalsMockHandler = (
@@ -106,32 +110,6 @@ export const getGetWalletWithdrawalMockHandler = (
   )
 }
 
-export const getApproveWalletWithdrawalMockHandler = (
-  overrideResponse?:
-    | WalletWithdrawalResponse
-    | ((
-        info: Parameters<Parameters<typeof http.post>[1]>[0]
-      ) => Promise<WalletWithdrawalResponse> | WalletWithdrawalResponse),
-  options?: RequestHandlerOptions
-) => {
-  return http.post(
-    '*/v1/wallet-withdrawals/:withdrawalId/approve',
-    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-      await delay(150)
-
-      return HttpResponse.json(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getApproveWalletWithdrawalResponseMock(),
-        { status: 200 }
-      )
-    },
-    options
-  )
-}
-
 export const getRejectWalletWithdrawalMockHandler = (
   overrideResponse?:
     | WalletWithdrawalResponse
@@ -158,7 +136,7 @@ export const getRejectWalletWithdrawalMockHandler = (
   )
 }
 
-export const getCompleteWalletWithdrawalMockHandler = (
+export const getTransferWalletWithdrawalMockHandler = (
   overrideResponse?:
     | WalletWithdrawalResponse
     | ((
@@ -167,7 +145,7 @@ export const getCompleteWalletWithdrawalMockHandler = (
   options?: RequestHandlerOptions
 ) => {
   return http.post(
-    '*/v1/wallet-withdrawals/:withdrawalId/complete',
+    '*/v1/wallet-withdrawals/:withdrawalId/transfers',
     async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
       await delay(150)
 
@@ -176,7 +154,33 @@ export const getCompleteWalletWithdrawalMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getCompleteWalletWithdrawalResponseMock(),
+          : getTransferWalletWithdrawalResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetWalletWithdrawalStatisticsMockHandler = (
+  overrideResponse?:
+    | WalletWithdrawalStatisticsResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<WalletWithdrawalStatisticsResponse> | WalletWithdrawalStatisticsResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/wallet-withdrawals/statistics',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetWalletWithdrawalStatisticsResponseMock(),
         { status: 200 }
       )
     },
@@ -187,7 +191,7 @@ export const getWalletWithdrawalMock = () => [
   getListWalletWithdrawalsMockHandler(),
   getCreateWalletWithdrawalMockHandler(),
   getGetWalletWithdrawalMockHandler(),
-  getApproveWalletWithdrawalMockHandler(),
   getRejectWalletWithdrawalMockHandler(),
-  getCompleteWalletWithdrawalMockHandler()
+  getTransferWalletWithdrawalMockHandler(),
+  getGetWalletWithdrawalStatisticsMockHandler()
 ]

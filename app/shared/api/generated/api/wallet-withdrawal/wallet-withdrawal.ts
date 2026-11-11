@@ -22,12 +22,13 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
-  CompleteWalletWithdrawalRequest,
   CreateWalletWithdrawalRequest,
+  GetWalletWithdrawalStatisticsParams,
   ListWalletWithdrawalsParams,
   RejectWalletWithdrawalRequest,
   WalletWithdrawalPageResponse,
-  WalletWithdrawalResponse
+  WalletWithdrawalResponse,
+  WalletWithdrawalStatisticsResponse
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -113,7 +114,7 @@ export const getListWalletWithdrawalsUrl = (params?: ListWalletWithdrawalsParams
 }
 
 /**
- * @summary Withdrawal requests — owners see their own wallet, ADMIN sees all
+ * @summary Withdrawal requests — OWN (default) the caller's wallet (ADMIN all), REVIEW the queue the caller handles
  */
 export const listWalletWithdrawals = async (
   params?: ListWalletWithdrawalsParams,
@@ -218,7 +219,7 @@ export function useListWalletWithdrawals<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Withdrawal requests — owners see their own wallet, ADMIN sees all
+ * @summary Withdrawal requests — OWN (default) the caller's wallet (ADMIN all), REVIEW the queue the caller handles
  */
 
 export function useListWalletWithdrawals<
@@ -295,7 +296,7 @@ export const getCreateWalletWithdrawalUrl = () => {
 }
 
 /**
- * @summary CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the admin decides
+ * @summary CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the handler transfers or rejects
  */
 export const createWalletWithdrawal = async (
   createWalletWithdrawalRequest: CreateWalletWithdrawalRequest,
@@ -362,7 +363,7 @@ export type CreateWalletWithdrawalMutationBody = CreateWalletWithdrawalRequest
 export type CreateWalletWithdrawalMutationError = globalThis.Error & { info?: void; status?: number }
 
 /**
- * @summary CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the admin decides
+ * @summary CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the handler transfers or rejects
  */
 export const useCreateWalletWithdrawal = <
   TError = globalThis.Error & { info?: void; status?: number },
@@ -571,148 +572,6 @@ export function useGetWalletWithdrawal<
   return withQueryKey(query, queryOptions.queryKey)
 }
 
-export type approveWalletWithdrawalResponse200 = {
-  data: WalletWithdrawalResponse
-  status: 200
-}
-
-export type approveWalletWithdrawalResponse400 = {
-  data: void
-  status: 400
-}
-
-export type approveWalletWithdrawalResponse401 = {
-  data: void
-  status: 401
-}
-
-export type approveWalletWithdrawalResponse403 = {
-  data: void
-  status: 403
-}
-
-export type approveWalletWithdrawalResponse404 = {
-  data: void
-  status: 404
-}
-
-export type approveWalletWithdrawalResponse409 = {
-  data: void
-  status: 409
-}
-
-export type approveWalletWithdrawalResponse503 = {
-  data: void
-  status: 503
-}
-
-export type approveWalletWithdrawalResponseSuccess = approveWalletWithdrawalResponse200 & {
-  headers: Headers
-}
-export type approveWalletWithdrawalResponseError = (
-  | approveWalletWithdrawalResponse400
-  | approveWalletWithdrawalResponse401
-  | approveWalletWithdrawalResponse403
-  | approveWalletWithdrawalResponse404
-  | approveWalletWithdrawalResponse409
-  | approveWalletWithdrawalResponse503
-) & {
-  headers: Headers
-}
-
-export const getApproveWalletWithdrawalUrl = (withdrawalId: string) => {
-  return `${env.API_BASE_URL}/v1/wallet-withdrawals/${withdrawalId}/approve`
-}
-
-/**
- * @summary ADMIN approves a pending request
- */
-export const approveWalletWithdrawal = async (
-  withdrawalId: string,
-  options?: RequestInit
-): Promise<approveWalletWithdrawalResponseSuccess> => {
-  const res = await fetch(getApproveWalletWithdrawalUrl(withdrawalId), {
-    ...options,
-    method: 'POST'
-  })
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-  if (!res.ok) {
-    const err: globalThis.Error & { info?: approveWalletWithdrawalResponseError['data']; status?: number } =
-      new globalThis.Error()
-    const data: approveWalletWithdrawalResponseError['data'] = body ? JSON.parse(body) : {}
-    err.info = data
-    err.status = res.status
-    throw err
-  }
-  const data: approveWalletWithdrawalResponseSuccess['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as approveWalletWithdrawalResponseSuccess
-}
-
-export const getApproveWalletWithdrawalMutationOptions = <
-  TError = globalThis.Error & { info?: void; status?: number },
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof approveWalletWithdrawal>>,
-    TError,
-    { withdrawalId: string },
-    TContext
-  >
-  fetch?: RequestInit
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof approveWalletWithdrawal>>,
-  TError,
-  { withdrawalId: string },
-  TContext
-> => {
-  const mutationKey = ['approveWalletWithdrawal']
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined }
-
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveWalletWithdrawal>>, { withdrawalId: string }> = (
-    props
-  ) => {
-    const { withdrawalId } = props ?? {}
-
-    return approveWalletWithdrawal(withdrawalId, fetchOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type ApproveWalletWithdrawalMutationResult = NonNullable<Awaited<ReturnType<typeof approveWalletWithdrawal>>>
-
-export type ApproveWalletWithdrawalMutationError = globalThis.Error & { info?: void; status?: number }
-
-/**
- * @summary ADMIN approves a pending request
- */
-export const useApproveWalletWithdrawal = <
-  TError = globalThis.Error & { info?: void; status?: number },
-  TContext = unknown
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof approveWalletWithdrawal>>,
-      TError,
-      { withdrawalId: string },
-      TContext
-    >
-    fetch?: RequestInit
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof approveWalletWithdrawal>>,
-  TError,
-  { withdrawalId: string },
-  TContext
-> => {
-  return useMutation(getApproveWalletWithdrawalMutationOptions(options), queryClient)
-}
 export type rejectWalletWithdrawalResponse200 = {
   data: WalletWithdrawalResponse
   status: 200
@@ -767,7 +626,7 @@ export const getRejectWalletWithdrawalUrl = (withdrawalId: string) => {
 }
 
 /**
- * @summary ADMIN rejects a pending or approved request with a reason; the held amount returns to the balance
+ * @summary The handler (manager of the refunding center for customer / caregiver requests, ADMIN for center wallets) rejects an open request with a reason; the held amount returns and the requester is notified
  */
 export const rejectWalletWithdrawal = async (
   withdrawalId: string,
@@ -835,7 +694,7 @@ export type RejectWalletWithdrawalMutationBody = RejectWalletWithdrawalRequest
 export type RejectWalletWithdrawalMutationError = globalThis.Error & { info?: void; status?: number }
 
 /**
- * @summary ADMIN rejects a pending or approved request with a reason; the held amount returns to the balance
+ * @summary The handler (manager of the refunding center for customer / caregiver requests, ADMIN for center wallets) rejects an open request with a reason; the held amount returns and the requester is notified
  */
 export const useRejectWalletWithdrawal = <
   TError = globalThis.Error & { info?: void; status?: number },
@@ -859,149 +718,340 @@ export const useRejectWalletWithdrawal = <
 > => {
   return useMutation(getRejectWalletWithdrawalMutationOptions(options), queryClient)
 }
-export type completeWalletWithdrawalResponse200 = {
+export type transferWalletWithdrawalResponse200 = {
   data: WalletWithdrawalResponse
   status: 200
 }
 
-export type completeWalletWithdrawalResponse400 = {
+export type transferWalletWithdrawalResponse400 = {
   data: void
   status: 400
 }
 
-export type completeWalletWithdrawalResponse401 = {
+export type transferWalletWithdrawalResponse401 = {
   data: void
   status: 401
 }
 
-export type completeWalletWithdrawalResponse403 = {
+export type transferWalletWithdrawalResponse403 = {
   data: void
   status: 403
 }
 
-export type completeWalletWithdrawalResponse404 = {
+export type transferWalletWithdrawalResponse404 = {
   data: void
   status: 404
 }
 
-export type completeWalletWithdrawalResponse409 = {
+export type transferWalletWithdrawalResponse409 = {
   data: void
   status: 409
 }
 
-export type completeWalletWithdrawalResponse503 = {
+export type transferWalletWithdrawalResponse503 = {
   data: void
   status: 503
 }
 
-export type completeWalletWithdrawalResponseSuccess = completeWalletWithdrawalResponse200 & {
+export type transferWalletWithdrawalResponseSuccess = transferWalletWithdrawalResponse200 & {
   headers: Headers
 }
-export type completeWalletWithdrawalResponseError = (
-  | completeWalletWithdrawalResponse400
-  | completeWalletWithdrawalResponse401
-  | completeWalletWithdrawalResponse403
-  | completeWalletWithdrawalResponse404
-  | completeWalletWithdrawalResponse409
-  | completeWalletWithdrawalResponse503
+export type transferWalletWithdrawalResponseError = (
+  | transferWalletWithdrawalResponse400
+  | transferWalletWithdrawalResponse401
+  | transferWalletWithdrawalResponse403
+  | transferWalletWithdrawalResponse404
+  | transferWalletWithdrawalResponse409
+  | transferWalletWithdrawalResponse503
 ) & {
   headers: Headers
 }
 
-export const getCompleteWalletWithdrawalUrl = (withdrawalId: string) => {
-  return `${env.API_BASE_URL}/v1/wallet-withdrawals/${withdrawalId}/complete`
+export const getTransferWalletWithdrawalUrl = (withdrawalId: string) => {
+  return `${env.API_BASE_URL}/v1/wallet-withdrawals/${withdrawalId}/transfers`
 }
 
 /**
- * @summary ADMIN confirms the manual bank transfer of an approved request
+ * @summary The handler runs the simulated bank transfer; on success the request completes by itself (transfer reference generated) and the requester is notified
  */
-export const completeWalletWithdrawal = async (
+export const transferWalletWithdrawal = async (
   withdrawalId: string,
-  completeWalletWithdrawalRequest: CompleteWalletWithdrawalRequest,
   options?: RequestInit
-): Promise<completeWalletWithdrawalResponseSuccess> => {
-  const res = await fetch(getCompleteWalletWithdrawalUrl(withdrawalId), {
+): Promise<transferWalletWithdrawalResponseSuccess> => {
+  const res = await fetch(getTransferWalletWithdrawalUrl(withdrawalId), {
     ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(completeWalletWithdrawalRequest)
+    method: 'POST'
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
   if (!res.ok) {
-    const err: globalThis.Error & { info?: completeWalletWithdrawalResponseError['data']; status?: number } =
+    const err: globalThis.Error & { info?: transferWalletWithdrawalResponseError['data']; status?: number } =
       new globalThis.Error()
-    const data: completeWalletWithdrawalResponseError['data'] = body ? JSON.parse(body) : {}
+    const data: transferWalletWithdrawalResponseError['data'] = body ? JSON.parse(body) : {}
     err.info = data
     err.status = res.status
     throw err
   }
-  const data: completeWalletWithdrawalResponseSuccess['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as completeWalletWithdrawalResponseSuccess
+  const data: transferWalletWithdrawalResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as transferWalletWithdrawalResponseSuccess
 }
 
-export const getCompleteWalletWithdrawalMutationOptions = <
+export const getTransferWalletWithdrawalMutationOptions = <
   TError = globalThis.Error & { info?: void; status?: number },
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof completeWalletWithdrawal>>,
+    Awaited<ReturnType<typeof transferWalletWithdrawal>>,
     TError,
-    { withdrawalId: string; data: CompleteWalletWithdrawalRequest },
+    { withdrawalId: string },
     TContext
   >
   fetch?: RequestInit
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof completeWalletWithdrawal>>,
+  Awaited<ReturnType<typeof transferWalletWithdrawal>>,
   TError,
-  { withdrawalId: string; data: CompleteWalletWithdrawalRequest },
+  { withdrawalId: string },
   TContext
 > => {
-  const mutationKey = ['completeWalletWithdrawal']
+  const mutationKey = ['transferWalletWithdrawal']
   const { mutation: mutationOptions, fetch: fetchOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, fetch: undefined }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof completeWalletWithdrawal>>,
-    { withdrawalId: string; data: CompleteWalletWithdrawalRequest }
-  > = (props) => {
-    const { withdrawalId, data } = props ?? {}
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof transferWalletWithdrawal>>, { withdrawalId: string }> = (
+    props
+  ) => {
+    const { withdrawalId } = props ?? {}
 
-    return completeWalletWithdrawal(withdrawalId, data, fetchOptions)
+    return transferWalletWithdrawal(withdrawalId, fetchOptions)
   }
 
   return { mutationFn, ...mutationOptions }
 }
 
-export type CompleteWalletWithdrawalMutationResult = NonNullable<Awaited<ReturnType<typeof completeWalletWithdrawal>>>
-export type CompleteWalletWithdrawalMutationBody = CompleteWalletWithdrawalRequest
-export type CompleteWalletWithdrawalMutationError = globalThis.Error & { info?: void; status?: number }
+export type TransferWalletWithdrawalMutationResult = NonNullable<Awaited<ReturnType<typeof transferWalletWithdrawal>>>
+
+export type TransferWalletWithdrawalMutationError = globalThis.Error & { info?: void; status?: number }
 
 /**
- * @summary ADMIN confirms the manual bank transfer of an approved request
+ * @summary The handler runs the simulated bank transfer; on success the request completes by itself (transfer reference generated) and the requester is notified
  */
-export const useCompleteWalletWithdrawal = <
+export const useTransferWalletWithdrawal = <
   TError = globalThis.Error & { info?: void; status?: number },
   TContext = unknown
 >(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof completeWalletWithdrawal>>,
+      Awaited<ReturnType<typeof transferWalletWithdrawal>>,
       TError,
-      { withdrawalId: string; data: CompleteWalletWithdrawalRequest },
+      { withdrawalId: string },
       TContext
     >
     fetch?: RequestInit
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof completeWalletWithdrawal>>,
+  Awaited<ReturnType<typeof transferWalletWithdrawal>>,
   TError,
-  { withdrawalId: string; data: CompleteWalletWithdrawalRequest },
+  { withdrawalId: string },
   TContext
 > => {
-  return useMutation(getCompleteWalletWithdrawalMutationOptions(options), queryClient)
+  return useMutation(getTransferWalletWithdrawalMutationOptions(options), queryClient)
+}
+export type getWalletWithdrawalStatisticsResponse200 = {
+  data: WalletWithdrawalStatisticsResponse
+  status: 200
+}
+
+export type getWalletWithdrawalStatisticsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type getWalletWithdrawalStatisticsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getWalletWithdrawalStatisticsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getWalletWithdrawalStatisticsResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getWalletWithdrawalStatisticsResponse409 = {
+  data: void
+  status: 409
+}
+
+export type getWalletWithdrawalStatisticsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getWalletWithdrawalStatisticsResponseSuccess = getWalletWithdrawalStatisticsResponse200 & {
+  headers: Headers
+}
+export type getWalletWithdrawalStatisticsResponseError = (
+  | getWalletWithdrawalStatisticsResponse400
+  | getWalletWithdrawalStatisticsResponse401
+  | getWalletWithdrawalStatisticsResponse403
+  | getWalletWithdrawalStatisticsResponse404
+  | getWalletWithdrawalStatisticsResponse409
+  | getWalletWithdrawalStatisticsResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetWalletWithdrawalStatisticsUrl = (params: GetWalletWithdrawalStatisticsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/wallet-withdrawals/statistics?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/wallet-withdrawals/statistics`
+}
+
+/**
+ * @summary Withdrawal dashboard of the caller's scope (OWN or the REVIEW queue); the center REVIEW scope adds the money held for customers and caregivers
+ */
+export const getWalletWithdrawalStatistics = async (
+  params: GetWalletWithdrawalStatisticsParams,
+  options?: RequestInit
+): Promise<getWalletWithdrawalStatisticsResponseSuccess> => {
+  const res = await fetch(getGetWalletWithdrawalStatisticsUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getWalletWithdrawalStatisticsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getWalletWithdrawalStatisticsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getWalletWithdrawalStatisticsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getWalletWithdrawalStatisticsResponseSuccess
+}
+
+export const getGetWalletWithdrawalStatisticsQueryKey = (params?: GetWalletWithdrawalStatisticsParams) => {
+  return [`${env.API_BASE_URL}/v1/wallet-withdrawals/statistics`, ...(params ? [params] : [])] as const
+}
+
+export const getGetWalletWithdrawalStatisticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetWalletWithdrawalStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetWalletWithdrawalStatisticsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>> = ({ signal }) =>
+    getWalletWithdrawalStatistics(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWalletWithdrawalStatisticsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>
+>
+export type GetWalletWithdrawalStatisticsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetWalletWithdrawalStatistics<
+  TData = Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetWalletWithdrawalStatisticsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWalletWithdrawalStatistics<
+  TData = Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetWalletWithdrawalStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWalletWithdrawalStatistics<
+  TData = Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetWalletWithdrawalStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Withdrawal dashboard of the caller's scope (OWN or the REVIEW queue); the center REVIEW scope adds the money held for customers and caregivers
+ */
+
+export function useGetWalletWithdrawalStatistics<
+  TData = Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: GetWalletWithdrawalStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletWithdrawalStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetWalletWithdrawalStatisticsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
 }

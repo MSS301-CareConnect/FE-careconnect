@@ -8,8 +8,17 @@ import type { WalletWithdrawalRecord } from '~/shared/api/generated/contracts'
 const STALE_MS = 60_000
 
 /**
- * Who asked for each withdrawal, never the UUID: the center name for a center wallet, the Identity account name
- * otherwise. Lookups share the account / center detail caches.
+ * Who handles a withdrawal (2026-11-10): the center holding the money for a customer / caregiver request that carries
+ * a center, the platform administrator for a center wallet or an older request without a center.
+ */
+export function withdrawalHandler(withdrawal: WalletWithdrawalRecord): 'center' | 'admin' {
+  return withdrawal.ownerType !== 'CENTER' && withdrawal.centerId ? 'center' : 'admin'
+}
+
+/**
+ * Names for each withdrawal, never the UUID: the owner (center name for a center wallet, the Identity account
+ * otherwise), the requesting account, the center whose money it is, and who handles it. Lookups share the account /
+ * center detail caches (`GET /users/{id}` is open to managers, so a center queue names its customers too).
  */
 export function useRequesterNames(withdrawals: readonly WalletWithdrawalRecord[]) {
   const { t } = useTranslation()
@@ -31,11 +40,16 @@ export function useRequesterNames(withdrawals: readonly WalletWithdrawalRecord[]
     return query.data?.fullName || t('common.ui.unknownName')
   }
 
-  return (withdrawal: WalletWithdrawalRecord) => ({
-    owner:
-      withdrawal.ownerType === 'CENTER'
-        ? centerName(withdrawal.centerId ?? undefined)
-        : accountName(withdrawal.requesterUserId),
-    requester: accountName(withdrawal.requesterUserId)
-  })
+  return (withdrawal: WalletWithdrawalRecord) => {
+    const center = withdrawal.centerId ? centerName(withdrawal.centerId) : t('wallet.review.handledByAdmin')
+    return {
+      owner: withdrawal.ownerType === 'CENTER' ? center : accountName(withdrawal.requesterUserId),
+      requester: accountName(withdrawal.requesterUserId),
+      center,
+      handler:
+        withdrawalHandler(withdrawal) === 'center'
+          ? t('wallet.review.handledByCenter', { name: center })
+          : t('wallet.review.handledByAdmin')
+    }
+  }
 }

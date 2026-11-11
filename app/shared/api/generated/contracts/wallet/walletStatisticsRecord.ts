@@ -6,9 +6,9 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { WalletOwnerType } from '../walletOwnerType'
+import type { WalletStatisticsGroupBy } from '../walletStatisticsGroupBy'
 import type { WalletBalanceTotalRecord } from './walletBalanceTotalRecord'
 import type { WalletSeriesPointRecord } from './walletSeriesPointRecord'
-import type { WalletStatisticsGroupBy } from './walletStatisticsGroupBy'
 import type { WalletTypeTotalRecord } from './walletTypeTotalRecord'
 
 export interface WalletStatisticsRecord {

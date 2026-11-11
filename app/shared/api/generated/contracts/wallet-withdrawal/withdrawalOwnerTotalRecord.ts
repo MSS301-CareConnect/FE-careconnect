@@ -5,8 +5,12 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
+import type { WalletOwnerType } from '../walletOwnerType'
 
-export interface CompleteWalletWithdrawalRequest {
-  /** @maxLength 100 */
-  transferReference: string
+export interface WithdrawalOwnerTotalRecord {
+  ownerType: WalletOwnerType
+  pendingCount: number
+  pendingAmount: number
+  completedCount: number
+  completedAmount: number
 }

@@ -27,6 +27,7 @@ export default [
       route('accounts', 'routes/admin/accounts.tsx'),
       route('accounts/:id', 'routes/admin/account-detail.tsx'),
       route('roles', 'routes/admin/roles.tsx'),
+      route('profile', 'routes/admin/profile.tsx'),
       route('incidents', 'routes/admin/incidents.tsx'),
       route('bookings', 'routes/admin/bookings.tsx'),
       route('bookings/:id', 'routes/admin/booking-detail.tsx'),
@@ -50,6 +51,7 @@ export default [
       route('bookings/:id', 'routes/center-manager/booking-detail.tsx'),
       route('policy', 'routes/center-manager/policy.tsx'),
       route('wallet', 'routes/center-manager/wallet.tsx'),
+      route('withdrawals', 'routes/center-manager/withdrawals.tsx'),
       route('complaints', 'routes/center-manager/complaints.tsx'),
       route('notifications', 'routes/center-manager/notifications.tsx')
     ])

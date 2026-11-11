@@ -37,9 +37,18 @@ The admin dashboard reads live operational aggregates from BookingService's
 `/api/v1/statistics/system` and provider status counts from ProviderService's
 `/api/v1/care-centers/statistics`. Center managers use the separate
 `/center-manager/statistics` page, backed by `/api/v1/statistics/centers`;
-BookingService scopes that request to the manager's center. These responses do
-not include revenue or time-series data. The existing admin financial charts
-remain explicitly labeled previews until a financial reporting contract exists.
+BookingService scopes that request to the manager's center. Since 2026-11-10
+(`BE/docs/2026-11-10-DASHBOARD_AND_CENTER_WITHDRAWALS.md`) both responses carry chart data for the period
+(`trend[]` by day or month, `occurrencesByStatus`, `bookingsByType`, `ratingDistribution`) and both pages are
+dashboards: one period in `?period=month|last30|year` (`entities/statistics/statistics-period.ts`, Vietnam calendar
+days for BookingService, instants for PaymentService) drives every section — six operational numbers, the booking /
+visit trend and outcomes, booking status and type, ratings, complaints and top caregivers (`entities/statistics`), plus
+money: the center page reads `/payments/revenue` and its center wallet statistics, the admin page the platform
+revenue, the platform wallet statistics, Identity accounts by role and ProviderService partner counts, with a "needs
+attention" band (centers to approve, caregivers to verify, center withdrawals, escalated complaints). Charts come from
+`shared/ui/charts` (`ColumnChart`, `LineChart`, `DonutChart`, `BarList`, `KpiTile`, `ChartCard`): SVG / CSS
+with `motion`, no chart library, the categorical palette `--color-chart-1..5` in `app.css` (checked for colour-vision
+deficiency), a legend for two or more series and every value in a tooltip and an accessible name.
 
 ### Web authentication and portal access
 
@@ -361,7 +370,13 @@ request and at most 100 rows, so status groups are filtered on loaded pages with
 runs the visit — accept, check-in, tasks, no-show report and check-out — with an allergy callout, the care profile and a
 sticky action bar on phones, plus the booking (who booked, type, work shift, this visit's price, services with their plan)
 and links to the caregiver's other visits of the same booking (`customerName`, `bookingVisits` on the visit detail); check-in follows the booking's window (Q12, default 30 minutes either side, D22). The care
-report states its 24-hour deadline (D27). `/caregiver/schedule`, `/caregiver/work-shifts` and `/caregiver/time-off` are
+report states its 24-hour deadline (D27). `/caregiver/visits/bookings/:bookingId` (redesigned 2026-11-10) reads every
+visit of the booking (pages of 100 collected) and shows them by day — each day names its services and offers "accept the
+day" and "withdraw the day" — or as a month calendar (`?view=calendar`) with one summary chip per day; "accept all"
+sends `POST /booking-occurrences/acknowledgements` (one booking, all or nothing) and a day with several visits can only
+be withdrawn whole (BookingService 409 `5265`), also from the visit page. Missed visits carry their absence record's
+state, and the visits tab gathers pending absences per booking. Pages outside the four sections (wallet, earnings,
+notifications) select no rail item. `/caregiver/schedule`, `/caregiver/work-shifts` and `/caregiver/time-off` are
 the three tabs of one Work schedule page: a week/month calendar (phones: day strip and agenda) layering availability
 slots (D11; ProviderService has no date filter, so up to five pages of 100 are read), assigned visits and time off,
 where an open future slot is cancelled with a reason and its version; shift sign-up as a card grid whose "Open shifts" chip lists only shifts still open that the caregiver has not signed up for (each registration carries its shift's date, hours, type and the availability slot created on approval, so approved sign-ups can be withdrawn with a reason through the slot), a confirmation dialog warning about same-day overlaps and time off, with each shift's state on its card
@@ -548,7 +563,11 @@ a selection bar that marks read / unread or deletes the selected ones via `PATCH
 delete single items and link to the full list. The SSE stream also refreshes booking queries.
 
 The Admin shell is a left sidebar plus a topbar. `admin-navigation.constants.ts` groups the
-menu into Overview, Operations, Customers and System; every item opens a live screen (Đợt 5). Revenue and
+menu into Overview, Operations, Finance, Customers and System; every item opens a live screen (Đợt 5). Since
+2026-11-10 the Customers section has one "Accounts" item (the former "Customers" item opened the same Identity list;
+`/admin/customers` still redirects to it filtered to CUSTOMER) and the account menu has "Profile" →
+`/admin/profile` (personal information, `?tab=security` = password change and signed-in devices, inside the admin
+shell; the panels live in `features/shared/profile`, shared with the customer account area). Revenue and
 quality previews keep their routes but are left out of the menu until a backend exists (D26). `/admin/policies` is
 live since booking spec v1.0 (2026-11-02): the admin picks an active center and edits its booking policy.
 Each labelled group is a parent section (2026-11-09, after the EXE admin sidebar; `NavRailGroup` `icon` + `collapsible`,
@@ -917,7 +936,7 @@ Contract update workflow:
   what was paid for it, B16); before payment the booking is rejected or cancelled whole. The summary shows the
   remaining-balance due time and when the customer paid in full.
 - `/center-manager/statistics` adds the center's net revenue (`GET /payments/revenue`; the token decides the center,
-  spec §9.3) for this month, the last 30 days or this year.
+  spec §9.3) and the center wallet statistics for the dashboard period.
 - Booking aftercare (`booking-aftercare.tsx`) shows care reports and the new-complaint action only once a visit has
   taken place; the review has no preset rating; each complaint keeps its own escalation reason and error, and
   withdrawing asks for confirmation.
@@ -958,9 +977,16 @@ Contract update workflow:
   and `/admin/wallet`: balance and held amount, a period dashboard (this month / 30 days / this year, chart drawn with CSS,
   no chart library), the period ledger with balance before → after and — except the read-only platform wallet — the
   owner's withdrawal requests and the centred two-column withdrawal dialog (every field checked first, the amount is held
-  on success). `/admin/withdrawals` is the admin queue (status / wallet type in URL search parameters, `?withdrawal=` opens
-  the review: copyable bank details, the requester wallet and ledger, approve, reject with a reason, confirm the transfer
-  with its bank reference); requesters show by name (Identity account, or the center for a center wallet), never by ID.
+  on success). Since 2026-11-10 a customer / caregiver withdrawal goes to the center that produced the money: the dialog
+  picks the center from `GET /wallets/me/center-balances` and caps the amount there. `entities/wallet/withdrawal-queue.tsx`
+  is shared by `/center-manager/withdrawals` (customer / caregiver requests of the center, with the money the center
+  holds for them) and `/admin/withdrawals` (center wallets and older requests; every request read-only): a withdrawal
+  dashboard (`GET /wallet-withdrawals/statistics`), filters in URL search parameters, `?withdrawal=` opens the review —
+  copyable bank details, the admin also sees the requester wallet and ledger — and the handler runs the simulated
+  transfer (the request completes by itself, PaymentService notifies the requester; the notification opens
+  `/<portal>/wallet`) or rejects with a reason. There is no manual approve / confirm any more. Requesters show by name
+  (Identity account, or the center for a center wallet), never by ID. The center wallet links to the queue with what
+  it holds for others; center and platform wallets add a movement-mix donut.
   Customer refunds of their own cancellations go to the wallet and the refund history marks them "Refunded to wallet".
 
 - AI assistant (2026-11-09, `BE/docs/2026-11-09-AI_CHAT_AND_CERTIFICATE_AI_CHECK.md`): `features/shared/ai-chat` is a

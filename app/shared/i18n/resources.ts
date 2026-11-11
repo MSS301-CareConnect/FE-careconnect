@@ -76,6 +76,7 @@ import { managerPolicyEn, managerPolicyVi } from './center-manager/policy-resour
 import { managerWorkShiftsEn, managerWorkShiftsVi } from './center-manager/work-shifts-resources'
 import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
+import { adminProfileEn, adminProfileVi } from './admin/profile-resources'
 import { adminCentersEn, adminCentersVi } from './admin/centers-resources'
 import { adminRevenueEn, adminRevenueVi } from './admin/revenue-resources'
 import { adminServicesEn, adminServicesVi } from './admin/services-resources'
@@ -162,6 +163,7 @@ export const resources = {
       admin: {
         ...adminLayoutEn,
         dashboardPage: adminDashboardEn,
+        profilePage: adminProfileEn,
         revenuePage: adminRevenueEn,
         servicesPage: adminServicesEn,
         centersPage: adminCentersEn,
@@ -249,6 +251,7 @@ export const resources = {
       admin: {
         ...adminLayoutVi,
         dashboardPage: adminDashboardVi,
+        profilePage: adminProfileVi,
         revenuePage: adminRevenueVi,
         servicesPage: adminServicesVi,
         centersPage: adminCentersVi,

@@ -16,6 +16,13 @@ export function notificationTarget(
   portal: NotificationPortal
 ): string | undefined {
   const { type, refType, refId, bookingId, occurrenceId } = item
+  // 2026-11-10: a withdrawal result (transferred / rejected) opens the requester's wallet.
+  if (
+    refType === 'WALLET_WITHDRAWAL' ||
+    type === 'WALLET_WITHDRAWAL_COMPLETED' ||
+    type === 'WALLET_WITHDRAWAL_REJECTED'
+  )
+    return `/${portal}/wallet`
   switch (portal) {
     case 'customer':
       if (refType === 'MANAGER_INVITATION' || type === 'RECIPIENT_INVITATION') return '/customer/invitations'
@@ -64,6 +71,7 @@ export function notificationIcon(type: NotificationType) {
   if (type === 'CHECK_IN_LATE') return 'alarm'
   if (type === 'REVIEW_CREATED' || type === 'REVIEW_REPLIED') return 'star'
   if (type === 'PAYMENT_SUCCEEDED' || type === 'REFUND_COMPLETED' || type === 'REMAINING_OVERDUE') return 'payments'
+  if (type === 'WALLET_WITHDRAWAL_COMPLETED' || type === 'WALLET_WITHDRAWAL_REJECTED') return 'account_balance_wallet'
   if (type === 'COMPLAINT_UPDATED') return 'report'
   if (type === 'REPORT_SUBMITTED') return 'description'
   if (type === 'BOOKING_ADDRESS_CHANGED') return 'home_pin'
@@ -85,6 +93,7 @@ export function notificationTone(type: NotificationType): NotificationTone {
     case 'CAREGIVER_UNASSIGNED':
     case 'OUTBOX_FAILED':
     case 'REMAINING_OVERDUE':
+    case 'WALLET_WITHDRAWAL_REJECTED':
       return 'danger'
     case 'CENTER_ACTION_DUE':
     case 'REMAINING_DUE':
@@ -100,6 +109,7 @@ export function notificationTone(type: NotificationType): NotificationTone {
     case 'PAYMENT_SUCCEEDED':
     case 'REFUND_COMPLETED':
     case 'CAREGIVER_ASSIGNED':
+    case 'WALLET_WITHDRAWAL_COMPLETED':
       return 'success'
     default:
       return 'info'

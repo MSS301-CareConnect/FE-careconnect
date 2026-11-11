@@ -214,6 +214,33 @@ Kiểm tra reduced motion, điện thoại 375 px, dark mode (chưa có — quy�
 - Chi tiết lịch đặt khách hàng: bảng buổi chăm sóc bỏ cột dịch vụ (`showService={false}`), lịch sử chỉ hiện 4 mục mới
   nhất kèm "Xem thêm" (`collapsedCount`).
 
+## 7e. Dashboard thống kê + rút tiền (2026-11-10, chưa commit)
+
+- Bộ biểu đồ dùng chung `shared/ui/charts/`: `ColumnChart` (cột nhóm / chồng, tooltip khi rê / focus, nhãn trục thưa dần),
+  `LineChart` (đường 2 px, vùng mờ dưới chuỗi đầu, crosshair + tooltip, ←/→ khi focus), `DonutChart` (vòng mảnh, khe 2 px,
+  tổng ở giữa, chú thích là bảng số + %), `BarList` (xếp hạng), `KpiTile` (ô số liệu `dark|light|mint|peach` + `CountUp`),
+  `ChartCard`. Màu phân loại cố định `--color-chart-1..5` (xanh lá, cam, xanh dương, vàng đất, tím) — đã chạy validator
+  dataviz; màu đi theo thực thể, không theo thứ hạng. Không thêm thư viện chart.
+- Trang Tổng quan admin và Thống kê trung tâm: một bộ chọn kỳ (`SegmentedControl`, `?period=`) cho mọi khối; dải
+  "Việc cần xử lý" nền forest (admin); các khối chia section có tiêu đề 22 px như trang khác.
+- Hàng đợi rút tiền dùng chung cho admin / trung tâm (`entities/wallet/withdrawal-queue.tsx`); hàng cần mình xử lý nền
+  đào nhạt + nút "Xem" forest; nút "Chuyển khoản" là nút peach duy nhất của hộp xử lý.
+- Admin: trang Hồ sơ (`/admin/profile`) dùng `PillTabs` Thông tin cá nhân · Bảo mật.
+
+## 7e. Caregiver (2026-11-10)
+
+Chi tiết: `BE/docs/2026-11-10-CAREGIVER_UI_DAY_WITHDRAWAL_BULK_ACCEPT.md`.
+
+- Hôm nay: chip tóm tắt ở đầu trang; `WeekStats` tự đọc tuần (chuyển tuần), cột theo giờ chồng đã xong / chưa làm /
+  vắng ca + viền đứt nét khung giờ làm việc, tooltip `role='tooltip'` khi rê / focus / chạm (cột là `button`).
+- Trang booking caregiver: hero forest + `SegmentedControl` "Theo ngày" / "Lịch tháng" (`?view=calendar`); khối ngày
+  `booking-day-section.tsx` dùng chung cho danh sách và lịch; lịch tháng chỉ một chip tóm tắt mỗi ngày.
+- Lịch làm việc: tuần là 7 cột liệt kê (không còn lưới giờ kéo dài), tháng mỗi ô ≤ 3 dòng; màu khung giờ làm việc =
+  mint, buổi = forest-900, nghỉ = sọc.
+- Phân trang phía client cho danh sách đã có đủ trong bộ nhớ: `features/caregiver/ui/use-client-page.ts`.
+- Sidebar caregiver: trang ngoài 4 mục (ví, thu nhập, thông báo) không chọn mục nào (`activeCaregiverNavigation` có
+  thể trả `undefined`).
+
 ## 8. Tiến độ
 
 | Giai đoạn             | Trạng thái                                    | Ghi chú                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |

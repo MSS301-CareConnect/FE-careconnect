@@ -5885,6 +5885,35 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/booking-occurrences/acknowledgements:
+    post:
+      tags:
+        - BookingOccurrence
+      summary: CAREGIVER acknowledges several SCHEDULED visits of one booking at once (all or nothing)
+      operationId: acknowledgeBookingOccurrences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccurrenceAcknowledgementRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverOccurrenceListResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
   /v1/booking-occurrences/{id}/acknowledge:
     post:
       tags:
@@ -9564,9 +9593,14 @@ paths:
     get:
       tags:
         - WalletWithdrawal
-      summary: Withdrawal requests — owners see their own wallet, ADMIN sees all
+      summary: Withdrawal requests — OWN (default) the caller's wallet (ADMIN all), REVIEW the queue the caller handles
       operationId: listWalletWithdrawals
       parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WalletWithdrawalScope'
         - name: status
           in: query
           required: false
@@ -9611,7 +9645,7 @@ paths:
     post:
       tags:
         - WalletWithdrawal
-      summary: CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the admin decides
+      summary: CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the handler transfers or rejects
       operationId: createWalletWithdrawal
       requestBody:
         content:
@@ -9670,43 +9704,11 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
-  /v1/wallet-withdrawals/{withdrawalId}/approve:
-    post:
-      tags:
-        - WalletWithdrawal
-      summary: ADMIN approves a pending request
-      operationId: approveWalletWithdrawal
-      parameters:
-        - name: withdrawalId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletWithdrawalResponse'
-        '400':
-          description: PaymentService error
-        '401':
-          description: PaymentService error
-        '403':
-          description: PaymentService error
-        '404':
-          description: PaymentService error
-        '409':
-          description: PaymentService error
-        '503':
-          description: PaymentService error
   /v1/wallet-withdrawals/{withdrawalId}/reject:
     post:
       tags:
         - WalletWithdrawal
-      summary: ADMIN rejects a pending or approved request with a reason; the held amount returns to the balance
+      summary: The handler (manager of the refunding center for customer / caregiver requests, ADMIN for center wallets) rejects an open request with a reason; the held amount returns and the requester is notified
       operationId: rejectWalletWithdrawal
       parameters:
         - name: withdrawalId
@@ -9740,12 +9742,12 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
-  /v1/wallet-withdrawals/{withdrawalId}/complete:
+  /v1/wallet-withdrawals/{withdrawalId}/transfers:
     post:
       tags:
         - WalletWithdrawal
-      summary: ADMIN confirms the manual bank transfer of an approved request
-      operationId: completeWalletWithdrawal
+      summary: The handler runs the simulated bank transfer; on success the request completes by itself (transfer reference generated) and the requester is notified
+      operationId: transferWalletWithdrawal
       parameters:
         - name: withdrawalId
           in: path
@@ -9753,12 +9755,6 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompleteWalletWithdrawalRequest'
-        required: true
       responses:
         '200':
           description: OK
@@ -9766,6 +9762,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WalletWithdrawalResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/wallet-withdrawals/statistics:
+    get:
+      tags:
+        - WalletWithdrawal
+      summary: Withdrawal dashboard of the caller's scope (OWN or the REVIEW queue); the center REVIEW scope adds the money held for customers and caregivers
+      operationId: getWalletWithdrawalStatistics
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WalletWithdrawalScope'
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: groupBy
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WalletStatisticsGroupBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletWithdrawalStatisticsResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/wallets/me/center-balances:
+    get:
+      tags:
+        - Wallet
+      summary: CUSTOMER / CAREGIVER available balance per center that produced the money (where a withdrawal is sent)
+      operationId: listMyWalletCenterBalances
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletCenterBalanceListResponse'
         '400':
           description: PaymentService error
         '401':
@@ -9805,6 +9874,9 @@ components:
         - WITHDRAWAL_HOLD
         - WITHDRAWAL_RELEASE
         - WITHDRAWAL_PAID
+    WalletWithdrawalScope:
+      type: string
+      enum: [OWN, REVIEW]
     WalletWithdrawalStatus:
       type: string
       enum: [PENDING, APPROVED, REJECTED, COMPLETED]
@@ -10092,6 +10164,10 @@ components:
         accountHolderName:
           type: string
           maxLength: 100
+        centerId:
+          type: [string, 'null']
+          format: uuid
+          description: Customer / caregiver wallets — the center holding the money (from center-balances); that center handles the request.
     RejectWalletWithdrawalRequest:
       type: object
       required:
@@ -10100,14 +10176,138 @@ components:
         reason:
           type: string
           maxLength: 500
-    CompleteWalletWithdrawalRequest:
+    WalletCenterBalanceRecord:
       type: object
       required:
-        - transferReference
+        - availableBalance
       properties:
-        transferReference:
+        centerId:
+          type: [string, 'null']
+          format: uuid
+        availableBalance:
+          type: number
+    WalletCenterBalanceListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
           type: string
-          maxLength: 100
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletCenterBalanceRecord'
+    WithdrawalOwnerTotalRecord:
+      type: object
+      required:
+        - ownerType
+        - pendingCount
+        - pendingAmount
+        - completedCount
+        - completedAmount
+      properties:
+        ownerType:
+          $ref: '#/components/schemas/WalletOwnerType'
+        pendingCount:
+          type: integer
+        pendingAmount:
+          type: number
+        completedCount:
+          type: integer
+        completedAmount:
+          type: number
+    WithdrawalSeriesPointRecord:
+      type: object
+      required:
+        - period
+        - requested
+        - completed
+      properties:
+        period:
+          type: string
+        requested:
+          type: number
+        completed:
+          type: number
+    WalletWithdrawalStatisticsRecord:
+      type: object
+      required:
+        - scope
+        - from
+        - to
+        - groupBy
+        - pendingCount
+        - pendingAmount
+        - requestedCount
+        - requestedAmount
+        - completedCount
+        - completedAmount
+        - rejectedCount
+        - rejectedAmount
+        - byOwnerType
+        - series
+      properties:
+        scope:
+          $ref: '#/components/schemas/WalletWithdrawalScope'
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        groupBy:
+          $ref: '#/components/schemas/WalletStatisticsGroupBy'
+        pendingCount:
+          type: integer
+        pendingAmount:
+          type: number
+        requestedCount:
+          type: integer
+        requestedAmount:
+          type: number
+        completedCount:
+          type: integer
+        completedAmount:
+          type: number
+        rejectedCount:
+          type: integer
+        rejectedAmount:
+          type: number
+        avgProcessingMinutes:
+          type: [integer, 'null']
+        byOwnerType:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalOwnerTotalRecord'
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalSeriesPointRecord'
+        custodyCustomerBalance:
+          type: number
+        custodyCaregiverBalance:
+          type: number
+        custodyHeldBalance:
+          type: number
+        custodyTotal:
+          type: number
+    WalletWithdrawalStatisticsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/WalletWithdrawalStatisticsRecord'
     WalletResponse:
       type: object
       required:
@@ -14649,6 +14849,8 @@ components:
         - OCCURRENCE_RESCHEDULED_NOTIFICATION
         - CHECK_IN_LATE
         - CAREGIVER_ABSENCE_UPDATED
+        - WALLET_WITHDRAWAL_COMPLETED
+        - WALLET_WITHDRAWAL_REJECTED
     OutboxStatus:
       type: string
       enum:
@@ -16761,6 +16963,9 @@ components:
         caregiverId:
           type: string
           format: uuid
+          description: ProviderService caregiver profile ID
+        completedSessions:
+          type: integer
         avgRating:
           type: number
     CenterOperationalStatsRecord:
@@ -17002,6 +17207,49 @@ components:
           $ref: '#/components/schemas/CenterOperationalStatsPage'
         responsiveness:
           $ref: '#/components/schemas/ResponsivenessStatisticsRecord'
+        completionRate:
+          type: number
+        reviewCount:
+          type: integer
+        occurrencesByStatus:
+          type: [object, 'null']
+          additionalProperties:
+            type: integer
+        bookingsByType:
+          type: [object, 'null']
+          additionalProperties:
+            type: integer
+        ratingDistribution:
+          type: [object, 'null']
+          description: Visible reviews per star, keys "1".."5"
+          additionalProperties:
+            type: integer
+        trendGroupBy:
+          type: [string, 'null']
+        trend:
+          type: [array, 'null']
+          items:
+            $ref: '#/components/schemas/StatisticsTrendPointRecord'
+    StatisticsTrendPointRecord:
+      type: object
+      required:
+        - period
+        - bookings
+        - completedVisits
+        - cancelledVisits
+        - missedVisits
+      properties:
+        period:
+          type: string
+          description: yyyy-MM-dd (DAY) or yyyy-MM (MONTH), Vietnam time
+        bookings:
+          type: integer
+        completedVisits:
+          type: integer
+        cancelledVisits:
+          type: integer
+        missedVisits:
+          type: integer
     BookingDetailResponse:
       type: object
       required:
@@ -17093,6 +17341,33 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/CancellationPreviewRecord'
+    CaregiverOccurrenceListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaregiverOccurrenceRecord'
+    OccurrenceAcknowledgementRequest:
+      type: object
+      required:
+        - occurrenceIds
+      properties:
+        occurrenceIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
     CaregiverOccurrenceResponse:
       type: object
       required:

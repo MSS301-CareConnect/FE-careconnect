@@ -121,6 +121,7 @@ import type {
   CaregiverBookingRequestResponse,
   CaregiverCareDetailsRecord,
   CaregiverCreateRequest,
+  CaregiverOccurrenceListResponse,
   CaregiverOccurrencePage,
   CaregiverOccurrencePageResponse,
   CaregiverOccurrenceRecord,
@@ -184,7 +185,6 @@ import type {
   ComplaintStatisticsRecord,
   ComplaintStatus,
   ComplaintTargetType,
-  CompleteWalletWithdrawalRequest,
   CreateRoleRequest,
   CreateWalletWithdrawalRequest,
   CsrfResponse,
@@ -236,6 +236,7 @@ import type {
   NotificationsDeletedResponse,
   NotificationsUpdatedRecord,
   NotificationsUpdatedResponse,
+  OccurrenceAcknowledgementRequest,
   OccurrenceServiceRecord,
   OccurrenceStatisticsRecord,
   OccurrenceStatus,
@@ -386,6 +387,7 @@ import type {
   SetRolePermissionsRequest,
   ShiftRegistrationRequest,
   SpecialNotesRecord,
+  StatisticsTrendPointRecord,
   TimeOffRequest,
   TimeSlotRequest,
   TopCaregiverRecord,
@@ -401,6 +403,8 @@ import type {
   VerifyRegistrationRequest,
   VerifyRegistrationResponse,
   WalletBalanceTotalRecord,
+  WalletCenterBalanceListResponse,
+  WalletCenterBalanceRecord,
   WalletOwnerType,
   WalletRecord,
   WalletResponse,
@@ -417,7 +421,12 @@ import type {
   WalletWithdrawalPageResponse,
   WalletWithdrawalRecord,
   WalletWithdrawalResponse,
+  WalletWithdrawalScope,
+  WalletWithdrawalStatisticsRecord,
+  WalletWithdrawalStatisticsResponse,
   WalletWithdrawalStatus,
+  WithdrawalOwnerTotalRecord,
+  WithdrawalSeriesPointRecord,
   WorkShiftBatchRequest,
   WorkShiftCancelRequest,
   WorkShiftRequest,
@@ -471,6 +480,9 @@ export const getWalletTransactionTypeMock = (): WalletTransactionType =>
     'WITHDRAWAL_RELEASE',
     'WITHDRAWAL_PAID'
   ] as const)
+
+export const getWalletWithdrawalScopeMock = (): WalletWithdrawalScope =>
+  faker.helpers.arrayElement(['OWN', 'REVIEW'] as const)
 
 export const getWalletWithdrawalStatusMock = (): WalletWithdrawalStatus =>
   faker.helpers.arrayElement(['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED'] as const)
@@ -636,6 +648,7 @@ export const getCreateWalletWithdrawalRequestMock = (
   bankName: faker.string.alpha({ length: { min: 10, max: 100 } }),
   bankAccountNumber: faker.helpers.fromRegExp('^[0-9]{6,20}$'),
   accountHolderName: faker.string.alpha({ length: { min: 10, max: 100 } }),
+  centerId: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.uuid(), null]), undefined]),
   ...overrideResponse
 })
 
@@ -646,10 +659,80 @@ export const getRejectWalletWithdrawalRequestMock = (
   ...overrideResponse
 })
 
-export const getCompleteWalletWithdrawalRequestMock = (
-  overrideResponse: Partial<CompleteWalletWithdrawalRequest> = {}
-): CompleteWalletWithdrawalRequest => ({
-  transferReference: faker.string.alpha({ length: { min: 10, max: 100 } }),
+export const getWalletCenterBalanceRecordMock = (
+  overrideResponse: Partial<WalletCenterBalanceRecord> = {}
+): WalletCenterBalanceRecord => ({
+  centerId: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.uuid(), null]), undefined]),
+  availableBalance: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse
+})
+
+export const getWalletCenterBalanceListResponseMock = (
+  overrideResponse: Partial<WalletCenterBalanceListResponse> = {}
+): WalletCenterBalanceListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getWalletCenterBalanceRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getWithdrawalOwnerTotalRecordMock = (
+  overrideResponse: Partial<WithdrawalOwnerTotalRecord> = {}
+): WithdrawalOwnerTotalRecord => ({
+  ownerType: getWalletOwnerTypeMock(),
+  pendingCount: faker.number.int(),
+  pendingAmount: faker.number.float({ fractionDigits: 2 }),
+  completedCount: faker.number.int(),
+  completedAmount: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse
+})
+
+export const getWithdrawalSeriesPointRecordMock = (
+  overrideResponse: Partial<WithdrawalSeriesPointRecord> = {}
+): WithdrawalSeriesPointRecord => ({
+  period: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  requested: faker.number.float({ fractionDigits: 2 }),
+  completed: faker.number.float({ fractionDigits: 2 }),
+  ...overrideResponse
+})
+
+export const getWalletWithdrawalStatisticsRecordMock = (
+  overrideResponse: Partial<WalletWithdrawalStatisticsRecord> = {}
+): WalletWithdrawalStatisticsRecord => ({
+  scope: getWalletWithdrawalScopeMock(),
+  from: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  to: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  groupBy: getWalletStatisticsGroupByMock(),
+  pendingCount: faker.number.int(),
+  pendingAmount: faker.number.float({ fractionDigits: 2 }),
+  requestedCount: faker.number.int(),
+  requestedAmount: faker.number.float({ fractionDigits: 2 }),
+  completedCount: faker.number.int(),
+  completedAmount: faker.number.float({ fractionDigits: 2 }),
+  rejectedCount: faker.number.int(),
+  rejectedAmount: faker.number.float({ fractionDigits: 2 }),
+  avgProcessingMinutes: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.number.int(), null]), undefined]),
+  byOwnerType: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getWithdrawalOwnerTotalRecordMock()
+  })),
+  series: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getWithdrawalSeriesPointRecordMock()
+  })),
+  custodyCustomerBalance: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  custodyCaregiverBalance: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  custodyHeldBalance: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  custodyTotal: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  ...overrideResponse
+})
+
+export const getWalletWithdrawalStatisticsResponseMock = (
+  overrideResponse: Partial<WalletWithdrawalStatisticsResponse> = {}
+): WalletWithdrawalStatisticsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getWalletWithdrawalStatisticsRecordMock() },
   ...overrideResponse
 })
 
@@ -3263,7 +3346,9 @@ export const getNotificationTypeMock = (): NotificationType =>
     'EMERGENCY_REPLACEMENT_NOTIFIED',
     'OCCURRENCE_RESCHEDULED_NOTIFICATION',
     'CHECK_IN_LATE',
-    'CAREGIVER_ABSENCE_UPDATED'
+    'CAREGIVER_ABSENCE_UPDATED',
+    'WALLET_WITHDRAWAL_COMPLETED',
+    'WALLET_WITHDRAWAL_REJECTED'
   ] as const)
 
 export const getOutboxStatusMock = (): OutboxStatus =>
@@ -4467,6 +4552,7 @@ export const getComplaintStatisticsRecordMock = (
 
 export const getTopCaregiverRecordMock = (overrideResponse: Partial<TopCaregiverRecord> = {}): TopCaregiverRecord => ({
   caregiverId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  completedSessions: faker.helpers.arrayElement([faker.number.int(), undefined]),
   avgRating: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
   ...overrideResponse
 })
@@ -4481,6 +4567,17 @@ export const getCenterOperationalStatsPageMock = (
   size: faker.number.int(),
   totalElements: faker.number.int(),
   totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getStatisticsTrendPointRecordMock = (
+  overrideResponse: Partial<StatisticsTrendPointRecord> = {}
+): StatisticsTrendPointRecord => ({
+  period: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  bookings: faker.number.int(),
+  completedVisits: faker.number.int(),
+  cancelledVisits: faker.number.int(),
+  missedVisits: faker.number.int(),
   ...overrideResponse
 })
 
@@ -4504,6 +4601,45 @@ export const getOperationalStatisticsRecordMock = (
   ]),
   byCenter: faker.helpers.arrayElement([{ ...getCenterOperationalStatsPageMock() }, undefined]),
   responsiveness: faker.helpers.arrayElement([{ ...getResponsivenessStatisticsRecordMock() }, undefined]),
+  completionRate: faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), undefined]),
+  reviewCount: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  occurrencesByStatus: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      {
+        [faker.string.alphanumeric(5)]: faker.number.int()
+      },
+      null
+    ]),
+    undefined
+  ]),
+  bookingsByType: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      {
+        [faker.string.alphanumeric(5)]: faker.number.int()
+      },
+      null
+    ]),
+    undefined
+  ]),
+  ratingDistribution: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([
+      {
+        [faker.string.alphanumeric(5)]: faker.number.int()
+      },
+      null
+    ]),
+    undefined
+  ]),
+  trendGroupBy: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), null]),
+    undefined
+  ]),
+  trend: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      ...getStatisticsTrendPointRecordMock()
+    })),
+    undefined
+  ]),
   ...overrideResponse
 })
 
@@ -4678,6 +4814,26 @@ export const getCancellationPreviewResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getCancellationPreviewRecordMock() },
+  ...overrideResponse
+})
+
+export const getCaregiverOccurrenceListResponseMock = (
+  overrideResponse: Partial<CaregiverOccurrenceListResponse> = {}
+): CaregiverOccurrenceListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getCaregiverOccurrenceRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getOccurrenceAcknowledgementRequestMock = (
+  overrideResponse: Partial<OccurrenceAcknowledgementRequest> = {}
+): OccurrenceAcknowledgementRequest => ({
+  occurrenceIds: Array.from({ length: faker.number.int({ min: 1, max: 100 }) }, (_, i) => i + 1).map(() =>
+    faker.string.uuid()
+  ),
   ...overrideResponse
 })
 

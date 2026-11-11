@@ -7,6 +7,7 @@
  */
 
 export * from './walletOwnerType'
+export * from './walletStatisticsGroupBy'
 export * from './aiChatPromptPayload'
 export * from './providerTimeOffRecord'
 export * from './emptyActionResponse'

@@ -22,6 +22,7 @@ import type {
   GetMyWalletStatisticsParams,
   ListMyWalletTransactionsParams,
   ListWalletTransactionsParams,
+  WalletCenterBalanceListResponse,
   WalletResponse,
   WalletStatisticsResponse,
   WalletTransactionPageResponse
@@ -975,6 +976,180 @@ export function useListWalletTransactions<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getListWalletTransactionsQueryOptions(walletId, params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type listMyWalletCenterBalancesResponse200 = {
+  data: WalletCenterBalanceListResponse
+  status: 200
+}
+
+export type listMyWalletCenterBalancesResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listMyWalletCenterBalancesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listMyWalletCenterBalancesResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listMyWalletCenterBalancesResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listMyWalletCenterBalancesResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listMyWalletCenterBalancesResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listMyWalletCenterBalancesResponseSuccess = listMyWalletCenterBalancesResponse200 & {
+  headers: Headers
+}
+export type listMyWalletCenterBalancesResponseError = (
+  | listMyWalletCenterBalancesResponse400
+  | listMyWalletCenterBalancesResponse401
+  | listMyWalletCenterBalancesResponse403
+  | listMyWalletCenterBalancesResponse404
+  | listMyWalletCenterBalancesResponse409
+  | listMyWalletCenterBalancesResponse503
+) & {
+  headers: Headers
+}
+
+export const getListMyWalletCenterBalancesUrl = () => {
+  return `${env.API_BASE_URL}/v1/wallets/me/center-balances`
+}
+
+/**
+ * @summary CUSTOMER / CAREGIVER available balance per center that produced the money (where a withdrawal is sent)
+ */
+export const listMyWalletCenterBalances = async (
+  options?: RequestInit
+): Promise<listMyWalletCenterBalancesResponseSuccess> => {
+  const res = await fetch(getListMyWalletCenterBalancesUrl(), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listMyWalletCenterBalancesResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listMyWalletCenterBalancesResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listMyWalletCenterBalancesResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listMyWalletCenterBalancesResponseSuccess
+}
+
+export const getListMyWalletCenterBalancesQueryKey = () => {
+  return [`${env.API_BASE_URL}/v1/wallets/me/center-balances`] as const
+}
+
+export const getListMyWalletCenterBalancesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyWalletCenterBalances>>, TError, TData>>
+  fetch?: RequestInit
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListMyWalletCenterBalancesQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyWalletCenterBalances>>> = ({ signal }) =>
+    listMyWalletCenterBalances({ signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListMyWalletCenterBalancesQueryResult = NonNullable<Awaited<ReturnType<typeof listMyWalletCenterBalances>>>
+export type ListMyWalletCenterBalancesQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListMyWalletCenterBalances<
+  TData = Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyWalletCenterBalances>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+          TError,
+          Awaited<ReturnType<typeof listMyWalletCenterBalances>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyWalletCenterBalances<
+  TData = Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyWalletCenterBalances>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+          TError,
+          Awaited<ReturnType<typeof listMyWalletCenterBalances>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyWalletCenterBalances<
+  TData = Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyWalletCenterBalances>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CUSTOMER / CAREGIVER available balance per center that produced the money (where a withdrawal is sent)
+ */
+
+export function useListMyWalletCenterBalances<
+  TData = Awaited<ReturnType<typeof listMyWalletCenterBalances>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyWalletCenterBalances>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListMyWalletCenterBalancesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

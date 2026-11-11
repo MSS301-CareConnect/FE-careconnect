@@ -8,12 +8,18 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { WalletResponse, WalletStatisticsResponse, WalletTransactionPageResponse } from '../../contracts'
+import type {
+  WalletCenterBalanceListResponse,
+  WalletResponse,
+  WalletStatisticsResponse,
+  WalletTransactionPageResponse
+} from '../../contracts'
 
 import {
   getGetMyWalletResponseMock,
   getGetMyWalletStatisticsResponseMock,
   getGetWalletResponseMock,
+  getListMyWalletCenterBalancesResponseMock,
   getListMyWalletTransactionsResponseMock,
   getListWalletTransactionsResponseMock
 } from './wallet.faker'
@@ -23,7 +29,8 @@ export {
   getListMyWalletTransactionsResponseMock,
   getGetMyWalletStatisticsResponseMock,
   getGetWalletResponseMock,
-  getListWalletTransactionsResponseMock
+  getListWalletTransactionsResponseMock,
+  getListMyWalletCenterBalancesResponseMock
 } from './wallet.faker'
 
 export const getGetMyWalletMockHandler = (
@@ -151,10 +158,37 @@ export const getListWalletTransactionsMockHandler = (
     options
   )
 }
+
+export const getListMyWalletCenterBalancesMockHandler = (
+  overrideResponse?:
+    | WalletCenterBalanceListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<WalletCenterBalanceListResponse> | WalletCenterBalanceListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/wallets/me/center-balances',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListMyWalletCenterBalancesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 export const getWalletMock = () => [
   getGetMyWalletMockHandler(),
   getListMyWalletTransactionsMockHandler(),
   getGetMyWalletStatisticsMockHandler(),
   getGetWalletMockHandler(),
-  getListWalletTransactionsMockHandler()
+  getListWalletTransactionsMockHandler(),
+  getListMyWalletCenterBalancesMockHandler()
 ]

@@ -1,30 +1,34 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { WalletRecord } from '~/shared/api/generated/contracts'
+import { useCenterNames } from '~/entities/provider/use-provider-names'
+import type { WalletCenterBalanceRecord, WalletRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
 import { useFormErrors } from '~/shared/lib/use-form-errors'
 import { toastSuccess } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { FormAlert } from '~/shared/ui/form-alert'
-import { FormField, Input } from '~/shared/ui/form-field'
+import { FormField, Input, Select } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 
-import { requestWithdrawal, walletKeys } from './wallet-api'
+import { fetchMyCenterBalances, requestWithdrawal, walletKeys } from './wallet-api'
 
 type Field = 'amount' | 'bankName' | 'bankAccountNumber' | 'accountHolderName'
+// Money that is not tied to a center (older ledger rows) is handled by the platform; it has no center ID.
+const PLATFORM_SOURCE = 'platform'
 type FieldError =
   | 'amountRequired'
   | 'amountInvalid'
   | 'amountTooHigh'
+  | 'amountTooHighForCenter'
   | 'bankNameRequired'
   | 'accountRequired'
   | 'accountInvalid'
   | 'holderRequired'
   | 'tooLong'
-type Business = 'wallet.errors.e6041' | 'wallet.errors.e6052' | 'wallet.errors.e6027'
+type Business = 'wallet.errors.e6041' | 'wallet.errors.e6052' | 'wallet.errors.e6027' | 'wallet.errors.e6053'
 
 // PaymentService returns only the first validation code; the client checks every field first.
 const ERROR_MAP = {
@@ -35,9 +39,10 @@ const ERROR_MAP = {
     6046: { field: 'bankName', key: 'bankNameRequired' },
     6047: { field: 'bankAccountNumber', key: 'accountRequired' },
     6048: { field: 'bankAccountNumber', key: 'accountInvalid' },
-    6049: { field: 'accountHolderName', key: 'holderRequired' }
+    6049: { field: 'accountHolderName', key: 'holderRequired' },
+    6054: { field: 'amount', key: 'amountTooHighForCenter' }
   },
-  business: { 6052: 'wallet.errors.e6052', 6027: 'wallet.errors.e6027' }
+  business: { 6052: 'wallet.errors.e6052', 6027: 'wallet.errors.e6027', 6053: 'wallet.errors.e6053' }
 } as const satisfies Parameters<typeof useFormErrors<Field, FieldError, Business>>[0]
 
 const ACCOUNT_PATTERN = /^[0-9]{6,20}$/
@@ -49,9 +54,13 @@ function parseAmount(text: string) {
   return /^\d+$/.test(digits) ? Number(digits) : Number.NaN
 }
 
+const sourceOf = (balance: WalletCenterBalanceRecord) => balance.centerId ?? PLATFORM_SOURCE
+
 /**
  * Withdraw to a bank account (centred two-column popup: form, then what the balance becomes). The amount is held as
- * soon as PaymentService accepts the request; the admin transfers it by hand.
+ * soon as PaymentService accepts the request. Since 2026-11-10 a customer / caregiver picks whose money it is — the
+ * center that produced it handles the request (simulated transfer, then a notification); a center wallet goes to the
+ * administrator.
  */
 export function WithdrawalDialog({
   open,
@@ -71,6 +80,18 @@ export function WithdrawalDialog({
   const [accountNumber, setAccountNumber] = useState('')
   const [holder, setHolder] = useState('')
   const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const [source, setSource] = useState('')
+  const perCenter = wallet.ownerType === 'CUSTOMER' || wallet.ownerType === 'CAREGIVER'
+  const balances = useQuery({
+    queryKey: walletKeys.centerBalances,
+    queryFn: fetchMyCenterBalances,
+    enabled: open && perCenter,
+    retry: false
+  })
+  const sources = balances.data ?? []
+  const centerName = useCenterNames(sources.map((balance) => balance.centerId ?? undefined))
+  const chosen = sources.find((balance) => sourceOf(balance) === source) ?? sources[0]
+  const limit = chosen ? Math.min(chosen.availableBalance, wallet.availableBalance) : wallet.availableBalance
   const { fieldErrors, failure, validate, fromApi, clearField, reset } = useFormErrors<Field, FieldError, Business>(
     ERROR_MAP,
     formRef
@@ -85,7 +106,9 @@ export function WithdrawalDialog({
         amount: parsed,
         bankName: bankName.trim(),
         bankAccountNumber: accountNumber.trim(),
-        accountHolderName: holder.trim()
+        accountHolderName: holder.trim(),
+        // Without a per-center balance PaymentService picks the only center itself.
+        ...(chosen ? { centerId: chosen.centerId ?? null } : {})
       }),
     onSuccess: async (withdrawal) => {
       await queryClient.invalidateQueries({ queryKey: walletKeys.all })
@@ -100,6 +123,7 @@ export function WithdrawalDialog({
     setBankName('')
     setAccountNumber('')
     setHolder('')
+    setSource('')
     reset()
     onClose()
   }
@@ -119,6 +143,7 @@ export function WithdrawalDialog({
     if (!amount.trim()) errors.amount = 'amountRequired'
     else if (!Number.isInteger(parsed) || parsed <= 0) errors.amount = 'amountInvalid'
     else if (parsed > wallet.availableBalance) errors.amount = 'amountTooHigh'
+    else if (chosen && parsed > chosen.availableBalance) errors.amount = 'amountTooHighForCenter'
     if (!bankName.trim()) errors.bankName = 'bankNameRequired'
     else if (bankName.trim().length > MAX_TEXT) errors.bankName = 'tooLong'
     if (!accountNumber.trim()) errors.bankAccountNumber = 'accountRequired'
@@ -170,10 +195,42 @@ export function WithdrawalDialog({
             onSubmit={submit}
             ref={formRef}
           >
+            {perCenter && sources.length > 0 ? (
+              <FormField
+                className='sm:col-span-2'
+                hint={t('wallet.form.centerHint', { amount: money(limit) })}
+                label={t('wallet.form.center')}
+              >
+                {(control) => (
+                  <Select
+                    {...control}
+                    onChange={(event) => {
+                      setSource(event.target.value)
+                      clearField('amount')
+                    }}
+                    value={chosen ? sourceOf(chosen) : ''}
+                  >
+                    {sources.map((balance) => (
+                      <option key={sourceOf(balance)} value={sourceOf(balance)}>
+                        {t('wallet.form.centerOption', {
+                          name: balance.centerId ? centerName(balance.centerId) : t('wallet.form.centerPlatform'),
+                          amount: money(balance.availableBalance)
+                        })}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </FormField>
+            ) : null}
+            {perCenter && balances.isPending ? (
+              <p className='text-xs text-on-surface-variant sm:col-span-2' role='status'>
+                {t('wallet.form.centerLoading')}
+              </p>
+            ) : null}
             <FormField
               className='sm:col-span-2'
               error={show(fieldErrors.amount)}
-              hint={t('wallet.form.amountHint', { amount: money(wallet.availableBalance) })}
+              hint={t('wallet.form.amountHint', { amount: money(limit) })}
               label={t('wallet.form.amount')}
             >
               {(control) => (
@@ -191,7 +248,7 @@ export function WithdrawalDialog({
                   />
                   <Button
                     onClick={() => {
-                      setAmount(String(Math.max(0, wallet.availableBalance)))
+                      setAmount(String(Math.max(0, limit)))
                       clearField('amount')
                     }}
                     type='button'

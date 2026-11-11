@@ -37,11 +37,24 @@ export function createQueryClient({ onSessionExpired = redirectToLogin }: QueryC
       if (errorStatus(error) === 401) onSessionExpired()
     }
   }
+
+  // Queries fetched again right after a successful refresh. When such a query still returns 401 the token is not the
+  // problem (e.g. a service rejecting a valid session), so the error is shown instead of refreshing and refetching in
+  // an endless loop. Cleared on the next success or on that second 401, so a later manual retry may refresh once more.
+  const retriedAfterRefresh = new Set<string>()
+
   const client: QueryClient = new QueryClient({
     queryCache: new QueryCache({
+      onSuccess: (_data, query) => {
+        retriedAfterRefresh.delete(query.queryHash)
+      },
       onError: (error, query: Query<unknown, unknown, unknown, readonly unknown[]>) => {
         if (errorStatus(error) !== 401 || query.queryKey[0] === SESSION_QUERY_PREFIX || !hasActiveSession()) return
-        void recover(() => void client.refetchQueries({ queryKey: query.queryKey, exact: true }))
+        if (retriedAfterRefresh.delete(query.queryHash)) return
+        void recover(() => {
+          retriedAfterRefresh.add(query.queryHash)
+          void client.refetchQueries({ queryKey: query.queryKey, exact: true })
+        })
       }
     }),
     mutationCache: new MutationCache({

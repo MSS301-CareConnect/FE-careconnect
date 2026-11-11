@@ -6,12 +6,17 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export * from './completeWalletWithdrawalRequest'
 export * from './createWalletWithdrawalRequest'
+export * from './getWalletWithdrawalStatisticsParams'
 export * from './listWalletWithdrawalsParams'
 export * from './rejectWalletWithdrawalRequest'
 export * from './walletWithdrawalPage'
 export * from './walletWithdrawalPageResponse'
 export * from './walletWithdrawalRecord'
 export * from './walletWithdrawalResponse'
+export * from './walletWithdrawalScope'
+export * from './walletWithdrawalStatisticsRecord'
+export * from './walletWithdrawalStatisticsResponse'
 export * from './walletWithdrawalStatus'
+export * from './withdrawalOwnerTotalRecord'
+export * from './withdrawalSeriesPointRecord'

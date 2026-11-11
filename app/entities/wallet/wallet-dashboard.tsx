@@ -6,6 +6,7 @@ import { Select } from '~/shared/ui/form-field'
 import { ErrorState } from '~/shared/ui/state-panels'
 import { Skeleton } from '~/shared/ui/skeleton'
 
+import { CenterCustodyCard } from './center-custody-card'
 import { fetchMyWallet, fetchMyWalletStatistics, walletErrorKey, walletKeys } from './wallet-api'
 import { useWalletPeriod, WALLET_PERIODS, type WalletPeriod } from './wallet-period'
 import { WalletStatistics } from './wallet-statistics'
@@ -19,7 +20,14 @@ import { WithdrawalDialog } from './withdrawal-dialog'
  * and — except for the read-only platform wallet — the owner's withdrawal requests. PaymentService decides whose
  * wallet it is from the session.
  */
-export function WalletDashboard({ bookingHref }: { bookingHref?: (bookingId: string) => string }) {
+export function WalletDashboard({
+  bookingHref,
+  withdrawalQueueHref
+}: {
+  bookingHref?: (bookingId: string) => string
+  /** Center wallet: link to the queue of customer / caregiver withdrawals the center handles (2026-11-10). */
+  withdrawalQueueHref?: string
+}) {
   const { t } = useTranslation()
   const id = useId()
   const { period, range, choose } = useWalletPeriod()
@@ -47,6 +55,9 @@ export function WalletDashboard({ bookingHref }: { bookingHref?: (bookingId: str
   return (
     <div className='space-y-6'>
       <WalletSummary onWithdraw={platform ? undefined : () => setWithdrawing(true)} wallet={wallet.data} />
+      {wallet.data.ownerType === 'CENTER' && withdrawalQueueHref ? (
+        <CenterCustodyCard queueHref={withdrawalQueueHref} range={range} />
+      ) : null}
 
       <section aria-labelledby={`${id}-period`} className='space-y-4'>
         <div className='flex flex-wrap items-end justify-between gap-3'>

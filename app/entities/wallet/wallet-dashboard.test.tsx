@@ -6,7 +6,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WalletRecord, WalletStatisticsRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
+import { fetchCenter } from '~/entities/provider/provider-api'
+
 import {
+  fetchMyCenterBalances,
   fetchMyWallet,
   fetchMyWalletStatistics,
   fetchMyWalletTransactions,
@@ -17,11 +20,17 @@ import { WalletDashboard } from './wallet-dashboard'
 
 vi.mock('./wallet-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./wallet-api')>()),
+  fetchMyCenterBalances: vi.fn(),
   fetchMyWallet: vi.fn(),
   fetchMyWalletStatistics: vi.fn(),
   fetchMyWalletTransactions: vi.fn(),
   fetchWithdrawals: vi.fn(),
   requestWithdrawal: vi.fn()
+}))
+
+vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
+  fetchCenter: vi.fn()
 }))
 
 const page = <T,>(items: T[]) => ({ items, page: 0, size: 10, totalElements: items.length, totalPages: 1 })
@@ -86,6 +95,10 @@ beforeEach(async () => {
     ])
   )
   vi.mocked(fetchWithdrawals).mockResolvedValue(page([]))
+  vi.mocked(fetchMyCenterBalances).mockResolvedValue([])
+  vi.mocked(fetchCenter).mockImplementation(
+    async (id) => ({ id, centerName: id === 'c1' ? 'An Tâm' : 'Bình An' }) as Awaited<ReturnType<typeof fetchCenter>>
+  )
 })
 
 describe('WalletDashboard', () => {
@@ -144,6 +157,52 @@ describe('WalletDashboard', () => {
         bankName: 'Vietcombank',
         bankAccountNumber: '0123456789',
         accountHolderName: 'NGUYEN VAN A'
+      })
+    )
+  })
+
+  it('sends a customer withdrawal to the center holding the chosen money and caps it at that balance', async () => {
+    vi.mocked(fetchMyCenterBalances).mockResolvedValue([
+      { centerId: 'c1', availableBalance: 300000 },
+      { centerId: 'c2', availableBalance: 120000 }
+    ])
+    vi.mocked(requestWithdrawal).mockResolvedValue({
+      id: 'd1',
+      walletId: 'w1',
+      requesterUserId: 'u1',
+      ownerType: 'CUSTOMER',
+      centerId: 'c2',
+      amount: 100000,
+      bankName: 'Vietcombank',
+      bankAccountNumber: '0123456789',
+      accountHolderName: 'NGUYEN VAN A',
+      status: 'PENDING',
+      createdAt: '2026-11-10T03:00:00Z'
+    })
+    renderDashboard()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Rút tiền' }))
+    const dialog = await screen.findByRole('dialog')
+    const center = await within(dialog).findByLabelText('Rút từ khoản tiền của trung tâm')
+    await waitFor(() => expect(within(center).getByRole('option', { name: /Bình An/ })).toBeInTheDocument())
+    fireEvent.change(center, { target: { value: 'c2' } })
+    fireEvent.change(within(dialog).getByLabelText('Số tiền muốn rút (₫)'), { target: { value: '200.000' } })
+    fireEvent.change(within(dialog).getByLabelText('Tên ngân hàng'), { target: { value: 'Vietcombank' } })
+    fireEvent.change(within(dialog).getByLabelText('Số tài khoản'), { target: { value: '0123456789' } })
+    fireEvent.change(within(dialog).getByLabelText('Tên chủ tài khoản'), { target: { value: 'NGUYEN VAN A' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu' }))
+    expect(await within(dialog).findByText('Số tiền vượt quá số dư của bạn tại trung tâm này.')).toBeInTheDocument()
+    expect(requestWithdrawal).not.toHaveBeenCalled()
+
+    fireEvent.change(within(dialog).getByLabelText('Số tiền muốn rút (₫)'), { target: { value: '100.000' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu' }))
+    await waitFor(() =>
+      expect(requestWithdrawal).toHaveBeenCalledWith({
+        amount: 100000,
+        bankName: 'Vietcombank',
+        bankAccountNumber: '0123456789',
+        accountHolderName: 'NGUYEN VAN A',
+        centerId: 'c2'
       })
     )
   })

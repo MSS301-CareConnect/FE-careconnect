@@ -6,8 +6,8 @@ import { dateLocale } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
 
-import { PasswordChangePanel } from './password-change-panel'
-import { PersonalInfoPanel } from './personal-info-panel'
+import { PasswordChangePanel } from '~/features/shared/profile/password-change-panel'
+import { PersonalInfoPanel } from '~/features/shared/profile/personal-info-panel'
 
 const key = 'customer.profile' as const
 
