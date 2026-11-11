@@ -50,7 +50,7 @@ export function ManagerBookingFilters({ list, total }: { list: ManagerBookingLis
       />
       <section
         aria-label={t(`${key}.filters.label`)}
-        className='space-y-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-3 sm:p-4'
+        className='space-y-3 rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-3 shadow-[var(--shadow-card)] sm:p-4'
       >
         {statuses.length > 1 ? (
           <FilterChips

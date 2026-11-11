@@ -53,7 +53,7 @@ export function ManagerCaregiversPage() {
   const [now] = useState(() => Date.now())
   const today = calendarDayOf(new Date(now))
   const page = Math.max(0, Number(params.get('page')) || 0)
-  const size = [10, 20, 50].includes(Number(params.get('size'))) ? Number(params.get('size')) : 20
+  const size = [10, 20, 50].includes(Number(params.get('size'))) ? Number(params.get('size')) : 10
   const verification = VERIFICATIONS.find((item) => item === params.get('verification'))
   const status = STATUSES.find((item) => item === params.get('status'))
   const keyword = params.get('q') ?? ''
@@ -159,16 +159,24 @@ export function ManagerCaregiversPage() {
       <BentoPageHeader
         actions={
           <>
+            {/* Icon-only on the title row; the name shows on hover and to screen readers. */}
             <Button
+              aria-label={t(`${key}.export`)}
+              className='w-11 rounded-full! px-0!'
               disabled={!visible.length}
-              leftIcon={<Icon name='download' />}
               onClick={exportCsv}
+              title={t(`${key}.export`)}
               variant='outline'
             >
-              {t(`${key}.export`)}
+              <Icon name='download' />
             </Button>
-            <Button leftIcon={<Icon name='person_add' />} onClick={() => setCreating(true)}>
-              {t(`${key}.add`)}
+            <Button
+              aria-label={t(`${key}.add`)}
+              className='w-11 rounded-full! px-0!'
+              onClick={() => setCreating(true)}
+              title={t(`${key}.add`)}
+            >
+              <Icon name='person_add' />
             </Button>
           </>
         }
@@ -397,30 +405,16 @@ export function ManagerCaregiversPage() {
           </div>
         )}
         {caregivers.isSuccess && caregivers.data.totalElements > 0 ? (
-          <div className='flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/40 px-4 py-3 text-sm text-on-surface-variant'>
-            <label className='flex items-center gap-2'>
-              {t(`${r}.pageSize`)}
-              <select
-                className='rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm'
-                onChange={(event) => update('size', event.target.value)}
-                value={size}
-              >
-                {[10, 20, 50].map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {caregivers.data.totalPages > 1 ? (
-              <Pagination
-                className='border-0 shadow-none'
-                onPageChange={(value) => update('page', value > 0 ? String(value) : '')}
-                page={page}
-                totalPages={caregivers.data.totalPages}
-              />
-            ) : null}
-          </div>
+          <Pagination
+            className='rounded-none border-0 border-t border-outline-variant/40 shadow-none'
+            onPageChange={(value) => update('page', value > 0 ? String(value) : '')}
+            onPageSizeChange={(value) => update('size', String(value))}
+            page={page}
+            pageSize={size}
+            pageSizeOptions={[10, 20, 50]}
+            totalElements={caregivers.data.totalElements}
+            totalPages={caregivers.data.totalPages}
+          />
         ) : null}
       </section>
       {creating ? <CreateCaregiverDialog centerId={centerId} onClose={() => setCreating(false)} /> : null}

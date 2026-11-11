@@ -48,7 +48,7 @@ export function TodayTimeline({
                 {past ? <Icon className='text-sm' name='check' /> : null}
               </span>
               <Link
-                className={`cg-press flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl px-3 py-2 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary ${past ? 'opacity-70' : ''}`}
+                className={`cg-press flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl px-3 py-2 hover:bg-mint-50 focus-visible:outline-2 focus-visible:outline-primary ${past ? 'opacity-70' : ''} ${next ? 'bg-mint-50 ring-1 ring-mint-200' : ''}`}
                 to={`/caregiver/visits/${visit.id}`}
               >
                 <span className='min-w-0'>
@@ -57,6 +57,12 @@ export function TodayTimeline({
                   </span>
                   <span className='block truncate text-sm text-on-surface-variant'>
                     {visitPeople(visit).name ?? t('caregiver.visits.patientFallback')}
+                    {visit.services?.length
+                      ? ` · ${visit.services
+                          .map((service) => service.serviceName)
+                          .filter(Boolean)
+                          .join(', ')}`
+                      : ''}
                   </span>
                 </span>
                 <VisitStatusBadge status={visit.status} />

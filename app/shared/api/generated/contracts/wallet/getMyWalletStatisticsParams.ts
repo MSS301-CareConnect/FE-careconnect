@@ -5,7 +5,7 @@
  * Reviewed frontend snapshot of IdentityService and ProviderService operations consumed through the API gateway.
  * OpenAPI spec version: 0.0.1
  */
-import type { WalletStatisticsGroupBy } from './walletStatisticsGroupBy'
+import type { WalletStatisticsGroupBy } from '../walletStatisticsGroupBy'
 
 export type GetMyWalletStatisticsParams = {
   from: string

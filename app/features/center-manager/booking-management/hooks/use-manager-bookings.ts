@@ -4,8 +4,9 @@ import { useSearchParams } from 'react-router'
 import { bookingKeys, fetchBookingStatusCounts, fetchBookings } from '~/entities/booking/booking-api'
 import { BOOKING_STATUSES } from '~/entities/booking/booking-format'
 import type { BookingStatus, BookingStatusCountRecord, ListBookingsParams } from '~/shared/api/generated/contracts'
+import { pageSizeOf } from '~/shared/ui/pagination'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 // The queue moves on its own (new requests, the expiry job), so the screen refreshes while it is open.
 export const REFRESH_MS = 30_000
@@ -36,7 +37,7 @@ function groupOf(status: BookingStatus | undefined): ManagerGroup | undefined {
 }
 
 /**
- * Filters live in the URL (`group`, `status` inside it, `q`, `from`, `to`, `sort`, `page`). An old link with only
+ * Filters live in the URL (`group`, `status` inside it, `q`, `from`, `to`, `sort`, `page`, `size`). An old link with only
  * `status` opens that status' group. BookingService scopes the list and the counts to the manager's center.
  */
 export function useManagerBookings() {
@@ -48,6 +49,7 @@ export function useManagerBookings() {
   const to = DATE.test(params.get('to') ?? '') ? (params.get('to') ?? undefined) : undefined
   const sort = MANAGER_SORTS.find((item) => item === params.get('sort')) ?? defaultSort(group)
   const page = Math.max(0, Number(params.get('page')) || 0)
+  const size = pageSizeOf(params.get('size'), PAGE_SIZE)
   const statuses = status && GROUP_STATUSES[group].includes(status) ? [status] : [...GROUP_STATUSES[group]]
   const request: ListBookingsParams = {
     statuses: statuses.length ? statuses : undefined,
@@ -56,7 +58,7 @@ export function useManagerBookings() {
     to,
     sort,
     page,
-    size: PAGE_SIZE
+    size
   }
 
   const bookings = useQuery({
@@ -79,7 +81,9 @@ export function useManagerBookings() {
   const countOf = (items: readonly BookingStatus[]) =>
     counts.data ? items.reduce((sum, item) => sum + (byStatus.get(item)?.count ?? 0), 0) : undefined
 
-  function update(values: Partial<Record<'group' | 'status' | 'q' | 'from' | 'to' | 'sort' | 'page', string>>) {
+  function update(
+    values: Partial<Record<'group' | 'status' | 'q' | 'from' | 'to' | 'sort' | 'page' | 'size', string>>
+  ) {
     setParams(
       (previous) => {
         const next = new URLSearchParams(previous)
@@ -105,6 +109,7 @@ export function useManagerBookings() {
     from,
     to,
     sort,
+    size,
     hasFilters: Boolean(status || request.keyword || from || to),
     setGroup: (value: ManagerGroup) => update({ group: value, status: '', sort: '' }),
     /** Opens a status inside its group (the queue cards); an empty value shows the whole group. */
@@ -113,6 +118,7 @@ export function useManagerBookings() {
     setRange: (nextFrom: string, nextTo: string) => update({ from: nextFrom, to: nextTo }),
     setSort: (value: ManagerSort) => update({ sort: value === defaultSort(group) ? '' : value }),
     setPage: (value: number) => update({ page: value > 0 ? String(value) : '' }),
+    setSize: (value: number) => update({ size: value === PAGE_SIZE ? '' : String(value) }),
     reset: () => update({ status: '', q: '', from: '', to: '' })
   }
 }

@@ -7,9 +7,17 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { WalletWithdrawalPageResponse, WalletWithdrawalResponse } from '../../contracts'
+import type {
+  WalletWithdrawalPageResponse,
+  WalletWithdrawalResponse,
+  WalletWithdrawalStatisticsResponse
+} from '../../contracts'
 
-import { getWalletWithdrawalPageMock, getWalletWithdrawalRecordMock } from '../../contracts/index.faker'
+import {
+  getWalletWithdrawalPageMock,
+  getWalletWithdrawalRecordMock,
+  getWalletWithdrawalStatisticsRecordMock
+} from '../../contracts/index.faker'
 
 export const getListWalletWithdrawalsResponseMock = (
   overrideResponse: Partial<Extract<WalletWithdrawalPageResponse, object>> = {}
@@ -38,15 +46,6 @@ export const getGetWalletWithdrawalResponseMock = (
   ...overrideResponse
 })
 
-export const getApproveWalletWithdrawalResponseMock = (
-  overrideResponse: Partial<Extract<WalletWithdrawalResponse, object>> = {}
-): WalletWithdrawalResponse => ({
-  code: faker.number.int(),
-  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getWalletWithdrawalRecordMock() },
-  ...overrideResponse
-})
-
 export const getRejectWalletWithdrawalResponseMock = (
   overrideResponse: Partial<Extract<WalletWithdrawalResponse, object>> = {}
 ): WalletWithdrawalResponse => ({
@@ -56,11 +55,20 @@ export const getRejectWalletWithdrawalResponseMock = (
   ...overrideResponse
 })
 
-export const getCompleteWalletWithdrawalResponseMock = (
+export const getTransferWalletWithdrawalResponseMock = (
   overrideResponse: Partial<Extract<WalletWithdrawalResponse, object>> = {}
 ): WalletWithdrawalResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getWalletWithdrawalRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetWalletWithdrawalStatisticsResponseMock = (
+  overrideResponse: Partial<Extract<WalletWithdrawalStatisticsResponse, object>> = {}
+): WalletWithdrawalStatisticsResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getWalletWithdrawalStatisticsRecordMock() },
   ...overrideResponse
 })

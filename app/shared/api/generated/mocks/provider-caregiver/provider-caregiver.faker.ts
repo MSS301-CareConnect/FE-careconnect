@@ -136,6 +136,15 @@ export const getGetProviderCaregiverByUserResponseMock = (
   ...overrideResponse
 })
 
+export const getListProviderCaregiverDirectoryResponseMock = (
+  overrideResponse: Partial<Extract<ProviderCaregiverPageResponse, object>> = {}
+): ProviderCaregiverPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getProviderCaregiverPageMock() },
+  ...overrideResponse
+})
+
 export const getListPendingVerificationProviderCaregiversResponseMock = (
   overrideResponse: Partial<Extract<ProviderCaregiverPageResponse, object>> = {}
 ): ProviderCaregiverPageResponse => ({

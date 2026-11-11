@@ -36,6 +36,7 @@ import type {
   ListMyProviderCaregiverSchedulesParams,
   ListPendingVerificationProviderCaregiversParams,
   ListProviderBookableSchedulesParams,
+  ListProviderCaregiverDirectoryParams,
   ListProviderCaregiverTimeOffsParams,
   ProviderAvailabilityCheckResponse,
   ProviderAvailabilityWindowListResponse,
@@ -1908,6 +1909,202 @@ export function useGetProviderCaregiverByUser<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetProviderCaregiverByUserQueryOptions(userId, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type listProviderCaregiverDirectoryResponse200 = {
+  data: ProviderCaregiverPageResponse
+  status: 200
+}
+
+export type listProviderCaregiverDirectoryResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listProviderCaregiverDirectoryResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listProviderCaregiverDirectoryResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listProviderCaregiverDirectoryResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listProviderCaregiverDirectoryResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listProviderCaregiverDirectoryResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listProviderCaregiverDirectoryResponseSuccess = listProviderCaregiverDirectoryResponse200 & {
+  headers: Headers
+}
+export type listProviderCaregiverDirectoryResponseError = (
+  | listProviderCaregiverDirectoryResponse400
+  | listProviderCaregiverDirectoryResponse401
+  | listProviderCaregiverDirectoryResponse403
+  | listProviderCaregiverDirectoryResponse404
+  | listProviderCaregiverDirectoryResponse500
+  | listProviderCaregiverDirectoryResponse503
+) & {
+  headers: Headers
+}
+
+export const getListProviderCaregiverDirectoryUrl = (params?: ListProviderCaregiverDirectoryParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/caregivers/directory?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/caregivers/directory`
+}
+
+/**
+ * @summary ADMIN xem người chăm sóc của mọi trung tâm, xếp theo trung tâm
+ */
+export const listProviderCaregiverDirectory = async (
+  params?: ListProviderCaregiverDirectoryParams,
+  options?: RequestInit
+): Promise<listProviderCaregiverDirectoryResponseSuccess> => {
+  const res = await fetch(getListProviderCaregiverDirectoryUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listProviderCaregiverDirectoryResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listProviderCaregiverDirectoryResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listProviderCaregiverDirectoryResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProviderCaregiverDirectoryResponseSuccess
+}
+
+export const getListProviderCaregiverDirectoryQueryKey = (params?: ListProviderCaregiverDirectoryParams) => {
+  return [`${env.API_BASE_URL}/v1/caregivers/directory`, ...(params ? [params] : [])] as const
+}
+
+export const getListProviderCaregiverDirectoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListProviderCaregiverDirectoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverDirectory>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListProviderCaregiverDirectoryQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviderCaregiverDirectory>>> = ({ signal }) =>
+    listProviderCaregiverDirectory(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListProviderCaregiverDirectoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProviderCaregiverDirectory>>
+>
+export type ListProviderCaregiverDirectoryQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListProviderCaregiverDirectory<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListProviderCaregiverDirectoryParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverDirectory>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCaregiverDirectory>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCaregiverDirectory<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListProviderCaregiverDirectoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverDirectory>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderCaregiverDirectory>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderCaregiverDirectory<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListProviderCaregiverDirectoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverDirectory>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary ADMIN xem người chăm sóc của mọi trung tâm, xếp theo trung tâm
+ */
+
+export function useListProviderCaregiverDirectory<
+  TData = Awaited<ReturnType<typeof listProviderCaregiverDirectory>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListProviderCaregiverDirectoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderCaregiverDirectory>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProviderCaregiverDirectoryQueryOptions(params, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

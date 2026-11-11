@@ -78,3 +78,26 @@ export function rangesOverlap(
 }
 
 export const lengthOf = (slot: { startTime: string; endTime: string }) => minutesBetween(slot.startTime, slot.endTime)
+
+export type ServiceTimeIssue = 'invalidTime' | 'planLength' | 'overlap'
+
+/**
+ * Errors of the per-service times of a pattern (2026-11-11): each included service needs a valid range that fits its
+ * plan, and two services of the same day must not overlap.
+ */
+export function serviceTimeIssues(
+  times: readonly { careServiceId: string; startTime: string; endTime: string; enabled: boolean }[],
+  options: readonly ServiceOption[]
+): (ServiceTimeIssue | null)[] {
+  return times.map((time, index) => {
+    if (!time.enabled) return null
+    if (time.endTime <= time.startTime) return 'invalidTime'
+    const plan = options.find((option) => option.careServiceId === time.careServiceId)?.plan
+    if (!fitsPlan(plan, lengthOf(time))) return 'planLength'
+    const clash = times.some(
+      (other, position) =>
+        position !== index && other.enabled && other.endTime > other.startTime && rangesOverlap(time, other)
+    )
+    return clash ? 'overlap' : null
+  })
+}

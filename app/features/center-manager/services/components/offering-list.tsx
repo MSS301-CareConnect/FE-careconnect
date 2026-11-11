@@ -34,14 +34,14 @@ export function OfferingList({
 }) {
   const { t } = useTranslation()
   return (
-    <ul className='max-h-[62dvh] divide-y divide-outline-variant/40 overflow-y-auto'>
+    <ul className='flex flex-col gap-1 p-2'>
       {offerings.map((offering) => {
         const active = selectedId === offering.id
         return (
           <li key={offering.id}>
             <button
               aria-pressed={active}
-              className={`flex w-full items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-container-low ${active ? 'border-l-[3px] border-primary bg-primary/5 pl-[17px]' : ''}`}
+              className={`flex w-full items-start gap-3 rounded-2xl px-4 py-3.5 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-forest-900 ${active ? 'bg-mint-100 ring-1 ring-forest-900/10' : 'hover:bg-mint-50'}`}
               onClick={() => onSelect(offering.id)}
               type='button'
             >

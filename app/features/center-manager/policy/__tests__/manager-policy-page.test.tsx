@@ -54,7 +54,7 @@ describe('ManagerPolicyPage (spec §8, §12)', () => {
     renderAs({ centerId: 'center-1', roles: ['CENTER_MANAGER'] })
 
     expect(screen.getByRole('heading', { level: 1, name: 'Chính sách đặt lịch của trung tâm' })).toBeInTheDocument()
-    expect(await screen.findByRole('textbox', { name: 'Tỷ lệ cọc (RECURRING / CUSTOM)' })).toHaveValue('30')
+    expect(await screen.findByRole('textbox', { name: 'Tỷ lệ đặt cọc' })).toHaveValue('30')
     expect(fetchCenterBookingPolicy).toHaveBeenCalledWith('center-1')
   })
 

@@ -12,6 +12,9 @@ export interface WalletWithdrawalRecord {
   id: string
   walletId: string
   requesterUserId: string
+  /** Requester's name from IdentityService (list and detail only; null when Identity did not answer). */
+  requesterName?: string | null
+  requesterPhoneNumber?: string | null
   ownerType: WalletOwnerType
   /** @nullable */
   centerId?: string | null

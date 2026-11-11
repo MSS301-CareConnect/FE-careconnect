@@ -234,9 +234,46 @@ export function ManagerVisitDetailDialog({
                   <dl className='space-y-1.5'>
                     <Row label={t(`${k}.checkIn`)}>{format.dateTime(session.data.checkInAt) || '—'}</Row>
                     <Row label={t(`${k}.checkOut`)}>{format.dateTime(session.data.checkOutAt) || '—'}</Row>
+                    <Row label={t(`${k}.late`)}>
+                      {session.data.lateMinutes
+                        ? t(`${k}.minutes`, { count: session.data.lateMinutes })
+                        : t(`${k}.onTime`)}
+                    </Row>
+                    {session.data.checkOutAt ? (
+                      <Row label={t(`${k}.earlyLeave`)}>
+                        {session.data.earlyLeaveMinutes
+                          ? t(`${k}.minutes`, { count: session.data.earlyLeaveMinutes })
+                          : t(`${k}.onTime`)}
+                      </Row>
+                    ) : null}
+                    {session.data.checkInDistanceMeters !== undefined ? (
+                      <Row label={t(`${k}.distance`)}>
+                        {t(`${k}.meters`, { count: session.data.checkInDistanceMeters })}
+                      </Row>
+                    ) : null}
+                    {session.data.locationFlag ? (
+                      <Row label={t(`${k}.location`)}>
+                        <StatusBadge tone='warning'>{t(`${k}.locationFlags.${session.data.locationFlag}`)}</StatusBadge>
+                      </Row>
+                    ) : null}
                     {session.data.autoClosed ? (
                       <Row label={t(`${k}.autoClosed`)}>
                         <Icon className='text-base text-warning' name='timer_off' />
+                      </Row>
+                    ) : null}
+                    {session.data.completionReview ? (
+                      <Row label={t(`${k}.review`)}>
+                        <StatusBadge
+                          tone={
+                            session.data.completionReview === 'PENDING'
+                              ? 'warning'
+                              : session.data.completionReview === 'CONFIRMED'
+                                ? 'success'
+                                : 'danger'
+                          }
+                        >
+                          {t(`${k}.reviews.${session.data.completionReview}`)}
+                        </StatusBadge>
                       </Row>
                     ) : null}
                   </dl>

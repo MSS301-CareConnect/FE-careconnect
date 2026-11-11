@@ -8,20 +8,29 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { CaregiverOccurrencePageResponse, CaregiverOccurrenceResponse } from '../../contracts'
+import type {
+  CaregiverOccurrenceListResponse,
+  CaregiverOccurrencePageResponse,
+  CaregiverOccurrenceResponse,
+  CustomerVisitReportResponse
+} from '../../contracts'
 
 import {
   getAcknowledgeBookingOccurrenceResponseMock,
+  getAcknowledgeBookingOccurrencesResponseMock,
   getDecideBookingOccurrenceNoShowResponseMock,
   getGetBookingOccurrenceResponseMock,
   getListMyBookingOccurrencesResponseMock,
+  getReportBookingOccurrenceByCustomerResponseMock,
   getReportBookingOccurrenceNoShowResponseMock
 } from './booking-occurrence.faker'
 
 export {
   getListMyBookingOccurrencesResponseMock,
   getGetBookingOccurrenceResponseMock,
+  getAcknowledgeBookingOccurrencesResponseMock,
   getAcknowledgeBookingOccurrenceResponseMock,
+  getReportBookingOccurrenceByCustomerResponseMock,
   getReportBookingOccurrenceNoShowResponseMock,
   getDecideBookingOccurrenceNoShowResponseMock
 } from './booking-occurrence.faker'
@@ -78,6 +87,32 @@ export const getGetBookingOccurrenceMockHandler = (
   )
 }
 
+export const getAcknowledgeBookingOccurrencesMockHandler = (
+  overrideResponse?:
+    | CaregiverOccurrenceListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<CaregiverOccurrenceListResponse> | CaregiverOccurrenceListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/booking-occurrences/acknowledgements',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAcknowledgeBookingOccurrencesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getAcknowledgeBookingOccurrenceMockHandler = (
   overrideResponse?:
     | CaregiverOccurrenceResponse
@@ -97,6 +132,32 @@ export const getAcknowledgeBookingOccurrenceMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getAcknowledgeBookingOccurrenceResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getReportBookingOccurrenceByCustomerMockHandler = (
+  overrideResponse?:
+    | CustomerVisitReportResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<CustomerVisitReportResponse> | CustomerVisitReportResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/booking-occurrences/:id/customer-reports',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getReportBookingOccurrenceByCustomerResponseMock(),
         { status: 200 }
       )
     },
@@ -158,7 +219,9 @@ export const getDecideBookingOccurrenceNoShowMockHandler = (
 export const getBookingOccurrenceMock = () => [
   getListMyBookingOccurrencesMockHandler(),
   getGetBookingOccurrenceMockHandler(),
+  getAcknowledgeBookingOccurrencesMockHandler(),
   getAcknowledgeBookingOccurrenceMockHandler(),
+  getReportBookingOccurrenceByCustomerMockHandler(),
   getReportBookingOccurrenceNoShowMockHandler(),
   getDecideBookingOccurrenceNoShowMockHandler()
 ]

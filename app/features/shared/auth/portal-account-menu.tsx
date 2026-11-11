@@ -12,13 +12,16 @@ export function PortalAccountMenu({
   fallbackName,
   avatarIcon,
   avatarUrl,
-  profileLink
+  profileLink,
+  securityLink = '/account/security'
 }: {
   roleLabel: string
   fallbackName: string
   avatarIcon?: string
   avatarUrl?: string
   profileLink?: { to: string; label: string }
+  /** Where "Security" opens; a portal with its own profile page keeps the user inside its shell. */
+  securityLink?: string
 }) {
   const { t } = useTranslation()
   const user = useAuthUser()
@@ -94,7 +97,7 @@ export function PortalAccountMenu({
         <nav
           aria-label={t('common.accountMenu')}
           data-state={panelState}
-          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-60 origin-top-right rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
+          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
           id='portal-account-menu'
         >
           <div className='border-b border-outline-variant/30 px-3 py-2 sm:hidden'>
@@ -114,7 +117,7 @@ export function PortalAccountMenu({
           <Link
             className='flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
             onClick={() => setOpen(false)}
-            to='/account/security'
+            to={securityLink}
           >
             <Icon className='text-lg text-primary' name='shield_lock' />
             {t('auth.security.title')}

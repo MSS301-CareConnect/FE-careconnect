@@ -3,36 +3,38 @@ export const walletVi = {
   titles: {
     CUSTOMER: 'Ví của tôi',
     CAREGIVER: 'Ví của tôi',
-    CENTER: 'Ví trung tâm',
-    PLATFORM: 'Ví nền tảng'
+    CENTER: 'Doanh thu trung tâm',
+    PLATFORM: 'Doanh thu nền tảng'
   },
   subtitles: {
-    CUSTOMER: 'Tiền hoàn khi bạn hủy lịch được cộng vào ví. Bạn có thể rút về tài khoản ngân hàng bất cứ lúc nào.',
+    CUSTOMER:
+      'Tiền hoàn của các lịch đặt bị hủy được cộng vào ví. Bạn có thể rút về tài khoản ngân hàng bất cứ lúc nào.',
     CAREGIVER: 'Tiền cọc khách bị giữ khi hủy buổi bạn được giao được cộng vào ví của bạn.',
     CENTER:
-      'Tiền các buổi đã phục vụ (sau hoa hồng nền tảng) và tiền cọc giữ lại của buổi chưa phân công. Mọi quản lý của trung tâm dùng chung ví này.',
+      'Tiền khách trả đã vào thẳng tài khoản trung tâm. Trang này tổng hợp doanh thu thực nhận: tiền các buổi đã phục vụ sau hoa hồng nền tảng, cọc giữ lại của buổi chưa phân công, trừ hoàn khiếu nại.',
     PLATFORM:
-      'Hoa hồng nền tảng trên các buổi đã phục vụ, cùng tổng tiền nền tảng đang giữ hộ khách, caregiver và trung tâm.'
+      'Hoa hồng nền tảng thu trên các buổi đã phục vụ (đã trừ phần trả lại khi hoàn khiếu nại), tổng tiền khách đã trả và đã hoàn, cùng số tiền nền tảng còn giữ hộ.'
   },
   loading: 'Đang tải ví...',
   refundToWallet: 'Hoàn vào ví',
   balance: {
     available: 'Số dư khả dụng',
     held: 'Đang chờ rút',
-    heldHint: 'Đã trừ khỏi số dư, chờ quản trị viên chuyển khoản',
+    heldHint: 'Đã trừ khỏi số dư, chờ bên xử lý chuyển khoản',
     withdraw: 'Rút tiền',
     notWithdrawable: 'Số dư phải lớn hơn 0 mới rút được',
-    platformReadOnly: 'Ví nền tảng chỉ để theo dõi, không rút',
     negative: 'Ví đang âm do hoàn tiền khiếu nại sau khi đã cộng tiền buổi — chưa rút được tới khi số dư dương trở lại.'
   },
   period: {
     label: 'Kỳ thống kê',
+    overview: 'Tổng quan theo kỳ',
+    revenue: 'Doanh thu theo kỳ',
     month: 'Tháng này',
     last30: '30 ngày qua',
     year: 'Năm nay'
   },
   metrics: {
-    totalIncome: 'Thu nhập trong kỳ',
+    totalIncome: 'Trung tâm thực nhận',
     totalWithdrawn: 'Đã rút trong kỳ',
     bookingCount: 'Số lịch đặt',
     totalPaid: 'Đã thanh toán',
@@ -51,7 +53,10 @@ export const walletVi = {
   },
   chart: {
     title: 'Biến động theo thời gian',
+    revenueTitle: 'Doanh thu theo thời gian',
     income: 'Thu nhập',
+    commission: 'Hoa hồng',
+    refunded: 'Tiền hoàn về ví',
     withdrawn: 'Đã rút',
     spent: 'Đã thanh toán',
     empty: 'Chưa có biến động trong kỳ này.',
@@ -81,9 +86,34 @@ export const walletVi = {
     WITHDRAWAL_RELEASE: 'Hoàn lại (yêu cầu rút bị từ chối)',
     WITHDRAWAL_PAID: 'Đã chuyển khoản'
   },
+  detail: {
+    transactionTitle: 'Chi tiết giao dịch',
+    withdrawalTitle: 'Chi tiết yêu cầu rút tiền',
+    openTransaction: 'Xem chi tiết giao dịch {{type}} {{amount}}',
+    openWithdrawal: 'Xem chi tiết yêu cầu rút {{amount}} — {{status}}',
+    close: 'Đóng',
+    time: 'Thời gian',
+    available: 'Số dư khả dụng',
+    held: 'Đang chờ rút',
+    change: '{{before}} → {{after}}',
+    center: 'Trung tâm',
+    booking: 'Lịch đặt liên quan',
+    transferReference: 'Mã chuyển khoản',
+    transactionId: 'Mã giao dịch',
+    heldNote: 'Số tiền này đang được tạm giữ, chưa dùng được cho tới khi yêu cầu xử lý xong.',
+    waitingHint: '{{handler}} sẽ chuyển khoản; bạn nhận thông báo khi xong.',
+    steps: {
+      sent: 'Đã gửi yêu cầu',
+      waiting: 'Đang chờ xử lý',
+      transferred: 'Đã chuyển khoản',
+      rejected: 'Bị từ chối, tiền đã về lại ví'
+    }
+  },
   transactions: {
     title: 'Lịch sử giao dịch',
     hint: 'Mỗi biến động số dư trong kỳ, mới nhất trước.',
+    moneyIn: 'Tiền vào ví',
+    moneyOut: 'Tiền ra khỏi ví',
     empty: 'Chưa có giao dịch trong kỳ này.',
     viewBooking: 'Xem lịch đặt',
     balanceChange: 'Số dư {{before}} → {{after}}',
@@ -100,7 +130,7 @@ export const walletVi = {
     rejectReason: 'Lý do từ chối: {{reason}}',
     transferReference: 'Mã chuyển khoản: {{reference}}',
     statuses: {
-      PENDING: 'Chờ duyệt',
+      PENDING: 'Chờ xử lý',
       APPROVED: 'Đã duyệt, chờ chuyển',
       REJECTED: 'Bị từ chối',
       COMPLETED: 'Đã chuyển khoản'
@@ -109,12 +139,18 @@ export const walletVi = {
   form: {
     title: 'Rút tiền về tài khoản ngân hàng',
     description:
-      'Số tiền sẽ được tạm giữ ngay khi gửi. Quản trị viên duyệt và chuyển khoản thủ công; nếu bị từ chối, tiền quay lại số dư.',
+      'Số tiền được tạm giữ ngay khi gửi. Trung tâm đang giữ khoản tiền của bạn chuyển khoản; xong là yêu cầu tự hoàn tất và bạn nhận thông báo. Nếu bị từ chối, tiền quay lại số dư.',
+    center: 'Rút từ khoản tiền của trung tâm',
+    centerHint: 'Yêu cầu được gửi tới trung tâm này xử lý. Tối đa {{amount}}.',
+    centerPlatform: 'CareConnect (khoản cũ, quản trị viên xử lý)',
+    centerOption: '{{name}} · {{amount}}',
+    centerLoading: 'Đang tải số dư theo trung tâm…',
     amount: 'Số tiền muốn rút (₫)',
     amountHint: 'Tối đa {{amount}}',
     withdrawAll: 'Rút toàn bộ',
     bankName: 'Tên ngân hàng',
-    bankNamePlaceholder: 'Ví dụ: Vietcombank',
+    bankNamePlaceholder: 'Chọn ngân hàng',
+    bankSearch: 'Tìm ngân hàng',
     bankAccountNumber: 'Số tài khoản',
     accountHolderName: 'Tên chủ tài khoản',
     accountHolderHint: 'Viết đúng như trên tài khoản ngân hàng',
@@ -128,6 +164,7 @@ export const walletVi = {
       amountRequired: 'Nhập số tiền muốn rút.',
       amountInvalid: 'Số tiền phải là số nguyên dương (đồng).',
       amountTooHigh: 'Số tiền vượt quá số dư khả dụng.',
+      amountTooHighForCenter: 'Số tiền vượt quá số dư của bạn tại trung tâm này.',
       bankNameRequired: 'Nhập tên ngân hàng.',
       accountRequired: 'Nhập số tài khoản.',
       accountInvalid: 'Số tài khoản gồm 6–20 chữ số.',
@@ -141,6 +178,9 @@ export const walletVi = {
     e6042: 'Không tìm thấy yêu cầu rút tiền.',
     e6043: 'Yêu cầu rút tiền đã được xử lý hoặc không còn ở trạng thái cho phép thao tác này.',
     e6052: 'Ví này không rút được.',
+    e6053: 'Hãy chọn rút từ khoản tiền của trung tâm nào.',
+    e6054: 'Số tiền vượt quá số dư của bạn tại trung tâm này.',
+    e6055: 'Yêu cầu này do trung tâm khác hoặc quản trị viên xử lý.',
     e6027: 'Tài khoản quản lý chưa được gán trung tâm.',
     generic: 'Không thể tải dữ liệu ví. Vui lòng thử lại.',
     unavailable: 'Dịch vụ thanh toán đang tạm gián đoạn. Vui lòng thử lại sau.'
@@ -148,7 +188,7 @@ export const walletVi = {
   admin: {
     title: 'Yêu cầu rút tiền',
     subtitle:
-      'Duyệt yêu cầu, chuyển khoản thủ công tới tài khoản người yêu cầu rồi xác nhận đã chuyển. Từ chối cần lý do và trả tiền về số dư của họ.',
+      'Yêu cầu rút của ví trung tâm (và yêu cầu cũ chưa gắn trung tâm) do bạn chuyển khoản; yêu cầu của khách hàng và người chăm sóc do trung tâm giữ tiền xử lý — ở đây chỉ để theo dõi.',
     filters: 'Lọc yêu cầu',
     allStatuses: 'Mọi trạng thái',
     allOwners: 'Mọi loại ví',
@@ -160,26 +200,149 @@ export const walletVi = {
     detailTitle: 'Yêu cầu rút {{amount}}',
     walletBalance: 'Số dư hiện tại của ví',
     ledger: 'Giao dịch gần đây của ví',
-    approve: 'Duyệt',
     reject: 'Từ chối',
-    complete: 'Xác nhận đã chuyển khoản',
     close: 'Đóng',
     rejectReason: 'Lý do từ chối',
     rejectReasonRequired: 'Nhập lý do từ chối.',
-    transferReference: 'Mã giao dịch ngân hàng',
-    transferReferenceRequired: 'Nhập mã giao dịch ngân hàng.',
-    transferHint: 'Chuyển {{amount}} tới {{bank}} · {{account}} · {{holder}} trước khi xác nhận.',
-    approved: 'Đã duyệt yêu cầu',
-    rejected: 'Đã từ chối yêu cầu, tiền đã trả về ví',
-    completed: 'Đã xác nhận chuyển khoản',
-    reviewedAt: 'Duyệt lúc {{time}}',
+    reviewedAt: 'Xử lý lúc {{time}}',
     completedAt: 'Chuyển lúc {{time}}',
     copy: 'Sao chép'
+  },
+  sandbox: {
+    gateway: 'Cổng chuyển khoản CareConnect',
+    gatewayHint: 'Chuyển tiền rút cho người yêu cầu',
+    badge: 'Thử nghiệm',
+    secure: 'Kết nối bảo mật',
+    steps: { source: 'Tài khoản nguồn', otp: 'Xác thực OTP', done: 'Hoàn tất' },
+    testAccount: 'Tài khoản thử của môi trường giả lập',
+    useTestAccount: 'Điền tài khoản thử',
+    sourceBank: 'Ngân hàng nguồn',
+    chooseBank: 'Chọn ngân hàng',
+    sourceAccount: 'Số tài khoản / số thẻ',
+    sourceHolder: 'Tên chủ tài khoản',
+    otpLabel: 'Mã OTP',
+    otpTitle: 'Nhập mã xác thực',
+    otpHint: 'Mã gồm 6 chữ số đã gửi tới số điện thoại đăng ký của tài khoản {{account}}.',
+    otpSandbox: 'Môi trường thử: mã là {{otp}}',
+    continue: 'Tiếp tục',
+    back: 'Quay lại',
+    cancel: 'Hủy giao dịch',
+    closed: 'Yêu cầu này đã được xử lý, không chuyển khoản được nữa.',
+    success: 'Chuyển khoản thành công',
+    reference: 'Mã giao dịch',
+    time: 'Thời gian',
+    notified: 'Người yêu cầu đã được thông báo. Yêu cầu chuyển sang "Đã chuyển".',
+    backToQueue: 'Về danh sách yêu cầu rút tiền',
+    payee: 'Thông tin người nhận',
+    requester: 'Người yêu cầu',
+    content: 'Nội dung',
+    amount: 'Số tiền',
+    purpose: 'CareConnect rut tien {{code}}',
+    qrLabel: 'Mã VietQR chuyển khoản tới {{bank}} {{account}}',
+    qrHint: 'Quét bằng ứng dụng ngân hàng bất kỳ: số tài khoản, số tiền và nội dung được điền sẵn.',
+    qrUnknownBank: 'Chưa tạo được mã QR vì không nhận ra ngân hàng "{{bank}}". Chuyển khoản theo thông tin bên dưới.',
+    errors: {
+      bankRequired: 'Chọn ngân hàng nguồn.',
+      accountRequired: 'Nhập số tài khoản nguồn.',
+      accountInvalid: 'Tài khoản nguồn không hợp lệ. Môi trường thử chỉ nhận tài khoản thử ở trên.',
+      holderRequired: 'Nhập tên chủ tài khoản.',
+      holderInvalid: 'Tên chủ tài khoản không khớp với tài khoản nguồn.',
+      otpRequired: 'Nhập đủ 6 số OTP.',
+      otpInvalid: 'Mã OTP không đúng.'
+    }
+  },
+  menu: {
+    balance: 'Số dư ví',
+    open: 'Mở ví',
+    loading: 'Đang tải…'
+  },
+  settlement: {
+    title: 'Quyết toán lịch đặt',
+    hint: 'Tiền khách trả, phần hoàn (người chăm sóc vắng, hủy, khiếu nại), phần trung tâm thực nhận và hoa hồng nền tảng.',
+    loading: 'Đang tải quyết toán…',
+    notPaid: 'Lịch đặt chưa thanh toán nên chưa có quyết toán.',
+    paid: 'Khách đã trả',
+    refunded: 'Đã hoàn cho khách',
+    centerService: 'Tiền buổi trung tâm nhận',
+    centerKept: 'Cọc giữ lại (trung tâm)',
+    caregiverKept: 'Cọc giữ lại (người chăm sóc)',
+    complaintDebit: 'Trừ do hoàn khiếu nại',
+    centerNet: 'Trung tâm thực nhận',
+    commission: 'Hoa hồng nền tảng',
+    commissionPercent: 'Hoa hồng nền tảng ({{percent}})',
+    pending: 'Còn {{count}} buổi chờ quyết toán — số liệu sẽ cập nhật khi các buổi kết thúc.',
+    visits: 'Từng buổi',
+    visit: 'Buổi',
+    outcome: 'Kết quả',
+    centerAmount: 'Trung tâm nhận',
+    commissionAmount: 'Hoa hồng',
+    outcomes: {
+      COMPLETED: 'Hoàn tất',
+      CUSTOMER_NO_SHOW: 'Khách vắng',
+      MISSED: 'Người chăm sóc vắng — đã hoàn',
+      CANCELLED: 'Đã hủy',
+      NOT_BILLABLE: 'Không tính tiền',
+      PENDING: 'Chờ quyết toán'
+    }
   },
   nav: {
     customer: 'Ví của tôi',
     caregiver: 'Ví của tôi',
-    manager: 'Ví trung tâm'
+    manager: 'Doanh thu',
+    managerWithdrawals: 'Yêu cầu rút tiền'
+  },
+  review: {
+    managerTitle: 'Yêu cầu rút tiền',
+    managerSubtitle:
+      'Khách hàng và người chăm sóc rút khoản tiền trung tâm đang giữ (tiền hoàn, cọc bị giữ). Chuyển khoản giả lập — thành công thì yêu cầu tự hoàn tất và người rút nhận thông báo.',
+    scopes: { REVIEW: 'Cần tôi xử lý', OWN: 'Tất cả' },
+    handledBy: 'Bên xử lý',
+    handledByCenter: 'Trung tâm {{name}}',
+    handledByAdmin: 'Quản trị viên',
+    readOnly: 'Yêu cầu này do {{handler}} xử lý — bạn chỉ xem.',
+    transfer: 'Chuyển khoản',
+    transferConfirm: 'Xác nhận chuyển {{amount}}',
+    transferring: 'Đang chuyển khoản…',
+    rejected: 'Đã từ chối yêu cầu, tiền đã trả về ví người rút',
+    reference: 'Mã giao dịch',
+    sourceCenter: 'Khoản tiền của',
+    pendingFirst: 'Chờ xử lý trước',
+    filtersTitle: 'Lọc theo',
+    requesterKinds: { CUSTOMER: 'Khách hàng', CAREGIVER: 'Người chăm sóc', CENTER: 'Trung tâm', PLATFORM: 'Nền tảng' },
+    openQueue: 'Mở hàng đợi rút tiền',
+    pendingCount: '{{count}} yêu cầu đang chờ · {{amount}}'
+  },
+  breakdown: {
+    title: 'Cơ cấu biến động ví',
+    hint: 'Tổng từng loại biến động trong kỳ.'
+  },
+  stats: {
+    title: 'Tổng quan rút tiền',
+    hint: 'Đang chờ tính mọi thời điểm; còn lại theo kỳ thống kê.',
+    pending: 'Đang chờ xử lý',
+    pendingHint: '{{count}} yêu cầu',
+    completed: 'Đã chuyển trong kỳ',
+    completedHint: '{{count}} yêu cầu',
+    rejected: 'Đã từ chối trong kỳ',
+    rejectedHint: '{{count}} yêu cầu',
+    requested: 'Gửi mới trong kỳ',
+    requestedHint: '{{count}} yêu cầu',
+    processing: 'Thời gian xử lý trung bình',
+    processingNone: 'Chưa có',
+    chartTitle: 'Yêu cầu rút theo thời gian',
+    chartHint: 'Số tiền gửi yêu cầu và số tiền đã chuyển.',
+    requestedSeries: 'Gửi yêu cầu',
+    completedSeries: 'Đã chuyển',
+    ownersTitle: 'Theo loại người rút',
+    ownersHint: 'Đang chờ và đã chuyển trong kỳ.',
+    ownerRow: '{{pending}} chờ · {{completed}} đã chuyển',
+    custodyTitle: 'Tiền trung tâm đang giữ hộ',
+    custodyHint:
+      'Khoản hoàn / cọc của khách hàng và người chăm sóc gắn với trung tâm, còn trong ví của họ — trung tâm cần sẵn sàng chi trả.',
+    custodyTotal: 'Tổng đang giữ hộ',
+    custodyCustomer: 'Của khách hàng',
+    custodyCaregiver: 'Của người chăm sóc',
+    custodyHeld: 'Đang chờ rút'
   }
 } as const
 
@@ -187,37 +350,38 @@ export const walletEn = {
   titles: {
     CUSTOMER: 'My wallet',
     CAREGIVER: 'My wallet',
-    CENTER: 'Center wallet',
-    PLATFORM: 'Platform wallet'
+    CENTER: 'Center revenue',
+    PLATFORM: 'Platform revenue'
   },
   subtitles: {
-    CUSTOMER: 'Refunds of bookings you cancel go to your wallet. You can withdraw to a bank account at any time.',
+    CUSTOMER: 'Refunds of cancelled bookings go to your wallet. You can withdraw to a bank account at any time.',
     CAREGIVER: 'Deposits customers lose when they cancel visits assigned to you go to your wallet.',
     CENTER:
-      'Money of served visits (after the platform commission) and deposits kept on visits without a caregiver. Every manager of the center shares this wallet.',
+      "Customer payments go straight to the center's account. This page sums up the revenue received: served visits after the platform commission, deposits kept on visits without a caregiver, less complaint refunds.",
     PLATFORM:
-      'The platform commission on served visits, and the total the platform holds for customers, caregivers and centers.'
+      'Platform commission on served visits (less what was returned for complaint refunds), what customers paid and were refunded, and what the platform still holds for others.'
   },
   loading: 'Loading wallet...',
   refundToWallet: 'Refunded to wallet',
   balance: {
     available: 'Available balance',
     held: 'Awaiting withdrawal',
-    heldHint: 'Taken from the balance, waiting for the admin transfer',
+    heldHint: 'Taken from the balance, waiting for the transfer',
     withdraw: 'Withdraw',
     notWithdrawable: 'The balance must be above 0 to withdraw',
-    platformReadOnly: 'The platform wallet is read-only',
     negative:
       'The wallet is negative because of a complaint refund after visits were paid out — withdrawals resume once it is positive again.'
   },
   period: {
     label: 'Period',
+    overview: 'Overview for the period',
+    revenue: 'Revenue for the period',
     month: 'This month',
     last30: 'Last 30 days',
     year: 'This year'
   },
   metrics: {
-    totalIncome: 'Income in period',
+    totalIncome: 'Center received',
     totalWithdrawn: 'Withdrawn in period',
     bookingCount: 'Bookings',
     totalPaid: 'Paid',
@@ -236,7 +400,10 @@ export const walletEn = {
   },
   chart: {
     title: 'Over time',
+    revenueTitle: 'Revenue over time',
     income: 'Income',
+    commission: 'Commission',
+    refunded: 'Refunds to wallet',
     withdrawn: 'Withdrawn',
     spent: 'Paid',
     empty: 'No movement in this period.',
@@ -266,9 +433,34 @@ export const walletEn = {
     WITHDRAWAL_RELEASE: 'Returned (withdrawal rejected)',
     WITHDRAWAL_PAID: 'Transferred'
   },
+  detail: {
+    transactionTitle: 'Transaction details',
+    withdrawalTitle: 'Withdrawal request details',
+    openTransaction: 'Open transaction {{type}} {{amount}}',
+    openWithdrawal: 'Open withdrawal of {{amount}} — {{status}}',
+    close: 'Close',
+    time: 'Time',
+    available: 'Available balance',
+    held: 'Waiting to be withdrawn',
+    change: '{{before}} → {{after}}',
+    center: 'Center',
+    booking: 'Related booking',
+    transferReference: 'Transfer reference',
+    transactionId: 'Transaction ID',
+    heldNote: 'This amount is held and cannot be used until the request is handled.',
+    waitingHint: '{{handler}} will make the transfer; you are notified when it is done.',
+    steps: {
+      sent: 'Request sent',
+      waiting: 'Waiting to be handled',
+      transferred: 'Transferred',
+      rejected: 'Rejected, the money is back in your wallet'
+    }
+  },
   transactions: {
     title: 'Transaction history',
     hint: 'Every balance movement in the period, newest first.',
+    moneyIn: 'Money in',
+    moneyOut: 'Money out',
     empty: 'No transactions in this period.',
     viewBooking: 'View booking',
     balanceChange: 'Balance {{before}} → {{after}}',
@@ -285,7 +477,7 @@ export const walletEn = {
     rejectReason: 'Rejected because: {{reason}}',
     transferReference: 'Transfer reference: {{reference}}',
     statuses: {
-      PENDING: 'Pending',
+      PENDING: 'Waiting',
       APPROVED: 'Approved, awaiting transfer',
       REJECTED: 'Rejected',
       COMPLETED: 'Transferred'
@@ -294,12 +486,18 @@ export const walletEn = {
   form: {
     title: 'Withdraw to a bank account',
     description:
-      'The amount is held as soon as you send. An admin approves and transfers it by hand; if rejected, the money returns to your balance.',
+      'The amount is held as soon as you send. The center holding your money transfers it; the request then completes by itself and you are notified. If rejected, the money returns to your balance.',
+    center: 'Withdraw from the money held by',
+    centerHint: 'This center handles the request. Up to {{amount}}.',
+    centerPlatform: 'CareConnect (older money, handled by an administrator)',
+    centerOption: '{{name}} · {{amount}}',
+    centerLoading: 'Loading balances per center…',
     amount: 'Amount to withdraw (₫)',
     amountHint: 'Up to {{amount}}',
     withdrawAll: 'Withdraw all',
     bankName: 'Bank name',
-    bankNamePlaceholder: 'For example: Vietcombank',
+    bankNamePlaceholder: 'Choose a bank',
+    bankSearch: 'Search banks',
     bankAccountNumber: 'Account number',
     accountHolderName: 'Account holder name',
     accountHolderHint: 'Exactly as on the bank account',
@@ -313,6 +511,7 @@ export const walletEn = {
       amountRequired: 'Enter the amount to withdraw.',
       amountInvalid: 'The amount must be a positive whole number of dong.',
       amountTooHigh: 'The amount exceeds your available balance.',
+      amountTooHighForCenter: 'The amount exceeds your balance at this center.',
       bankNameRequired: 'Enter the bank name.',
       accountRequired: 'Enter the account number.',
       accountInvalid: 'The account number has 6 to 20 digits.',
@@ -326,6 +525,9 @@ export const walletEn = {
     e6042: 'Withdrawal request not found.',
     e6043: 'The withdrawal request was already handled or no longer allows this action.',
     e6052: 'This wallet cannot be withdrawn from.',
+    e6053: "Choose which center's money to withdraw.",
+    e6054: 'The amount exceeds your balance at this center.',
+    e6055: 'Another center or an administrator handles this request.',
     e6027: 'This manager account is not assigned to a center.',
     generic: 'Could not load the wallet. Please try again.',
     unavailable: 'The payment service is temporarily unavailable. Please try again later.'
@@ -333,7 +535,7 @@ export const walletEn = {
   admin: {
     title: 'Withdrawal requests',
     subtitle:
-      'Approve a request, transfer the money by hand to the requester account, then confirm the transfer. Rejecting needs a reason and returns the money to their balance.',
+      'You transfer center-wallet withdrawals (and older requests without a center); customer and caregiver requests are handled by the center holding the money — they appear here for oversight only.',
     filters: 'Filter requests',
     allStatuses: 'All statuses',
     allOwners: 'All wallet types',
@@ -345,25 +547,150 @@ export const walletEn = {
     detailTitle: 'Withdrawal of {{amount}}',
     walletBalance: 'Current wallet balance',
     ledger: 'Recent wallet transactions',
-    approve: 'Approve',
     reject: 'Reject',
-    complete: 'Confirm transfer',
+
     close: 'Close',
     rejectReason: 'Reason for rejecting',
     rejectReasonRequired: 'Enter a reason for rejecting.',
-    transferReference: 'Bank transfer reference',
-    transferReferenceRequired: 'Enter the bank transfer reference.',
-    transferHint: 'Transfer {{amount}} to {{bank}} · {{account}} · {{holder}} before confirming.',
-    approved: 'Request approved',
-    rejected: 'Request rejected, money returned to the wallet',
-    completed: 'Transfer confirmed',
-    reviewedAt: 'Reviewed at {{time}}',
+
+    reviewedAt: 'Handled at {{time}}',
     completedAt: 'Transferred at {{time}}',
     copy: 'Copy'
+  },
+  sandbox: {
+    gateway: 'CareConnect transfer gateway',
+    gatewayHint: 'Pay out a withdrawal to its requester',
+    badge: 'Sandbox',
+    secure: 'Secure connection',
+    steps: { source: 'Source account', otp: 'OTP check', done: 'Done' },
+    testAccount: 'Sandbox test account',
+    useTestAccount: 'Fill in the test account',
+    sourceBank: 'Source bank',
+    chooseBank: 'Choose a bank',
+    sourceAccount: 'Account / card number',
+    sourceHolder: 'Account holder',
+    otpLabel: 'OTP',
+    otpTitle: 'Enter the verification code',
+    otpHint: 'A 6-digit code was sent to the phone registered for account {{account}}.',
+    otpSandbox: 'Sandbox: the code is {{otp}}',
+    continue: 'Continue',
+    back: 'Back',
+    cancel: 'Cancel transfer',
+    closed: 'This request has already been handled and can no longer be paid out.',
+    success: 'Transfer completed',
+    reference: 'Transaction reference',
+    time: 'Time',
+    notified: 'The requester has been notified. The request is now "Transferred".',
+    backToQueue: 'Back to withdrawal requests',
+    payee: 'Payee',
+    requester: 'Requester',
+    content: 'Transfer note',
+    amount: 'Amount',
+    purpose: 'CareConnect rut tien {{code}}',
+    qrLabel: 'VietQR code for a transfer to {{bank}} {{account}}',
+    qrHint: 'Scan with any banking app: account, amount and note are filled in.',
+    qrUnknownBank: 'No QR code: the bank "{{bank}}" is not recognised. Transfer with the details below.',
+    errors: {
+      bankRequired: 'Choose the source bank.',
+      accountRequired: 'Enter the source account number.',
+      accountInvalid: 'Invalid source account. The sandbox only accepts the test account above.',
+      holderRequired: 'Enter the account holder.',
+      holderInvalid: 'The holder does not match the source account.',
+      otpRequired: 'Enter all 6 OTP digits.',
+      otpInvalid: 'Wrong OTP.'
+    }
+  },
+  menu: {
+    balance: 'Wallet balance',
+    open: 'Open wallet',
+    loading: 'Loading…'
+  },
+  settlement: {
+    title: 'Booking settlement',
+    hint: 'What the customer paid, what was refunded (caregiver absence, cancellation, complaint), what the center received and the platform commission.',
+    loading: 'Loading the settlement…',
+    notPaid: 'The booking has not been paid, so there is no settlement yet.',
+    paid: 'Customer paid',
+    refunded: 'Refunded to the customer',
+    centerService: 'Visit money to the center',
+    centerKept: 'Kept deposits (center)',
+    caregiverKept: 'Kept deposits (caregiver)',
+    complaintDebit: 'Complaint refunds deducted',
+    centerNet: 'Center received',
+    commission: 'Platform commission',
+    commissionPercent: 'Platform commission ({{percent}})',
+    pending: '{{count}} visits still waiting to settle — the numbers update as they finish.',
+    visits: 'Per visit',
+    visit: 'Visit',
+    outcome: 'Outcome',
+    centerAmount: 'Center received',
+    commissionAmount: 'Commission',
+    outcomes: {
+      COMPLETED: 'Completed',
+      CUSTOMER_NO_SHOW: 'Customer absent',
+      MISSED: 'Caregiver absent — refunded',
+      CANCELLED: 'Cancelled',
+      NOT_BILLABLE: 'Not billed',
+      PENDING: 'Waiting to settle'
+    }
   },
   nav: {
     customer: 'My wallet',
     caregiver: 'My wallet',
-    manager: 'Center wallet'
+    manager: 'Revenue',
+    managerWithdrawals: 'Withdrawal requests'
+  },
+  review: {
+    managerTitle: 'Withdrawal requests',
+    managerSubtitle:
+      'Customers and caregivers withdraw money the center holds for them (refunds, kept deposits). The bank transfer is simulated — once it succeeds the request completes by itself and the requester is notified.',
+    scopes: { REVIEW: 'For me to handle', OWN: 'All' },
+    handledBy: 'Handled by',
+    handledByCenter: 'Center {{name}}',
+    handledByAdmin: 'Administrator',
+    readOnly: '{{handler}} handles this request — view only.',
+    transfer: 'Transfer',
+    transferConfirm: 'Transfer {{amount}}',
+    transferring: 'Transferring…',
+    rejected: 'Request rejected, the money is back in the requester wallet',
+    reference: 'Reference',
+    sourceCenter: 'Money held by',
+    pendingFirst: 'Waiting first',
+    filtersTitle: 'Filter by',
+    requesterKinds: { CUSTOMER: 'Customer', CAREGIVER: 'Caregiver', CENTER: 'Center', PLATFORM: 'Platform' },
+    openQueue: 'Open the withdrawal queue',
+    pendingCount: '{{count}} requests waiting · {{amount}}'
+  },
+  breakdown: {
+    title: 'Wallet movements by type',
+    hint: 'The total of each kind of movement in this period.'
+  },
+  stats: {
+    title: 'Withdrawals at a glance',
+    hint: 'Waiting counts every open request; the rest follow the period.',
+    pending: 'Waiting',
+    pendingHint: '{{count}} requests',
+    completed: 'Transferred in the period',
+    completedHint: '{{count}} requests',
+    rejected: 'Rejected in the period',
+    rejectedHint: '{{count}} requests',
+    requested: 'New in the period',
+    requestedHint: '{{count}} requests',
+    processing: 'Average handling time',
+    processingNone: 'None yet',
+    chartTitle: 'Withdrawals over time',
+    chartHint: 'Amounts requested and amounts transferred.',
+    requestedSeries: 'Requested',
+    completedSeries: 'Transferred',
+    ownersTitle: 'By requester',
+    ownersHint: 'Waiting now and transferred in the period.',
+    ownerRow: '{{pending}} waiting · {{completed}} transferred',
+    custodyTitle: 'Money the center holds for others',
+    custodyHint:
+      'Refunds and kept deposits of customers and caregivers tied to this center, still in their wallets — the center must be ready to pay them out.',
+    custodyTotal: 'Held in total',
+    custodyCustomer: 'For customers',
+    custodyCaregiver: 'For caregivers',
+    custodyHeld: 'Waiting to be withdrawn'
   }
 } as const

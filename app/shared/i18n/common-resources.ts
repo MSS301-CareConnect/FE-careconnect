@@ -12,6 +12,12 @@ export const commonEn = {
       discount: '−{{percent}}%',
       original: 'Original price {{price}}'
     },
+    charts: {
+      empty: 'No data in this period yet.',
+      total: 'Total',
+      share: '{{percent}} of the total',
+      point: '{{label}}: {{values}}'
+    },
     kit: {
       ratingNew: 'New',
       ratingLabel: 'Rated {{rating}} out of 5 from {{count}} reviews',
@@ -176,7 +182,9 @@ export const commonEn = {
         label: 'Pagination',
         previous: 'Previous',
         next: 'Next',
-        pageOf: 'Page {{page}} of {{total}}'
+        pageOf: 'Page {{page}} of {{total}}',
+        pageSize: 'Rows per page',
+        total: '{{count, number}} in total'
       }
     },
     status: {
@@ -264,6 +272,12 @@ export const commonVi = {
     price: {
       discount: '−{{percent}}%',
       original: 'Giá gốc {{price}}'
+    },
+    charts: {
+      empty: 'Chưa có dữ liệu trong kỳ này.',
+      total: 'Tổng',
+      share: '{{percent}} tổng số',
+      point: '{{label}}: {{values}}'
     },
     kit: {
       ratingNew: 'Mới',
@@ -428,7 +442,9 @@ export const commonVi = {
         label: 'Phân trang',
         previous: 'Trước',
         next: 'Tiếp',
-        pageOf: 'Trang {{page}} / {{total}}'
+        pageOf: 'Trang {{page}} / {{total}}',
+        pageSize: 'Số dòng mỗi trang',
+        total: 'Tổng {{count, number}}'
       }
     },
     status: {

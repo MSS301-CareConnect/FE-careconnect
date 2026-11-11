@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { calendarDayOf, useFormat } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { Button } from '~/shared/ui/button'
+import { Pagination } from '~/shared/ui/pagination'
 import { Icon } from '~/shared/ui/icon'
 import { CountUp } from '~/shared/ui/motion'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
@@ -45,13 +45,15 @@ export function CaregiverEarningsPage() {
   const format = useCaregiverFormat()
   const [period, setPeriod] = useState<Period>('month')
   const [range, setRange] = useState(() => rangeOf('month', new Date()))
-  const { summary, rows } = useKeptDeposits(range.from, range.to)
+  const [page, setPage] = useState(0)
+  const { summary, rows } = useKeptDeposits(range.from, range.to, page)
   useDocumentTitle(t('caregiver.earnings.documentTitle'))
-  const items = rows.data?.pages.flatMap((page) => page.items) ?? []
-  const count = rows.data?.pages[0]?.totalElements ?? 0
+  const items = rows.data?.items ?? []
+  const count = rows.data?.totalElements ?? 0
 
   function choose(next: Period) {
     setPeriod(next)
+    setPage(0)
     setRange(rangeOf(next, new Date()))
   }
 
@@ -127,16 +129,13 @@ export function CaregiverEarningsPage() {
               </li>
             ))}
           </ul>
-          {rows.hasNextPage ? (
-            <Button
-              className='mt-4'
-              loading={rows.isFetchingNextPage}
-              onClick={() => void rows.fetchNextPage()}
-              variant='outline'
-            >
-              {t('caregiver.earnings.more')}
-            </Button>
-          ) : null}
+          <Pagination
+            ariaLabel={t('caregiver.earnings.pagination')}
+            className='mt-4'
+            onPageChange={setPage}
+            page={page}
+            totalPages={rows.data?.totalPages ?? 0}
+          />
         </>
       )}
     </div>

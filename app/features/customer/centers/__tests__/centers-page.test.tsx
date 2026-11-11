@@ -81,14 +81,28 @@ describe('CentersPage', () => {
     expect(screen.getByText('2 trung tâm')).toBeInTheDocument()
   })
 
-  it('searches by name or address without diacritics', async () => {
-    renderPage('/customer/centers?q=da nang')
+  it('searches and pages on the server', async () => {
+    vi.mocked(fetchPublicCenters).mockResolvedValue({
+      items: [centers[1]],
+      page: 1,
+      size: 9,
+      totalElements: 10,
+      totalPages: 2
+    })
+    renderPage('/customer/centers?q=da nang&page=1')
 
     expect(await screen.findByRole('link', { name: 'Xem trung tâm Phòng khám An Khang' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Xem trung tâm Trung tâm Bình An' })).not.toBeInTheDocument()
+    expect(fetchPublicCenters).toHaveBeenCalledWith({ page: 1, size: 9, keyword: 'da nang' })
+    expect(screen.getByText('10 trung tâm')).toBeInTheDocument()
+    expect(screen.getByText('Trang 2 / 2')).toBeInTheDocument()
   })
 
   it('shows a clear way back when nothing matches', async () => {
+    vi.mocked(fetchPublicCenters).mockImplementation(async (params) =>
+      params?.keyword
+        ? { items: [], page: 0, size: 9, totalElements: 0, totalPages: 0 }
+        : { items: centers, page: 0, size: 9, totalElements: 2, totalPages: 1 }
+    )
     renderPage('/customer/centers?q=khong co')
 
     const empty = (await screen.findByRole('heading', { name: 'Không có trung tâm khớp với từ khóa này.' }))

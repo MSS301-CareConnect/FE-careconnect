@@ -36,6 +36,85 @@ export const statisticsVi = {
     REJECTED: 'Từ chối',
     ARCHIVED: 'Đã lưu trữ',
     VERIFIED: 'Đã xác minh'
+  },
+  insights: {
+    periodLegend: 'Kỳ thống kê',
+    periods: { month: 'Tháng này', last30: '30 ngày qua', year: 'Năm nay', custom: 'Tùy chỉnh' },
+    customRange: 'Khoảng thời gian tùy chỉnh',
+    customFrom: 'Từ ngày',
+    customTo: 'Đến ngày',
+    customInvalid: 'Ngày kết thúc phải từ ngày bắt đầu trở đi. Số liệu đang hiển thị theo tháng này.',
+    periodHints: {
+      custom: '{{from}} – {{to}}',
+      month: 'Từ đầu tháng đến hôm nay',
+      last30: '30 ngày gần nhất',
+      year: 'Từ đầu năm đến hôm nay (theo tháng)'
+    },
+    kpis: {
+      bookings: 'Lịch đặt mới',
+      bookingsHint: '{{count}} lịch đang chờ xử lý',
+      completedVisits: 'Buổi đã hoàn thành',
+      completedVisitsHint: 'Trên {{count}} buổi đã kết thúc',
+      completionRate: 'Tỷ lệ hoàn thành',
+      completionRateHint: 'Hoàn thành / buổi đã kết thúc',
+      rating: 'Đánh giá trung bình',
+      ratingHint: '{{count}} đánh giá hiển thị',
+      complaints: 'Khiếu nại đang mở',
+      complaintsHint: '{{count}} đã chuyển admin',
+      responseTime: 'Thời gian trả lời lịch',
+      responseTimeHint: '{{count}} lịch hết hạn do chưa xử lý'
+    },
+    trend: {
+      title: 'Xu hướng lịch đặt & buổi chăm sóc',
+      hint: 'Lịch đặt theo ngày tạo; buổi chăm sóc theo giờ bắt đầu.',
+      bookings: 'Lịch đặt mới',
+      completed: 'Buổi hoàn thành',
+      cancelled: 'Buổi hủy / vắng',
+      view: 'Dạng biểu đồ',
+      views: { column: 'Cột', line: 'Đường' }
+    },
+    outcomes: {
+      title: 'Kết quả buổi chăm sóc',
+      hint: 'Các buổi đã kết thúc trong kỳ.',
+      center: 'buổi đã kết thúc'
+    },
+    pipeline: {
+      title: 'Trạng thái lịch đặt',
+      hint: 'Lịch tạo trong kỳ, theo trạng thái hiện tại.'
+    },
+    types: {
+      title: 'Loại lịch đặt',
+      hint: 'Khách chọn đặt theo ca, định kỳ hay tự chọn buổi.',
+      center: 'lịch đặt'
+    },
+    ratings: {
+      title: 'Phân bố đánh giá',
+      hint: 'Đánh giá hiển thị trong kỳ.',
+      star: '{{count}} sao',
+      average: 'Trung bình {{value}} / 5'
+    },
+    topCaregivers: {
+      title: 'Người chăm sóc nổi bật',
+      hint: 'Nhiều buổi hoàn thành nhất trong kỳ.',
+      sessions: '{{count}} buổi',
+      rating: 'Đánh giá {{value}}',
+      noRating: 'Chưa có đánh giá'
+    },
+    complaintsCard: {
+      title: 'Khiếu nại',
+      hint: 'Khiếu nại tạo trong kỳ theo trạng thái.',
+      open: 'Đang mở',
+      inProgress: 'Đang xử lý',
+      escalated: 'Đã chuyển admin',
+      resolved: 'Đã giải quyết'
+    },
+    topCenters: {
+      title: 'Trung tâm hoạt động nhiều nhất',
+      hint: 'Theo số lịch đặt tạo trong kỳ.',
+      bookings: '{{count}} lịch',
+      completion: 'Hoàn thành {{rate}}'
+    },
+    count: '{{count}}'
   }
 } as const
 
@@ -77,5 +156,84 @@ export const statisticsEn = {
     REJECTED: 'Rejected',
     ARCHIVED: 'Archived',
     VERIFIED: 'Verified'
+  },
+  insights: {
+    periodLegend: 'Period',
+    periods: { month: 'This month', last30: 'Last 30 days', year: 'This year', custom: 'Custom' },
+    customRange: 'Custom date range',
+    customFrom: 'From',
+    customTo: 'To',
+    customInvalid: 'The end date must be on or after the start date. The numbers shown are for this month.',
+    periodHints: {
+      custom: '{{from}} – {{to}}',
+      month: 'Month to date',
+      last30: 'The last 30 days',
+      year: 'Year to date (by month)'
+    },
+    kpis: {
+      bookings: 'New bookings',
+      bookingsHint: '{{count}} bookings waiting for action',
+      completedVisits: 'Completed visits',
+      completedVisitsHint: 'Out of {{count}} visits that ended',
+      completionRate: 'Completion rate',
+      completionRateHint: 'Completed / visits that ended',
+      rating: 'Average rating',
+      ratingHint: '{{count}} visible reviews',
+      complaints: 'Open complaints',
+      complaintsHint: '{{count}} escalated to admin',
+      responseTime: 'Booking response time',
+      responseTimeHint: '{{count}} bookings expired before an answer'
+    },
+    trend: {
+      title: 'Bookings & care visits over time',
+      hint: 'Bookings by creation day; visits by start time.',
+      bookings: 'New bookings',
+      completed: 'Completed visits',
+      cancelled: 'Cancelled / missed visits',
+      view: 'Chart type',
+      views: { column: 'Columns', line: 'Line' }
+    },
+    outcomes: {
+      title: 'Care visit outcomes',
+      hint: 'Visits that ended in this period.',
+      center: 'visits ended'
+    },
+    pipeline: {
+      title: 'Booking status',
+      hint: 'Bookings created in this period, by current status.'
+    },
+    types: {
+      title: 'Booking types',
+      hint: 'Whether customers book a shift, a recurring schedule or picked visits.',
+      center: 'bookings'
+    },
+    ratings: {
+      title: 'Rating distribution',
+      hint: 'Visible reviews in this period.',
+      star: '{{count}} stars',
+      average: 'Average {{value}} / 5'
+    },
+    topCaregivers: {
+      title: 'Top caregivers',
+      hint: 'Most completed visits in this period.',
+      sessions: '{{count}} visits',
+      rating: 'Rated {{value}}',
+      noRating: 'No ratings yet'
+    },
+    complaintsCard: {
+      title: 'Complaints',
+      hint: 'Complaints created in this period by status.',
+      open: 'Open',
+      inProgress: 'In progress',
+      escalated: 'Escalated to admin',
+      resolved: 'Resolved'
+    },
+    topCenters: {
+      title: 'Most active centers',
+      hint: 'By bookings created in this period.',
+      bookings: '{{count}} bookings',
+      completion: '{{rate}} completed'
+    },
+    count: '{{count}}'
   }
 } as const

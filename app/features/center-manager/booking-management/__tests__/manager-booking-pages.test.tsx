@@ -169,7 +169,7 @@ describe('Center Manager bookings', () => {
     fireEvent.click(screen.getByRole('button', { name: /Cần xác nhận/ }))
     await waitFor(() =>
       expect(fetchBookings).toHaveBeenLastCalledWith(
-        expect.objectContaining({ statuses: ['PENDING_CENTER_CONFIRMATION'], size: 20 })
+        expect.objectContaining({ statuses: ['PENDING_CENTER_CONFIRMATION'], size: 10 })
       )
     )
 

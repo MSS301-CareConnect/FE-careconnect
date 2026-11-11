@@ -8,12 +8,20 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { WalletResponse, WalletStatisticsResponse, WalletTransactionPageResponse } from '../../contracts'
+import type {
+  BookingSettlementResponse,
+  WalletCenterBalanceListResponse,
+  WalletResponse,
+  WalletStatisticsResponse,
+  WalletTransactionPageResponse
+} from '../../contracts'
 
 import {
+  getGetBookingSettlementResponseMock,
   getGetMyWalletResponseMock,
   getGetMyWalletStatisticsResponseMock,
   getGetWalletResponseMock,
+  getListMyWalletCenterBalancesResponseMock,
   getListMyWalletTransactionsResponseMock,
   getListWalletTransactionsResponseMock
 } from './wallet.faker'
@@ -22,8 +30,10 @@ export {
   getGetMyWalletResponseMock,
   getListMyWalletTransactionsResponseMock,
   getGetMyWalletStatisticsResponseMock,
+  getGetBookingSettlementResponseMock,
   getGetWalletResponseMock,
-  getListWalletTransactionsResponseMock
+  getListWalletTransactionsResponseMock,
+  getListMyWalletCenterBalancesResponseMock
 } from './wallet.faker'
 
 export const getGetMyWalletMockHandler = (
@@ -102,6 +112,32 @@ export const getGetMyWalletStatisticsMockHandler = (
   )
 }
 
+export const getGetBookingSettlementMockHandler = (
+  overrideResponse?:
+    | BookingSettlementResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<BookingSettlementResponse> | BookingSettlementResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/wallets/bookings/:bookingId/settlement',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetBookingSettlementResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getGetWalletMockHandler = (
   overrideResponse?:
     | WalletResponse
@@ -151,10 +187,38 @@ export const getListWalletTransactionsMockHandler = (
     options
   )
 }
+
+export const getListMyWalletCenterBalancesMockHandler = (
+  overrideResponse?:
+    | WalletCenterBalanceListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<WalletCenterBalanceListResponse> | WalletCenterBalanceListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/wallets/me/center-balances',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListMyWalletCenterBalancesResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 export const getWalletMock = () => [
   getGetMyWalletMockHandler(),
   getListMyWalletTransactionsMockHandler(),
   getGetMyWalletStatisticsMockHandler(),
+  getGetBookingSettlementMockHandler(),
   getGetWalletMockHandler(),
-  getListWalletTransactionsMockHandler()
+  getListWalletTransactionsMockHandler(),
+  getListMyWalletCenterBalancesMockHandler()
 ]

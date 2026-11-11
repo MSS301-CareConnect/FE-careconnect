@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { acknowledgeOccurrence, bookingKeys, checkIn } from '~/entities/booking/booking-api'
+import { acknowledgeOccurrence, acknowledgeOccurrences, bookingKeys, checkIn } from '~/entities/booking/booking-api'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
 
@@ -32,15 +32,22 @@ export function checkInWindow(visit: CaregiverOccurrenceRecord) {
 
 export type VisitStep = 'accept' | 'start' | 'waitToStart' | 'continue' | 'none'
 
-/** The one thing the caregiver does next on a visit, given the current time. */
+/** True while a visit can still be accepted: BookingService takes it until its check-in window closes (2026-11-11). */
+const stillOpen = (visit: CaregiverOccurrenceRecord, now: number) =>
+  now < checkInWindow(visit).closes && now < new Date(visit.endAt).getTime()
+
+/**
+ * The one thing the caregiver does next on a visit, given the current time. A visit not accepted in time is not lost
+ * (2026-11-11): inside the check-in window it can be started straight away — checking in accepts it — and once the
+ * window closes nothing is left to do (BookingService marks it missed).
+ */
 export function nextVisitStep(visit: CaregiverOccurrenceRecord, now: number): VisitStep {
   if (visit.noShowReportedAt && !visit.noShowDecidedAt) return 'none'
-  if (visit.status === 'SCHEDULED') return 'accept'
   if (visit.status === 'IN_PROGRESS' || (visit.sessionId && visit.status !== 'COMPLETED')) return 'continue'
-  if (visit.status === 'ACKNOWLEDGED') {
-    const { opens, closes } = checkInWindow(visit)
-    if (now >= closes) return 'none'
-    return now >= opens ? 'start' : 'waitToStart'
+  if (visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED') {
+    if (!stillOpen(visit, now)) return 'none'
+    if (now >= checkInWindow(visit).opens) return 'start'
+    return visit.status === 'SCHEDULED' ? 'accept' : 'waitToStart'
   }
   return 'none'
 }
@@ -73,4 +80,27 @@ export function useVisitActions(visit: CaregiverOccurrenceRecord, onStarted?: ()
   })
 
   return { accept, start }
+}
+
+/** Visits of one booking the caregiver can still accept: assigned, not confirmed, check-in still open, not being replaced. */
+export function acceptableVisits(visits: CaregiverOccurrenceRecord[], now: number) {
+  return visits.filter((visit) => visit.status === 'SCHEDULED' && !visit.needsReassignment && stillOpen(visit, now))
+}
+
+/**
+ * Accept several visits of one booking at once (2026-11-10, `POST /booking-occurrences/acknowledgements`, all or
+ * nothing), with a toast and the booking cache refreshed.
+ */
+export function useAcceptVisits(onDone?: () => void) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (visits: CaregiverOccurrenceRecord[]) => acknowledgeOccurrences(visits.map((visit) => visit.id)),
+    onSuccess: async (accepted) => {
+      toast.success(t('caregiver.booking.accept.done', { count: accepted.length }))
+      onDone?.()
+      await queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+    },
+    onError: (error) => toast.error(t(bookingErrorKey(error)))
+  })
 }

@@ -77,7 +77,7 @@ describe('Admin booking policies (spec §8)', () => {
     expect(await screen.findByText('Chọn một trung tâm để xem và sửa chính sách đặt lịch.')).toBeInTheDocument()
     fireEvent.change(await screen.findByRole('combobox', { name: 'Trung tâm' }), { target: { value: 'center-2' } })
 
-    expect(await screen.findByRole('textbox', { name: 'SHIFT' })).toHaveValue('2')
+    expect(await screen.findByRole('textbox', { name: 'Lịch theo ca' })).toHaveValue('2')
     expect(fetchCenterBookingPolicy).toHaveBeenCalledWith('center-2')
     expect(screen.getByRole('button', { name: 'Lưu chính sách' })).toBeInTheDocument()
   })

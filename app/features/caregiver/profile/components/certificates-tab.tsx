@@ -10,14 +10,17 @@ import type { ProviderCertificateRecord } from '~/shared/api/generated/contracts
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog, Modal } from '~/shared/ui/modal'
+import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { StatusBadge, type StatusTone } from '~/shared/ui/status-badge'
 
 import { useCaregiverFormat } from '../../ui/caregiver-format'
 import { CaregiverEmpty, CaregiverError, cgCard } from '../../ui/caregiver-page'
+import { useClientPage } from '../../ui/use-client-page'
 import { CertificateEditForm } from './certificate-edit-form'
 import { CertificateForm } from './certificate-form'
 
+const CERTIFICATES_PER_PAGE = 6
 const DAY_MS = 24 * 60 * 60 * 1000
 const EXPIRING_MS = 30 * DAY_MS
 
@@ -65,6 +68,8 @@ export function CertificatesTab({
   const [viewing, setViewing] = useState<ProviderCertificateRecord | null>(null)
   const [deleting, setDeleting] = useState<ProviderCertificateRecord | null>(null)
   const [editing, setEditing] = useState<ProviderCertificateRecord | null>(null)
+  // ProviderService returns every certificate at once; six cards a page keep the tab short.
+  const paged = useClientPage(certificates.data ?? [], CERTIFICATES_PER_PAGE)
   const remove = useMutation({
     mutationFn: (certificate: ProviderCertificateRecord) => removeCertificate(certificate.id, certificate.version),
     onSuccess: async () => {
@@ -120,8 +125,8 @@ export function CertificatesTab({
         />
       ) : null}
       {certificates.isSuccess && certificates.data.length > 0 ? (
-        <ul className='cg-stagger grid gap-3 sm:grid-cols-2'>
-          {certificates.data.map((certificate) => {
+        <ul className='cg-stagger grid gap-3 sm:grid-cols-2' key={paged.page}>
+          {paged.items.map((certificate) => {
             const state = certificateState(certificate, now)
             return (
               <li className={`${cgCard} flex flex-col gap-3 p-4`} key={certificate.id}>
@@ -196,6 +201,14 @@ export function CertificatesTab({
             )
           })}
         </ul>
+      ) : null}
+      {certificates.isSuccess ? (
+        <Pagination
+          ariaLabel={t('caregiver.me.certificates.pagination')}
+          onPageChange={paged.setPage}
+          page={paged.page}
+          totalPages={paged.totalPages}
+        />
       ) : null}
 
       {adding ? (

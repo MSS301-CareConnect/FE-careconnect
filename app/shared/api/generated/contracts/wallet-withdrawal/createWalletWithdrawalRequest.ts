@@ -15,4 +15,9 @@ export interface CreateWalletWithdrawalRequest {
   bankAccountNumber: string
   /** @maxLength 100 */
   accountHolderName: string
+  /**
+   * Customer / caregiver wallets — the center holding the money (from center-balances); that center handles the request.
+   * @nullable
+   */
+  centerId?: string | null
 }

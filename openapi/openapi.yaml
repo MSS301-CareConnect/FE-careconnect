@@ -511,6 +511,59 @@ paths:
         '403': *a3
         '500': *a4
         '503': *a5
+  /v1/roles/{id}:
+    put:
+      tags:
+        - Role
+      operationId: updateManagedRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Name, description and active flag of a custom role saved; built-in roles cannot be modified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleActionResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
+    delete:
+      tags:
+        - Role
+      operationId: deleteManagedRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Custom role soft-deleted; refused with 409 (1120) while an account still holds it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyActionResponse'
+        '400': *a1
+        '401': *a2
+        '403': *a3
+        '500': *a4
+        '503': *a5
   /v1/roles/{id}/permissions:
     put:
       tags:
@@ -2994,6 +3047,12 @@ paths:
           schema:
             type: string
             enum: [ACTIVE, INACTIVE]
+        - name: keyword
+          in: query
+          required: false
+          description: Part of the standard service name, case-insensitive; applied for the managing side only
+          schema:
+            type: string
         - name: page
           in: query
           required: false
@@ -3061,6 +3120,47 @@ paths:
         '503':
           description: CareCatalogService error
   /v1/price-plans:
+    get:
+      tags:
+        - PricePlan
+      summary: Bảng giá của một dịch vụ trung tâm theo trang (màn quản lý)
+      operationId: listPricePlansPage
+      parameters:
+        - name: centerOfferingId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePlanPageResponse'
+        '400':
+          description: CareCatalogService error
+        '401':
+          description: CareCatalogService error
+        '403':
+          description: CareCatalogService error
+        '500':
+          description: CareCatalogService error
+        '503':
+          description: CareCatalogService error
     post:
       tags:
         - PricePlan
@@ -5885,6 +5985,35 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/booking-occurrences/acknowledgements:
+    post:
+      tags:
+        - BookingOccurrence
+      summary: CAREGIVER acknowledges several SCHEDULED visits of one booking at once (all or nothing)
+      operationId: acknowledgeBookingOccurrences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccurrenceAcknowledgementRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverOccurrenceListResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
   /v1/booking-occurrences/{id}/acknowledge:
     post:
       tags:
@@ -5905,6 +6034,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CaregiverOccurrenceResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/booking-occurrences/{id}/customer-reports:
+    post:
+      tags:
+        - BookingOccurrence
+      summary: CUSTOMER reports a visit — nobody has come yet, or a finished visit was not delivered properly (within 24 hours)
+      operationId: reportBookingOccurrenceByCustomer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerVisitReportRequest'
+        required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerVisitReportResponse'
         '400':
           description: BookingService error
         '401':
@@ -6000,6 +6169,50 @@ paths:
         '503':
           description: BookingService error
   /v1/care-sessions:
+    get:
+      tags:
+        - CareSession
+      summary: CENTER_MANAGER lists system-closed sessions of the center by review state (default PENDING)
+      operationId: listCareSessionsForReview
+      parameters:
+        - name: review
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SessionCompletionReview'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareSessionPageResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
     post:
       tags:
         - CareSession
@@ -6084,6 +6297,46 @@ paths:
             schema:
               $ref: '#/components/schemas/CareSessionEndRequest'
         required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareSessionResponse'
+        '400':
+          description: BookingService error
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '404':
+          description: BookingService error
+        '409':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
+  /v1/care-sessions/{id}/review:
+    post:
+      tags:
+        - CareSession
+      summary: CENTER_MANAGER concludes a system-closed session — delivered (settle) or not (refund, absence record)
+      operationId: reviewCareSession
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareSessionReviewRequest'
+        required: true
       responses:
         '200':
           description: OK
@@ -8393,6 +8646,76 @@ paths:
           description: ProviderService error
         '503':
           description: ProviderService error
+  /v1/caregivers/directory:
+    get:
+      tags:
+        - ProviderCaregiver
+      summary: ADMIN xem người chăm sóc của mọi trung tâm, xếp theo trung tâm
+      operationId: listProviderCaregiverDirectory
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: verification
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - VERIFIED
+              - REJECTED
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ACTIVE
+              - INACTIVE
+              - SUSPENDED
+              - ARCHIVED
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCaregiverPageResponse'
+        '400':
+          description: ProviderService error
+        '401':
+          description: ProviderService error
+        '403':
+          description: ProviderService error
+        '404':
+          description: ProviderService error
+        '500':
+          description: ProviderService error
+        '503':
+          description: ProviderService error
   /v1/caregivers/pending-verification:
     get:
       tags:
@@ -9467,6 +9790,32 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
+  /v1/wallets/bookings/{bookingId}/settlement:
+    get:
+      tags:
+        - Wallet
+      summary: Settlement of one booking (paid, refunded, center net, commission) — ADMIN or the center's manager
+      operationId: getBookingSettlement
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingSettlementResponse'
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
   /v1/wallets/{walletId}:
     get:
       tags:
@@ -9564,9 +9913,14 @@ paths:
     get:
       tags:
         - WalletWithdrawal
-      summary: Withdrawal requests — owners see their own wallet, ADMIN sees all
+      summary: Withdrawal requests — OWN (default) the caller's wallet (ADMIN all), REVIEW the queue the caller handles
       operationId: listWalletWithdrawals
       parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WalletWithdrawalScope'
         - name: status
           in: query
           required: false
@@ -9611,7 +9965,7 @@ paths:
     post:
       tags:
         - WalletWithdrawal
-      summary: CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the admin decides
+      summary: CUSTOMER / CAREGIVER / CENTER_MANAGER asks to withdraw; the amount is held until the handler transfers or rejects
       operationId: createWalletWithdrawal
       requestBody:
         content:
@@ -9670,43 +10024,11 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
-  /v1/wallet-withdrawals/{withdrawalId}/approve:
-    post:
-      tags:
-        - WalletWithdrawal
-      summary: ADMIN approves a pending request
-      operationId: approveWalletWithdrawal
-      parameters:
-        - name: withdrawalId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletWithdrawalResponse'
-        '400':
-          description: PaymentService error
-        '401':
-          description: PaymentService error
-        '403':
-          description: PaymentService error
-        '404':
-          description: PaymentService error
-        '409':
-          description: PaymentService error
-        '503':
-          description: PaymentService error
   /v1/wallet-withdrawals/{withdrawalId}/reject:
     post:
       tags:
         - WalletWithdrawal
-      summary: ADMIN rejects a pending or approved request with a reason; the held amount returns to the balance
+      summary: The handler (manager of the refunding center for customer / caregiver requests, ADMIN for center wallets) rejects an open request with a reason; the held amount returns and the requester is notified
       operationId: rejectWalletWithdrawal
       parameters:
         - name: withdrawalId
@@ -9740,12 +10062,12 @@ paths:
           description: PaymentService error
         '503':
           description: PaymentService error
-  /v1/wallet-withdrawals/{withdrawalId}/complete:
+  /v1/wallet-withdrawals/{withdrawalId}/transfers:
     post:
       tags:
         - WalletWithdrawal
-      summary: ADMIN confirms the manual bank transfer of an approved request
-      operationId: completeWalletWithdrawal
+      summary: The handler runs the simulated bank transfer; on success the request completes by itself (transfer reference generated) and the requester is notified
+      operationId: transferWalletWithdrawal
       parameters:
         - name: withdrawalId
           in: path
@@ -9753,12 +10075,6 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompleteWalletWithdrawalRequest'
-        required: true
       responses:
         '200':
           description: OK
@@ -9766,6 +10082,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WalletWithdrawalResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/wallet-withdrawals/statistics:
+    get:
+      tags:
+        - WalletWithdrawal
+      summary: Withdrawal dashboard of the caller's scope (OWN or the REVIEW queue); the center REVIEW scope adds the money held for customers and caregivers
+      operationId: getWalletWithdrawalStatistics
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WalletWithdrawalScope'
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: groupBy
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WalletStatisticsGroupBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletWithdrawalStatisticsResponse'
+        '400':
+          description: PaymentService error
+        '401':
+          description: PaymentService error
+        '403':
+          description: PaymentService error
+        '404':
+          description: PaymentService error
+        '409':
+          description: PaymentService error
+        '503':
+          description: PaymentService error
+  /v1/wallets/me/center-balances:
+    get:
+      tags:
+        - Wallet
+      summary: CUSTOMER / CAREGIVER available balance per center that produced the money (where a withdrawal is sent)
+      operationId: listMyWalletCenterBalances
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletCenterBalanceListResponse'
         '400':
           description: PaymentService error
         '401':
@@ -9805,6 +10194,9 @@ components:
         - WITHDRAWAL_HOLD
         - WITHDRAWAL_RELEASE
         - WITHDRAWAL_PAID
+    WalletWithdrawalScope:
+      type: string
+      enum: [OWN, REVIEW]
     WalletWithdrawalStatus:
       type: string
       enum: [PENDING, APPROVED, REJECTED, COMPLETED]
@@ -10035,6 +10427,13 @@ components:
         requesterUserId:
           type: string
           format: uuid
+        requesterName:
+          type: string
+          nullable: true
+          description: Requester's name from IdentityService (list and detail only; null when Identity did not answer).
+        requesterPhoneNumber:
+          type: string
+          nullable: true
         ownerType:
           $ref: '#/components/schemas/WalletOwnerType'
         centerId:
@@ -10092,6 +10491,10 @@ components:
         accountHolderName:
           type: string
           maxLength: 100
+        centerId:
+          type: [string, 'null']
+          format: uuid
+          description: Customer / caregiver wallets — the center holding the money (from center-balances); that center handles the request.
     RejectWalletWithdrawalRequest:
       type: object
       required:
@@ -10100,14 +10503,138 @@ components:
         reason:
           type: string
           maxLength: 500
-    CompleteWalletWithdrawalRequest:
+    WalletCenterBalanceRecord:
       type: object
       required:
-        - transferReference
+        - availableBalance
       properties:
-        transferReference:
+        centerId:
+          type: [string, 'null']
+          format: uuid
+        availableBalance:
+          type: number
+    WalletCenterBalanceListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
           type: string
-          maxLength: 100
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletCenterBalanceRecord'
+    WithdrawalOwnerTotalRecord:
+      type: object
+      required:
+        - ownerType
+        - pendingCount
+        - pendingAmount
+        - completedCount
+        - completedAmount
+      properties:
+        ownerType:
+          $ref: '#/components/schemas/WalletOwnerType'
+        pendingCount:
+          type: integer
+        pendingAmount:
+          type: number
+        completedCount:
+          type: integer
+        completedAmount:
+          type: number
+    WithdrawalSeriesPointRecord:
+      type: object
+      required:
+        - period
+        - requested
+        - completed
+      properties:
+        period:
+          type: string
+        requested:
+          type: number
+        completed:
+          type: number
+    WalletWithdrawalStatisticsRecord:
+      type: object
+      required:
+        - scope
+        - from
+        - to
+        - groupBy
+        - pendingCount
+        - pendingAmount
+        - requestedCount
+        - requestedAmount
+        - completedCount
+        - completedAmount
+        - rejectedCount
+        - rejectedAmount
+        - byOwnerType
+        - series
+      properties:
+        scope:
+          $ref: '#/components/schemas/WalletWithdrawalScope'
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        groupBy:
+          $ref: '#/components/schemas/WalletStatisticsGroupBy'
+        pendingCount:
+          type: integer
+        pendingAmount:
+          type: number
+        requestedCount:
+          type: integer
+        requestedAmount:
+          type: number
+        completedCount:
+          type: integer
+        completedAmount:
+          type: number
+        rejectedCount:
+          type: integer
+        rejectedAmount:
+          type: number
+        avgProcessingMinutes:
+          type: [integer, 'null']
+        byOwnerType:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalOwnerTotalRecord'
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalSeriesPointRecord'
+        custodyCustomerBalance:
+          type: number
+        custodyCaregiverBalance:
+          type: number
+        custodyHeldBalance:
+          type: number
+        custodyTotal:
+          type: number
+    WalletWithdrawalStatisticsResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/WalletWithdrawalStatisticsRecord'
     WalletResponse:
       type: object
       required:
@@ -10155,6 +10682,116 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/WalletTransactionPage'
+    BookingSettlementResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/BookingSettlementRecord'
+    OccurrenceFinalStatus:
+      type: string
+      enum:
+        - COMPLETED
+        - CANCELLED
+        - MISSED
+        - CUSTOMER_NO_SHOW
+    BookingSettlementRecord:
+      type: object
+      required:
+        - bookingId
+        - centerId
+        - paidAmount
+        - refundedAmount
+        - centerServiceAmount
+        - centerKeptDepositAmount
+        - caregiverKeptDepositAmount
+        - complaintDebitAmount
+        - centerNetAmount
+        - commissionAmount
+        - settledCount
+        - pendingCount
+        - occurrences
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        centerId:
+          type: string
+          format: uuid
+        commissionPercent:
+          type: [number, 'null']
+        paidAmount:
+          type: number
+        refundedAmount:
+          type: number
+        centerServiceAmount:
+          type: number
+          description: Completed / customer no-show visits after commission.
+        centerKeptDepositAmount:
+          type: number
+        caregiverKeptDepositAmount:
+          type: number
+        complaintDebitAmount:
+          type: number
+        centerNetAmount:
+          type: number
+          description: centerServiceAmount + centerKeptDepositAmount - complaintDebitAmount.
+        commissionAmount:
+          type: number
+          description: Platform commission kept after complaint returns.
+        settledCount:
+          type: integer
+        pendingCount:
+          type: integer
+        occurrences:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingSettlementOccurrenceRecord'
+    BookingSettlementOccurrenceRecord:
+      type: object
+      required:
+        - occurrenceId
+        - startAt
+        - priceAmount
+        - paidAmount
+        - refundedAmount
+        - keptDepositAmount
+        - centerAmount
+        - commissionAmount
+      properties:
+        occurrenceId:
+          type: string
+          format: uuid
+        startAt:
+          type: string
+          format: date-time
+        priceAmount:
+          type: number
+        paidAmount:
+          type: number
+        refundedAmount:
+          type: number
+        keptDepositAmount:
+          type: number
+        centerAmount:
+          type: number
+        commissionAmount:
+          type: number
+        finalStatus:
+          oneOf:
+            - $ref: '#/components/schemas/OccurrenceFinalStatus'
+            - type: 'null'
+          description: Missing with settledAt = not billable (cancelled / expired on Booking); both missing = pending.
+        settledAt:
+          type: [string, 'null']
+          format: date-time
     WalletStatisticsResponse:
       type: object
       required:
@@ -12196,6 +12833,17 @@ components:
           minLength: 1
         description:
           type: string
+    UpdateRoleRequest:
+      type: object
+      required: [roleName]
+      properties:
+        roleName:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        active:
+          type: boolean
     SetRolePermissionsRequest:
       type: object
       required: [permissionIds]
@@ -13101,6 +13749,36 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/PricePlanRecord'
+    PricePlanPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/PricePlanPage'
+    PricePlanPage:
+      type: object
+      required: [items, page, size, totalElements, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PricePlanRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
     PricePlanListResponse:
       type: object
       required:
@@ -14649,6 +15327,10 @@ components:
         - OCCURRENCE_RESCHEDULED_NOTIFICATION
         - CHECK_IN_LATE
         - CAREGIVER_ABSENCE_UPDATED
+        - WALLET_WITHDRAWAL_COMPLETED
+        - WALLET_WITHDRAWAL_REJECTED
+        - SESSION_LOCATION_FLAGGED
+        - CUSTOMER_VISIT_REPORT
     OutboxStatus:
       type: string
       enum:
@@ -15396,6 +16078,29 @@ components:
             - ACCEPTED
             - REJECTED_RESCHEDULE
             - REJECTED_CANCEL
+        customerReportedAt:
+          type: string
+          format: date-time
+          description: When the customer reported this visit (nobody came / not delivered properly)
+    CustomerVisitReportRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 1000
+    CustomerVisitReportResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/BookingOccurrenceRecord'
     BookingRefundRecord:
       type: object
       properties:
@@ -16327,10 +17032,96 @@ components:
         autoClosed:
           type: boolean
           description: D21 — hệ thống tự đóng ca quên check-out (quá giờ kết thúc + 4h).
+        lateMinutes:
+          type: integer
+          description: Minutes between the visit start and the check-in (0 when on time)
+        earlyLeaveMinutes:
+          type: integer
+          description: Minutes between the check-out and the visit end (0 when not early)
+        checkInDistanceMeters:
+          type: integer
+          description: Distance from the check-in position to the care address; absent when it could not be compared
+        locationFlag:
+          $ref: '#/components/schemas/SessionLocationFlag'
+        completionReview:
+          $ref: '#/components/schemas/SessionCompletionReview'
+        reviewedAt:
+          type: string
+          format: date-time
+        reviewNote:
+          type: string
+        customerReportNote:
+          type: string
+          description: What the customer reported when the review was opened by a customer report
+        bookingCode:
+          type: string
+        recipientName:
+          type: string
+        occurrenceNo:
+          type: integer
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
         tasks:
           type: array
           items:
             $ref: '#/components/schemas/CareTaskRecord'
+    SessionLocationFlag:
+      type: string
+      description: NO_LOCATION = checked in without a position; OUT_OF_RANGE = farther from the care address than allowed
+      enum:
+        - NO_LOCATION
+        - OUT_OF_RANGE
+    SessionCompletionReview:
+      type: string
+      description: Review of a system-closed session by the center; settlement waits while PENDING
+      enum:
+        - PENDING
+        - CONFIRMED
+        - NOT_DELIVERED
+    CareSessionReviewRequest:
+      type: object
+      required:
+        - delivered
+      properties:
+        delivered:
+          type: boolean
+        note:
+          type: string
+          maxLength: 1000
+    CareSessionPageResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/CareSessionPage'
+    CareSessionPage:
+      type: object
+      required: [items, page, size, totalElements, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareSessionRecord'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
     SessionNoteRecord:
       type: object
       required:
@@ -16761,6 +17552,9 @@ components:
         caregiverId:
           type: string
           format: uuid
+          description: ProviderService caregiver profile ID
+        completedSessions:
+          type: integer
         avgRating:
           type: number
     CenterOperationalStatsRecord:
@@ -17002,6 +17796,49 @@ components:
           $ref: '#/components/schemas/CenterOperationalStatsPage'
         responsiveness:
           $ref: '#/components/schemas/ResponsivenessStatisticsRecord'
+        completionRate:
+          type: number
+        reviewCount:
+          type: integer
+        occurrencesByStatus:
+          type: [object, 'null']
+          additionalProperties:
+            type: integer
+        bookingsByType:
+          type: [object, 'null']
+          additionalProperties:
+            type: integer
+        ratingDistribution:
+          type: [object, 'null']
+          description: Visible reviews per star, keys "1".."5"
+          additionalProperties:
+            type: integer
+        trendGroupBy:
+          type: [string, 'null']
+        trend:
+          type: [array, 'null']
+          items:
+            $ref: '#/components/schemas/StatisticsTrendPointRecord'
+    StatisticsTrendPointRecord:
+      type: object
+      required:
+        - period
+        - bookings
+        - completedVisits
+        - cancelledVisits
+        - missedVisits
+      properties:
+        period:
+          type: string
+          description: yyyy-MM-dd (DAY) or yyyy-MM (MONTH), Vietnam time
+        bookings:
+          type: integer
+        completedVisits:
+          type: integer
+        cancelledVisits:
+          type: integer
+        missedVisits:
+          type: integer
     BookingDetailResponse:
       type: object
       required:
@@ -17093,6 +17930,33 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/CancellationPreviewRecord'
+    CaregiverOccurrenceListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaregiverOccurrenceRecord'
+    OccurrenceAcknowledgementRequest:
+      type: object
+      required:
+        - occurrenceIds
+      properties:
+        occurrenceIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
     CaregiverOccurrenceResponse:
       type: object
       required:
@@ -17250,6 +18114,7 @@ components:
       enum:
         - MISSED_CHECK_IN
         - NO_SHOW_REPORT_REJECTED
+        - SESSION_NOT_DELIVERED
     CaregiverAbsenceExplanationRequest:
       type: object
       required:

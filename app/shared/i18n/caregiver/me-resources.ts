@@ -61,6 +61,7 @@ export const caregiverMeEn = {
   certificates: {
     intro: 'Upload your professional documents. Your center and the platform review each one.',
     add: 'Add certificate',
+    pagination: 'Certificate pages',
     empty: 'No certificate yet',
     emptyHint: 'Certificates help families trust you. Add your nursing or caregiving certificate.',
     loadError: 'Could not load your certificates.',
@@ -232,6 +233,7 @@ export const caregiverMeVi = {
   certificates: {
     intro: 'Tải lên giấy tờ chuyên môn. Trung tâm và nền tảng sẽ duyệt từng chứng chỉ.',
     add: 'Thêm chứng chỉ',
+    pagination: 'Trang chứng chỉ',
     empty: 'Chưa có chứng chỉ nào',
     emptyHint: 'Chứng chỉ giúp gia đình tin tưởng bạn hơn. Hãy thêm chứng chỉ điều dưỡng hoặc chăm sóc.',
     loadError: 'Không tải được chứng chỉ.',

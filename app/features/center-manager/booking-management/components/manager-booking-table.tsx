@@ -161,7 +161,7 @@ export function ManagerBookingTable({
 
   return (
     <>
-      <div className='hidden overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest md:block'>
+      <div className='hidden overflow-hidden rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest shadow-[var(--shadow-card)] @4xl:block'>
         <table className='w-full table-fixed text-left text-sm'>
           <caption className='sr-only'>{t(`${key}.title`)}</caption>
           <colgroup>
@@ -237,7 +237,7 @@ export function ManagerBookingTable({
         </table>
       </div>
 
-      <ul className='space-y-3 md:hidden'>
+      <ul className='grid gap-3 @2xl:grid-cols-2 @4xl:hidden'>
         {bookings.map((booking) => (
           <li
             className={`rounded-2xl border border-outline-variant/60 p-4 shadow-xs ${ROW_TINTS[urgencyOf(booking, now)] || 'bg-surface-container-lowest'}`}

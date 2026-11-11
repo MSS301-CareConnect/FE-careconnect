@@ -7,9 +7,17 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { WalletResponse, WalletStatisticsResponse, WalletTransactionPageResponse } from '../../contracts'
+import type {
+  BookingSettlementResponse,
+  WalletCenterBalanceListResponse,
+  WalletResponse,
+  WalletStatisticsResponse,
+  WalletTransactionPageResponse
+} from '../../contracts'
 
 import {
+  getBookingSettlementRecordMock,
+  getWalletCenterBalanceRecordMock,
   getWalletRecordMock,
   getWalletStatisticsRecordMock,
   getWalletTransactionPageMock
@@ -42,6 +50,15 @@ export const getGetMyWalletStatisticsResponseMock = (
   ...overrideResponse
 })
 
+export const getGetBookingSettlementResponseMock = (
+  overrideResponse: Partial<Extract<BookingSettlementResponse, object>> = {}
+): BookingSettlementResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingSettlementRecordMock() },
+  ...overrideResponse
+})
+
 export const getGetWalletResponseMock = (
   overrideResponse: Partial<Extract<WalletResponse, object>> = {}
 ): WalletResponse => ({
@@ -57,5 +74,16 @@ export const getListWalletTransactionsResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getWalletTransactionPageMock() },
+  ...overrideResponse
+})
+
+export const getListMyWalletCenterBalancesResponseMock = (
+  overrideResponse: Partial<Extract<WalletCenterBalanceListResponse, object>> = {}
+): WalletCenterBalanceListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getWalletCenterBalanceRecordMock()
+  })),
   ...overrideResponse
 })

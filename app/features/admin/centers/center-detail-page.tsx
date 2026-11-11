@@ -1,29 +1,27 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 
 import { BookingsBrowser } from '~/entities/booking/bookings-browser'
-import { fetchCenter, fetchProviderMedia, providerKeys, removeCenter } from '~/entities/provider/provider-api'
+import { fetchCenter, fetchProviderMedia, providerKeys } from '~/entities/provider/provider-api'
 import { pickAvatar } from '~/entities/provider/provider-avatar'
 import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { OperationalStatisticsPanel } from '~/entities/statistics/statistics-panels'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
 import { apiErrorStatus } from '~/shared/api/error-details'
-import { classifyApiError } from '~/shared/api/api-error'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Avatar } from '~/shared/ui/avatar'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
-import { ConfirmDialog, Modal } from '~/shared/ui/modal'
+import { Modal } from '~/shared/ui/modal'
 import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
-import { useActionToast } from '~/shared/ui/use-action-toast'
 import { bentoBackLink, bentoTabClass, bentoTabList } from '~/shared/ui/bento-page-header'
 
-import { CENTER_BUSINESS_ERRORS } from './center-errors'
 import { parseCenterHours } from './center-hours'
 import { useHoursLabel } from './hooks/use-hours-label'
+import { ArchiveCenterDialog } from './components/archive-center-dialog'
 import { CenterForm } from './components/center-form'
 import { CenterManagerPanel } from './components/center-manager-panel'
 import { CenterStaffTab } from './components/center-staff-tab'
@@ -81,7 +79,6 @@ function Overview({ center }: { center: ProviderCenterRecord }) {
 export function CenterDetailPage({ id }: { id: string }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [params, setParams] = useSearchParams()
   const [editing, setEditing] = useState(false)
   const [archiving, setArchiving] = useState(false)
@@ -96,22 +93,6 @@ export function CenterDetailPage({ id }: { id: string }) {
     retry: false
   })
   useDocumentTitle(center.data?.centerName ?? t(`${key}.detail.documentTitle`))
-  const notify = useActionToast()
-  const archive = useMutation({
-    mutationFn: () => removeCenter(id, center.data!.version),
-    onError: (error) => {
-      if (notify.systemError(error, t('admin.toast.centers.actions.archive'), () => archive.mutate())) {
-        setArchiving(false)
-      }
-    },
-    onSuccess: async () => {
-      notify.success(t('admin.toast.centers.archived', { name: center.data?.centerName ?? '' }))
-      await queryClient.invalidateQueries({ queryKey: providerKeys.centers })
-      navigate('/admin/centers?status=ARCHIVED')
-    }
-  })
-  const archiveFailure = archive.error ? classifyApiError(archive.error, { business: CENTER_BUSINESS_ERRORS }) : null
-
   function selectTab(next: Tab) {
     setParams(
       (previous) => {
@@ -171,10 +152,7 @@ export function CenterDetailPage({ id }: { id: string }) {
                 </Button>
                 <Button
                   className='text-error! hover:bg-error-container/50!'
-                  onClick={() => {
-                    archive.reset()
-                    setArchiving(true)
-                  }}
+                  onClick={() => setArchiving(true)}
                   variant='ghost'
                 >
                   {t(`${key}.detail.archive`)}
@@ -210,17 +188,13 @@ export function CenterDetailPage({ id }: { id: string }) {
               <CenterForm center={center.data} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
             </Modal>
           ) : null}
-          <ConfirmDialog
-            confirmLabel={t(`${key}.detail.archive`)}
-            description={t(`${key}.detail.archiveDescription`)}
-            error={archiveFailure && archiveFailure.kind === 'business' ? t(archiveFailure.key) : undefined}
-            loading={archive.isPending}
-            onClose={() => setArchiving(false)}
-            onConfirm={() => archive.mutate()}
-            open={archiving}
-            title={t(`${key}.detail.archiveTitle`, { name: center.data.centerName })}
-            tone='danger'
-          />
+          {archiving ? (
+            <ArchiveCenterDialog
+              center={center.data}
+              onArchived={() => navigate('/admin/centers?status=ARCHIVED')}
+              onClose={() => setArchiving(false)}
+            />
+          ) : null}
         </>
       )}
     </main>

@@ -3,20 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import {
-  bookingKeys,
-  concludeAbsence,
-  explainAbsence,
-  fetchCaregiverAbsences
-} from '~/entities/booking/booking-api'
+import { bookingKeys, concludeAbsence, explainAbsence, fetchCaregiverAbsences } from '~/entities/booking/booking-api'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import type { CaregiverAbsenceRecord, ListCaregiverAbsencesParams } from '~/shared/api/generated/contracts'
-import { Icon } from '~/shared/ui/icon'
+import { Pagination } from '~/shared/ui/pagination'
+import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
+import { BookingGroupCard, groupByBooking } from './booking-group-card'
 import { CaregiverAbsenceCard } from './caregiver-absence-card'
 
-const VISIBLE = 5
 const key = 'caregiverAbsence' as const
 const button =
   'inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
@@ -24,8 +20,8 @@ const primary = `${button} bg-primary text-on-primary hover:bg-primary-container
 const outline = `${button} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low`
 
 /** Absences still waiting for the center, newest visit first; BookingService scopes them to the signed-in role. */
-export function usePendingAbsences(bookingId?: string) {
-  const params: ListCaregiverAbsencesParams = { status: 'PENDING', bookingId, page: 0, size: 50 }
+export function usePendingAbsences(bookingId?: string, page = 0, size = 50) {
+  const params: ListCaregiverAbsencesParams = { status: 'PENDING', bookingId, page, size }
   return useQuery({
     queryKey: bookingKeys.absences(params),
     queryFn: () => fetchCaregiverAbsences(params),
@@ -38,8 +34,8 @@ type Pending = { item: CaregiverAbsenceRecord; action: 'excuse' | 'confirm' | 'e
 
 /**
  * Absences awaiting a conclusion (2026-11-10). `role='manager'` lists the center's and concludes each one (excused or
- * violation, with a note); `role='caregiver'` lists the caregiver's own and sends or edits the explanation. Hidden when
- * nothing waits. Money is not handled here: the customer was already refunded the visit in full.
+ * violation, with a note); `role='caregiver'` lists the caregiver's own and sends or edits the explanation. Visits are
+ * folded per booking (2026-11-11; the first booking opens), paged by BookingService. Money is not handled here: the customer was already refunded the visit in full.
  */
 export function CaregiverAbsenceQueue({
   role,
@@ -51,7 +47,9 @@ export function CaregiverAbsenceQueue({
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const absences = usePendingAbsences()
+  const [page, setPage] = useState(0)
+  const [size, setSize] = useState(5)
+  const absences = usePendingAbsences(undefined, page, size)
   const [pending, setPending] = useState<Pending | null>(null)
   const mutation = useMutation({
     mutationFn: ({ item, action, text }: Pending & { text: string }) =>
@@ -64,7 +62,17 @@ export function CaregiverAbsenceQueue({
     }
   })
   const items = absences.data?.items ?? []
-  if (!absences.isSuccess || items.length === 0) return null
+  if (absences.isPending) return <SkeletonBlock label={t('centerManager.attention.loading')} rows={2} />
+  if (absences.isError) {
+    return (
+      <ErrorState
+        message={t(bookingErrorKey(absences.error))}
+        onRetry={() => void absences.refetch()}
+        retryLabel={t('booking.actions.retry')}
+      />
+    )
+  }
+  if (items.length === 0) return <EmptyState icon='task_alt' title={t('centerManager.attention.empty')} />
   const total = absences.data.totalElements
   const copy = role === 'manager' ? (`${key}.manager` as const) : (`${key}.caregiverPanel` as const)
 
@@ -74,55 +82,66 @@ export function CaregiverAbsenceQueue({
   }
 
   return (
-    <section
-      aria-labelledby='caregiver-absences-title'
-      className='rounded-2xl border border-error/30 bg-error-container/30 p-4 sm:p-5'
-    >
-      <h2 className='flex items-center gap-2 text-base font-semibold text-on-surface' id='caregiver-absences-title'>
-        <Icon className='text-xl text-error' name='person_off' />
-        {t(`${copy}.title`, { count: total })}
-      </h2>
-      <p className='mt-1 text-sm text-on-surface-variant'>{t(`${copy}.description`)}</p>
+    <div>
+      <p className='text-sm text-on-surface-variant'>{t(`${copy}.description`)}</p>
       <ul className='mt-3 flex flex-col gap-2'>
-        {items.slice(0, VISIBLE).map((item) => (
-          <CaregiverAbsenceCard
-            actions={
-              role === 'manager' ? (
-                <>
-                  <Link className={outline} to={`/center-manager/bookings/${item.bookingId}`}>
-                    {t(`${key}.openBooking`)}
-                  </Link>
-                  <button className={outline} onClick={() => open(item, 'excuse')} type='button'>
-                    {t(`${key}.manager.excuse`)}
-                  </button>
-                  <button className={primary} onClick={() => open(item, 'confirm')} type='button'>
-                    {t(`${key}.manager.confirm`)}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link className={outline} to={`/caregiver/visits/${item.occurrenceId}`}>
-                    {t(`${key}.openVisit`)}
-                  </Link>
-                  <button className={primary} onClick={() => open(item, 'explain')} type='button'>
-                    {t(`${key}.caregiverPanel.${item.explanation ? 'editExplanation' : 'explain'}`)}
-                  </button>
-                </>
-              )
-            }
-            item={item}
-            key={item.id}
-            meta={
-              role === 'manager'
-                ? t(`${key}.caregiver`, { name: nameOf?.(item.caregiverId) ?? t(`${key}.unknownCaregiver`) })
-                : t(`${key}.refunded`)
-            }
-          />
+        {groupByBooking(items).map(({ bookingId, rows }, index) => (
+          <BookingGroupCard
+            bookingCode={rows[0].bookingCode}
+            countLabel={t(`${key}.pendingCount`, { count: rows.length })}
+            defaultOpen={index === 0}
+            href={role === 'manager' ? `/center-manager/bookings/${bookingId}` : undefined}
+            key={bookingId}
+            recipientName={rows[0].recipientName}
+          >
+            {rows.map((item) => (
+              <CaregiverAbsenceCard
+                actions={
+                  role === 'manager' ? (
+                    <>
+                      <button className={outline} onClick={() => open(item, 'excuse')} type='button'>
+                        {t(`${key}.manager.excuse`)}
+                      </button>
+                      <button className={primary} onClick={() => open(item, 'confirm')} type='button'>
+                        {t(`${key}.manager.confirm`)}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link className={outline} to={`/caregiver/visits/${item.occurrenceId}`}>
+                        {t(`${key}.openVisit`)}
+                      </Link>
+                      <button className={primary} onClick={() => open(item, 'explain')} type='button'>
+                        {t(`${key}.caregiverPanel.${item.explanation ? 'editExplanation' : 'explain'}`)}
+                      </button>
+                    </>
+                  )
+                }
+                item={item}
+                key={item.id}
+                meta={
+                  role === 'manager'
+                    ? t(`${key}.caregiver`, { name: nameOf?.(item.caregiverId) ?? t(`${key}.unknownCaregiver`) })
+                    : t(`${key}.refunded`)
+                }
+              />
+            ))}
+          </BookingGroupCard>
         ))}
       </ul>
-      {total > VISIBLE ? (
-        <p className='mt-2 text-xs text-on-surface-variant'>{t(`${key}.more`, { count: total - VISIBLE })}</p>
-      ) : null}
+      <Pagination
+        className='mt-4'
+        onPageChange={setPage}
+        onPageSizeChange={(next) => {
+          setSize(next)
+          setPage(0)
+        }}
+        page={page}
+        pageSize={size}
+        pageSizeOptions={[5, 10, 20]}
+        totalElements={total}
+        totalPages={Math.ceil(total / size)}
+      />
 
       {pending?.action === 'explain' ? (
         <BookingReasonDialog
@@ -150,6 +169,6 @@ export function CaregiverAbsenceQueue({
           title={t(`${key}.manager.${pending.action}Title`, { number: pending.item.occurrenceNo ?? '' })}
         />
       ) : null}
-    </section>
+    </div>
   )
 }

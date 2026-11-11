@@ -1,68 +1,62 @@
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import {
   bookingKeys,
   fetchCaregiverAbsenceStatistics,
   fetchCaregiverAbsences
 } from '~/entities/booking/booking-api'
+import { BookingGroupCard, groupByBooking } from '~/entities/booking/booking-group-card'
 import { CaregiverAbsenceCard } from '~/entities/booking/caregiver-absence-card'
-import { fetchCaregiver, fetchCenter, providerKeys } from '~/entities/provider/provider-api'
+import { useCaregiverNames, useCenterNames } from '~/entities/provider/use-provider-names'
+import { useCenterOptions } from '~/features/admin/data/use-center-options'
+import { AdminStatCards } from '~/features/admin/ui/stat-cards'
 import type { CaregiverAbsenceStatus, ListCaregiverAbsencesParams } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
-import { Pagination } from '~/shared/ui/pagination'
+import { BentoPageHeader, bentoCard, bentoContainer } from '~/shared/ui/bento-page-header'
+import { Button } from '~/shared/ui/button'
+import { Select } from '~/shared/ui/form-field'
+import { Pagination, pageSizeOf } from '~/shared/ui/pagination'
 import { Skeleton } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
+import { StatusBadge } from '~/shared/ui/status-badge'
 
 const STATUSES: CaregiverAbsenceStatus[] = ['PENDING', 'CONFIRMED', 'EXCUSED']
 const key = 'caregiverAbsence.admin' as const
-const chip =
-  'min-h-10 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+const DEFAULT_PAGE_SIZE = 10
+const STAT_ICONS = { PENDING: 'pending_actions', CONFIRMED: 'gavel', EXCUSED: 'task_alt' } as const
 
 /**
- * Platform-wide caregiver absences (2026-11-10), read-only: the center concludes each one. Status and page live in URL
- * search parameters; caregivers and centers show by name, never by ID.
+ * Platform-wide caregiver absences (2026-11-10), read-only: the center concludes each one. The page's visits are folded
+ * per booking (2026-11-11, like the center's queue): one card per booking with its missed visits inside. The count
+ * cards filter by status; status, center, page and page size live in URL search parameters; caregivers and centers
+ * show by name, never by ID.
  */
 export function AdminCaregiverAbsencesPage() {
   const { t } = useTranslation()
   useDocumentTitle(t(`${key}.title`))
   const [params, setParams] = useSearchParams()
   const status = STATUSES.find((item) => item === params.get('status'))
+  const centerId = params.get('center') || undefined
   const page = Math.max(0, Number(params.get('page')) || 0)
-  const request: ListCaregiverAbsencesParams = { status, page, size: 20 }
+  const pageSize = pageSizeOf(params.get('size'), DEFAULT_PAGE_SIZE)
+  const request: ListCaregiverAbsencesParams = { status, centerId, page, size: pageSize }
   const absences = useQuery({
     queryKey: bookingKeys.absences(request),
     queryFn: () => fetchCaregiverAbsences(request),
+    placeholderData: keepPreviousData,
     retry: false
   })
   const statistics = useQuery({
-    queryKey: bookingKeys.absenceStatistics({}),
-    queryFn: () => fetchCaregiverAbsenceStatistics({}),
+    queryKey: bookingKeys.absenceStatistics({ centerId }),
+    queryFn: () => fetchCaregiverAbsenceStatistics({ centerId }),
     retry: false
   })
+  const centers = useCenterOptions(true)
   const items = absences.data?.items ?? []
-  const caregiverIds = [...new Set(items.map((item) => item.caregiverId))]
-  const centerIds = [...new Set(items.map((item) => item.centerId))]
-  const caregivers = useQueries({
-    queries: caregiverIds.map((id) => ({
-      queryKey: providerKeys.caregiver(id),
-      queryFn: () => fetchCaregiver(id),
-      retry: false,
-      staleTime: 5 * 60_000
-    }))
-  })
-  const centers = useQueries({
-    queries: centerIds.map((id) => ({
-      queryKey: providerKeys.center(id),
-      queryFn: () => fetchCenter(id),
-      retry: false,
-      staleTime: 5 * 60_000
-    }))
-  })
-  const caregiverName = (id: string) => caregivers[caregiverIds.indexOf(id)]?.data?.fullName
-  const centerName = (id: string) => centers[centerIds.indexOf(id)]?.data?.centerName
+  const caregiverName = useCaregiverNames(items.map((item) => item.caregiverId))
+  const centerName = useCenterNames(items.map((item) => item.centerId))
 
   function update(changes: Record<string, string | undefined>) {
     setParams(
@@ -72,6 +66,7 @@ export function AdminCaregiverAbsencesPage() {
           if (value) next.set(name, value)
           else next.delete(name)
         }
+        if (!('page' in changes)) next.delete('page')
         return next
       },
       { replace: true }
@@ -80,75 +75,98 @@ export function AdminCaregiverAbsencesPage() {
 
   const counts = statistics.data
   const stats = [
-    { label: t(`${key}.stats.pending`), value: counts?.pending },
-    { label: t(`${key}.stats.confirmed`), value: counts?.confirmed },
-    { label: t(`${key}.stats.excused`), value: counts?.excused },
-    { label: t(`${key}.stats.total`), value: counts?.total }
+    {
+      id: 'all',
+      icon: 'person_off',
+      label: t(`${key}.stats.total`),
+      value: counts?.total,
+      selected: !status,
+      onSelect: () => update({ status: undefined })
+    },
+    ...STATUSES.map((item) => ({
+      id: item,
+      icon: STAT_ICONS[item],
+      label: t(`${key}.stats.${item.toLowerCase() as 'pending' | 'confirmed' | 'excused'}`),
+      value: counts?.[item.toLowerCase() as 'pending' | 'confirmed' | 'excused'],
+      selected: status === item,
+      onSelect: () => update({ status: status === item ? undefined : item })
+    }))
   ]
 
   return (
     <div className={bentoContainer}>
       <BentoPageHeader description={t(`${key}.description`)} title={t(`${key}.title`)} />
 
-      <dl className='mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4'>
-        {stats.map((stat) => (
-          <div className='rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4' key={stat.label}>
-            <dt className='text-sm text-on-surface-variant'>{stat.label}</dt>
-            <dd className='mt-1 text-2xl font-extrabold text-on-surface tabular-nums'>{stat.value ?? '—'}</dd>
-          </div>
-        ))}
-      </dl>
+      <AdminStatCards items={stats} label={t(`${key}.statusLabel`)} />
 
-      <div aria-label={t(`${key}.statusLabel`)} className='mb-4 flex flex-wrap gap-2' role='group'>
-        {[undefined, ...STATUSES].map((value) => {
-          const selected = value === status
-          return (
-            <button
-              aria-pressed={selected}
-              className={`${chip} ${selected ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low'}`}
-              key={value ?? 'all'}
-              onClick={() => update({ status: value, page: undefined })}
-              type='button'
-            >
-              {value ? t(`caregiverAbsence.status.${value}`) : t(`${key}.all`)}
-            </button>
-          )
-        })}
-      </div>
+      <section className={`${bentoCard} flex flex-wrap items-end gap-3 p-4`}>
+        <label className='flex min-w-56 flex-1 flex-col gap-1 text-xs font-semibold text-on-surface-variant sm:max-w-sm'>
+          {t(`${key}.centerFilter`)}
+          <Select onChange={(event) => update({ center: event.target.value || undefined })} value={centerId ?? ''}>
+            <option value=''>{t(`${key}.allCenters`)}</option>
+            {(centers.data ?? []).map((center) => (
+              <option key={center.id} value={center.id}>
+                {center.centerName}
+              </option>
+            ))}
+          </Select>
+        </label>
+        {status || centerId ? (
+          <Button onClick={() => update({ status: undefined, center: undefined })} variant='ghost'>
+            {t(`${key}.reset`)}
+          </Button>
+        ) : null}
+      </section>
 
       {absences.isPending ? (
         <div aria-label={t(`${key}.loading`)} className='space-y-2' role='status'>
-          <Skeleton className='h-24 w-full rounded-xl' />
-          <Skeleton className='h-24 w-full rounded-xl' />
+          <Skeleton className='h-24 w-full rounded-2xl' />
+          <Skeleton className='h-24 w-full rounded-2xl' />
         </div>
       ) : absences.isError ? (
         <ErrorState message={t(`${key}.error`)} onRetry={() => void absences.refetch()} retryLabel={t(`${key}.retry`)} />
       ) : items.length === 0 ? (
-        <EmptyState description={t(`${key}.emptyHint`)} title={t(`${key}.empty`)} />
+        <EmptyState description={t(`${key}.emptyHint`)} icon='event_available' title={t(`${key}.empty`)} />
       ) : (
         <>
-          <ul className='flex flex-col gap-2'>
-            {items.map((item) => (
-              <CaregiverAbsenceCard
-                actions={
-                  <Link
-                    className='inline-flex min-h-10 items-center rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-sm font-semibold text-on-surface hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-                    to={`/admin/bookings/${item.bookingId}`}
-                  >
-                    {t('caregiverAbsence.openBooking')}
-                  </Link>
-                }
-                item={item}
-                key={item.id}
-                meta={`${t('caregiverAbsence.caregiver', {
-                  name: caregiverName(item.caregiverId) ?? t('caregiverAbsence.unknownCaregiver')
-                })} · ${t(`${key}.center`, { name: centerName(item.centerId) ?? t(`${key}.unknownCenter`) })}`}
-              />
-            ))}
+          <ul className='flex flex-col gap-3'>
+            {groupByBooking(items).map(({ bookingId, rows }, index) => {
+              const waiting = rows.filter((row) => row.status === 'PENDING').length
+              return (
+                <BookingGroupCard
+                  badge={
+                    waiting > 0 ? (
+                      <StatusBadge dot tone='warning'>
+                        {t('caregiverAbsence.pendingCount', { count: waiting })}
+                      </StatusBadge>
+                    ) : undefined
+                  }
+                  bookingCode={rows[0].bookingCode}
+                  countLabel={`${t(`${key}.visitCount`, { count: rows.length })} · ${t(`${key}.center`, {
+                    name: centerName(rows[0].centerId)
+                  })}`}
+                  defaultOpen={index === 0}
+                  href={`/admin/bookings/${bookingId}`}
+                  key={bookingId}
+                  recipientName={rows[0].recipientName}
+                >
+                  {rows.map((item) => (
+                    <CaregiverAbsenceCard
+                      item={item}
+                      key={item.id}
+                      meta={t('caregiverAbsence.caregiver', { name: caregiverName(item.caregiverId) })}
+                    />
+                  ))}
+                </BookingGroupCard>
+              )
+            })}
           </ul>
           <Pagination
             onPageChange={(next) => update({ page: next > 0 ? String(next) : undefined })}
+            onPageSizeChange={(size) => update({ size: size === DEFAULT_PAGE_SIZE ? undefined : String(size) })}
             page={page}
+            pageSize={pageSize}
+            totalElements={absences.data.totalElements}
             totalPages={absences.data.totalPages}
           />
         </>

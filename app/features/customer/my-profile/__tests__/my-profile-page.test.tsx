@@ -11,10 +11,10 @@ import { setAppLanguage } from '~/shared/i18n/i18n'
 import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { MyProfilePage } from '../my-profile-page'
-import { passwordStrength } from '../password-change-panel'
-import { saveMyProfile } from '../profile-api'
+import { passwordStrength } from '~/features/shared/profile/password-change-panel'
+import { saveMyProfile } from '~/features/shared/profile/profile-api'
 
-vi.mock('../profile-api', () => ({ saveMyProfile: vi.fn() }))
+vi.mock('~/features/shared/profile/profile-api', () => ({ saveMyProfile: vi.fn() }))
 vi.mock('~/features/shared/auth/security-api', () => ({ changePassword: vi.fn() }))
 vi.mock('~/shared/ui/app-toast', () => ({ toastSuccess: vi.fn(), toastSystemError: vi.fn() }))
 

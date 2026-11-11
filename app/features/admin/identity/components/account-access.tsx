@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router'
 import { accountKeys, changeAccountStatus } from '~/entities/identity/account-api'
 import type { UserResponse } from '~/shared/api/generated/contracts'
 import { classifyApiError } from '~/shared/api/api-error'
+import { ActionMenu } from '~/shared/ui/action-menu'
 import { Button } from '~/shared/ui/button'
 import { baseControlClass } from '~/shared/ui/form-field'
 import { ConfirmDialog } from '~/shared/ui/modal'
@@ -24,8 +25,22 @@ const BUSINESS = {
 
 type Pending = 'lock' | 'unlock' | 'deactivate' | null
 
-/** Lock (with a reason the backend requires), unlock and deactivate; each asks for confirmation first. */
-export function AccountAccess({ user }: { user: UserResponse }) {
+/**
+ * Lock (with a reason the backend requires), unlock and deactivate; each asks for confirmation first. On the account
+ * page they are buttons; `menuLabel` draws them as the "⋯" menu of a list row instead (with "open" first), and the list
+ * stays where it is after a removal.
+ */
+export function AccountAccess({
+  user,
+  menuLabel,
+  readOnly = false
+}: {
+  user: UserResponse
+  /** Accessible name of the row menu; switches the component to its menu form. */
+  menuLabel?: string
+  /** Menu form only: the admin's own account or missing permission leaves just "open". */
+  readOnly?: boolean
+}) {
   const { t } = useTranslation()
   const id = useId()
   const navigate = useNavigate()
@@ -59,8 +74,9 @@ export function AccountAccess({ user }: { user: UserResponse }) {
     mutationFn: () => removeUser(user.id!),
     onSuccess: async () => {
       notify.success(t('admin.toast.accounts.deactivated', { name }))
+      setPending(null)
       await queryClient.invalidateQueries({ queryKey: accountKeys.all })
-      navigate('/admin/accounts')
+      if (!menuLabel) navigate('/admin/accounts')
     },
     onError: (error) => {
       if (notify.systemError(error, t('admin.toast.accounts.actions.deactivate'), () => deactivate.mutate())) {
@@ -96,18 +112,52 @@ export function AccountAccess({ user }: { user: UserResponse }) {
 
   return (
     <div className='flex flex-wrap gap-2.5'>
-      {locked ? (
-        <Button onClick={() => open('unlock')} variant='secondary'>
-          {t(`${key}.unlock`)}
-        </Button>
+      {menuLabel ? (
+        <ActionMenu
+          items={[
+            {
+              id: 'open',
+              icon: 'manage_accounts',
+              label: t(`${key}.openAccount`),
+              onSelect: () => navigate(`/admin/accounts/${user.id}`)
+            },
+            ...(readOnly
+              ? []
+              : [
+                  locked
+                    ? { id: 'unlock', icon: 'lock_open', label: t(`${key}.unlock`), onSelect: () => open('unlock') }
+                    : { id: 'lock', icon: 'lock', label: t(`${key}.lock`), onSelect: () => open('lock') },
+                  {
+                    id: 'deactivate',
+                    icon: 'person_remove',
+                    label: t(`${key}.deactivate`),
+                    tone: 'danger' as const,
+                    onSelect: () => open('deactivate')
+                  }
+                ])
+          ]}
+          label={menuLabel}
+        />
       ) : (
-        <Button onClick={() => open('lock')} variant='outline'>
-          {t(`${key}.lock`)}
-        </Button>
+        <>
+          {locked ? (
+            <Button onClick={() => open('unlock')} variant='secondary'>
+              {t(`${key}.unlock`)}
+            </Button>
+          ) : (
+            <Button onClick={() => open('lock')} variant='outline'>
+              {t(`${key}.lock`)}
+            </Button>
+          )}
+          <Button
+            className='text-error! hover:bg-error-container/50!'
+            onClick={() => open('deactivate')}
+            variant='ghost'
+          >
+            {t(`${key}.deactivate`)}
+          </Button>
+        </>
       )}
-      <Button onClick={() => open('deactivate')} variant='ghost' className='text-error! hover:bg-error-container/50!'>
-        {t(`${key}.deactivate`)}
-      </Button>
       <ConfirmDialog
         confirmLabel={
           pending === 'lock' ? t(`${key}.lock`) : pending === 'unlock' ? t(`${key}.unlock`) : t(`${key}.deactivate`)

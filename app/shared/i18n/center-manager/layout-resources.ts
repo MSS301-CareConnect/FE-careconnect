@@ -10,13 +10,13 @@ export const managerLayoutVi = {
   collapseMenu: 'Thu gọn thanh bên',
   expandMenu: 'Mở rộng thanh bên',
   caregivers: 'Quản lý người chăm sóc',
-  bookings: 'Quản lý lịch đặt và phân công',
+  bookings: 'Lịch đặt và phân công',
   serviceMenu: 'Dịch vụ & bảng giá',
   feedback: 'Đánh giá phản hồi',
   notifications: 'Thông báo',
   unavailable: 'Chức năng này sắp ra mắt.',
   portal: 'Hệ thống Quản trị',
-  footer: 'CareConnect • Trang quản lý trung tâm (bản xem thử)'
+  footer: 'CareConnect • Trang quản lý trung tâm'
 } as const
 export const managerLayoutEn = {
   role: 'Center manager',
@@ -36,5 +36,5 @@ export const managerLayoutEn = {
   notifications: 'Notifications',
   unavailable: 'This feature is coming soon.',
   portal: 'Management portal',
-  footer: 'CareConnect • Center manager preview'
+  footer: 'CareConnect • Center manager portal'
 } as const

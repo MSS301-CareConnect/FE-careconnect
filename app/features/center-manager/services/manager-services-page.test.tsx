@@ -7,7 +7,9 @@ import {
   createOffering,
   createOfferingPricePlan,
   fetchCatalogItems,
+  fetchCenterOfferingPage,
   fetchCenterOfferings,
+  fetchPricePlanPage,
   fetchPricePlans,
   removeOffering,
   removePricePlan,
@@ -24,7 +26,9 @@ import { ManagerServicesPage } from './manager-services-page'
 vi.mock('~/entities/care-catalog/care-catalog-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/care-catalog/care-catalog-api')>()),
   fetchCatalogItems: vi.fn(),
+  fetchCenterOfferingPage: vi.fn(),
   fetchCenterOfferings: vi.fn(),
+  fetchPricePlanPage: vi.fn(),
   fetchPricePlans: vi.fn(),
   createOffering: vi.fn(),
   createOfferingPricePlan: vi.fn(),
@@ -79,6 +83,14 @@ beforeEach(async () => {
   vi.mocked(fetchCatalogItems).mockReset().mockResolvedValue([catalogItem])
   vi.mocked(fetchCenterOfferings).mockReset().mockResolvedValue([])
   vi.mocked(fetchPricePlans).mockReset().mockResolvedValue([])
+  // The paged reads serve whatever the collection mocks hold, as one page.
+  const onePage = <T,>(items: T[]) => ({ items, page: 0, size: 10, totalElements: items.length, totalPages: 1 })
+  vi.mocked(fetchCenterOfferingPage)
+    .mockReset()
+    .mockImplementation(async (centerId) => onePage(await fetchCenterOfferings(centerId)))
+  vi.mocked(fetchPricePlanPage)
+    .mockReset()
+    .mockImplementation(async (offeringId) => onePage(await fetchPricePlans(offeringId)))
   vi.mocked(createOffering).mockReset().mockResolvedValue(offering)
   vi.mocked(createOfferingPricePlan).mockReset().mockResolvedValue(hourly)
   vi.mocked(saveOffering).mockReset().mockResolvedValue(offering)

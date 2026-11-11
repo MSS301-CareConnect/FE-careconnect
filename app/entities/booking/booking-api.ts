@@ -20,15 +20,19 @@ import {
 } from '~/shared/api/generated/api/booking/booking'
 import {
   acknowledgeBookingOccurrence,
+  acknowledgeBookingOccurrences,
   decideBookingOccurrenceNoShow,
   getBookingOccurrence,
   listMyBookingOccurrences,
+  reportBookingOccurrenceByCustomer,
   reportBookingOccurrenceNoShow
 } from '~/shared/api/generated/api/booking-occurrence/booking-occurrence'
 import {
   createCareSessionTask,
   endCareSession,
   forceEndCareSession,
+  listCareSessionsForReview,
+  reviewCareSession,
   getCareSession,
   startCareSession,
   updateCareSessionTask
@@ -117,6 +121,8 @@ export const bookingKeys = {
   statusCounts: (centerId?: string) => ['booking', 'status-counts', centerId ?? 'own'] as const,
   withdrawals: (params: ListCaregiverWithdrawalsParams) => ['booking', 'withdrawals', params] as const,
   /** Prefix of every absence list and count: invalidate it after an explanation or a conclusion. */
+  /** System-closed sessions waiting for the center's conclusion. */
+  sessionReviews: (page: number, size: number) => ['booking', 'session-reviews', page, size] as const,
   allAbsences: ['booking', 'absences'] as const,
   absences: (params: ListCaregiverAbsencesParams) => ['booking', 'absences', 'list', params] as const,
   absenceStatistics: (params: GetCaregiverAbsenceStatisticsParams) =>
@@ -205,8 +211,8 @@ export async function updateServiceAddressRequest(id: string, request: ServiceAd
   return result(await updateBookingServiceAddress(id, request, await writeOptions()))
 }
 /** CR-3: bookings a customer sent straight to this caregiver, waiting for an answer (area only, no care profile). */
-export async function fetchCaregiverBookingRequests(page = 0) {
-  return result(await listCaregiverBookingRequests({ page, size: 50 }, readOptions))
+export async function fetchCaregiverBookingRequests(page = 0, size = 50) {
+  return result(await listCaregiverBookingRequests({ page, size }, readOptions))
 }
 export async function fetchCaregiverBookingRequest(id: string) {
   return result(await getCaregiverBookingRequest(id, readOptions))
@@ -255,8 +261,15 @@ export async function fetchOccurrence(id: string) {
 export async function acknowledgeOccurrence(id: string) {
   return result(await acknowledgeBookingOccurrence(id, await writeOptions()))
 }
+/** Accepts several assigned visits of one booking at once (2026-11-10); all or nothing. */
+export async function acknowledgeOccurrences(occurrenceIds: string[]) {
+  return result(await acknowledgeBookingOccurrences({ occurrenceIds }, await writeOptions()))
+}
 export async function reportNoShow(id: string, note: string) {
   return result(await reportBookingOccurrenceNoShow(id, { note }, await writeOptions()))
+}
+export async function reportVisitByCustomer(occurrenceId: string, note?: string) {
+  return result(await reportBookingOccurrenceByCustomer(occurrenceId, { note }, await writeOptions()))
 }
 export async function decideNoShow(id: string, request: NoShowDecisionRequest) {
   return result(await decideBookingOccurrenceNoShow(id, request, await writeOptions()))
@@ -270,6 +283,13 @@ export async function checkIn(request: CareSessionStartRequest) {
 }
 export async function checkOut(id: string, coordinates: { latitude?: number; longitude?: number } = {}) {
   return result(await endCareSession(id, coordinates, await writeOptions()))
+}
+/** Sessions the system closed (nobody checked out) that the center has not concluded yet, oldest visit first. */
+export async function fetchSessionsForReview(page = 0, size = 20) {
+  return result(await listCareSessionsForReview({ review: 'PENDING', page, size }, readOptions))
+}
+export async function reviewSession(id: string, request: { delivered: boolean; note?: string }) {
+  return result(await reviewCareSession(id, request, await writeOptions()))
 }
 export async function forceEndSession(id: string, reason: string) {
   return result(await forceEndCareSession(id, { reason }, await writeOptions()))

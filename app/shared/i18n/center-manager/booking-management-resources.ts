@@ -1,5 +1,5 @@
 export const managerBookingManagementVi = {
-  documentTitle: 'Quản lý lịch đặt | CareConnect',
+  documentTitle: 'Lịch đặt và phân công | CareConnect',
   title: 'Lịch đặt và phân công',
   subtitle: 'Duyệt yêu cầu mới, phân công người chăm sóc và theo dõi từng buổi chăm sóc.',
   pendingSubtitle: '{{count}} việc cần trung tâm xử lý. Xử lý trước hạn để khách kịp thanh toán.',
@@ -91,7 +91,7 @@ export const managerBookingManagementVi = {
 }
 
 export const managerBookingManagementEn = {
-  documentTitle: 'Booking management | CareConnect',
+  documentTitle: 'Bookings and assignments | CareConnect',
   title: 'Bookings and assignments',
   subtitle: 'Review new requests, assign caregivers and follow every care visit.',
   pendingSubtitle: '{{count}} items need the center. Handle them before the due time so customers can pay.',

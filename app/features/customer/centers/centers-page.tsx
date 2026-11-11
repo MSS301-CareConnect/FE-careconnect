@@ -1,16 +1,14 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
-import { useServiceCenters } from '~/entities/care-center/care-center-api'
+import { useServiceCentersPage } from '~/entities/care-center/care-center-api'
 import { CenterContextLine } from '~/entities/care-center/center-scope'
 import { apiErrorStatus } from '~/shared/api/error-details'
-import { foldText } from '~/shared/lib/fold-text'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
 import { pageContainer } from '~/shared/ui/page-header'
 import { CustomerPageHeader } from '~/features/customer/ui/customer-page-header'
-import { Pagination } from '~/shared/ui/pagination'
+import { Pagination, pageSizeOf } from '~/shared/ui/pagination'
 import { SearchInput } from '~/shared/ui/search-input'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 import { EmptyState, ErrorState } from '~/shared/ui/state-panels'
@@ -19,38 +17,42 @@ import { CenterCard } from './components/center-card'
 import { SignInHint } from './components/sign-in-hint'
 
 const key = 'customer.centers' as const
+/** Rows of the three-column grid. */
+const PAGE_SIZES = [9, 18, 36] as const
 
 /**
- * `/customer/centers` (CR-6): every ACTIVE center from the public directory, searched by name or address without
- * diacritics (`?q=`). Each card opens the center page or makes it the header's center.
+ * `/customer/centers` (CR-6): ACTIVE centers from the public directory, one server page at a time (2026-11-11).
+ * ProviderService searches name and address without diacritics (`?q=`) and pages (`?page=`, `?size=`). Each card
+ * opens the center page or makes it the header's center.
  */
 export function CentersPage() {
   const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
-  const keyword = params.get('q') ?? ''
-  const [page, setPage] = useState(0)
-  const centers = useServiceCenters()
+  const keyword = (params.get('q') ?? '').trim()
+  const page = Math.max(0, Number(params.get('page')) || 0)
+  const pageSize = pageSizeOf(params.get('size'), PAGE_SIZES[0], PAGE_SIZES)
+  const centers = useServiceCentersPage({ page, size: pageSize, keyword: keyword || undefined })
   useDocumentTitle(t(`${key}.documentTitle`))
 
-  const PAGE_SIZE = 9
-  const needle = foldText(keyword.trim())
-  const visible = (centers.data ?? []).filter(
-    (center) => !needle || foldText(`${center.name} ${center.address ?? ''}`).includes(needle)
-  )
-  const totalPages = Math.ceil(visible.length / PAGE_SIZE)
-  const pagedCenters = visible.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const visible = centers.data?.items ?? []
+  const total = centers.data?.totalElements ?? 0
 
-  function search(value: string) {
-    setPage(0)
+  function update(changes: Record<string, string | undefined>) {
     setParams(
       (previous) => {
         const next = new URLSearchParams(previous)
-        if (value) next.set('q', value)
-        else next.delete('q')
+        for (const [name, value] of Object.entries(changes)) {
+          if (value) next.set(name, value)
+          else next.delete(name)
+        }
+        if (!('page' in changes)) next.delete('page')
         return next
       },
       { replace: true }
     )
+  }
+  function search(value: string) {
+    update({ q: value || undefined })
   }
 
   return (
@@ -66,7 +68,7 @@ export function CentersPage() {
         title={t(`${key}.title`)}
       />
 
-      {centers.isSuccess && centers.data.length > 0 ? (
+      {centers.isSuccess && (total > 0 || keyword) ? (
         <SearchInput
           className='mb-6 max-w-xl'
           label={t(`${key}.search`)}
@@ -99,10 +101,10 @@ export function CentersPage() {
       {centers.isError && apiErrorStatus(centers.error) !== 401 ? (
         <ErrorState message={t(`${key}.states.error`)} onRetry={() => void centers.refetch()} />
       ) : null}
-      {centers.isSuccess && centers.data.length === 0 ? (
+      {centers.isSuccess && total === 0 && !keyword ? (
         <EmptyState icon='home_health' title={t(`${key}.states.empty`)} />
       ) : null}
-      {centers.isSuccess && centers.data.length > 0 && visible.length === 0 ? (
+      {centers.isSuccess && total === 0 && keyword ? (
         <EmptyState
           action={
             <Button onClick={() => search('')} variant='outline'>
@@ -116,14 +118,23 @@ export function CentersPage() {
       {visible.length > 0 ? (
         <>
           <p aria-live='polite' className='mb-4 text-sm text-on-surface-variant tabular-nums'>
-            {t(`${key}.count`, { count: visible.length })}
+            {t(`${key}.count`, { count: total })}
           </p>
           <div className='cc-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-            {pagedCenters.map((center) => (
+            {visible.map((center) => (
               <CenterCard center={center} key={center.id} />
             ))}
           </div>
-          <Pagination className='mt-8' onPageChange={setPage} page={page} totalPages={totalPages} />
+          <Pagination
+            className='mt-8'
+            onPageChange={(next) => update({ page: next > 0 ? String(next) : undefined })}
+            onPageSizeChange={(size) => update({ size: size === PAGE_SIZES[0] ? undefined : String(size) })}
+            page={page}
+            pageSize={pageSize}
+            pageSizeOptions={PAGE_SIZES}
+            totalElements={total}
+            totalPages={centers.data?.totalPages ?? 0}
+          />
         </>
       ) : null}
     </div>

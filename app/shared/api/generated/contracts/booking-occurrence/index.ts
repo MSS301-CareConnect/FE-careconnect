@@ -6,13 +6,17 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './caregiverOccurrenceListResponse'
 export * from './caregiverOccurrencePage'
 export * from './caregiverOccurrencePageResponse'
 export * from './caregiverOccurrenceRecord'
 export * from './caregiverOccurrenceRecordMissedReason'
 export * from './caregiverOccurrenceResponse'
+export * from './customerVisitReportRequest'
+export * from './customerVisitReportResponse'
 export * from './listMyBookingOccurrencesParams'
 export * from './noShowDecisionRequest'
 export * from './noShowReportRequest'
+export * from './occurrenceAcknowledgementRequest'
 export * from './occurrenceServiceRecord'
 export * from './specialNotesRecord'

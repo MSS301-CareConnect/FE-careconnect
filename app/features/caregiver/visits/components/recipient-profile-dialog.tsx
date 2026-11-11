@@ -206,27 +206,18 @@ function ProfileBody({ data }: { data: AssignedProfile }) {
             {levels.length ? (
               <div className='flex flex-wrap gap-1.5'>
                 {levels.map((label) => (
-                  <span className='rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-primary' key={label}>
+                  <span
+                    className='rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-primary'
+                    key={label}
+                  >
                     {label}
                   </span>
                 ))}
               </div>
             ) : null}
-            <DailyCard
-              icon='restaurant'
-              label={t(`${key}.fields.diet`)}
-              value={snapshot.dietaryNotes}
-            />
-            <DailyCard
-              icon='bedtime'
-              label={t(`${key}.fields.sleep`)}
-              value={details?.sleepHabits}
-            />
-            <DailyCard
-              icon='psychology'
-              label={t(`${key}.fields.behavior`)}
-              value={snapshot.behaviorNotes}
-            />
+            <DailyCard icon='restaurant' label={t(`${key}.fields.diet`)} value={snapshot.dietaryNotes} />
+            <DailyCard icon='bedtime' label={t(`${key}.fields.sleep`)} value={details?.sleepHabits} />
+            <DailyCard icon='psychology' label={t(`${key}.fields.behavior`)} value={snapshot.behaviorNotes} />
             <DailyCard
               icon='assignment_turned_in'
               label={t(`${key}.fields.requirements`)}

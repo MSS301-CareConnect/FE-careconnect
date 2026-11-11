@@ -30,9 +30,15 @@ beforeEach(async () => {
 
 describe('Portal account menus', () => {
   it.each([
-    { role: 'ADMIN', path: '/admin/dashboard', layout: AdminLayout },
-    { role: 'CENTER_MANAGER', path: '/center-manager/caregivers', layout: CenterManagerLayout }
-  ])('places account actions under the $role avatar', ({ role, path, layout: Layout }) => {
+    // 2026-11-10: the admin has its own profile page (information + security) inside the admin shell.
+    { role: 'ADMIN', path: '/admin/dashboard', layout: AdminLayout, security: '/admin/profile?tab=security' },
+    {
+      role: 'CENTER_MANAGER',
+      path: '/center-manager/caregivers',
+      layout: CenterManagerLayout,
+      security: '/account/security'
+    }
+  ])('places account actions under the $role avatar', ({ role, path, layout: Layout, security }) => {
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
         <AuthUserContext value={{ id: 'user-1', fullName: 'Test User', roles: [role], status: 'ACTIVE' }}>
@@ -51,7 +57,10 @@ describe('Portal account menus', () => {
     fireEvent.click(button)
     const menu = screen.getByRole('navigation', { name: 'Account menu' })
     expect(button).toHaveAttribute('aria-expanded', 'true')
-    expect(within(menu).getByRole('link', { name: 'Account security' })).toHaveAttribute('href', '/account/security')
+    expect(within(menu).getByRole('link', { name: 'Account security' })).toHaveAttribute('href', security)
+    if (role === 'ADMIN') {
+      expect(within(menu).getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/admin/profile')
+    }
     expect(within(menu).getByRole('button', { name: 'Sign out' })).toBeInTheDocument()
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(button).toHaveAttribute('aria-expanded', 'false')

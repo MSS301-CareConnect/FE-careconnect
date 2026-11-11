@@ -18,7 +18,9 @@ export function OpsTopbar({
   openMenuLabel,
   closeMenuLabel,
   fallbackName,
-  roleLabel
+  roleLabel,
+  profileLink,
+  securityLink
 }: {
   portal: 'admin' | 'center-manager'
   sidebarId: string
@@ -28,6 +30,8 @@ export function OpsTopbar({
   closeMenuLabel: string
   fallbackName: string
   roleLabel: string
+  profileLink?: { to: string; label: string }
+  securityLink?: string
 }) {
   return (
     <header className='sticky top-0 z-30 print:hidden'>
@@ -54,7 +58,12 @@ export function OpsTopbar({
             <NotificationBell portal={portal} />
           </div>
           <div className={chip}>
-            <PortalAccountMenu fallbackName={fallbackName} roleLabel={roleLabel} />
+            <PortalAccountMenu
+              fallbackName={fallbackName}
+              profileLink={profileLink}
+              roleLabel={roleLabel}
+              securityLink={securityLink}
+            />
           </div>
         </div>
       </div>

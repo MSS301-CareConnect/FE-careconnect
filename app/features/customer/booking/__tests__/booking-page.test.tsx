@@ -270,6 +270,11 @@ async function next() {
   fireEvent.click(continueButton())
 }
 
+/** The visit list of the schedule step (one card per day). */
+function visitList(name = 'Các buổi chăm sóc') {
+  return within(screen.getByRole('group', { name }))
+}
+
 /** Step 1 (the only profile is chosen for the customer) and step 2 (the service with its single plan). */
 async function toSchedule() {
   await screen.findByRole('radio', { name: /Bà Lan/ })
@@ -353,6 +358,10 @@ describe('CustomerBookingPage', () => {
     renderPage('/customer/booking?caregiver=cg-1')
     await toSchedule()
 
+    // 2026-11-11: no visit is made up front.
+    expect(screen.getByText('Chưa có buổi nào. Dùng thêm nhanh hoặc thêm từng ngày.')).toBeInTheDocument()
+    expect(continueButton()).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
     fireEvent.change(screen.getByRole('textbox', { name: 'Ghi chú cho người chăm sóc' }), {
       target: { value: 'Nhắc bà uống thuốc' }
     })
@@ -401,17 +410,18 @@ describe('CustomerBookingPage', () => {
     renderPage('/customer/booking')
     await toSchedule()
 
-    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '02/01/2030' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Thêm buổi' }))
-    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '02/01/2030' } })
-    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[1], '09:00')
-    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[1], '11:00')
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
+    fireEvent.change(visitList().getByPlaceholderText('dd/mm/yyyy'), { target: { value: '02/01/2030' } })
+    // The new day copies the last one; moving it onto 02/01 puts two visits at the same time in one day card.
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
+    fireEvent.change(visitList().getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '02/01/2030' } })
 
     expect(await screen.findByText('Trùng giờ với buổi khác.')).toBeInTheDocument()
+    expect(visitList().getAllByPlaceholderText('dd/mm/yyyy')).toHaveLength(1)
     expect(continueButton()).toBeDisabled()
 
-    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[1], '14:00')
-    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[1], '17:30')
+    pickTime(visitList().getAllByRole('combobox', { name: 'Bắt đầu' })[1], '14:00')
+    pickTime(visitList().getAllByRole('combobox', { name: 'Kết thúc' })[1], '17:30')
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toEqual([
         { startAt: '2030-01-02T01:00:00.000Z', endAt: '2030-01-02T03:00:00.000Z' },
@@ -420,7 +430,7 @@ describe('CustomerBookingPage', () => {
     )
   })
 
-  it('sends a weekly RECURRING booking with sorted weekdays', async () => {
+  it('builds a weekly RECURRING booking only when asked, and sends its visits', async () => {
     renderPage('/customer/booking')
     await toSchedule()
 
@@ -431,15 +441,17 @@ describe('CustomerBookingPage', () => {
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '31/01/2030' } })
 
-    // CR-1: the pattern builds an editable visit list instead of a one-line summary.
+    expect(await screen.findByText('Sẽ tạo 8 buổi trong 8 ngày.')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Các buổi theo lịch lặp' })).not.toBeInTheDocument()
+    expect(continueButton()).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Tạo 8 buổi' }))
+
     expect(await screen.findByText('8/60 buổi')).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Các buổi theo lịch lặp' })).toBeInTheDocument()
     await waitFor(() =>
-      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toEqual({
+      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toMatchObject({
         recipientId: 'rec-1',
         centerId: 'center-1',
         bookingType: 'RECURRING',
-        caregiverId: undefined,
         frequency: 'WEEKLY',
         startDate: '2030-01-01',
         endDate: '2030-01-31',
@@ -449,6 +461,7 @@ describe('CustomerBookingPage', () => {
         services: SERVICES
       })
     )
+    expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toHaveLength(8)
   })
 
   it('lets the customer edit one recurring visit and sends the edited list (CR-1)', async () => {
@@ -458,12 +471,13 @@ describe('CustomerBookingPage', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Định kỳ/ }))
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '02/01/2030' } })
+    fireEvent.click(await screen.findByRole('button', { name: 'Tạo 2 buổi' }))
     expect(await screen.findByText('2/60 buổi')).toBeInTheDocument()
 
-    // Pattern fields come first (start, end), then one start / end pair per visit.
-    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[2], '14:00')
-    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], '16:00')
-    expect(await screen.findByRole('button', { name: 'Tạo lại theo lịch lặp' })).toBeInTheDocument()
+    const list = visitList('Các buổi theo lịch lặp')
+    pickTime(list.getAllByRole('combobox', { name: 'Bắt đầu' })[1], '14:00')
+    pickTime(list.getAllByRole('combobox', { name: 'Kết thúc' })[1], '16:00')
+    expect(screen.getByRole('button', { name: 'Tạo lại 2 buổi (thay 2 buổi hiện có)' })).toBeInTheDocument()
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0]).toMatchObject({
         bookingType: 'RECURRING',
@@ -476,27 +490,29 @@ describe('CustomerBookingPage', () => {
     )
   })
 
-  it('flags a visit longer than the others and sets the time of the chosen visits at once', async () => {
+  it('flags a visit longer than the others and sets the time of the chosen days at once', async () => {
     renderPage('/customer/booking')
     await toSchedule()
 
     fireEvent.click(screen.getByRole('radio', { name: /Định kỳ/ }))
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '03/01/2030' } })
+    fireEvent.click(await screen.findByRole('button', { name: 'Tạo 3 buổi' }))
     expect(await screen.findByText('3/60 buổi')).toBeInTheDocument()
 
-    // Visit 2 ends an hour later than the others: the list says so and offers to bring it back to 2 hours.
-    pickTime(screen.getAllByRole('combobox', { name: 'Kết thúc' })[2], '11:00')
-    expect(await screen.findByText(/Phần lớn các buổi dài 2 giờ, nhưng có 1 buổi dài khác/)).toBeInTheDocument()
-    expect(screen.getByText('Dài 3 giờ, các buổi khác 2 giờ.')).toBeInTheDocument()
+    // Day 2 ends an hour later than the other visits of the service: the row says so and offers 2 hours again.
+    const list = visitList('Các buổi theo lịch lặp')
+    pickTime(list.getAllByRole('combobox', { name: 'Kết thúc' })[1], '11:00')
+    expect(await screen.findByText('Dài 3 giờ, các buổi khác của dịch vụ này 2 giờ.')).toBeInTheDocument()
 
-    // Choose visits 1 and 3 and move both to the afternoon in one go.
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn buổi 1' }))
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Chọn buổi 3' }))
-    const bulk = screen.getByRole('group', { name: 'Sửa các buổi đã chọn' })
+    // Choose days 1 and 3 and move both to the afternoon in one go.
+    fireEvent.click(screen.getByRole('checkbox', { name: /Chọn .*01\/01\/2030/ }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /Chọn .*03\/01\/2030/ }))
+    const bulk = screen.getByRole('group', { name: 'Sửa các ngày đã chọn' })
+    expect(within(bulk).getByText('Đã chọn 2 ngày')).toBeInTheDocument()
     pickTime(within(bulk).getByRole('combobox', { name: 'Bắt đầu' }), '13:00')
     pickTime(within(bulk).getByRole('combobox', { name: 'Kết thúc' }), '16:00')
-    fireEvent.click(within(bulk).getByRole('button', { name: 'Đặt giờ cho 2 buổi' }))
+    fireEvent.click(within(bulk).getByRole('button', { name: 'Đặt giờ' }))
 
     await waitFor(() =>
       expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toEqual([
@@ -506,22 +522,97 @@ describe('CustomerBookingPage', () => {
       ])
     )
     // Every visit now lasts 3 hours: no more warning.
-    expect(screen.queryByText(/buổi dài khác/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Dài 3 giờ/)).not.toBeInTheDocument()
   })
 
   it('quick-adds the visits of a weekly pattern to a custom booking (CR-1)', async () => {
     renderPage('/customer/booking')
     await toSchedule()
 
-    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '02/01/2030' } })
-    fireEvent.click(screen.getByRole('button', { name: /Thêm nhanh/ }))
+    // Open while the list is empty.
+    expect(screen.getByRole('button', { name: /Thêm nhanh/ })).toHaveAttribute('aria-expanded', 'true')
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
     fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '14/01/2030' } })
     fireEvent.click(screen.getByRole('checkbox', { name: 'T2' }))
+    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[0], '09:00')
     fireEvent.click(screen.getByRole('button', { name: 'Thêm 2 buổi' }))
 
     expect(await screen.findByText('Đã thêm 2 buổi.')).toBeInTheDocument()
-    expect(screen.getByText('3/60 buổi')).toBeInTheDocument()
+    expect(screen.getByText('2/60 buổi')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toEqual([
+        { startAt: '2030-01-07T02:00:00.000Z', endAt: '2030-01-07T04:00:00.000Z' },
+        { startAt: '2030-01-14T02:00:00.000Z', endAt: '2030-01-14T04:00:00.000Z' }
+      ])
+    )
+  })
+
+  it('blocks quick add up front when a visit clashes with the caregiver, and can skip it', async () => {
+    // Chị Hoa is busy on Monday 07/01/2030 from 08:00 to 10:00 (Vietnam time).
+    vi.mocked(fetchHeldSchedules).mockImplementation(async ({ caregiverId }) => ({
+      caregiverId,
+      heldScheduleIds: [],
+      travelBufferMinutes: 60,
+      busySlots: [{ startAt: '2030-01-07T01:00:00Z', endAt: '2030-01-07T03:00:00Z' }]
+    }))
+    renderPage('/customer/booking?caregiver=cg-1')
+    await toSchedule()
+
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[0], { target: { value: '01/01/2030' } })
+    fireEvent.change(screen.getAllByPlaceholderText('dd/mm/yyyy')[1], { target: { value: '14/01/2030' } })
+    fireEvent.click(screen.getByRole('checkbox', { name: 'T2' }))
+
+    // Nothing is built yet, but the clash is named under the service and the button stays locked.
+    expect(await screen.findByText('07/01: Chị Hoa đã có lịch khác vào giờ này.')).toBeInTheDocument()
+    expect(screen.getByText(/1 buổi không đặt được/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Thêm 2 buổi' })).toBeDisabled()
+    expect(screen.getByText('0/60 buổi')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bỏ qua 1 buổi vướng, dùng 1 buổi còn lại' }))
+    expect(await screen.findByText('Đã thêm 1 buổi.')).toBeInTheDocument()
+    expect(screen.getByText('1/60 buổi')).toBeInTheDocument()
+
+    // Moving the time to the afternoon clears the clash.
+    pickTime(screen.getAllByRole('combobox', { name: 'Bắt đầu' })[0], '14:00')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Thêm 2 buổi' })).toBeEnabled())
+  })
+
+  it('removes every day at once after a confirmation', async () => {
+    renderPage('/customer/booking')
+    await toSchedule()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
+    expect(await screen.findByText('2/60 buổi')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Xóa tất cả' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Xóa tất cả các ngày?' })
+    expect(within(dialog).getByText(/2 ngày cùng 2 buổi sẽ bị xóa/)).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Xóa tất cả các ngày' }))
+
+    expect(await screen.findByText('Chưa có buổi nào. Dùng thêm nhanh hoặc thêm từng ngày.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Xóa tất cả' })).not.toBeInTheDocument()
+    expect(continueButton()).toBeDisabled()
+  })
+
+  it('marks visits that clash with another booking of the chosen caregiver and removes them in one go', async () => {
+    // Every day the form asks about is taken by another booking of Chị Hoa.
+    vi.mocked(fetchHeldSchedules).mockImplementation(async ({ caregiverId, from, to }) => ({
+      caregiverId,
+      heldScheduleIds: [],
+      travelBufferMinutes: 60,
+      busySlots: from && to ? [{ startAt: `${from}T00:00:00+07:00`, endAt: `${to}T23:59:00+07:00` }] : []
+    }))
+    renderPage('/customer/booking?caregiver=cg-1')
+    await toSchedule()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
+    expect(await screen.findByText('Chị Hoa đã có lịch khác vào giờ này.')).toBeInTheDocument()
+    expect(screen.getByText(/1 buổi trùng lịch khác của Chị Hoa/)).toBeInTheDocument()
+    expect(continueButton()).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bỏ 1 buổi bị trùng' }))
+    expect(await screen.findByText('Chưa có buổi nào. Dùng thêm nhanh hoặc thêm từng ngày.')).toBeInTheDocument()
   })
 
   it('disables SHIFT while the center assigns, and books a time slot in a free shift of the chosen caregiver', async () => {
@@ -653,7 +744,7 @@ describe('CustomerBookingPage', () => {
     )
   })
 
-  it('asks for the service of each custom visit once several services are chosen', async () => {
+  it('puts every chosen service of a day in one card, each at its own time', async () => {
     withTwoServices()
     renderPage('/customer/booking')
     await screen.findByRole('radio', { name: /Bà Lan/ })
@@ -663,14 +754,29 @@ describe('CustomerBookingPage', () => {
     await next()
     await screen.findByRole('radio', { name: /Tự chọn buổi/ })
 
-    expect(await screen.findByText('Chọn dịch vụ cho buổi này.')).toBeInTheDocument()
-    expect(continueButton()).toBeDisabled()
-    fireEvent.change(screen.getByRole('combobox', { name: 'Dịch vụ' }), { target: { value: 'svc-2' } })
-    // The per-shift plan needs exactly 4 hours; the default visit lasts 2.
+    // The pattern has a time per service; a day may leave a service out.
+    expect(screen.getByRole('checkbox', { name: 'Tắm rửa' })).toBeChecked()
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
+    const list = visitList()
+    // One day, two services back to back: hourly care 08:00–10:00, then the 4-hour shift 10:00–14:00.
+    expect(list.getAllByPlaceholderText('dd/mm/yyyy')).toHaveLength(1)
+    expect(list.getByText('2 dịch vụ')).toBeInTheDocument()
+    await waitFor(() => expect(continueButton()).toBeEnabled())
+
+    pickTime(list.getAllByRole('combobox', { name: 'Kết thúc' })[1], '12:00')
     expect(await screen.findByText('Ca 4 giờ cần buổi dài đúng 4 giờ.')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Kết thúc lúc 12:00' }))
-    expect(await screen.findByText('Chưa có buổi cho: Chăm sóc người già tại nhà')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Kết thúc lúc 14:00' }))
+
+    fireEvent.click(list.getByRole('button', { name: /Bỏ Tắm rửa ngày/ }))
+    expect(await screen.findByText('Chưa có buổi cho: Tắm rửa')).toBeInTheDocument()
     expect(continueButton()).toBeDisabled()
+    fireEvent.click(list.getByRole('button', { name: 'Thêm Tắm rửa' }))
+    await waitFor(() =>
+      expect(vi.mocked(fetchBookingQuote).mock.calls.at(-1)?.[0].slots).toMatchObject([
+        { careServiceId: 'svc-1' },
+        { careServiceId: 'svc-2' }
+      ])
+    )
   })
 
   it('shows a translated backend quote error on the review step', async () => {
@@ -679,6 +785,7 @@ describe('CustomerBookingPage', () => {
     )
     renderPage('/customer/booking')
     await toSchedule()
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm ngày' }))
     await next()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(

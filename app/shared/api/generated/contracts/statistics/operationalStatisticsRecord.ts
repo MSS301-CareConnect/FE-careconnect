@@ -9,7 +9,11 @@ import type { CenterOperationalStatsPage } from './centerOperationalStatsPage'
 import type { ComplaintStatisticsRecord } from './complaintStatisticsRecord'
 import type { OccurrenceStatisticsRecord } from './occurrenceStatisticsRecord'
 import type { OperationalStatisticsRecordBookingsByStatus } from './operationalStatisticsRecordBookingsByStatus'
+import type { OperationalStatisticsRecordBookingsByType } from './operationalStatisticsRecordBookingsByType'
+import type { OperationalStatisticsRecordOccurrencesByStatus } from './operationalStatisticsRecordOccurrencesByStatus'
+import type { OperationalStatisticsRecordRatingDistribution } from './operationalStatisticsRecordRatingDistribution'
 import type { ResponsivenessStatisticsRecord } from './responsivenessStatisticsRecord'
+import type { StatisticsTrendPointRecord } from './statisticsTrendPointRecord'
 import type { TopCaregiverRecord } from './topCaregiverRecord'
 
 export interface OperationalStatisticsRecord {
@@ -20,4 +24,19 @@ export interface OperationalStatisticsRecord {
   topCaregivers?: TopCaregiverRecord[]
   byCenter?: CenterOperationalStatsPage
   responsiveness?: ResponsivenessStatisticsRecord
+  completionRate?: number
+  reviewCount?: number
+  /** @nullable */
+  occurrencesByStatus?: OperationalStatisticsRecordOccurrencesByStatus
+  /** @nullable */
+  bookingsByType?: OperationalStatisticsRecordBookingsByType
+  /**
+   * Visible reviews per star, keys "1".."5"
+   * @nullable
+   */
+  ratingDistribution?: OperationalStatisticsRecordRatingDistribution
+  /** @nullable */
+  trendGroupBy?: string | null
+  /** @nullable */
+  trend?: StatisticsTrendPointRecord[] | null
 }

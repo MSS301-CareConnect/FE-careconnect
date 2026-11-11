@@ -7,9 +7,18 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { CaregiverOccurrencePageResponse, CaregiverOccurrenceResponse } from '../../contracts'
+import type {
+  CaregiverOccurrenceListResponse,
+  CaregiverOccurrencePageResponse,
+  CaregiverOccurrenceResponse,
+  CustomerVisitReportResponse
+} from '../../contracts'
 
-import { getCaregiverOccurrencePageMock, getCaregiverOccurrenceRecordMock } from '../../contracts/index.faker'
+import {
+  getBookingOccurrenceRecordMock,
+  getCaregiverOccurrencePageMock,
+  getCaregiverOccurrenceRecordMock
+} from '../../contracts/index.faker'
 
 export const getListMyBookingOccurrencesResponseMock = (
   overrideResponse: Partial<Extract<CaregiverOccurrencePageResponse, object>> = {}
@@ -29,12 +38,32 @@ export const getGetBookingOccurrenceResponseMock = (
   ...overrideResponse
 })
 
+export const getAcknowledgeBookingOccurrencesResponseMock = (
+  overrideResponse: Partial<Extract<CaregiverOccurrenceListResponse, object>> = {}
+): CaregiverOccurrenceListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getCaregiverOccurrenceRecordMock()
+  })),
+  ...overrideResponse
+})
+
 export const getAcknowledgeBookingOccurrenceResponseMock = (
   overrideResponse: Partial<Extract<CaregiverOccurrenceResponse, object>> = {}
 ): CaregiverOccurrenceResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getCaregiverOccurrenceRecordMock() },
+  ...overrideResponse
+})
+
+export const getReportBookingOccurrenceByCustomerResponseMock = (
+  overrideResponse: Partial<Extract<CustomerVisitReportResponse, object>> = {}
+): CustomerVisitReportResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingOccurrenceRecordMock() },
   ...overrideResponse
 })
 

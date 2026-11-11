@@ -12,7 +12,6 @@ import { Icon } from '~/shared/ui/icon'
 export function WalletSummary({ wallet, onWithdraw }: { wallet: WalletRecord; onWithdraw?: () => void }) {
   const { t } = useTranslation()
   const { money } = useFormat()
-  const platform = wallet.ownerType === 'PLATFORM'
   const negative = wallet.availableBalance < 0
 
   return (
@@ -34,33 +33,23 @@ export function WalletSummary({ wallet, onWithdraw }: { wallet: WalletRecord; on
           {money(wallet.availableBalance)}
         </p>
       </div>
-      {platform ? null : (
-        <div className='rounded-2xl bg-white/[0.07] px-4 py-3 ring-1 ring-white/10'>
-          <p className='text-sm font-semibold text-white/70'>{t('wallet.balance.held')}</p>
-          <p className='mt-1 text-2xl font-bold tabular-nums'>{money(wallet.heldBalance)}</p>
-          <p className='mt-1 text-xs text-white/60'>{t('wallet.balance.heldHint')}</p>
-        </div>
-      )}
+      <div className='rounded-2xl bg-white/[0.07] px-4 py-3 ring-1 ring-white/10'>
+        <p className='text-sm font-semibold text-white/70'>{t('wallet.balance.held')}</p>
+        <p className='mt-1 text-2xl font-bold tabular-nums'>{money(wallet.heldBalance)}</p>
+        <p className='mt-1 text-xs text-white/60'>{t('wallet.balance.heldHint')}</p>
+      </div>
       <div className='flex flex-col items-start gap-1.5 sm:items-end'>
-        {platform ? (
-          <p className='max-w-56 text-sm text-white/70'>{t('wallet.balance.platformReadOnly')}</p>
-        ) : (
-          <>
-            <Button
-              disabled={!wallet.withdrawable || !onWithdraw}
-              className='rounded-full! px-6'
-              leftIcon={<Icon name='payments' />}
-              onClick={onWithdraw}
-              size='lg'
-              variant='accent'
-            >
-              {t('wallet.balance.withdraw')}
-            </Button>
-            {wallet.withdrawable ? null : (
-              <p className='text-xs text-white/60'>{t('wallet.balance.notWithdrawable')}</p>
-            )}
-          </>
-        )}
+        <Button
+          disabled={!wallet.withdrawable || !onWithdraw}
+          className='rounded-full! px-6'
+          leftIcon={<Icon name='payments' />}
+          onClick={onWithdraw}
+          size='lg'
+          variant='accent'
+        >
+          {t('wallet.balance.withdraw')}
+        </Button>
+        {wallet.withdrawable ? null : <p className='text-xs text-white/60'>{t('wallet.balance.notWithdrawable')}</p>}
       </div>
       {negative ? (
         <p

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { usePendingAbsences } from '~/entities/booking/caregiver-absence-queue'
 import { fetchCertificates, providerKeys } from '~/entities/provider/provider-api'
 import { Icon } from '~/shared/ui/icon'
 
@@ -22,7 +23,7 @@ interface AttentionItem {
 }
 
 /**
- * Things only the caregiver can move forward: visits to accept, shift sign-ups that close within a day, and a profile
+ * Things only the caregiver can move forward: missed visits to explain (2026-11-10), visits to accept, shift sign-ups that close within a day, and a profile
  * without a valid certificate.
  */
 export function NeedsAttention({
@@ -43,6 +44,8 @@ export function NeedsAttention({
   const format = useCaregiverFormat()
   const shifts = useOpenShifts(centerId)
   const registrations = useMyRegistrations()
+  const absences = usePendingAbsences()
+  const unexplained = (absences.data?.items ?? []).filter((item) => !item.explanation).length
   const certificates = useQuery({
     queryKey: providerKeys.certificates(profileId ?? ''),
     queryFn: () => fetchCertificates(profileId ?? ''),
@@ -65,6 +68,18 @@ export function NeedsAttention({
   ).length
 
   const items: AttentionItem[] = [
+    ...(unexplained > 0
+      ? [
+          {
+            key: 'absences',
+            icon: 'person_off',
+            text: t('caregiver.today.attention.absences', { count: unexplained }),
+            action: t('caregiver.today.attention.absencesAction'),
+            to: '/caregiver/visits',
+            tone: 'warning' as const
+          }
+        ]
+      : []),
     ...(requests > 0
       ? [
           {

@@ -16,7 +16,7 @@ import {
   createProviderCaregiver,
   getProviderCaregiver,
   listCenterCaregivers,
-  listPendingVerificationProviderCaregivers,
+  listProviderCaregiverDirectory,
   listProviderCaregiverTimeOffs,
   listProviderCaregiverServices,
   replaceProviderCaregiverServices,
@@ -83,7 +83,7 @@ import type {
   ListProviderCaregiverTimeOffsParams,
   TimeOffRequest,
   ListCenterCaregiversParams,
-  ListPendingVerificationProviderCaregiversParams,
+  ListProviderCaregiverDirectoryParams,
   ListProviderCentersParams,
   ListPublicProviderCentersParams,
   ListProviderWorkShiftsParams,
@@ -127,7 +127,8 @@ export const providerKeys = {
   center: (id: string) => ['provider', 'center', id] as const,
   caregivers: (centerId: string) => ['provider', 'caregivers', centerId] as const,
   caregiver: (id: string) => ['provider', 'caregiver', id] as const,
-  pendingCaregivers: (page: number) => ['provider', 'pending-caregivers', page] as const,
+  caregiverDirectory: (params: ListProviderCaregiverDirectoryParams) =>
+    ['provider', 'caregiver-directory', params] as const,
   /** Prefix of every time-off list (one caregiver's and the whole center's): invalidate it after a change. */
   allTimeOffs: ['provider', 'time-offs'] as const,
   timeOffs: (caregiverId: string) => ['provider', 'time-offs', caregiverId] as const,
@@ -192,9 +193,9 @@ export async function restoreCenter(id: string, request: CenterRestoreRequest) {
 export async function fetchCaregivers(centerId: string, params: ListCenterCaregiversParams = {}) {
   return result(await listCenterCaregivers(centerId, params, readOptions))
 }
-/** ADMIN: caregivers of every center (or one center) waiting for verification (M-13). */
-export async function fetchPendingCaregivers(params: ListPendingVerificationProviderCaregiversParams = {}) {
-  return result(await listPendingVerificationProviderCaregivers(params, readOptions))
+/** ADMIN: caregivers of every center, ordered by center then name; filters and paging on the server (2026-11-11). */
+export async function fetchCaregiverDirectory(params: ListProviderCaregiverDirectoryParams = {}) {
+  return result(await listProviderCaregiverDirectory(params, readOptions))
 }
 export async function fetchCaregiver(id: string) {
   return result(await getProviderCaregiver(id, readOptions))

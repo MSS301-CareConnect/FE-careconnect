@@ -55,7 +55,7 @@ export function CaregiverSidebar({
             label: t(`caregiver.nav.${item.key}`),
             icon: item.icon,
             to: item.to,
-            active: active.key === item.key,
+            active: active?.key === item.key,
             badge: item.key === 'visits' ? badge : 0,
             badgeLabel: t('caregiver.nav.needsResponse', { count: badge })
           }))

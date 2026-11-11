@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useId, useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 
@@ -9,7 +9,7 @@ import type { BookingStatus, BookingSummaryRecord, ListBookingsParams } from '~/
 import { Button } from '~/shared/ui/button'
 import { baseControlClass } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
-import { Pagination } from '~/shared/ui/pagination'
+import { Pagination, pageSizeOf } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
 import { bookingKeys, fetchBookings } from './booking-api'
@@ -20,7 +20,7 @@ import { BookingStatusBadge } from './booking-status-badge'
 import { DatePicker } from '~/shared/ui/date-picker'
 
 const key = 'booking.browser' as const
-const PAGE_SIZE = 20
+const DEFAULT_PAGE_SIZE = 10
 /** BookingService caps a page at 100; five pages cover a busy month before the view asks for a center filter. */
 const MONTH_PAGE_SIZE = 100
 const MONTH_MAX_PAGES = 5
@@ -41,13 +41,15 @@ export interface BookingsBrowserProps {
   /** Shows one center only (the center page tab); the center filter is hidden. */
   fixedCenterId?: string
   detailPath: (bookingId: string) => string
+  /** Secondary actions of one list row (e.g. the admin's "⋯" menu), drawn after the status. */
+  rowAction?: (booking: BookingSummaryRecord) => ReactNode
 }
 
 /**
  * Every booking (or one center's), as a list or as a month of planned visits (V-03). BookingService filters by
  * `centerId`, `status`, `keyword` and a `from`/`to` range that overlaps each booking's dates; all filters live in the URL.
  */
-export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserProps) {
+export function BookingsBrowser({ fixedCenterId, detailPath, rowAction }: BookingsBrowserProps) {
   const { t, i18n } = useTranslation()
   const id = useId()
   const [params, setParams] = useSearchParams()
@@ -61,6 +63,7 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
   const month = MONTH.test(params.get('month') ?? '') ? params.get('month')! : today.slice(0, 7)
   const selectedDay = DAY.test(params.get('day') ?? '') ? params.get('day')! : null
   const page = Math.max(0, Number(params.get('page')) || 0)
+  const pageSize = pageSizeOf(params.get('size'), DEFAULT_PAGE_SIZE)
   const [draft, setDraft] = useState(keyword)
   // A reversed range is only flagged, never blocked or corrected (U-10); the request keeps the last valid range.
   const rangeReversed = Boolean(from && to && to < from)
@@ -79,7 +82,7 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
     to: rangeReversed ? undefined : to || undefined,
     sort: 'startDate,desc',
     page,
-    size: PAGE_SIZE
+    size: pageSize
   }
   const list = useQuery({
     queryKey: bookingKeys.list(listQuery),
@@ -284,12 +287,14 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
           <EmptyState description={t(`${key}.emptyHint`)} icon='calendar_month' title={t(`${key}.empty`)} />
         ) : (
           <>
-            <p className='text-sm text-on-surface-variant'>{t(`${key}.total`, { count: list.data.totalElements })}</p>
             <ul className='cc-stagger overflow-hidden rounded-2xl border border-forest-900/[0.06] bg-white shadow-[var(--shadow-card)]'>
               {rows.map((booking) => (
-                <li className='border-b border-outline-variant/25 last:border-b-0' key={booking.id}>
+                <li
+                  className='flex items-center border-b border-outline-variant/25 transition-colors last:border-b-0 hover:bg-mint-50/70'
+                  key={booking.id}
+                >
                   <Link
-                    className='grid gap-2 px-5 py-3.5 text-sm transition-colors hover:bg-mint-50/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'
+                    className='grid min-w-0 flex-1 gap-2 px-5 py-3.5 text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'
                     to={detailPath(booking.id)}
                   >
                     <span className='min-w-0'>
@@ -320,13 +325,17 @@ export function BookingsBrowser({ fixedCenterId, detailPath }: BookingsBrowserPr
                       <BookingStatusBadge status={booking.status} />
                     </span>
                   </Link>
+                  {rowAction ? <span className='shrink-0 pr-3'>{rowAction(booking)}</span> : null}
                 </li>
               ))}
             </ul>
             <Pagination
               ariaLabel={t(`${key}.pagination`)}
               onPageChange={(next) => update({ page: next > 0 ? String(next) : undefined }, true)}
+              onPageSizeChange={(size) => update({ size: size === DEFAULT_PAGE_SIZE ? undefined : String(size) })}
               page={page}
+              pageSize={pageSize}
+              totalElements={list.data.totalElements}
               totalPages={list.data.totalPages}
             />
           </>

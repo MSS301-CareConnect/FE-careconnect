@@ -4,10 +4,12 @@ import { Link } from 'react-router'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { formatClock24 } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { Icon } from '~/shared/ui/icon'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
 import {
   ACTIVE_VISIT_STATUSES,
+  CANCELLED_VISIT_STATUSES,
   VISIT_PAGE_SIZE,
   useMyCaregiverProfile,
   useBookingRequests,
@@ -15,7 +17,7 @@ import {
   useVisitPage,
   useVisitsToAccept
 } from '../data/caregiver-queries'
-import { addDays, calendarDayOf, useCaregiverFormat, weekStart } from '../ui/caregiver-format'
+import { calendarDayOf, minutesBetweenInstants, useCaregiverFormat } from '../ui/caregiver-format'
 import { CaregiverEmpty, CaregiverError, cgContainer, cgForestAction, cgOutlineAction } from '../ui/caregiver-page'
 import { useNow } from '../ui/use-now'
 import { NeedsAttention } from './components/needs-attention'
@@ -37,8 +39,6 @@ export function CaregiverTodayPage() {
   const now = useNow()
   const profile = useMyCaregiverProfile()
   const upcoming = useVisitPage({ from: today, page: 0, size: VISIT_PAGE_SIZE })
-  const monday = weekStart(today)
-  const week = useVisitPage({ from: monday, to: addDays(monday, 6), page: 0, size: VISIT_PAGE_SIZE })
   const toAccept = useVisitsToAccept(today).data?.totalElements ?? 0
   const requests = useBookingRequests().data?.totalElements ?? 0
   useDocumentTitle(t('caregiver.today.documentTitle'))
@@ -47,21 +47,61 @@ export function CaregiverTodayPage() {
   const todayVisits = visits.filter((visit) => calendarDayOf(visit.startAt) === today)
   const next = visits.find((visit) => ACTIVE_VISIT_STATUSES.has(visit.status) && new Date(visit.endAt).getTime() > now)
   const givenName = profile.data?.fullName.trim().split(/\s+/).at(-1) ?? ''
+  const working = todayVisits.filter((visit) => !CANCELLED_VISIT_STATUSES.has(visit.status))
+  const todayMinutes = working.reduce((sum, visit) => sum + minutesBetweenInstants(visit.startAt, visit.endAt), 0)
+  const left = working.filter(
+    (visit) => ACTIVE_VISIT_STATUSES.has(visit.status) && new Date(visit.endAt).getTime() > now
+  )
+  const waiting = toAccept + requests
+  const glance = [
+    {
+      key: 'today',
+      icon: 'event_note',
+      text: t('caregiver.today.glance.today', { count: working.length, duration: format.duration(todayMinutes) })
+    },
+    { key: 'left', icon: 'schedule', text: t('caregiver.today.glance.left', { count: left.length }) }
+  ]
 
   return (
     <div className={cgContainer}>
-      <header className='mb-6'>
-        <p className='inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-[13px] font-semibold text-forest-700 tabular-nums ring-1 ring-forest-900/5'>
-          <span aria-hidden='true' className='h-1.5 w-1.5 rounded-full bg-mint-400' />
-          {t('caregiver.today.dateLine', { weekday: format.weekdayLong(today), date: format.date(today) })}
-        </p>
-        <h1 className='mt-3 text-[28px] leading-tight text-forest-950 sm:text-[40px]'>
-          <Trans
-            components={{ accent: <span className='cc-accent-serif text-forest-700' /> }}
-            i18nKey={`caregiver.today.greeting.${greetingKey(now, format.language)}`}
-            values={{ name: givenName }}
-          />
-        </h1>
+      <header className='mb-6 flex flex-wrap items-end justify-between gap-4'>
+        <div className='min-w-0'>
+          <p className='inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-[13px] font-semibold text-forest-700 tabular-nums ring-1 ring-forest-900/5'>
+            <span aria-hidden='true' className='h-1.5 w-1.5 rounded-full bg-mint-400' />
+            {t('caregiver.today.dateLine', { weekday: format.weekdayLong(today), date: format.date(today) })}
+          </p>
+          <h1 className='mt-3 text-[28px] leading-tight text-forest-950 sm:text-[40px]'>
+            <Trans
+              components={{ accent: <span className='cc-accent-serif text-forest-700' /> }}
+              i18nKey={`caregiver.today.greeting.${greetingKey(now, format.language)}`}
+              values={{ name: givenName }}
+            />
+          </h1>
+        </div>
+        {upcoming.isSuccess ? (
+          <ul aria-label={t('caregiver.today.glance.label')} className='flex flex-wrap gap-2'>
+            {glance.map((item) => (
+              <li
+                className='inline-flex min-h-10 items-center gap-2 rounded-full bg-white/85 px-3.5 text-sm font-semibold text-forest-900 tabular-nums shadow-[var(--cg-shadow-1)] ring-1 ring-forest-900/5'
+                key={item.key}
+              >
+                <Icon className='text-lg text-forest-700' name={item.icon} />
+                {item.text}
+              </li>
+            ))}
+            {waiting > 0 ? (
+              <li>
+                <Link
+                  className='cg-press inline-flex min-h-10 items-center gap-2 rounded-full bg-peach-300 px-3.5 text-sm font-semibold text-forest-950 tabular-nums shadow-[0_10px_24px_-14px_rgb(246_146_95/0.9)] hover:bg-peach-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900'
+                  to='/caregiver/visits?tab=respond'
+                >
+                  <Icon className='text-lg' name='pending_actions' />
+                  {t('caregiver.today.glance.waiting', { count: waiting })}
+                </Link>
+              </li>
+            ) : null}
+          </ul>
+        ) : null}
       </header>
 
       <div className='grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]'>
@@ -113,8 +153,7 @@ export function CaregiverTodayPage() {
             requests={requests}
             toAccept={toAccept}
           />
-          {week.isSuccess ? <WeekStats today={today} visits={week.data.items} /> : null}
-          {week.isPending ? <Skeleton className='h-56 rounded-2xl' /> : null}
+          <WeekStats today={today} />
         </div>
       </div>
     </div>

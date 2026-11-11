@@ -9,7 +9,8 @@ export const identityVi = {
   accounts: {
     documentTitle: 'Tài khoản | Quản trị CareConnect',
     title: 'Tài khoản',
-    subtitle: 'Người dùng, vai trò và trạng thái đăng nhập.',
+    subtitle: 'Mọi tài khoản của nền tảng: tìm, lọc theo vai trò và trạng thái, khóa hoặc vô hiệu hóa ngay trên từng dòng.',
+    rowActions: 'Thao tác với tài khoản {{name}}',
     create: 'Tạo tài khoản',
     metrics: {
       title: 'Tổng quan tài khoản',
@@ -32,7 +33,8 @@ export const identityVi = {
       roles: 'Vai trò',
       center: 'Trung tâm',
       status: 'Trạng thái',
-      createdAt: 'Ngày tạo'
+      createdAt: 'Ngày tạo',
+      action: 'Thao tác'
     },
     empty: 'Không có tài khoản phù hợp.',
     emptyHint: 'Thử bỏ bớt bộ lọc hoặc đổi từ khóa.',
@@ -114,6 +116,7 @@ export const identityVi = {
     lockReason: 'Lý do khóa',
     unlockTitle: 'Mở khóa tài khoản {{name}}?',
     unlockDescription: 'Người dùng đăng nhập lại được bằng mật khẩu hiện có.',
+    openAccount: 'Xem và sửa tài khoản',
     deactivate: 'Vô hiệu hóa',
     deactivateTitle: 'Vô hiệu hóa tài khoản {{name}}?',
     deactivateDescription:
@@ -159,6 +162,13 @@ export const identityVi = {
     permissionCount: '{{count}} quyền',
     permissionsOf: 'Quyền của {{role}}',
     inactive: 'Ngừng dùng',
+    chooseRole: 'Chọn một vai trò để xem và sửa quyền của nó.',
+    edit: 'Sửa',
+    delete: 'Xóa',
+    deleteTitle: 'Xóa vai trò {{role}}?',
+    deleteDescription: 'Vai trò bị xóa khỏi danh sách và mã của nó không dùng lại được. Chỉ xóa được khi không còn tài khoản nào giữ vai trò này.',
+    business: { inUse: 'Vẫn còn tài khoản giữ vai trò này. Gỡ vai trò khỏi các tài khoản đó rồi xóa lại.' },
+    discard: 'Bỏ thay đổi',
     save: 'Lưu quyền',
     confirmTitle: 'Lưu quyền của {{role}}?',
     confirmSave: 'Toàn bộ quyền hiện tại của vai trò sẽ được thay bằng các quyền đã chọn.',
@@ -219,6 +229,11 @@ export const identityVi = {
       description: 'Mô tả',
       descriptionHint: 'Ghi rõ vai trò dùng cho ai và để làm gì.',
       submit: 'Tạo vai trò',
+      editTitle: 'Sửa vai trò',
+      editHint: 'Mã vai trò {{code}} không đổi được.',
+      active: 'Đang dùng',
+      activeHint: 'Bỏ chọn để vai trò ngừng cấp quyền cho những tài khoản đang giữ nó, không cần gỡ từng tài khoản.',
+      saveEdit: 'Lưu thay đổi',
       cancel: 'Hủy',
       created: 'Đã tạo vai trò.',
       errors: {
@@ -242,7 +257,8 @@ export const identityEn = {
   accounts: {
     documentTitle: 'Accounts | CareConnect Admin',
     title: 'Accounts',
-    subtitle: 'Users, roles and sign-in status.',
+    subtitle: 'Every account of the platform: search, filter by role and status, lock or deactivate from each row.',
+    rowActions: 'Actions for the account of {{name}}',
     create: 'Create account',
     metrics: {
       title: 'Account overview',
@@ -265,7 +281,8 @@ export const identityEn = {
       roles: 'Roles',
       center: 'Center',
       status: 'Status',
-      createdAt: 'Created'
+      createdAt: 'Created',
+      action: 'Actions'
     },
     empty: 'No matching accounts.',
     emptyHint: 'Try removing a filter or changing the keyword.',
@@ -347,6 +364,7 @@ export const identityEn = {
     lockReason: 'Reason for locking',
     unlockTitle: 'Unlock {{name}}?',
     unlockDescription: 'The user can sign in again with their current password.',
+    openAccount: 'View and edit the account',
     deactivate: 'Deactivate',
     deactivateTitle: 'Deactivate {{name}}?',
     deactivateDescription:
@@ -392,6 +410,13 @@ export const identityEn = {
     permissionCount: '{{count}} permissions',
     permissionsOf: 'Permissions of {{role}}',
     inactive: 'Inactive',
+    chooseRole: 'Choose a role to see and edit its permissions.',
+    edit: 'Edit',
+    delete: 'Delete',
+    deleteTitle: 'Delete the role {{role}}?',
+    deleteDescription: 'The role leaves the list and its code cannot be used again. It can only be deleted once no account holds it.',
+    business: { inUse: 'Some accounts still hold this role. Remove it from them, then delete again.' },
+    discard: 'Discard changes',
     save: 'Save permissions',
     confirmTitle: 'Save the permissions of {{role}}?',
     confirmSave: 'Every current permission of the role is replaced by the selected ones.',
@@ -452,6 +477,11 @@ export const identityEn = {
       description: 'Description',
       descriptionHint: 'Say who the role is for and what it is used for.',
       submit: 'Create role',
+      editTitle: 'Edit role',
+      editHint: 'The role code {{code}} cannot be changed.',
+      active: 'In use',
+      activeHint: 'Untick to stop the role granting anything to the accounts that hold it, without removing it from each one.',
+      saveEdit: 'Save changes',
       cancel: 'Cancel',
       created: 'Role created.',
       errors: {

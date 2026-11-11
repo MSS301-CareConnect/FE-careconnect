@@ -10,12 +10,17 @@ import { formatClock24 } from '~/shared/lib/format'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
+import { Pagination } from '~/shared/ui/pagination'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
 import { calendarDayOf, useCaregiverFormat } from '../../ui/caregiver-format'
 import { CaregiverEmpty, CaregiverError, cgCard } from '../../ui/caregiver-page'
+import { useClientPage } from '../../ui/use-client-page'
 import { useNow } from '../../ui/use-now'
 import { TimeOffForm } from './time-off-form'
+
+// ProviderService returns every upcoming time off at once; the list shows eight a page.
+const TIME_OFFS_PER_PAGE = 8
 
 /** "Ngày nghỉ": upcoming time off with add (drawer) and delete (confirmed). */
 export function TimeOffPanel({ caregiverId, today }: { caregiverId?: string; today: string }) {
@@ -31,6 +36,7 @@ export function TimeOffPanel({ caregiverId, today }: { caregiverId?: string; tod
     enabled: Boolean(caregiverId),
     retry: false
   })
+  const paged = useClientPage(list.data ?? [], TIME_OFFS_PER_PAGE)
   const remove = useMutation({
     mutationFn: (item: ProviderTimeOffRecord) => removeTimeOff(caregiverId ?? '', item.id),
     onSuccess: async () => {
@@ -99,8 +105,8 @@ export function TimeOffPanel({ caregiverId, today }: { caregiverId?: string; tod
           <h2 className='mb-2 text-sm font-semibold text-on-surface-variant' id='time-off-upcoming'>
             {t('caregiver.work.timeOff.upcoming')}
           </h2>
-          <ul className='cg-stagger flex flex-col gap-2'>
-            {list.data.map((item) => (
+          <ul className='cg-stagger flex flex-col gap-2' key={paged.page}>
+            {paged.items.map((item) => (
               <li className={`${cgCard} flex items-center gap-3 p-3 sm:p-4`} key={item.id}>
                 <span className='grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-neutral-container text-on-neutral-container'>
                   <Icon className='text-xl' name='beach_access' />
@@ -126,6 +132,13 @@ export function TimeOffPanel({ caregiverId, today }: { caregiverId?: string; tod
               </li>
             ))}
           </ul>
+          <Pagination
+            ariaLabel={t('caregiver.work.timeOff.pagination')}
+            className='mt-3'
+            onPageChange={paged.setPage}
+            page={paged.page}
+            totalPages={paged.totalPages}
+          />
         </section>
       ) : null}
 

@@ -20,7 +20,9 @@ export function AdminTopbar({ menuOpen, onToggleMenu }: AdminTopbarProps) {
       onToggleMenu={onToggleMenu}
       openMenuLabel={t('admin.openMenu')}
       portal='admin'
+      profileLink={{ to: '/admin/profile', label: t('admin.profilePage.menu') }}
       roleLabel={t('admin.role')}
+      securityLink='/admin/profile?tab=security'
       sidebarId={ADMIN_SIDEBAR_ID}
     />
   )

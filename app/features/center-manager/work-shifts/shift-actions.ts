@@ -2,7 +2,11 @@ import type { ProviderWorkShiftRecord } from '~/shared/api/generated/contracts'
 
 import { vnInstant } from './shift-form-model'
 
-export type ShiftAction = 'view' | 'edit' | 'duplicate' | 'open' | 'close' | 'cancel'
+export type ShiftAction = 'view' | 'edit' | 'duplicate' | 'open' | 'close' | 'cancel' | 'delete'
+
+/** Actions that also run on several selected shifts at once (cancelling needs a reason per shift, so it stays single). */
+export const BULK_SHIFT_ACTIONS = ['open', 'close', 'delete'] as const
+export type BulkShiftAction = (typeof BULK_SHIFT_ACTIONS)[number]
 
 /**
  * What the manager may do with a shift, following ProviderService: nothing changes once the shift has started or is
@@ -12,6 +16,8 @@ export function allowedShiftActions(shift: ProviderWorkShiftRecord, now: number)
   const actions = new Set<ShiftAction>(['view', 'duplicate'])
   const started = vnInstant(shift.workDate, shift.startTime).getTime() <= now
   const finished = shift.shiftStatus === 'CANCELLED' || shift.shiftStatus === 'COMPLETED'
+  // ProviderService deletes any shift nobody was approved for (409 otherwise); a running one is left alone.
+  if ((shift.approvedCount ?? 0) === 0 && (!started || finished)) actions.add('delete')
   if (started || finished) return actions
   actions.add('edit')
   actions.add('cancel')

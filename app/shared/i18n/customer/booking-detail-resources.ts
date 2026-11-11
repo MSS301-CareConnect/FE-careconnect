@@ -169,6 +169,21 @@ export const bookingDetailEn = {
     reasonPlaceholder: 'E.g. the family has an urgent matter…'
   },
   occurrenceDetail: {
+    customerReport: {
+      notArrived: {
+        action: 'Chưa thấy người chăm sóc đến',
+        label: 'Ghi chú cho trung tâm (không bắt buộc)',
+        description: 'Trung tâm sẽ được báo ngay để liên hệ người chăm sóc hoặc sắp xếp người khác.'
+      },
+      notDelivered: {
+        action: 'Buổi không được thực hiện đúng',
+        label: 'Điều gì đã xảy ra?',
+        description:
+          'Trung tâm sẽ xem lại buổi này. Nếu buổi không được thực hiện, tiền buổi được hoàn vào ví của bạn. Chỉ gửi được trong 24 giờ sau khi buổi kết thúc.'
+      },
+      confirm: 'Gửi phản ánh',
+      sent: 'Đã gửi phản ánh lúc {{time}}'
+    },
     rescheduled: 'Rescheduled {{count}} times',
     rescheduleAction: 'Move this visit to another time',
     age: '({{count}} years old)',
@@ -394,6 +409,21 @@ export const bookingDetailVi = {
     reasonPlaceholder: 'Ví dụ: Gia đình có việc bận đột xuất…'
   },
   occurrenceDetail: {
+    customerReport: {
+      notArrived: {
+        action: 'The caregiver has not arrived',
+        label: 'Note for the center (optional)',
+        description: 'The center is told at once so it can reach the caregiver or send someone else.'
+      },
+      notDelivered: {
+        action: 'This visit was not delivered properly',
+        label: 'What happened?',
+        description:
+          'The center will review this visit. If it was not delivered, the visit is refunded to your wallet. You can report within 24 hours after the visit ends.'
+      },
+      confirm: 'Send report',
+      sent: 'Report sent at {{time}}'
+    },
     rescheduled: 'Đã dời {{count}} lần',
     rescheduleAction: 'Dời buổi này sang giờ khác',
     age: '({{count}} tuổi)',

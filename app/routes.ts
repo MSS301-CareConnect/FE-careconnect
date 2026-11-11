@@ -13,8 +13,8 @@ export default [
       index('routes/admin/index.tsx'),
       route('dashboard', 'routes/admin/dashboard.tsx'),
       route('revenue', 'routes/admin/revenue.tsx'),
-      route('wallet', 'routes/admin/wallet.tsx'),
       route('withdrawals', 'routes/admin/withdrawals.tsx'),
+      route('withdrawals/:withdrawalId/transfer', 'routes/admin/withdrawal-transfer.tsx'),
       route('services', 'routes/admin/services.tsx'),
       route('centers', 'routes/admin/centers.tsx'),
       route('centers/:id', 'routes/admin/center-detail.tsx'),
@@ -27,6 +27,7 @@ export default [
       route('accounts', 'routes/admin/accounts.tsx'),
       route('accounts/:id', 'routes/admin/account-detail.tsx'),
       route('roles', 'routes/admin/roles.tsx'),
+      route('profile', 'routes/admin/profile.tsx'),
       route('incidents', 'routes/admin/incidents.tsx'),
       route('bookings', 'routes/admin/bookings.tsx'),
       route('bookings/:id', 'routes/admin/booking-detail.tsx'),
@@ -49,7 +50,9 @@ export default [
       route('bookings', 'routes/center-manager/bookings.tsx'),
       route('bookings/:id', 'routes/center-manager/booking-detail.tsx'),
       route('policy', 'routes/center-manager/policy.tsx'),
-      route('wallet', 'routes/center-manager/wallet.tsx'),
+      route('revenue', 'routes/center-manager/revenue.tsx'),
+      route('withdrawals', 'routes/center-manager/withdrawals.tsx'),
+      route('withdrawals/:withdrawalId/transfer', 'routes/center-manager/withdrawal-transfer.tsx'),
       route('complaints', 'routes/center-manager/complaints.tsx'),
       route('notifications', 'routes/center-manager/notifications.tsx')
     ])

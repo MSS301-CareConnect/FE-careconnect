@@ -24,6 +24,8 @@ export const adminBookingsVi = {
   cancelReason: 'Lý do hủy',
   occurrences: 'Các buổi chăm sóc',
   history: 'Lịch sử',
+  open: 'Xem chi tiết',
+  rowActions: 'Thao tác với lịch đặt #{{code}}',
   cancel: 'Hủy thay nền tảng',
   cancelTitle: 'Hủy lịch đặt thay nền tảng',
   cancelHint:
@@ -57,6 +59,8 @@ export const adminBookingsEn = {
   cancelReason: 'Cancellation reason',
   occurrences: 'Care visits',
   history: 'History',
+  open: 'View details',
+  rowActions: 'Actions for booking #{{code}}',
   cancel: 'Cancel for the platform',
   cancelTitle: 'Cancel this booking for the platform',
   cancelHint:

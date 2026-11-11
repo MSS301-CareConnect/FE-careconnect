@@ -154,9 +154,7 @@ export function CareProfile({ visit }: { visit: CaregiverOccurrenceRecord }) {
                 <Icon className='text-base' name='assignment' />
                 {t('caregiver.visitDetail.care.careNotesTitle')}
               </p>
-              <p className='mt-1 text-sm line-clamp-2 text-on-surface whitespace-pre-line'>
-                {careRequirements}
-              </p>
+              <p className='mt-1 text-sm line-clamp-2 text-on-surface whitespace-pre-line'>{careRequirements}</p>
             </div>
           ) : null}
         </div>

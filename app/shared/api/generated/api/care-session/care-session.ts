@@ -24,12 +24,15 @@ import type {
 import type {
   CareSessionEndRequest,
   CareSessionForceEndRequest,
+  CareSessionPageResponse,
   CareSessionResponse,
+  CareSessionReviewRequest,
   CareSessionStartRequest,
   CareTaskCreateRequest,
   CareTaskResponse,
   CareTaskUpdateRequest,
   ListCareSessionNotesParams,
+  ListCareSessionsForReviewParams,
   SessionNotePageResponse,
   SessionNoteRequest,
   SessionNoteResponse
@@ -50,6 +53,206 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
     })
   }
   return result
+}
+
+export type listCareSessionsForReviewResponse200 = {
+  data: CareSessionPageResponse
+  status: 200
+}
+
+export type listCareSessionsForReviewResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listCareSessionsForReviewResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listCareSessionsForReviewResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listCareSessionsForReviewResponse404 = {
+  data: void
+  status: 404
+}
+
+export type listCareSessionsForReviewResponse409 = {
+  data: void
+  status: 409
+}
+
+export type listCareSessionsForReviewResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listCareSessionsForReviewResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listCareSessionsForReviewResponseSuccess = listCareSessionsForReviewResponse200 & {
+  headers: Headers
+}
+export type listCareSessionsForReviewResponseError = (
+  | listCareSessionsForReviewResponse400
+  | listCareSessionsForReviewResponse401
+  | listCareSessionsForReviewResponse403
+  | listCareSessionsForReviewResponse404
+  | listCareSessionsForReviewResponse409
+  | listCareSessionsForReviewResponse500
+  | listCareSessionsForReviewResponse503
+) & {
+  headers: Headers
+}
+
+export const getListCareSessionsForReviewUrl = (params?: ListCareSessionsForReviewParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/care-sessions?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/care-sessions`
+}
+
+/**
+ * @summary CENTER_MANAGER lists system-closed sessions of the center by review state (default PENDING)
+ */
+export const listCareSessionsForReview = async (
+  params?: ListCareSessionsForReviewParams,
+  options?: RequestInit
+): Promise<listCareSessionsForReviewResponseSuccess> => {
+  const res = await fetch(getListCareSessionsForReviewUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listCareSessionsForReviewResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listCareSessionsForReviewResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listCareSessionsForReviewResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listCareSessionsForReviewResponseSuccess
+}
+
+export const getListCareSessionsForReviewQueryKey = (params?: ListCareSessionsForReviewParams) => {
+  return [`${env.API_BASE_URL}/v1/care-sessions`, ...(params ? [params] : [])] as const
+}
+
+export const getListCareSessionsForReviewQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCareSessionsForReview>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCareSessionsForReviewParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareSessionsForReview>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListCareSessionsForReviewQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listCareSessionsForReview>>> = ({ signal }) =>
+    listCareSessionsForReview(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCareSessionsForReview>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListCareSessionsForReviewQueryResult = NonNullable<Awaited<ReturnType<typeof listCareSessionsForReview>>>
+export type ListCareSessionsForReviewQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListCareSessionsForReview<
+  TData = Awaited<ReturnType<typeof listCareSessionsForReview>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | ListCareSessionsForReviewParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareSessionsForReview>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCareSessionsForReview>>,
+          TError,
+          Awaited<ReturnType<typeof listCareSessionsForReview>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCareSessionsForReview<
+  TData = Awaited<ReturnType<typeof listCareSessionsForReview>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCareSessionsForReviewParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareSessionsForReview>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCareSessionsForReview>>,
+          TError,
+          Awaited<ReturnType<typeof listCareSessionsForReview>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCareSessionsForReview<
+  TData = Awaited<ReturnType<typeof listCareSessionsForReview>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCareSessionsForReviewParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareSessionsForReview>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary CENTER_MANAGER lists system-closed sessions of the center by review state (default PENDING)
+ */
+
+export function useListCareSessionsForReview<
+  TData = Awaited<ReturnType<typeof listCareSessionsForReview>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: ListCareSessionsForReviewParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listCareSessionsForReview>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListCareSessionsForReviewQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
 }
 
 export type startCareSessionResponse200 = {
@@ -527,6 +730,155 @@ export const useEndCareSession = <TError = globalThis.Error & { info?: void; sta
   TContext
 > => {
   return useMutation(getEndCareSessionMutationOptions(options), queryClient)
+}
+export type reviewCareSessionResponse200 = {
+  data: CareSessionResponse
+  status: 200
+}
+
+export type reviewCareSessionResponse400 = {
+  data: void
+  status: 400
+}
+
+export type reviewCareSessionResponse401 = {
+  data: void
+  status: 401
+}
+
+export type reviewCareSessionResponse403 = {
+  data: void
+  status: 403
+}
+
+export type reviewCareSessionResponse404 = {
+  data: void
+  status: 404
+}
+
+export type reviewCareSessionResponse409 = {
+  data: void
+  status: 409
+}
+
+export type reviewCareSessionResponse500 = {
+  data: void
+  status: 500
+}
+
+export type reviewCareSessionResponse503 = {
+  data: void
+  status: 503
+}
+
+export type reviewCareSessionResponseSuccess = reviewCareSessionResponse200 & {
+  headers: Headers
+}
+export type reviewCareSessionResponseError = (
+  | reviewCareSessionResponse400
+  | reviewCareSessionResponse401
+  | reviewCareSessionResponse403
+  | reviewCareSessionResponse404
+  | reviewCareSessionResponse409
+  | reviewCareSessionResponse500
+  | reviewCareSessionResponse503
+) & {
+  headers: Headers
+}
+
+export const getReviewCareSessionUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/care-sessions/${id}/review`
+}
+
+/**
+ * @summary CENTER_MANAGER concludes a system-closed session — delivered (settle) or not (refund, absence record)
+ */
+export const reviewCareSession = async (
+  id: string,
+  careSessionReviewRequest: CareSessionReviewRequest,
+  options?: RequestInit
+): Promise<reviewCareSessionResponseSuccess> => {
+  const res = await fetch(getReviewCareSessionUrl(id), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(careSessionReviewRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: reviewCareSessionResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: reviewCareSessionResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: reviewCareSessionResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as reviewCareSessionResponseSuccess
+}
+
+export const getReviewCareSessionMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewCareSession>>,
+    TError,
+    { id: string; data: CareSessionReviewRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reviewCareSession>>,
+  TError,
+  { id: string; data: CareSessionReviewRequest },
+  TContext
+> => {
+  const mutationKey = ['reviewCareSession']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reviewCareSession>>,
+    { id: string; data: CareSessionReviewRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return reviewCareSession(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ReviewCareSessionMutationResult = NonNullable<Awaited<ReturnType<typeof reviewCareSession>>>
+export type ReviewCareSessionMutationBody = CareSessionReviewRequest
+export type ReviewCareSessionMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CENTER_MANAGER concludes a system-closed session — delivered (settle) or not (refund, absence record)
+ */
+export const useReviewCareSession = <TError = globalThis.Error & { info?: void; status?: number }, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof reviewCareSession>>,
+      TError,
+      { id: string; data: CareSessionReviewRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof reviewCareSession>>,
+  TError,
+  { id: string; data: CareSessionReviewRequest },
+  TContext
+> => {
+  return useMutation(getReviewCareSessionMutationOptions(options), queryClient)
 }
 export type forceEndCareSessionResponse200 = {
   data: CareSessionResponse

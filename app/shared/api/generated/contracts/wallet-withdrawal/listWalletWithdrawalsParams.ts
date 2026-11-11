@@ -6,9 +6,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { WalletOwnerType } from '../walletOwnerType'
+import type { WalletWithdrawalScope } from './walletWithdrawalScope'
 import type { WalletWithdrawalStatus } from './walletWithdrawalStatus'
 
 export type ListWalletWithdrawalsParams = {
+  scope?: WalletWithdrawalScope
   status?: WalletWithdrawalStatus
   ownerType?: WalletOwnerType
   page?: number

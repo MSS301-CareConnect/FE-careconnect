@@ -11,18 +11,27 @@ import { Button } from '~/shared/ui/button'
 import { Combobox } from '~/shared/ui/combobox'
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { Icon } from '~/shared/ui/icon'
+import { Pagination } from '~/shared/ui/pagination'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
-import { BentoPageHeader } from '~/shared/ui/bento-page-header'
+import { BentoPageHeader, bentoCard } from '~/shared/ui/bento-page-header'
 import { buildRows, clashesWithLeave, leaveOnDay, scheduleMinutes, type DayLeave } from './calendar-model'
 import { ScheduleList } from './components/schedule-list'
 import { TeamWeekGrid } from './components/team-week-grid'
 import { TimeOffTable } from './components/time-off-table'
 import { WorkCalendarStats, type CalendarNumbers } from './components/work-calendar-stats'
-import { TIME_OFF_SCOPES, useWorkCalendar, type CalendarView } from './hooks/use-work-calendar'
+import {
+  CALENDAR_PAGE_SIZES,
+  mondayOf,
+  TIME_OFF_SCOPES,
+  useWorkCalendar,
+  type CalendarView
+} from './hooks/use-work-calendar'
 
 const k = 'centerManager.schedules' as const
+const weekButton =
+  'grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
 
 /**
  * Center Manager "Work calendar": who works which approved shift and who is off, for one week at a time — as a team
@@ -84,7 +93,11 @@ export function ManagerWorkCalendarPage() {
         cancelled: schedules.length - active.length
       }
   const timeOffTab = calendar.view === 'timeOff'
-  const failed = timeOffTab ? calendar.timeOffs.isError : calendar.schedules.isError || calendar.weekTimeOffs.isError
+  const listTab = calendar.view === 'list'
+  const failed = timeOffTab
+    ? calendar.timeOffs.isError
+    : calendar.schedules.isError || calendar.weekTimeOffs.isError || (listTab && calendar.scheduleList.isError)
+  const paged = timeOffTab ? calendar.timeOffs.data : listTab ? calendar.scheduleList.data : undefined
 
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
@@ -97,20 +110,52 @@ export function ManagerWorkCalendarPage() {
         description={t(`${k}.subtitle`)}
         title={t(`${k}.title`)}
       />
-      <WorkCalendarStats
-        loading={loading}
-        numbers={numbers}
-        onShowTimeOff={() => {
-          calendar.setView('timeOff')
-          calendar.setScope('current')
-        }}
-      />
-
+      {/* The week is the page's context: it sits right under the title, with the way of viewing it. */}
       <section
         aria-label={t(`${k}.toolbar`)}
-        className='flex flex-wrap items-center gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-3 sm:p-4'
+        className='relative isolate flex flex-wrap items-center justify-between gap-x-6 gap-y-3 overflow-hidden rounded-[1.75rem] bg-forest-900 px-4 py-4 text-white shadow-[var(--shadow-float)] sm:px-6'
       >
+        <span
+          aria-hidden='true'
+          className='pointer-events-none absolute -top-24 -right-10 -z-10 h-64 w-64 rounded-full bg-mint-400/20 blur-3xl'
+        />
+        <div className='flex items-center gap-2'>
+          <button
+            aria-label={t(`${k}.week.previous`)}
+            className={weekButton}
+            onClick={() => calendar.setWeek(addDays(calendar.monday, -7))}
+            type='button'
+          >
+            <Icon name='chevron_left' />
+          </button>
+          <div className='min-w-48 px-1 text-center'>
+            <p className='text-xs font-medium text-white/65'>
+              {calendar.monday === mondayOf(today) ? t(`${k}.week.thisWeek`) : t(`${k}.week.label`)}
+            </p>
+            <p aria-live='polite' className='text-lg leading-tight font-bold tracking-tight tabular-nums sm:text-xl'>
+              {t(`${k}.week.range`, { from: format.shortDate(calendar.monday), to: format.date(calendar.sunday) })}
+            </p>
+          </div>
+          <button
+            aria-label={t(`${k}.week.next`)}
+            className={weekButton}
+            onClick={() => calendar.setWeek(addDays(calendar.monday, 7))}
+            type='button'
+          >
+            <Icon name='chevron_right' />
+          </button>
+          {calendar.monday === mondayOf(today) ? null : (
+            <button
+              className='ml-1 inline-flex min-h-10 items-center rounded-full bg-mint-300 px-4 text-sm font-semibold text-forest-950 transition-colors hover:bg-mint-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+              onClick={() => calendar.setWeek(today)}
+              type='button'
+            >
+              {t(`${k}.week.thisWeek`)}
+            </button>
+          )}
+        </div>
         <SegmentedControl
+          className='w-full rounded-full bg-white sm:w-[26rem]'
           legend={t(`${k}.view.label`)}
           onChange={(value: CalendarView) => calendar.setView(value)}
           options={[
@@ -120,71 +165,58 @@ export function ManagerWorkCalendarPage() {
           ]}
           value={calendar.view}
         />
-        <Combobox
-          aria-label={t(`${k}.caregiverFilter`)}
-          className='w-60'
-          icon='person_search'
-          onChange={calendar.setCaregiver}
-          options={[{ value: '', name: t(`${k}.allCaregivers`) }, ...options]}
-          placeholder={t(`${k}.allCaregivers`)}
-          searchPlaceholder={t('centerManager.provider.timeOff.caregiverSearch')}
-          value={calendar.caregiverId}
-        />
-        {timeOffTab ? (
-          <FilterChips
-            label={t(`${k}.scope.label`)}
-            onChange={(value) => calendar.setScope(TIME_OFF_SCOPES.find((item) => item === value) ?? 'current')}
-            options={TIME_OFF_SCOPES.map((scope) => ({ value: scope, label: t(`${k}.scope.${scope}`) }))}
-            value={calendar.scope}
-          />
-        ) : null}
-        {calendar.view === 'team' ? (
-          <label className='inline-flex min-h-10 items-center gap-2 text-sm text-on-surface'>
-            <input
-              checked={onlyBusy}
-              className='h-4 w-4 accent-primary'
-              onChange={(event) => setOnlyBusy(event.target.checked)}
-              type='checkbox'
-            />
-            {t(`${k}.onlyBusy`)}
-          </label>
-        ) : null}
-        {!timeOffTab || calendar.scope === 'week' ? (
-          <div className='ml-auto flex items-center gap-1.5'>
-            <Button
-              aria-label={t(`${k}.week.previous`)}
-              onClick={() => calendar.setWeek(addDays(calendar.monday, -7))}
-              size='sm'
-              variant='outline'
-            >
-              <Icon name='chevron_left' />
-            </Button>
-            <span className='min-w-44 text-center text-sm font-semibold tabular-nums' aria-live='polite'>
-              {t(`${k}.week.range`, { from: format.shortDate(calendar.monday), to: format.date(calendar.sunday) })}
-            </span>
-            <Button
-              aria-label={t(`${k}.week.next`)}
-              onClick={() => calendar.setWeek(addDays(calendar.monday, 7))}
-              size='sm'
-              variant='outline'
-            >
-              <Icon name='chevron_right' />
-            </Button>
-            <Button onClick={() => calendar.setWeek(today)} size='sm' variant='ghost'>
-              {t(`${k}.week.thisWeek`)}
-            </Button>
-          </div>
-        ) : null}
       </section>
 
-      {calendar.truncated && !timeOffTab ? (
+      <WorkCalendarStats
+        loading={loading}
+        numbers={numbers}
+        onShowTimeOff={() => {
+          calendar.setView('timeOff')
+          calendar.setScope('current')
+        }}
+      />
+
+      {calendar.truncated && calendar.view === 'team' ? (
         <p className='flex items-center gap-2 text-sm text-warning' role='status'>
           <Icon name='info' />
           {t(`${k}.truncated`)}
         </p>
       ) : null}
 
-      <section className='overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest'>
+      <section className={`${bentoCard} overflow-hidden`}>
+        {/* Filters of what the card shows live on the card itself. */}
+        <div className='flex flex-wrap items-center gap-3 border-b border-outline-variant/40 px-4 py-3'>
+          <h2 className='mr-auto text-base font-bold text-forest-950'>{t(`${k}.view.${calendar.view}`)}</h2>
+          {timeOffTab ? (
+            <FilterChips
+              label={t(`${k}.scope.label`)}
+              onChange={(value) => calendar.setScope(TIME_OFF_SCOPES.find((item) => item === value) ?? 'current')}
+              options={TIME_OFF_SCOPES.map((scope) => ({ value: scope, label: t(`${k}.scope.${scope}`) }))}
+              value={calendar.scope}
+            />
+          ) : null}
+          {calendar.view === 'team' ? (
+            <label className='inline-flex min-h-10 items-center gap-2 text-sm text-on-surface'>
+              <input
+                checked={onlyBusy}
+                className='h-4 w-4 accent-primary'
+                onChange={(event) => setOnlyBusy(event.target.checked)}
+                type='checkbox'
+              />
+              {t(`${k}.onlyBusy`)}
+            </label>
+          ) : null}
+          <Combobox
+            aria-label={t(`${k}.caregiverFilter`)}
+            className='w-full sm:w-60'
+            icon='person_search'
+            onChange={calendar.setCaregiver}
+            options={[{ value: '', name: t(`${k}.allCaregivers`) }, ...options]}
+            placeholder={t(`${k}.allCaregivers`)}
+            searchPlaceholder={t('centerManager.provider.timeOff.caregiverSearch')}
+            value={calendar.caregiverId}
+          />
+        </div>
         {failed ? (
           <ErrorState
             message={t(`${k}.error`)}
@@ -192,6 +224,7 @@ export function ManagerWorkCalendarPage() {
               void calendar.schedules.refetch()
               void calendar.weekTimeOffs.refetch()
               void calendar.timeOffs.refetch()
+              void calendar.scheduleList.refetch()
             }}
             retryLabel={t(`${k}.retry`)}
           />
@@ -240,11 +273,25 @@ export function ManagerWorkCalendarPage() {
               </ul>
             </>
           )
-        ) : schedules.length === 0 ? (
+        ) : calendar.scheduleList.isPending ? (
+          <SkeletonBlock className='m-4 border-0 shadow-none' label={t(`${k}.loading`)} rows={6} />
+        ) : (calendar.scheduleList.data?.items.length ?? 0) === 0 ? (
           <EmptyState description={t(`${k}.emptyHint`)} icon='event_busy' title={t(`${k}.emptyWeek`)} />
         ) : (
-          <ScheduleList now={openedAt} schedules={schedules} timeOffs={weekLeaves} />
+          <ScheduleList now={openedAt} schedules={calendar.scheduleList.data?.items ?? []} timeOffs={weekLeaves} />
         )}
+        {paged && !failed ? (
+          <Pagination
+            className='rounded-none border-0 border-t border-outline-variant/40 shadow-none'
+            onPageChange={calendar.setPage}
+            onPageSizeChange={calendar.setSize}
+            page={calendar.page}
+            pageSize={calendar.size}
+            pageSizeOptions={CALENDAR_PAGE_SIZES}
+            totalElements={paged.totalElements}
+            totalPages={paged.totalPages}
+          />
+        ) : null}
       </section>
 
       {adding ? (

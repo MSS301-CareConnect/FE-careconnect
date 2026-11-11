@@ -6,6 +6,7 @@ export const caregiverRequestsEn = {
   loading: 'Loading requests…',
   error: 'Could not load your booking requests.',
   retry: 'Try again',
+  pagination: 'Booking request pages',
   emptyTitle: 'No request waiting',
   empty: 'When a customer books you directly, the request shows up here.',
   answerBy: 'Answer by {{time}}',
@@ -113,6 +114,7 @@ export const caregiverRequestsVi = {
   loading: 'Đang tải yêu cầu…',
   error: 'Không tải được yêu cầu đặt lịch.',
   retry: 'Thử lại',
+  pagination: 'Trang yêu cầu đặt lịch',
   emptyTitle: 'Chưa có yêu cầu nào',
   empty: 'Khi khách đặt lịch trực tiếp với bạn, yêu cầu sẽ hiện ở đây.',
   answerBy: 'Trả lời trước {{time}}',
@@ -235,7 +237,8 @@ export const caregiverEarningsEn = {
     other: 'Kept by the policy'
   },
   recordedAt: 'Recorded {{date}}',
-  more: 'Load more'
+  more: 'Load more',
+  pagination: 'Kept deposit pages'
 } as const
 
 export const caregiverEarningsVi = {
@@ -260,5 +263,6 @@ export const caregiverEarningsVi = {
     other: 'Giữ theo chính sách'
   },
   recordedAt: 'Ghi nhận {{date}}',
-  more: 'Tải thêm'
+  more: 'Tải thêm',
+  pagination: 'Trang tiền cọc được hưởng'
 } as const

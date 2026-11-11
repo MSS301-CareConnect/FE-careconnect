@@ -23,8 +23,10 @@ import type {
 
 import type {
   EmptyActionResponse,
+  ListPricePlansPageParams,
   PricePlanBatchUpdateRequest,
   PricePlanListResponse,
+  PricePlanPageResponse,
   PricePlanRequest,
   PricePlanResponse
 } from '../../contracts'
@@ -44,6 +46,194 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
     })
   }
   return result
+}
+
+export type listPricePlansPageResponse200 = {
+  data: PricePlanPageResponse
+  status: 200
+}
+
+export type listPricePlansPageResponse400 = {
+  data: void
+  status: 400
+}
+
+export type listPricePlansPageResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listPricePlansPageResponse403 = {
+  data: void
+  status: 403
+}
+
+export type listPricePlansPageResponse500 = {
+  data: void
+  status: 500
+}
+
+export type listPricePlansPageResponse503 = {
+  data: void
+  status: 503
+}
+
+export type listPricePlansPageResponseSuccess = listPricePlansPageResponse200 & {
+  headers: Headers
+}
+export type listPricePlansPageResponseError = (
+  | listPricePlansPageResponse400
+  | listPricePlansPageResponse401
+  | listPricePlansPageResponse403
+  | listPricePlansPageResponse500
+  | listPricePlansPageResponse503
+) & {
+  headers: Headers
+}
+
+export const getListPricePlansPageUrl = (params: ListPricePlansPageParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/price-plans?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/price-plans`
+}
+
+/**
+ * @summary Bảng giá của một dịch vụ trung tâm theo trang (màn quản lý)
+ */
+export const listPricePlansPage = async (
+  params: ListPricePlansPageParams,
+  options?: RequestInit
+): Promise<listPricePlansPageResponseSuccess> => {
+  const res = await fetch(getListPricePlansPageUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: listPricePlansPageResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: listPricePlansPageResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: listPricePlansPageResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listPricePlansPageResponseSuccess
+}
+
+export const getListPricePlansPageQueryKey = (params?: ListPricePlansPageParams) => {
+  return [`${env.API_BASE_URL}/v1/price-plans`, ...(params ? [params] : [])] as const
+}
+
+export const getListPricePlansPageQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPricePlansPage>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListPricePlansPageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPricePlansPage>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListPricePlansPageQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPricePlansPage>>> = ({ signal }) =>
+    listPricePlansPage(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPricePlansPage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListPricePlansPageQueryResult = NonNullable<Awaited<ReturnType<typeof listPricePlansPage>>>
+export type ListPricePlansPageQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useListPricePlansPage<
+  TData = Awaited<ReturnType<typeof listPricePlansPage>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListPricePlansPageParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPricePlansPage>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPricePlansPage>>,
+          TError,
+          Awaited<ReturnType<typeof listPricePlansPage>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPricePlansPage<
+  TData = Awaited<ReturnType<typeof listPricePlansPage>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListPricePlansPageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPricePlansPage>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPricePlansPage>>,
+          TError,
+          Awaited<ReturnType<typeof listPricePlansPage>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPricePlansPage<
+  TData = Awaited<ReturnType<typeof listPricePlansPage>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListPricePlansPageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPricePlansPage>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Bảng giá của một dịch vụ trung tâm theo trang (màn quản lý)
+ */
+
+export function useListPricePlansPage<
+  TData = Awaited<ReturnType<typeof listPricePlansPage>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: ListPricePlansPageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listPricePlansPage>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListPricePlansPageQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
 }
 
 export type createPricePlanResponse200 = {

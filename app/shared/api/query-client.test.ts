@@ -31,6 +31,29 @@ describe('session expiry handling (H-07)', () => {
     expect(onSessionExpired).not.toHaveBeenCalled()
   })
 
+  it('shows the error instead of looping when the query still returns 401 after a successful refresh', async () => {
+    vi.mocked(refreshSession).mockResolvedValue()
+    const onSessionExpired = vi.fn()
+    const client = createQueryClient({ onSessionExpired })
+    client.setQueryData(['auth', 'current-user'], { id: 'admin-1' })
+    const queryFn = vi.fn().mockRejectedValue(unauthorized())
+
+    await client.fetchQuery({ queryKey: ['wallet', 'me'], queryFn }).catch(() => undefined)
+
+    await waitFor(() => expect(queryFn).toHaveBeenCalledTimes(2))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(queryFn).toHaveBeenCalledTimes(2)
+    expect(refreshSession).toHaveBeenCalledTimes(1)
+    expect(onSessionExpired).not.toHaveBeenCalled()
+
+    // A manual retry ("Try again") may refresh once more, still without looping.
+    await client.refetchQueries({ queryKey: ['wallet', 'me'], exact: true })
+    await waitFor(() => expect(queryFn).toHaveBeenCalledTimes(4))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(queryFn).toHaveBeenCalledTimes(4)
+    expect(refreshSession).toHaveBeenCalledTimes(2)
+  })
+
   it('ends the session when the refresh is rejected', async () => {
     vi.mocked(refreshSession).mockRejectedValue(unauthorized())
     const onSessionExpired = vi.fn()

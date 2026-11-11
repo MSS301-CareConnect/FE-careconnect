@@ -8,6 +8,7 @@
 import { faker } from '@faker-js/faker'
 
 import type {
+  CareSessionPageResponse,
   CareSessionResponse,
   CareTaskResponse,
   SessionNotePageResponse,
@@ -15,11 +16,21 @@ import type {
 } from '../../contracts'
 
 import {
+  getCareSessionPageMock,
   getCareSessionRecordMock,
   getCareTaskRecordMock,
   getSessionNotePageMock,
   getSessionNoteRecordMock
 } from '../../contracts/index.faker'
+
+export const getListCareSessionsForReviewResponseMock = (
+  overrideResponse: Partial<Extract<CareSessionPageResponse, object>> = {}
+): CareSessionPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCareSessionPageMock() },
+  ...overrideResponse
+})
 
 export const getStartCareSessionResponseMock = (
   overrideResponse: Partial<Extract<CareSessionResponse, object>> = {}
@@ -40,6 +51,15 @@ export const getGetCareSessionResponseMock = (
 })
 
 export const getEndCareSessionResponseMock = (
+  overrideResponse: Partial<Extract<CareSessionResponse, object>> = {}
+): CareSessionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCareSessionRecordMock() },
+  ...overrideResponse
+})
+
+export const getReviewCareSessionResponseMock = (
   overrideResponse: Partial<Extract<CareSessionResponse, object>> = {}
 ): CareSessionResponse => ({
   code: faker.number.int(),

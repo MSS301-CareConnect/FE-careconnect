@@ -21,13 +21,31 @@ const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PHOTOS = 5
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024
 const fieldClass =
-  'mt-1 min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none disabled:bg-surface-container-low'
+  'mt-1.5 min-h-11 w-full rounded-2xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm font-normal text-on-surface transition-[border-color,box-shadow] focus:border-forest-700 focus:ring-4 focus:ring-mint-200/70 focus:outline-none disabled:bg-surface-container-low disabled:text-on-surface-variant'
+const labelClass = 'block text-sm font-semibold text-forest-950'
+const hintClass = 'mt-1 block text-xs font-normal text-on-surface-variant'
+// How the patient was, as a colour cue beside the choice (the words still carry the meaning).
+const CONDITION_DOTS: Record<OverallCondition, string> = {
+  STABLE: 'bg-mint-400',
+  IMPROVED: 'bg-success',
+  DECLINED: 'bg-error',
+  NEEDS_ATTENTION: 'bg-peach-300'
+}
 
 /**
  * Caregiver care report for one session (H-04): save a draft as often as needed, then submit once (D27: no edits
  * after submitting). Drafts stay private to the caregiver; customers and managers only see submitted reports.
  */
-export function CareReportForm({ bookingId, sessionId }: { bookingId: string; sessionId: string }) {
+export function CareReportForm({
+  bookingId,
+  sessionId,
+  variant = 'card'
+}: {
+  bookingId: string
+  sessionId: string
+  /** `dialog`: rendered inside a modal that already shows the title and the hint, so no card chrome. */
+  variant?: 'card' | 'dialog'
+}) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const reports = useQuery({
@@ -77,6 +95,7 @@ export function CareReportForm({ bookingId, sessionId }: { bookingId: string; se
       reloading={reports.isFetching}
       report={report}
       sessionId={sessionId}
+      variant={variant}
     />
   )
 }
@@ -86,10 +105,12 @@ function ReportEditor({
   sessionId,
   onSaved,
   onReload,
-  reloading
+  reloading,
+  variant
 }: {
   report: CareReportRecord | undefined
   sessionId: string
+  variant: 'card' | 'dialog'
   onSaved: (report: CareReportRecord) => Promise<void>
   onReload: () => Promise<boolean>
   reloading: boolean
@@ -104,6 +125,7 @@ function ReportEditor({
   const [recovery, setRecovery] = useState<'report' | 'photos'>()
   const writing = useRef(false)
   const submitted = report?.status === 'SUBMITTED'
+  const dialog = variant === 'dialog'
   const savedPhotoCount = report?.photos?.length ?? 0
   const totalPhotos = savedPhotoCount + files.length
   const save = useMutation({
@@ -187,119 +209,159 @@ function ReportEditor({
   }
 
   return (
-    <section aria-labelledby={`report-${sessionId}`} className='rounded-2xl bg-surface-container-lowest p-5 shadow-sm'>
-      <h2 className='text-base font-bold' id={`report-${sessionId}`}>
-        {t('aftercare.report.title')}
-      </h2>
-      <p className='mt-1 text-sm text-on-surface-variant'>
-        {submitted ? t('aftercare.report.submitted') : t('aftercare.report.draftHint')}
-      </p>
+    <section
+      aria-label={dialog ? t('aftercare.report.details') : undefined}
+      aria-labelledby={dialog ? undefined : `report-${sessionId}`}
+      className={dialog ? '' : 'rounded-3xl bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'}
+    >
+      {dialog ? null : (
+        <>
+          <h2 className='text-base font-bold' id={`report-${sessionId}`}>
+            {t('aftercare.report.title')}
+          </h2>
+          <p className='mt-1 text-sm text-on-surface-variant'>
+            {submitted ? t('aftercare.report.submitted') : t('aftercare.report.draftHint')}
+          </p>
+        </>
+      )}
       {submitted ? null : (
-        <p className='mt-2 flex items-start gap-1.5 text-sm font-medium text-on-surface'>
-          <Icon className='text-lg text-primary' name='schedule' />
+        <p
+          className={`flex items-start gap-2 rounded-2xl bg-mint-50 px-3.5 py-2.5 text-sm font-medium text-forest-900 ${dialog ? '' : 'mt-3'}`}
+        >
+          <Icon className='mt-0.5 text-lg text-forest-700' name='schedule' />
           {t('aftercare.report.due')}
         </p>
       )}
-      <form className='mt-3 flex flex-col gap-3' onSubmit={handleSave}>
-        <label className='text-sm font-medium'>
-          {t('aftercare.report.condition')}
-          <select
-            className={fieldClass}
-            disabled={submitted || save.isPending}
-            onChange={(event) => setCondition(event.target.value as OverallCondition)}
-            required
-            value={condition}
-          >
-            <option disabled value=''>
-              {t('aftercare.report.conditionPick')}
-            </option>
-            {CONDITIONS.map((item) => (
-              <option key={item} value={item}>
-                {t(`aftercare.conditions.${item}`)}
+      <form
+        className={`mt-4 flex flex-col gap-4 ${dialog ? 'lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6' : ''}`}
+        onSubmit={handleSave}
+      >
+        <div className='flex min-w-0 flex-col gap-4'>
+          <label className={labelClass}>
+            <span className='flex items-center gap-2'>
+              {t('aftercare.report.condition')}
+              {condition ? (
+                <span aria-hidden='true' className={`h-2.5 w-2.5 rounded-full ${CONDITION_DOTS[condition]}`} />
+              ) : null}
+            </span>
+            <select
+              className={fieldClass}
+              disabled={submitted || save.isPending}
+              onChange={(event) => setCondition(event.target.value as OverallCondition)}
+              required
+              value={condition}
+            >
+              <option disabled value=''>
+                {t('aftercare.report.conditionPick')}
               </option>
-            ))}
-          </select>
-        </label>
-        <label className='text-sm font-medium'>
-          {t('aftercare.report.summary')}
-          <textarea
-            className={fieldClass}
-            disabled={submitted || save.isPending}
-            onChange={(event) => setSummary(event.target.value)}
-            required
-            rows={4}
-            value={summary}
-          />
-        </label>
-        <label className='text-sm font-medium'>
-          {t('aftercare.report.recommendations')}
-          <textarea
-            className={fieldClass}
-            disabled={submitted || save.isPending}
-            onChange={(event) => setRecommendations(event.target.value)}
-            rows={2}
-            value={recommendations}
-          />
-        </label>
-        <CareReportPhotos onReload={onReload} photos={report?.photos} reloading={reloading || save.isPending} />
-        {!submitted && (
-          <fieldset className='min-w-0 space-y-2 rounded-xl border border-outline-variant/60 p-3'>
-            <legend className='px-1 text-sm font-semibold'>{t('aftercare.report.addPhotos')}</legend>
-            <p className='text-sm text-on-surface-variant' id={`photo-rules-${sessionId}`}>
-              {t('aftercare.report.photoRules')}
-            </p>
-            <label className='inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-outline-variant px-3 text-sm font-semibold text-primary focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary has-disabled:cursor-default has-disabled:opacity-50'>
-              <Icon name='attach_file' />
-              <span>{t('aftercare.report.addPhotos')}</span>
-              <input
-                accept={PHOTO_TYPES.join(',')}
-                aria-label={t('aftercare.report.addPhotos')}
-                aria-describedby={`photo-rules-${sessionId} photo-count-${sessionId}`}
-                className='sr-only'
-                disabled={save.isPending || !!recovery || totalPhotos >= MAX_PHOTOS}
-                multiple
-                onChange={selectPhotos}
-                type='file'
-              />
-            </label>
-            <p aria-live='polite' className='text-sm text-on-surface-variant' id={`photo-count-${sessionId}`}>
-              {t('aftercare.report.photoCount', { count: totalPhotos })}
-            </p>
-            {files.length > 0 && (
-              <ul className='space-y-1'>
-                {files.map((file, index) => (
-                  <li className='flex items-center justify-between gap-2 text-sm' key={`${index}-${file.name}`}>
-                    <span className='min-w-0 wrap-anywhere'>{file.name}</span>
-                    <button
-                      aria-label={t('aftercare.report.removePhotoNamed', { name: file.name })}
-                      className='min-h-11 shrink-0 px-2 text-error underline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50'
-                      disabled={save.isPending || !!recovery}
-                      onClick={() => {
-                        setPhotoError(undefined)
-                        setFiles((current) => current.filter((_, position) => position !== index))
-                      }}
-                      type='button'
-                    >
-                      {t('aftercare.report.removePhoto')}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {(photoError || totalPhotos > MAX_PHOTOS) && (
-              <p className='text-sm text-error' role='alert'>
-                {t(`aftercare.report.${photoError ?? 'photoLimit'}`)}
+              {CONDITIONS.map((item) => (
+                <option key={item} value={item}>
+                  {t(`aftercare.conditions.${item}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className={labelClass}>
+            {t('aftercare.report.summary')}
+            <textarea
+              aria-describedby={`summary-hint-${sessionId}`}
+              className={fieldClass}
+              disabled={submitted || save.isPending}
+              onChange={(event) => setSummary(event.target.value)}
+              required
+              rows={5}
+              value={summary}
+            />
+          </label>
+          <p className={`-mt-3 ${hintClass}`} id={`summary-hint-${sessionId}`}>
+            {t('aftercare.report.summaryHint')}
+          </p>
+          <label className={labelClass}>
+            {t('aftercare.report.recommendations')}
+            <textarea
+              aria-describedby={`recommendations-hint-${sessionId}`}
+              className={fieldClass}
+              disabled={submitted || save.isPending}
+              onChange={(event) => setRecommendations(event.target.value)}
+              rows={3}
+              value={recommendations}
+            />
+          </label>
+          <p className={`-mt-3 ${hintClass}`} id={`recommendations-hint-${sessionId}`}>
+            {t('aftercare.report.recommendationsHint')}
+          </p>
+        </div>
+        <div className='flex min-w-0 flex-col gap-4'>
+          <CareReportPhotos onReload={onReload} photos={report?.photos} reloading={reloading || save.isPending} />
+          {!submitted && (
+            <fieldset className='min-w-0 space-y-2.5 rounded-2xl border border-dashed border-outline-variant bg-surface-container-low/50 p-4'>
+              <legend className='px-1 text-sm font-semibold text-forest-950'>{t('aftercare.report.addPhotos')}</legend>
+              <p className='text-sm text-on-surface-variant' id={`photo-rules-${sessionId}`}>
+                {t('aftercare.report.photoRules')}
               </p>
-            )}
-          </fieldset>
-        )}
+              <label className='inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-4 text-sm font-semibold text-forest-900 transition-colors hover:bg-mint-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary has-disabled:cursor-default has-disabled:opacity-50'>
+                <Icon name='add_photo_alternate' />
+                <span aria-hidden='true'>{t('aftercare.report.pickPhotos')}</span>
+                <input
+                  accept={PHOTO_TYPES.join(',')}
+                  aria-label={t('aftercare.report.addPhotos')}
+                  aria-describedby={`photo-rules-${sessionId} photo-count-${sessionId}`}
+                  className='sr-only'
+                  disabled={save.isPending || !!recovery || totalPhotos >= MAX_PHOTOS}
+                  multiple
+                  onChange={selectPhotos}
+                  type='file'
+                />
+              </label>
+              <p
+                aria-live='polite'
+                className='text-sm font-medium text-on-surface-variant tabular-nums'
+                id={`photo-count-${sessionId}`}
+              >
+                {t('aftercare.report.photoCount', { count: totalPhotos })}
+              </p>
+              {files.length > 0 && (
+                <ul className='space-y-1'>
+                  {files.map((file, index) => (
+                    <li
+                      className='flex items-center justify-between gap-2 rounded-xl bg-surface-container-lowest py-0.5 pr-1 pl-3 text-sm'
+                      key={`${index}-${file.name}`}
+                    >
+                      <span className='flex min-w-0 items-center gap-2 wrap-anywhere'>
+                        <Icon className='shrink-0 text-lg text-on-surface-variant' name='image' />
+                        {file.name}
+                      </span>
+                      <button
+                        aria-label={t('aftercare.report.removePhotoNamed', { name: file.name })}
+                        className='min-h-11 shrink-0 px-2 text-error underline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50'
+                        disabled={save.isPending || !!recovery}
+                        onClick={() => {
+                          setPhotoError(undefined)
+                          setFiles((current) => current.filter((_, position) => position !== index))
+                        }}
+                        type='button'
+                      >
+                        {t('aftercare.report.removePhoto')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {(photoError || totalPhotos > MAX_PHOTOS) && (
+                <p className='text-sm text-error' role='alert'>
+                  {t(`aftercare.report.${photoError ?? 'photoLimit'}`)}
+                </p>
+              )}
+            </fieldset>
+          )}
+        </div>
         {save.error && !recovery ? (
-          <p className='text-sm text-error' role='alert'>
+          <p className='text-sm text-error lg:col-span-2' role='alert'>
             {t(aftercareErrorKey(save.error))}
           </p>
         ) : null}
         {recovery && !submitted && (
-          <div>
+          <div className='lg:col-span-2'>
             <p className='text-sm text-error' role='alert'>
               {t(recovery === 'photos' ? 'aftercare.report.photoUncertain' : 'aftercare.report.saveUncertain')}
             </p>
@@ -314,21 +376,21 @@ function ReportEditor({
           </div>
         )}
         {save.isPending && (
-          <p className='text-sm text-on-surface-variant' role='status'>
+          <p className='text-sm text-on-surface-variant lg:col-span-2' role='status'>
             {t('aftercare.report.saving')}
           </p>
         )}
         {submitted ? null : (
-          <div className='flex flex-wrap gap-2'>
+          <div className='flex flex-wrap justify-end gap-2.5 border-t border-outline-variant/40 pt-4 lg:col-span-2'>
             <button
-              className='min-h-11 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
+              className='min-h-11 rounded-full border border-outline-variant px-5 py-2 text-sm font-semibold hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
               disabled={!ready}
               type='submit'
             >
               {t('aftercare.report.saveDraft')}
             </button>
             <button
-              className='min-h-11 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:bg-primary-container focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
+              className='min-h-11 rounded-full bg-forest-900 px-6 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] hover:bg-forest-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50'
               disabled={!ready}
               onClick={() => persist(true)}
               type='button'

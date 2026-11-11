@@ -7,6 +7,8 @@
  */
 import type { CareSessionRecordStatus } from './careSessionRecordStatus'
 import type { CareTaskRecord } from './careTaskRecord'
+import type { SessionCompletionReview } from './sessionCompletionReview'
+import type { SessionLocationFlag } from './sessionLocationFlag'
 
 export interface CareSessionRecord {
   sessionId: string
@@ -20,5 +22,22 @@ export interface CareSessionRecord {
   endReason?: string
   /** D21 — hệ thống tự đóng ca quên check-out (quá giờ kết thúc + 4h). */
   autoClosed?: boolean
+  /** Minutes between the visit start and the check-in (0 when on time) */
+  lateMinutes?: number
+  /** Minutes between the check-out and the visit end (0 when not early) */
+  earlyLeaveMinutes?: number
+  /** Distance from the check-in position to the care address; absent when it could not be compared */
+  checkInDistanceMeters?: number
+  locationFlag?: SessionLocationFlag
+  completionReview?: SessionCompletionReview
+  reviewedAt?: string
+  reviewNote?: string
+  /** What the customer reported when the review was opened by a customer report */
+  customerReportNote?: string
+  bookingCode?: string
+  recipientName?: string
+  occurrenceNo?: number
+  startAt?: string
+  endAt?: string
   tasks?: CareTaskRecord[]
 }

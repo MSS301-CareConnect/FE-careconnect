@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router'
 
 import { Icon } from '~/shared/ui/icon'
 
-import { activeCaregiverNavigation } from '../caregiver-navigation.constants'
+import { caregiverPageTitleKey } from '../caregiver-navigation.constants'
 import { CaregiverAccountMenu } from './caregiver-account-menu'
 import { CaregiverNotificationBell } from './caregiver-notification-bell'
 
@@ -15,7 +15,7 @@ import { CaregiverNotificationBell } from './caregiver-notification-bell'
 export function CaregiverTopbar({ avatarUrl, name }: { avatarUrl?: string; name?: string }) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
-  const active = activeCaregiverNavigation(pathname)
+  const titleKey = caregiverPageTitleKey(pathname)
 
   return (
     <header className='sticky top-0 z-30 print:hidden'>
@@ -34,7 +34,7 @@ export function CaregiverTopbar({ avatarUrl, name }: { avatarUrl?: string; name?
             <Icon className='text-xl' filled name='volunteer_activism' />
           </span>
           <span className='truncate text-lg font-bold tracking-tight text-forest-950'>
-            {t(`caregiver.nav.${active.key}`)}
+            {t(`caregiver.nav.${titleKey}`)}
           </span>
         </Link>
         <span className='hidden lg:block' />

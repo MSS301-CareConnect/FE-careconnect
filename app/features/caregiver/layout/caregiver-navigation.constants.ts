@@ -18,17 +18,40 @@ export const caregiverNavigation = [
     key: 'profile',
     to: '/caregiver/profile',
     icon: 'person',
-    paths: ['/caregiver/profile', '/caregiver/security', '/caregiver/earnings', '/caregiver/wallet']
+    paths: ['/caregiver/profile', '/caregiver/security']
   }
 ] as const
 
 export type CaregiverNavigationItem = (typeof caregiverNavigation)[number]
 
-export function activeCaregiverNavigation(pathname: string): CaregiverNavigationItem {
+/**
+ * Pages opened from the account menu or the bell (2026-11-10): they belong to no section of the rail, so nothing is
+ * selected there and the phone topbar names the page itself.
+ */
+const standalonePages = [
+  { key: 'wallet', path: '/caregiver/wallet' },
+  { key: 'earnings', path: '/caregiver/earnings' },
+  { key: 'notifications', path: '/caregiver/notifications' }
+] as const
+
+export type CaregiverPageTitleKey = CaregiverNavigationItem['key'] | (typeof standalonePages)[number]['key']
+
+function matches(pathname: string, path: string) {
+  return pathname === path || pathname.startsWith(`${path}/`)
+}
+
+/** The rail section that holds the page, or undefined for a page outside the four sections (wallet, earnings…). */
+export function activeCaregiverNavigation(pathname: string): CaregiverNavigationItem | undefined {
+  if (pathname === '/caregiver' || pathname === '/caregiver/') return caregiverNavigation[0]
+  return caregiverNavigation.find((item) => item.paths.some((path) => matches(pathname, path)))
+}
+
+/** The name the phone topbar shows for the page: its section, or the page itself when it has none. */
+export function caregiverPageTitleKey(pathname: string): CaregiverPageTitleKey {
   return (
-    caregiverNavigation.find((item) =>
-      item.paths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
-    ) ?? caregiverNavigation[0]
+    activeCaregiverNavigation(pathname)?.key ??
+    standalonePages.find((page) => matches(pathname, page.path))?.key ??
+    'today'
   )
 }
 
@@ -37,6 +60,5 @@ export function activeCaregiverNavigation(pathname: string): CaregiverNavigation
  * between them keeps the page in place; anything else animates per path.
  */
 export function caregiverPageKey(pathname: string) {
-  const active = activeCaregiverNavigation(pathname)
-  return active.key === 'work' ? 'work' : pathname
+  return activeCaregiverNavigation(pathname)?.key === 'work' ? 'work' : pathname
 }

@@ -7,7 +7,7 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { RoleActionResponse, RoleListResponse } from '../../contracts'
+import type { EmptyActionResponse, RoleActionResponse, RoleListResponse } from '../../contracts'
 
 import { getRoleRecordMock } from '../../contracts/index.faker'
 
@@ -28,6 +28,24 @@ export const getCreateManagedRoleResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getRoleRecordMock() },
+  ...overrideResponse
+})
+
+export const getUpdateManagedRoleResponseMock = (
+  overrideResponse: Partial<Extract<RoleActionResponse, object>> = {}
+): RoleActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getRoleRecordMock() },
+  ...overrideResponse
+})
+
+export const getDeleteManagedRoleResponseMock = (
+  overrideResponse: Partial<Extract<EmptyActionResponse, object>> = {}
+): EmptyActionResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: faker.helpers.arrayElement([null, undefined]),
   ...overrideResponse
 })
 

@@ -46,7 +46,14 @@ export const managerNavigation = [
         icon: 'rule'
       },
       { key: 'feedback', label: 'centerManager.feedback', to: '/center-manager/complaints', icon: 'reviews' },
-      { key: 'wallet', label: 'wallet.nav.manager', to: '/center-manager/wallet', icon: 'account_balance_wallet' }
+      { key: 'revenue', label: 'wallet.nav.manager', to: '/center-manager/revenue', icon: 'monitoring' },
+      // 2026-11-10: customers / caregivers withdraw the money this center holds for them.
+      {
+        key: 'withdrawals',
+        label: 'wallet.nav.managerWithdrawals',
+        to: '/center-manager/withdrawals',
+        icon: 'payments'
+      }
     ]
   }
 ] as const

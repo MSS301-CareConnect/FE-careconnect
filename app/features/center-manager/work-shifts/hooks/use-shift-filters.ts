@@ -2,11 +2,14 @@ import { useSearchParams } from 'react-router'
 
 import { SHIFT_STATUS_CODES, type ShiftStatusCode } from '~/entities/provider/work-shift'
 import { addDays, isoWeekday } from '~/shared/lib/format'
+import { pageSizeOf } from '~/shared/ui/pagination'
 
 export type RangePreset = 'upcoming' | 'next7' | 'thisMonth' | 'all' | 'custom'
 export type ShiftView = 'table' | 'week'
 
 const RANGES: readonly RangePreset[] = ['upcoming', 'next7', 'thisMonth', 'all', 'custom']
+
+export const SHIFT_PAGE_SIZES = [10, 20, 50] as const
 
 export function mondayOf(day: string) {
   return addDays(day, 1 - isoWeekday(day))
@@ -33,6 +36,7 @@ export function useShiftFilters(today: string) {
   const view: ShiftView = params.get('view') === 'week' ? 'week' : 'table'
   const week = mondayOf(params.get('week') ?? today)
   const page = Math.max(0, Number(params.get('page')) || 0)
+  const size = pageSizeOf(params.get('size'), 10, SHIFT_PAGE_SIZES)
 
   let fromDate: string | undefined
   let toDate: string | undefined
@@ -84,6 +88,7 @@ export function useShiftFilters(today: string) {
     view,
     week,
     page,
+    size,
     active,
     understaffed,
     setStatus: (value?: ShiftStatusCode) => update({ status: value }),
@@ -106,6 +111,7 @@ export function useShiftFilters(today: string) {
     setView: (value: ShiftView) => update({ view: value === 'week' ? 'week' : undefined }, true),
     setWeek: (monday: string) => update({ week: monday === mondayOf(today) ? undefined : monday }, true),
     setPage: (value: number) => update({ page: value > 0 ? String(value) : undefined }, true),
+    setSize: (value: number) => update({ size: value === 10 ? undefined : String(value) }),
     clear: () =>
       update({
         status: undefined,

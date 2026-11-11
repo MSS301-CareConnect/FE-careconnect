@@ -32,7 +32,7 @@ export const adminNavigation = [
     labelled: true,
     icon: 'account_balance',
     items: [
-      { key: 'wallet', to: '/admin/wallet', icon: 'account_balance_wallet' },
+      { key: 'revenue', to: '/admin/revenue', icon: 'monitoring' },
       { key: 'withdrawals', to: '/admin/withdrawals', icon: 'payments' }
     ]
   },
@@ -41,7 +41,9 @@ export const adminNavigation = [
     labelled: true,
     icon: 'support_agent',
     items: [
-      { key: 'customers', to: '/admin/customers', icon: 'groups' },
+      // 2026-11-10: "Khách hàng" and "Tài khoản" opened the same Identity list — one "Tài khoản" item lives here now
+      // (/admin/customers still redirects to the list filtered to CUSTOMER).
+      { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
       { key: 'reviewsComplaints', to: '/admin/reviews-complaints', icon: 'forum' }
     ]
   },
@@ -50,7 +52,6 @@ export const adminNavigation = [
     labelled: true,
     icon: 'shield_person',
     items: [
-      { key: 'accounts', to: '/admin/accounts', icon: 'manage_accounts' },
       { key: 'roles', to: '/admin/roles', icon: 'admin_panel_settings' },
       { key: 'incidents', to: '/admin/incidents', icon: 'sync_problem' }
     ]

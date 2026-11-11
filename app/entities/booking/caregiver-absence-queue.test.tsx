@@ -73,8 +73,7 @@ describe('CaregiverAbsenceQueue', () => {
     vi.mocked(concludeAbsence).mockResolvedValue({ ...absence, status: 'CONFIRMED' })
     renderQueue('manager')
 
-    expect(await screen.findByRole('heading', { name: 'Người chăm sóc vắng ca (1)' })).toBeInTheDocument()
-    expect(screen.getByText('Người chăm sóc: Trần Thị Hoa')).toBeInTheDocument()
+    expect(await screen.findByText('Người chăm sóc: Trần Thị Hoa')).toBeInTheDocument()
     expect(screen.getByText('Chưa có giải trình')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ghi nhận vi phạm' }))
     const dialog = screen.getByRole('dialog', { name: 'Ghi nhận vi phạm buổi 2' })
@@ -91,8 +90,7 @@ describe('CaregiverAbsenceQueue', () => {
     vi.mocked(explainAbsence).mockResolvedValue({ ...absence, explanation: 'Xe hỏng giữa đường' })
     renderQueue('caregiver')
 
-    expect(await screen.findByRole('heading', { name: 'Bạn bị ghi nhận vắng ca (1)' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Gửi giải trình' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Gửi giải trình' }))
     const dialog = screen.getByRole('dialog', { name: 'Giải trình vắng buổi 2' })
     const submit = within(dialog).getByRole('button', { name: 'Gửi giải trình' })
     fireEvent.change(within(dialog).getByLabelText(/Nội dung giải trình/), { target: { value: 'ngắn' } })

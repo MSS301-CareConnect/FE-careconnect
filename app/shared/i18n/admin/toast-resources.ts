@@ -71,7 +71,9 @@ export const adminToastVi = {
   roles: {
     created: 'Đã tạo vai trò “{{name}}”.',
     saved: 'Đã lưu quyền của “{{name}}”.',
-    actions: { create: 'tạo vai trò', save: 'lưu quyền' }
+    updated: 'Đã lưu vai trò “{{name}}”.',
+    deleted: 'Đã xóa vai trò “{{name}}”.',
+    actions: { create: 'tạo vai trò', save: 'lưu quyền', update: 'lưu vai trò', delete: 'xóa vai trò' }
   },
   incidents: {
     requeued: 'Đã đưa sự cố vào hàng gửi lại.',
@@ -148,7 +150,14 @@ export const adminToastEn = {
   roles: {
     created: 'Role “{{name}}” created.',
     saved: 'Permissions of “{{name}}” saved.',
-    actions: { create: 'create the role', save: 'save the permissions' }
+    updated: 'Role “{{name}}” saved.',
+    deleted: 'Role “{{name}}” deleted.',
+    actions: {
+      create: 'create the role',
+      save: 'save the permissions',
+      update: 'save the role',
+      delete: 'delete the role'
+    }
   },
   incidents: {
     requeued: 'Incident queued to be sent again.',

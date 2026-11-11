@@ -325,7 +325,43 @@ export const customerPaymentsVi = {
   history: {
     title: 'Lịch sử thanh toán',
     empty: 'Chưa có giao dịch thanh toán nào',
-    refunded: 'Đã hoàn {{amount}}'
+    refunded: 'Đã hoàn {{amount}}',
+    viewInvoice: 'Xem hóa đơn'
+  },
+  invoice: {
+    title: 'Hóa đơn thanh toán',
+    heading: 'Hóa đơn',
+    seller: 'Đơn vị cung cấp dịch vụ',
+    close: 'Đóng',
+    print: 'In / lưu PDF',
+    stamp: { paid: 'Đã thanh toán', partlyRefunded: 'Đã hoàn một phần', refunded: 'Đã hoàn tiền' },
+    paidAt: 'Thời điểm thanh toán',
+    method: 'Phương thức',
+    paymentType: 'Loại khoản thu',
+    bookingCode: 'Mã lịch đặt',
+    bookingType: 'Hình thức đặt',
+    carePeriod: 'Thời gian chăm sóc',
+    buyer: 'Khách hàng',
+    recipient: 'Người được chăm sóc',
+    address: 'Địa chỉ chăm sóc',
+    linesCaption: 'Chi tiết dịch vụ của lịch đặt',
+    columns: {
+      no: 'STT',
+      service: 'Dịch vụ',
+      duration: 'Thời lượng',
+      unitPrice: 'Đơn giá',
+      quantity: 'Số lượng',
+      amount: 'Thành tiền'
+    },
+    units: { HOUR: 'giờ', DAY: 'ngày', SHIFT: 'ca' },
+    perUnit: '{{duration}} mỗi {{unit}}',
+    subtotal: 'Tạm tính',
+    bookingTotal: 'Tổng giá trị lịch đặt',
+    thisPayment: 'Số tiền thanh toán lần này',
+    depositHint: 'Khoản thanh toán đầu ({{percent}}% giá trị lịch đặt)',
+    refunded: 'Đã hoàn lại',
+    net: 'Thực trả sau hoàn',
+    note: 'Đơn giá và số lượng được chốt tại thời điểm đặt lịch. Hóa đơn này dùng để đối chiếu, không thay thế hóa đơn giá trị gia tăng.'
   },
   refunds: {
     title: 'Hoàn tiền',
@@ -370,7 +406,43 @@ export const customerPaymentsEn = {
   history: {
     title: 'Payment history',
     empty: 'No payments yet',
-    refunded: 'Refunded {{amount}}'
+    refunded: 'Refunded {{amount}}',
+    viewInvoice: 'View invoice'
+  },
+  invoice: {
+    title: 'Payment invoice',
+    heading: 'Invoice',
+    seller: 'Service provider',
+    close: 'Close',
+    print: 'Print / save PDF',
+    stamp: { paid: 'Paid', partlyRefunded: 'Partly refunded', refunded: 'Refunded' },
+    paidAt: 'Paid at',
+    method: 'Method',
+    paymentType: 'Payment for',
+    bookingCode: 'Booking code',
+    bookingType: 'Booking type',
+    carePeriod: 'Care period',
+    buyer: 'Customer',
+    recipient: 'Person cared for',
+    address: 'Care address',
+    linesCaption: 'Services of the booking',
+    columns: {
+      no: 'No.',
+      service: 'Service',
+      duration: 'Duration',
+      unitPrice: 'Unit price',
+      quantity: 'Quantity',
+      amount: 'Amount'
+    },
+    units: { HOUR: 'hour', DAY: 'day', SHIFT: 'shift' },
+    perUnit: '{{duration}} per {{unit}}',
+    subtotal: 'Subtotal',
+    bookingTotal: 'Booking total',
+    thisPayment: 'Paid in this payment',
+    depositHint: 'Initial payment ({{percent}}% of the booking total)',
+    refunded: 'Refunded',
+    net: 'Net paid after refunds',
+    note: 'Unit prices and quantities were fixed when the booking was made. This invoice is for your records and does not replace a VAT invoice.'
   },
   refunds: {
     title: 'Refunds',

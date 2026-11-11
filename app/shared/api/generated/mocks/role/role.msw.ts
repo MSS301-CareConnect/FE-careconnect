@@ -8,17 +8,21 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { RoleActionResponse, RoleListResponse } from '../../contracts'
+import type { EmptyActionResponse, RoleActionResponse, RoleListResponse } from '../../contracts'
 
 import {
   getCreateManagedRoleResponseMock,
+  getDeleteManagedRoleResponseMock,
   getListManagedRolesResponseMock,
-  getSetManagedRolePermissionsResponseMock
+  getSetManagedRolePermissionsResponseMock,
+  getUpdateManagedRoleResponseMock
 } from './role.faker'
 
 export {
   getListManagedRolesResponseMock,
   getCreateManagedRoleResponseMock,
+  getUpdateManagedRoleResponseMock,
+  getDeleteManagedRoleResponseMock,
   getSetManagedRolePermissionsResponseMock
 } from './role.faker'
 
@@ -70,6 +74,54 @@ export const getCreateManagedRoleMockHandler = (
   )
 }
 
+export const getUpdateManagedRoleMockHandler = (
+  overrideResponse?:
+    | RoleActionResponse
+    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<RoleActionResponse> | RoleActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.put(
+    '*/v1/roles/:id',
+    async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getUpdateManagedRoleResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getDeleteManagedRoleMockHandler = (
+  overrideResponse?:
+    | EmptyActionResponse
+    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<EmptyActionResponse> | EmptyActionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.delete(
+    '*/v1/roles/:id',
+    async (info: Parameters<Parameters<typeof http.delete>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getDeleteManagedRoleResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getSetManagedRolePermissionsMockHandler = (
   overrideResponse?:
     | RoleActionResponse
@@ -96,5 +148,7 @@ export const getSetManagedRolePermissionsMockHandler = (
 export const getRoleMock = () => [
   getListManagedRolesMockHandler(),
   getCreateManagedRoleMockHandler(),
+  getUpdateManagedRoleMockHandler(),
+  getDeleteManagedRoleMockHandler(),
   getSetManagedRolePermissionsMockHandler()
 ]

@@ -7,6 +7,8 @@
  */
 
 export interface TopCaregiverRecord {
+  /** ProviderService caregiver profile ID */
   caregiverId?: string
+  completedSessions?: number
   avgRating?: number
 }
