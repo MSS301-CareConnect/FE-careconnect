@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WalletRecord, WalletStatisticsRecord } from '~/shared/api/generated/contracts'
+import { pickOption } from '~/shared/test/pickers'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
 import { fetchCenter } from '~/entities/provider/provider-api'
@@ -109,14 +110,50 @@ describe('WalletDashboard', () => {
     expect(await screen.findByText('Chi tiêu thực')).toBeInTheDocument()
     expect(screen.getByText('Hoàn tiền hủy lịch')).toBeInTheDocument()
     expect(screen.getByText(/210\.000 ₫ → 420\.000 ₫/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Xem lịch đặt' })).toHaveAttribute('href', '/customer/bookings/b1')
     expect(screen.getByText('Bạn chưa gửi yêu cầu rút tiền nào.')).toBeInTheDocument()
     const [, , groupBy] = vi.mocked(fetchMyWalletStatistics).mock.calls[0]
     expect(groupBy).toBe('DAY')
 
-    fireEvent.change(screen.getByRole('combobox', { name: 'Kỳ thống kê' }), { target: { value: 'year' } })
+    fireEvent.click(screen.getByRole('radio', { name: 'Năm nay' }))
     await waitFor(() => expect(fetchMyWalletStatistics).toHaveBeenCalledTimes(2))
     expect(vi.mocked(fetchMyWalletStatistics).mock.calls[1][2]).toBe('MONTH')
+  })
+
+  it('opens a ledger movement and an own withdrawal in detail, with a page size picker', async () => {
+    vi.mocked(fetchWithdrawals).mockResolvedValue(
+      page([
+        {
+          id: 'd9',
+          walletId: 'w1',
+          requesterUserId: 'u1',
+          ownerType: 'CUSTOMER',
+          centerId: 'c1',
+          amount: 100000,
+          bankName: 'Vietcombank',
+          bankAccountNumber: '0123456789',
+          accountHolderName: 'TRAN THI B',
+          status: 'REJECTED',
+          rejectReason: 'Sai tên chủ tài khoản',
+          reviewedAt: '2026-11-09T03:00:00Z',
+          createdAt: '2026-11-08T03:00:00Z'
+        }
+      ])
+    )
+    renderDashboard()
+
+    fireEvent.click(await screen.findByRole('button', { name: /Xem chi tiết giao dịch Hoàn tiền hủy lịch/ }))
+    let dialog = await screen.findByRole('dialog', { name: 'Chi tiết giao dịch' })
+    expect(within(dialog).getByRole('link', { name: 'Xem lịch đặt' })).toHaveAttribute('href', '/customer/bookings/b1')
+    expect(within(dialog).getByText(/210\.000 ₫ → 420\.000 ₫/)).toBeInTheDocument()
+    fireEvent.click(within(dialog).getAllByRole('button', { name: 'Đóng' }).at(-1)!)
+
+    fireEvent.click(await screen.findByRole('button', { name: /Xem chi tiết yêu cầu rút 100\.000/ }))
+    dialog = await screen.findByRole('dialog', { name: 'Chi tiết yêu cầu rút tiền' })
+    expect(within(dialog).getByText('Bị từ chối, tiền đã về lại ví')).toBeInTheDocument()
+    expect(within(dialog).getByText('Lý do từ chối: Sai tên chủ tài khoản')).toBeInTheDocument()
+    expect(within(dialog).getByText('0123456789')).toBeInTheDocument()
+
+    expect(screen.getAllByLabelText('Số dòng mỗi trang')).toHaveLength(2)
   })
 
   it('checks every field before sending a withdrawal and refuses more than the available balance', async () => {
@@ -146,7 +183,7 @@ describe('WalletDashboard', () => {
     expect(requestWithdrawal).not.toHaveBeenCalled()
 
     fireEvent.change(within(dialog).getByLabelText('Số tiền muốn rút (₫)'), { target: { value: '400.000' } })
-    fireEvent.change(within(dialog).getByLabelText('Tên ngân hàng'), { target: { value: 'Vietcombank' } })
+    await pickOption(within(dialog).getByRole('combobox', { name: 'Tên ngân hàng' }), 'Vietcombank')
     fireEvent.change(within(dialog).getByLabelText('Số tài khoản'), { target: { value: '0123456789' } })
     fireEvent.change(within(dialog).getByLabelText('Tên chủ tài khoản'), { target: { value: 'NGUYEN VAN A' } })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu' }))
@@ -187,7 +224,7 @@ describe('WalletDashboard', () => {
     await waitFor(() => expect(within(center).getByRole('option', { name: /Bình An/ })).toBeInTheDocument())
     fireEvent.change(center, { target: { value: 'c2' } })
     fireEvent.change(within(dialog).getByLabelText('Số tiền muốn rút (₫)'), { target: { value: '200.000' } })
-    fireEvent.change(within(dialog).getByLabelText('Tên ngân hàng'), { target: { value: 'Vietcombank' } })
+    await pickOption(within(dialog).getByRole('combobox', { name: 'Tên ngân hàng' }), 'Vietcombank')
     fireEvent.change(within(dialog).getByLabelText('Số tài khoản'), { target: { value: '0123456789' } })
     fireEvent.change(within(dialog).getByLabelText('Tên chủ tài khoản'), { target: { value: 'NGUYEN VAN A' } })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Gửi yêu cầu' }))
@@ -207,7 +244,31 @@ describe('WalletDashboard', () => {
     )
   })
 
-  it('keeps the platform wallet read-only and lists what the platform holds for others', async () => {
+  // 2026-11-11: center and platform money reaches their own accounts — the page is revenue only, nothing to withdraw.
+  it('shows the center revenue without a balance, a withdraw action or own withdrawal requests', async () => {
+    vi.mocked(fetchMyWallet).mockResolvedValue({ ...customerWallet, ownerType: 'CENTER', withdrawable: false })
+    vi.mocked(fetchMyWalletStatistics).mockResolvedValue({
+      ...statistics,
+      ownerType: 'CENTER',
+      totalIncome: 1800000,
+      serviceIncome: 1800000,
+      commissionDeducted: 200000,
+      forfeitIncome: 0,
+      complaintDebits: 0,
+      byType: [{ type: 'SERVICE_SETTLEMENT', count: 2, totalAmount: 1800000 }]
+    })
+    renderDashboard()
+
+    expect(await screen.findByRole('heading', { name: 'Doanh thu theo kỳ' })).toBeInTheDocument()
+    expect(await screen.findByText('Trung tâm thực nhận')).toBeInTheDocument()
+    expect(screen.getByText('Hoa hồng nền tảng đã trừ')).toBeInTheDocument()
+    expect(screen.queryByText('Đã rút trong kỳ')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rút tiền' })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('wallet-available')).not.toBeInTheDocument()
+    expect(fetchWithdrawals).not.toHaveBeenCalled()
+  })
+
+  it('shows the platform commission as revenue and lists what the platform holds for others', async () => {
     vi.mocked(fetchMyWallet).mockResolvedValue({ ...customerWallet, ownerType: 'PLATFORM', withdrawable: false })
     vi.mocked(fetchMyWalletStatistics).mockResolvedValue({
       ...statistics,
@@ -221,7 +282,7 @@ describe('WalletDashboard', () => {
     })
     renderDashboard()
 
-    expect(await screen.findByText('Ví nền tảng chỉ để theo dõi, không rút')).toBeInTheDocument()
+    expect(await screen.findByText('Hoa hồng thu được')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Rút tiền' })).not.toBeInTheDocument()
     expect(await screen.findByText('Tiền nền tảng đang giữ hộ')).toBeInTheDocument()
     expect(screen.getByRole('rowheader', { name: 'Người chăm sóc' })).toBeInTheDocument()

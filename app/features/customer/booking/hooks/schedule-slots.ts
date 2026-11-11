@@ -13,7 +13,10 @@ export interface CustomSlot {
   careServiceId?: string
 }
 
-/** A daily / weekly pattern: the RECURRING booking itself, or the quick add of a CUSTOM booking. */
+/**
+ * A daily / weekly pattern: the RECURRING booking itself, or the quick add of a CUSTOM booking. The times are the
+ * outer range of the visits it built (BookingService still needs them); each service has its own time (2026-11-11).
+ */
 export interface RecurrenceRule {
   frequency: BookingRecurrenceFrequency
   startDate: string
@@ -25,9 +28,16 @@ export interface RecurrenceRule {
 
 export interface RuleIssues {
   invalidRange: boolean
-  invalidTime: boolean
   noWeekday: boolean
   noVisits: boolean
+}
+
+/** One chosen service in a pattern: done on every day of the pattern at its own time, or left out of it. */
+export interface ServiceTime {
+  careServiceId: string
+  startTime: string
+  endTime: string
+  enabled: boolean
 }
 
 /** Calendar days of a pattern (Vietnam time), capped at a year to keep the preview cheap. */
@@ -43,15 +53,19 @@ export function ruleDays(rule: RecurrenceRule) {
   return days
 }
 
-/** The visits a pattern produces, each with the pattern's time range. */
-export function slotsFromRule(rule: RecurrenceRule): CustomSlot[] {
-  return ruleDays(rule).map((date) => ({ date, startTime: rule.startTime, endTime: rule.endTime }))
+/** The visits a pattern produces: on each day, one visit per service it includes, at that service's time. */
+export function slotsFromPattern(rule: RecurrenceRule, times: readonly ServiceTime[]): CustomSlot[] {
+  const used = times.filter((time) => time.enabled)
+  return sortSlots(
+    ruleDays(rule).flatMap((date) =>
+      used.map(({ careServiceId, startTime, endTime }) => ({ date, startTime, endTime, careServiceId }))
+    )
+  )
 }
 
 export function ruleIssuesOf(rule: RecurrenceRule): RuleIssues {
   return {
     invalidRange: Boolean(rule.endDate && rule.startDate && rule.endDate < rule.startDate),
-    invalidTime: Boolean(rule.startTime && rule.endTime && rule.endTime <= rule.startTime),
     noWeekday: rule.frequency === 'WEEKLY' && rule.daysOfWeek.length === 0,
     noVisits: ruleDays(rule).length === 0
   }
@@ -60,6 +74,19 @@ export function ruleIssuesOf(rule: RecurrenceRule): RuleIssues {
 const startOf = (slot: CustomSlot) => `${slot.date}T${slot.startTime}`
 const endOf = (slot: CustomSlot) => `${slot.date}T${slot.endTime}`
 const overlaps = (a: CustomSlot, b: CustomSlot) => startOf(a) < endOf(b) && startOf(b) < endOf(a)
+const sortSlots = (slots: CustomSlot[]) => slots.sort((a, b) => startOf(a).localeCompare(startOf(b)))
+
+/** The visits grouped by day (date order, a visit without a date last), each day's visits in time order. */
+export function groupDays(slots: readonly CustomSlot[]) {
+  const days = new Map<string, number[]>()
+  slots.forEach((slot, index) => days.set(slot.date, [...(days.get(slot.date) ?? []), index]))
+  return [...days.entries()]
+    .sort(([a], [b]) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b)))
+    .map(([date, indices]) => ({
+      date,
+      indices: indices.sort((a, b) => slots[a].startTime.localeCompare(slots[b].startTime))
+    }))
+}
 
 /** Index of the first visit that overlaps an earlier one (half-open ranges, as BookingService checks). */
 export function findOverlappingSlot(slots: readonly CustomSlot[]) {
@@ -87,7 +114,7 @@ export function mergeSlots(existing: readonly CustomSlot[], incoming: readonly C
   }
   const room = Math.max(0, max - existing.length)
   const added = fresh.slice(0, room)
-  const slots = [...existing.filter((slot) => slot.date), ...added].sort((a, b) => startOf(a).localeCompare(startOf(b)))
+  const slots = sortSlots([...existing.filter((slot) => slot.date), ...added])
   // An empty row the customer had not filled in yet stays at the end.
   return {
     slots: [...slots, ...existing.filter((slot) => !slot.date)].slice(0, max),
@@ -103,29 +130,32 @@ const minutesOf = (slot: CustomSlot) => {
 }
 
 /**
- * The visit length most visits share, and the visits that differ from it, so a visit edited by mistake (3 hours among
- * 2-hour visits) is pointed out. No usual length when fewer than two visits are valid or every visit is unique.
+ * Per service, the visit length most of its visits share, and the visits that differ from it, so a visit edited by
+ * mistake (3 hours among 2-hour visits) is pointed out. Maps the index of each such visit to its service's usual length;
+ * a service with fewer than two valid visits, or whose visits are all unique, has no usual length.
  */
 export function durationOutliers(slots: readonly CustomSlot[]) {
-  const counts = new Map<number, number>()
-  for (const slot of slots) {
-    const minutes = minutesOf(slot)
-    if (slot.date && minutes > 0) counts.set(minutes, (counts.get(minutes) ?? 0) + 1)
-  }
-  let usual: number | null = null
-  let best = 1
-  for (const [minutes, count] of counts) {
-    if (count > best || (count === best && usual !== null && minutes < usual)) {
-      usual = minutes
-      best = count
+  const services = new Map<string, number[]>()
+  slots.forEach((slot, index) => {
+    if (slot.date && minutesOf(slot) > 0) {
+      const key = slot.careServiceId ?? ''
+      services.set(key, [...(services.get(key) ?? []), index])
     }
+  })
+  const outliers = new Map<number, number>()
+  for (const indices of services.values()) {
+    const counts = new Map<number, number>()
+    for (const index of indices) counts.set(minutesOf(slots[index]), (counts.get(minutesOf(slots[index])) ?? 0) + 1)
+    let usual: number | null = null
+    let best = 1
+    for (const [minutes, count] of counts) {
+      if (count > best || (count === best && usual !== null && minutes < usual)) {
+        usual = minutes
+        best = count
+      }
+    }
+    if (usual === null) continue
+    for (const index of indices) if (minutesOf(slots[index]) !== usual) outliers.set(index, usual)
   }
-  const outliers = new Set<number>()
-  if (usual !== null) {
-    slots.forEach((slot, index) => {
-      const minutes = minutesOf(slot)
-      if (slot.date && minutes > 0 && minutes !== usual) outliers.add(index)
-    })
-  }
-  return { usualMinutes: usual, outliers }
+  return outliers
 }

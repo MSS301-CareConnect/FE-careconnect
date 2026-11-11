@@ -151,8 +151,10 @@ describe('Caregiver booking page', () => {
       '/caregiver/visits/occ-1'
     )
     expect(fetchMyOccurrences).toHaveBeenCalledWith({ bookingId: 'bk-1', page: 0, size: 100 })
-    fireEvent.click(screen.getAllByRole('button', { name: 'Nhận buổi' })[0])
-    await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
+    // The visit starting in 10 minutes is inside its check-in window: it is started, not accepted (2026-11-11).
+    expect(screen.getAllByRole('button', { name: 'Nhận buổi' })).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Nhận buổi' }))
+    await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('far'))
 
     fireEvent.click(screen.getByRole('button', { name: 'Xin hủy các buổi còn lại' }))
     const dialog = await screen.findByRole('dialog', { name: 'Xin hủy các buổi còn lại' })
@@ -246,18 +248,31 @@ describe('Caregiver booking page', () => {
 })
 
 describe('Caregiver visit detail', () => {
-  it('accepts the visit, then starts it without blocking on location', async () => {
+  it('accepts a visit ahead of its window, then waits for the window to start it', async () => {
+    const later = {
+      ...visit,
+      startAt: new Date(Date.now() + 3 * 3_600_000).toISOString(),
+      endAt: new Date(Date.now() + 5 * 3_600_000).toISOString()
+    }
     vi.mocked(fetchOccurrence)
-      .mockResolvedValueOnce(visit)
-      .mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
-    vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...visit, status: 'ACKNOWLEDGED' })
-    vi.mocked(checkIn).mockResolvedValue({ sessionId: 's-1', occurrenceId: 'occ-1', status: 'IN_PROGRESS' })
+      .mockResolvedValueOnce(later)
+      .mockResolvedValue({ ...later, status: 'ACKNOWLEDGED' })
+    vi.mocked(acknowledgeOccurrence).mockResolvedValue({ ...later, status: 'ACKNOWLEDGED' })
     renderWith(<CaregiverVisitDetailPage id='occ-1' />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nhận buổi' }))
     await waitFor(() => expect(acknowledgeOccurrence).toHaveBeenCalledWith('occ-1'))
+    expect(await screen.findByRole('button', { name: /Mở lúc/ })).toBeDisabled()
+  })
 
+  it('starts a visit not accepted in time straight away inside its check-in window, without blocking on location', async () => {
+    vi.mocked(fetchOccurrence).mockResolvedValue(visit)
+    vi.mocked(checkIn).mockResolvedValue({ sessionId: 's-1', occurrenceId: 'occ-1', status: 'IN_PROGRESS' })
+    renderWith(<CaregiverVisitDetailPage id='occ-1' />)
+
+    // 2026-11-11: checking in accepts it; there is no separate accept step any more.
     fireEvent.click(await screen.findByRole('button', { name: 'Bắt đầu ca' }))
+    expect(screen.queryByRole('button', { name: 'Nhận buổi' })).not.toBeInTheDocument()
     await waitFor(() => expect(checkIn).toHaveBeenCalledWith({ occurrenceId: 'occ-1' }))
     // The visit has not started, so a no-show cannot be reported yet.
     expect(screen.queryByRole('button', { name: 'Báo khách vắng mặt' })).not.toBeInTheDocument()

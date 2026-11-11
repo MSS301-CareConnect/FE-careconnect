@@ -29,11 +29,13 @@ export const customerLayoutEn = {
     hotline: 'Support hotline',
     hotlineNumber: '1900 6868',
     emergency: 'Medical emergency: call 115',
-    loading: 'Loading…'
+    loading: 'Loading…',
+    groups: { account: 'Account', finance: 'Payments & wallet' }
   },
   accountArea: {
     label: 'Account sections',
     title: 'Your account',
+    groups: { account: 'Account', finance: 'Payments & wallet', updates: 'Updates' },
     personal: 'Personal info',
     security: 'Security',
     relatives: 'Family profiles',
@@ -87,11 +89,13 @@ export const customerLayoutVi = {
     hotline: 'Tổng đài hỗ trợ',
     hotlineNumber: '1900 6868',
     emergency: 'Cấp cứu y tế: gọi 115',
-    loading: 'Đang tải…'
+    loading: 'Đang tải…',
+    groups: { account: 'Tài khoản', finance: 'Thanh toán & ví' }
   },
   accountArea: {
     label: 'Các mục tài khoản',
     title: 'Tài khoản của bạn',
+    groups: { account: 'Tài khoản', finance: 'Thanh toán & ví', updates: 'Cập nhật' },
     personal: 'Thông tin cá nhân',
     security: 'Bảo mật',
     relatives: 'Hồ sơ người thân',

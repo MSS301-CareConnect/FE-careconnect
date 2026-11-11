@@ -8,6 +8,7 @@
 import { faker } from '@faker-js/faker'
 
 import type {
+  BookingSettlementResponse,
   WalletCenterBalanceListResponse,
   WalletResponse,
   WalletStatisticsResponse,
@@ -15,6 +16,7 @@ import type {
 } from '../../contracts'
 
 import {
+  getBookingSettlementRecordMock,
   getWalletCenterBalanceRecordMock,
   getWalletRecordMock,
   getWalletStatisticsRecordMock,
@@ -45,6 +47,15 @@ export const getGetMyWalletStatisticsResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getWalletStatisticsRecordMock() },
+  ...overrideResponse
+})
+
+export const getGetBookingSettlementResponseMock = (
+  overrideResponse: Partial<Extract<BookingSettlementResponse, object>> = {}
+): BookingSettlementResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingSettlementRecordMock() },
   ...overrideResponse
 })
 

@@ -20,8 +20,18 @@ type FieldError = 'invalidName' | 'invalidPhone'
 /**
  * Personal information reads as key–value pairs; "Edit" turns them into a form. The save / cancel bar sticks to the
  * bottom of the screen only while something changed. Email stays read-only (the profile contract cannot change it).
+ * With `title` the header is that section title (the page already shows who this is, e.g. the admin profile);
+ * without it the header is the avatar, the name and the "customer since" line.
  */
-export function PersonalInfoPanel({ user, memberSince }: { user: UserResponse; memberSince: string | null }) {
+export function PersonalInfoPanel({
+  user,
+  memberSince,
+  title
+}: {
+  user: UserResponse
+  memberSince: string | null
+  title?: string
+}) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
@@ -65,15 +75,23 @@ export function PersonalInfoPanel({ user, memberSince }: { user: UserResponse; m
       className='rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-card)]'
     >
       <div className='flex flex-wrap items-center gap-4 border-b border-outline-variant/70 p-5 sm:p-6'>
-        <Avatar className='h-16 w-16 shrink-0 rounded-full text-lg ring-4 ring-brand-50' decorative name={name} />
-        <div className='min-w-0 flex-1 basis-40'>
-          <h2 className='truncate text-lg font-bold tracking-tight text-forest-950' id='personal-info-title'>
-            {name}
+        {title ? (
+          <h2 className='min-w-0 flex-1 basis-40 text-lg font-bold tracking-tight text-forest-950' id='personal-info-title'>
+            {title}
           </h2>
-          <p className='text-sm text-on-surface-variant'>
-            {memberSince ? t(`${key}.memberSince`, { date: memberSince }) : t('customer.nav.customerRole')}
-          </p>
-        </div>
+        ) : (
+          <>
+            <Avatar className='h-16 w-16 shrink-0 rounded-full text-lg ring-4 ring-brand-50' decorative name={name} />
+            <div className='min-w-0 flex-1 basis-40'>
+              <h2 className='truncate text-lg font-bold tracking-tight text-forest-950' id='personal-info-title'>
+                {name}
+              </h2>
+              <p className='text-sm text-on-surface-variant'>
+                {memberSince ? t(`${key}.memberSince`, { date: memberSince }) : t('customer.nav.customerRole')}
+              </p>
+            </div>
+          </>
+        )}
         {editing ? null : (
           <Button
             leftIcon={<Icon className='text-lg' name='edit' />}

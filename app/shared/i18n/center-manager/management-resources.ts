@@ -2,8 +2,7 @@ export const managerManagementVi = {
   title: 'Quản lý Người chăm sóc & CCHN',
   roster: {
     title: 'Người chăm sóc của trung tâm',
-    subtitle:
-      'Hồ sơ, xác minh và lịch hôm nay của từng người. Mở hồ sơ để sửa thông tin, dịch vụ, chứng chỉ và ngày nghỉ.',
+    subtitle: 'Hồ sơ, xác minh và lịch hôm nay của từng người chăm sóc.',
     filters: 'Bộ lọc người chăm sóc',
     verification: 'Xác minh',
     total: '{{count, number}} người',
@@ -113,8 +112,7 @@ export const managerManagementEn = {
   title: 'Caregiver & License Management',
   roster: {
     title: 'Center caregivers',
-    subtitle:
-      'Profiles, verification and today’s schedule of each person. Open a profile to edit details, services, certificates and time off.',
+    subtitle: 'Profiles, verification and today’s schedule of each caregiver.',
     filters: 'Caregiver filters',
     verification: 'Verification',
     total: '{{count, number}} people',

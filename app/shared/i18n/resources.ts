@@ -67,7 +67,14 @@ import { managerManagementEn, managerManagementVi } from './center-manager/manag
 import { managerDetailEn, managerDetailVi } from './center-manager/detail-resources'
 import { managerBookingManagementEn, managerBookingManagementVi } from './center-manager/booking-management-resources'
 import { managerBookingDetailEn, managerBookingDetailVi } from './center-manager/booking-detail-resources'
-import { managerWithdrawalsEn, managerWithdrawalsVi } from './center-manager/withdrawal-resources'
+import {
+  managerAttentionEn,
+  managerAttentionVi,
+  managerSessionReviewEn,
+  managerSessionReviewVi,
+  managerWithdrawalsEn,
+  managerWithdrawalsVi
+} from './center-manager/withdrawal-resources'
 import { managerProviderEn, managerProviderVi } from './center-manager/provider-resources'
 import { managerScheduleEn, managerScheduleVi } from './center-manager/schedule-resources'
 import { managerServicesEn, managerServicesVi } from './center-manager/services-resources'
@@ -78,7 +85,6 @@ import { adminLayoutEn, adminLayoutVi } from './admin/layout-resources'
 import { adminDashboardEn, adminDashboardVi } from './admin/dashboard-resources'
 import { adminProfileEn, adminProfileVi } from './admin/profile-resources'
 import { adminCentersEn, adminCentersVi } from './admin/centers-resources'
-import { adminRevenueEn, adminRevenueVi } from './admin/revenue-resources'
 import { adminServicesEn, adminServicesVi } from './admin/services-resources'
 import { adminPoliciesEn, adminPoliciesVi } from './admin/policies-resources'
 import { adminQualityEn, adminQualityVi } from './admin/quality-resources'
@@ -153,6 +159,8 @@ export const resources = {
         bookingManagement: managerBookingManagementEn,
         bookingDetail: managerBookingDetailEn,
         withdrawals: managerWithdrawalsEn,
+        sessionReview: managerSessionReviewEn,
+        attention: managerAttentionEn,
         provider: managerProviderEn,
         schedules: managerScheduleEn,
         services: managerServicesEn,
@@ -164,7 +172,6 @@ export const resources = {
         ...adminLayoutEn,
         dashboardPage: adminDashboardEn,
         profilePage: adminProfileEn,
-        revenuePage: adminRevenueEn,
         servicesPage: adminServicesEn,
         centersPage: adminCentersEn,
         policiesPage: adminPoliciesEn,
@@ -241,6 +248,8 @@ export const resources = {
         bookingManagement: managerBookingManagementVi,
         bookingDetail: managerBookingDetailVi,
         withdrawals: managerWithdrawalsVi,
+        sessionReview: managerSessionReviewVi,
+        attention: managerAttentionVi,
         provider: managerProviderVi,
         schedules: managerScheduleVi,
         services: managerServicesVi,
@@ -252,7 +261,6 @@ export const resources = {
         ...adminLayoutVi,
         dashboardPage: adminDashboardVi,
         profilePage: adminProfileVi,
-        revenuePage: adminRevenueVi,
         servicesPage: adminServicesVi,
         centersPage: adminCentersVi,
         policiesPage: adminPoliciesVi,

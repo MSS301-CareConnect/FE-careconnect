@@ -97,7 +97,7 @@ export function PortalAccountMenu({
         <nav
           aria-label={t('common.accountMenu')}
           data-state={panelState}
-          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-60 origin-top-right rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
+          className='cc-dropdown absolute top-full right-0 z-50 mt-2 w-64 origin-top-right rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2 shadow-lg'
           id='portal-account-menu'
         >
           <div className='border-b border-outline-variant/30 px-3 py-2 sm:hidden'>

@@ -36,4 +36,6 @@ export interface BookingOccurrenceRecord {
   isEmergencyReplacement?: boolean
   replacementReason?: string
   replacementConsentStatus?: BookingOccurrenceRecordReplacementConsentStatus
+  /** When the customer reported this visit (nobody came / not delivered properly) */
+  customerReportedAt?: string
 }

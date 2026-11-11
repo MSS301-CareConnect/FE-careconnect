@@ -125,7 +125,7 @@ describe('Center Manager work shifts', () => {
     expect(screen.queryByText(/current page/i)).not.toBeInTheDocument()
     // The default list starts today and sends every filter to the backend.
     expect(fetchWorkShifts).toHaveBeenCalledWith(
-      expect.objectContaining({ centerId: 'center-1', fromDate: today, size: 20 })
+      expect.objectContaining({ centerId: 'center-1', fromDate: today, size: 10 })
     )
   })
 

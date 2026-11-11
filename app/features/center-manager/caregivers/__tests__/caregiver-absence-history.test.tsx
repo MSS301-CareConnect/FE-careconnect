@@ -61,7 +61,9 @@ describe('CaregiverAbsenceHistory', () => {
     expect(violations.nextElementSibling).toHaveTextContent('3')
     expect(screen.getByText('Tổng số lần', { selector: 'dt' }).nextElementSibling).toHaveTextContent('6')
     expect(screen.getByText(/Kết luận của trung tâm: Không báo trước/)).toBeInTheDocument()
-    expect(screen.getByText('Còn 5 lần khác')).toBeInTheDocument()
+    // Pending count beside the title, and the list is paged (6 records, 5 per page).
+    expect(screen.getAllByText('1 chờ kết luận').length).toBeGreaterThan(0)
+    expect(screen.getByText('Trang 1 / 2')).toBeInTheDocument()
     // One pending absence → link to the queue where it is concluded.
     expect(screen.getByRole('link', { name: /Kết luận các lần chờ/ })).toHaveAttribute(
       'href',

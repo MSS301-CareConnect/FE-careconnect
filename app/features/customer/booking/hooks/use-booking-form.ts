@@ -23,19 +23,19 @@ import type {
   ListCareRecipientsParams,
   PricePlanRecord
 } from '~/shared/api/generated/contracts'
-import { addDays, calendarDayOf } from '~/shared/lib/format'
+import { addDays, addMinutesToTime, calendarDayOf } from '~/shared/lib/format'
 
 import {
   MAX_CUSTOM_SLOTS,
   findOverlappingSlot,
   mergeSlots,
   ruleIssuesOf,
-  slotsFromRule,
   type CustomSlot,
   type RecurrenceRule
 } from './schedule-slots'
-import { fitsPlan, lengthOf, type ServiceOption, type ShiftSlot } from './service-slots'
+import { fitsPlan, isFixedPlan, lengthOf, type ServiceOption, type ShiftSlot } from './service-slots'
 import { useBookingProviders } from './use-booking-providers'
+import { useCaregiverBusy } from './use-caregiver-busy'
 
 export { MAX_CUSTOM_SLOTS, type CustomSlot } from './schedule-slots'
 
@@ -77,9 +77,8 @@ export interface BookingSchedule {
   startTime: string
   endTime: string
   daysOfWeek: number[]
-  /** RECURRING: the visits of the pattern, editable one by one (CR-1); sent only once edited. */
+  /** RECURRING: the visits built from the pattern, one per service and day, editable one by one; always sent. */
   recurringSlots: CustomSlot[]
-  recurringEdited: boolean
   /** CUSTOM. */
   slots: CustomSlot[]
 }
@@ -87,13 +86,20 @@ export interface BookingSchedule {
 /** Which visit list an edit applies to. */
 export type SlotList = 'slots' | 'recurringSlots'
 
-const RULE_FIELDS = ['frequency', 'startDate', 'endDate', 'startTime', 'endTime', 'daysOfWeek'] as const
-
 /** Selected services keyed by center offering ID, each with the chosen price plan. */
 export type SelectedServices = Record<string, BookingServiceRequest>
 
 export type SlotIssue =
-  'missingDate' | 'invalidTime' | 'overlap' | 'tooEarly' | 'outsideRange' | 'noService' | 'planLength'
+  | 'missingDate'
+  | 'invalidTime'
+  | 'overlap'
+  | 'tooEarly'
+  | 'outsideRange'
+  | 'noService'
+  | 'planLength'
+  /** 2026-11-11: the chosen caregiver has another booking at that time, or within its travel buffer. */
+  | 'busy'
+  | 'buffer'
 export type MissingReason =
   | 'recipient'
   | 'center'
@@ -137,20 +143,20 @@ function initialSchedule(now: number): BookingSchedule {
     shiftDate: '',
     shiftSlots: [],
     ...rule,
-    recurringSlots: slotsFromRule(rule),
-    recurringEdited: false,
-    slots: [{ date: firstDay, startTime: '08:00', endTime: '10:00' }]
+    // 2026-11-11: no visit is made up front; the customer builds them from a pattern or adds days.
+    recurringSlots: [],
+    slots: []
   }
 }
 
-/** A draft saved before the RECURRING visit list existed gets the visits of its pattern. */
+/** A draft saved before the RECURRING visit list existed starts that list empty. */
 function normalizeSchedule(schedule: BookingSchedule): BookingSchedule {
   // A draft from before 2026-11-05 has no shift time ranges: its shift is chosen again.
   const withShift = Array.isArray(schedule.shiftSlots)
     ? schedule
     : { ...schedule, scheduleId: '', shiftDate: '', shiftSlots: [] }
   if (Array.isArray(withShift.recurringSlots)) return withShift
-  return { ...withShift, recurringSlots: slotsFromRule(withShift), recurringEdited: false }
+  return { ...withShift, recurringSlots: [] }
 }
 
 /** The draft is kept per tab so a reload does not lose the choices. The free-text note is never stored (health data). */
@@ -212,9 +218,9 @@ function scheduleFields(schedule: BookingSchedule, caregiverId: string | undefin
     startTime: schedule.startTime,
     endTime: schedule.endTime,
     daysOfWeek: schedule.frequency === 'WEEKLY' ? [...schedule.daysOfWeek].sort() : undefined,
-    // CR-1: the edited list replaces the visits BookingService would generate from the pattern; with several services
-    // every visit must name its service, so the list is always sent.
-    slots: schedule.recurringEdited || multiService ? toSlotRequests(schedule.recurringSlots, multiService) : undefined
+    // The visits built from the pattern (each service at its own time, then edited) replace the ones BookingService
+    // would generate, so the list is always sent (2026-11-11).
+    slots: toSlotRequests(schedule.recurringSlots, multiService)
   }
 }
 
@@ -435,6 +441,18 @@ export function useBookingForm() {
   const earliest = now + noticeMinutes[schedule.bookingType] * 60_000
   const earliestDay = calendarDayOf(new Date(earliest))
   const tooEarly = (day: string, time: string) => Date.parse(vietnamInstant(day, time)) < earliest
+  const activeSlots =
+    schedule.bookingType === 'RECURRING'
+      ? schedule.recurringSlots
+      : schedule.bookingType === 'CUSTOM'
+        ? schedule.slots
+        : []
+  // Other bookings of the chosen caregiver on the planned days (BookingService checks again on quote and save).
+  const busy = useCaregiverBusy(
+    caregiverId,
+    earliestDay,
+    activeSlots.map((slot) => slot.date)
+  )
 
   // Errors show on the visit that has them; RECURRING visits must also stay within the dates of the pattern.
   function issuesOf(slots: CustomSlot[], range?: { from: string; to: string }): (SlotIssue | null)[] {
@@ -448,7 +466,7 @@ export function useBookingForm() {
       const option = serviceOfSlot(slot.careServiceId)
       if (multiService && !option) return 'noService'
       if (option && !fitsPlan(option.plan, lengthOf(slot))) return 'planLength'
-      return null
+      return busy.conflictOf(slot)
     })
   }
   /** With several services, each needs at least one visit. */
@@ -460,7 +478,7 @@ export function useBookingForm() {
   const shiftSlots = schedule.shiftSlots.filter((slot) => serviceIdSet.has(slot.careServiceId))
   const slotIssues = issuesOf(schedule.slots)
   const recurringSlotIssues = issuesOf(schedule.recurringSlots, { from: schedule.startDate, to: schedule.endDate })
-  const recurringIssues = { ...ruleIssuesOf(schedule), noVisits: schedule.recurringSlots.length === 0 }
+  const recurringIssues = ruleIssuesOf(schedule)
 
   function scheduleIssue(): MissingReason | null {
     if (schedule.bookingType === 'SHIFT') {
@@ -473,7 +491,7 @@ export function useBookingForm() {
       if (slotIssues.some(Boolean)) return 'scheduleInvalid'
       return servicesWithoutVisit(schedule.slots).length > 0 ? 'serviceSlots' : null
     }
-    if (!schedule.startDate || !schedule.endDate) return 'schedule'
+    if (!schedule.startDate || !schedule.endDate || schedule.recurringSlots.length === 0) return 'schedule'
     if (Object.values(recurringIssues).some(Boolean) || recurringSlotIssues.some(Boolean)) return 'scheduleInvalid'
     return servicesWithoutVisit(schedule.recurringSlots).length > 0 ? 'serviceSlots' : null
   }
@@ -631,31 +649,37 @@ export function useBookingForm() {
     })
   }
 
-  /** A pattern change rebuilds the RECURRING visits until the customer edits them by hand (CR-1). */
+  /** A pattern change no longer rebuilds the visits: the customer builds them again on purpose (2026-11-11). */
   function updateSchedule(patch: Partial<BookingSchedule>) {
-    setSchedule((current) => {
-      const next = { ...current, ...patch }
-      const ruleChanged = RULE_FIELDS.some((field) => field in patch)
-      return ruleChanged && !next.recurringEdited ? { ...next, recurringSlots: slotsFromRule(next) } : next
+    setSchedule((current) => ({ ...current, ...patch }))
+  }
+
+  function editSlots(list: SlotList, change: (slots: CustomSlot[]) => CustomSlot[]) {
+    setSchedule((current) => ({ ...current, [list]: change(current[list]).slice(0, MAX_CUSTOM_SLOTS) }))
+  }
+
+  /** The length a new visit of a service gets: the plan's length (DAY / SHIFT), else 2 hours or the plan's minimum. */
+  const defaultLength = (option: ServiceOption | undefined) =>
+    option?.plan?.durationMinutes && isFixedPlan(option.plan)
+      ? option.plan.durationMinutes
+      : Math.max(option?.plan?.durationMinutes ?? 60, 120)
+
+  /** One visit per chosen service on `date`, back to back from `from`. */
+  function visitsFrom(date: string, from: string, options: ServiceOption[]): CustomSlot[] {
+    let startTime = from
+    return options.map((option) => {
+      const endTime = addMinutesToTime(startTime, defaultLength(option))
+      const slot = { date, startTime, endTime, careServiceId: option.careServiceId }
+      startTime = endTime
+      return slot
     })
   }
 
-  /** Edits one visit list; editing the RECURRING list stops the pattern from rebuilding it. */
-  function editSlots(list: SlotList, change: (slots: CustomSlot[]) => CustomSlot[]) {
-    setSchedule((current) => ({
-      ...current,
-      [list]: change(current[list]),
-      recurringEdited: list === 'recurringSlots' ? true : current.recurringEdited
-    }))
-  }
-
-  function nextSlot(slots: CustomSlot[]): CustomSlot {
-    const last = slots.at(-1)
-    return {
-      date: last?.date ? addDays(last.date, 1) : '',
-      startTime: last?.startTime ?? schedule.startTime,
-      endTime: last?.endTime ?? schedule.endTime
-    }
+  /** The first day after `date` that has no visit yet. */
+  const nextFreeDay = (slots: CustomSlot[], date: string) => {
+    let day = addDays(date, 1)
+    for (let guard = 0; guard < 370 && slots.some((slot) => slot.date === day); guard++) day = addDays(day, 1)
+    return day
   }
 
   return {
@@ -719,19 +743,46 @@ export function useBookingForm() {
           ? schedule.slots.length
           : Math.max(1, shiftSlots.length),
     updateSchedule,
+    busy,
+    /** True when a visit would start inside the notice of the chosen type. */
+    isTooEarly: tooEarly,
+    defaultLength,
     updateSlot: (index: number, patch: Partial<CustomSlot>, list: SlotList = 'slots') =>
       editSlots(list, (slots) => slots.map((slot, position) => (position === index ? { ...slot, ...patch } : slot))),
-    addSlot: (list: SlotList = 'slots') =>
-      editSlots(list, (slots) => (slots.length >= MAX_CUSTOM_SLOTS ? slots : [...slots, nextSlot(slots)])),
-    duplicateSlot: (index: number, list: SlotList = 'slots') =>
-      editSlots(list, (slots) => {
-        if (slots.length >= MAX_CUSTOM_SLOTS) return slots
-        const source = slots[index]
-        const copy = { ...source, date: source.date ? addDays(source.date, 1) : '' }
-        return [...slots.slice(0, index + 1), copy, ...slots.slice(index + 1)]
-      }),
     removeSlot: (index: number, list: SlotList = 'slots') =>
       editSlots(list, (slots) => slots.filter((_, position) => position !== index)),
+    /** A new day after the last one: a copy of the last day's visits, or every chosen service from 08:00. */
+    addDay: (list: SlotList = 'slots') =>
+      editSlots(list, (slots) => {
+        const last = slots.reduce((latest, slot) => (slot.date > latest ? slot.date : latest), '')
+        if (!last) {
+          const first = list === 'recurringSlots' && schedule.startDate > earliestDay ? schedule.startDate : earliestDay
+          // 08:00 on the first bookable day may still be inside the notice: start a day later then.
+          return visitsFrom(tooEarly(first, '08:00') ? addDays(first, 1) : first, '08:00', serviceOptions)
+        }
+        const date = addDays(last, 1)
+        return [...slots, ...slots.filter((slot) => slot.date === last).map((slot) => ({ ...slot, date }))]
+      }),
+    /** Copies a day's visits to the next day without visits. */
+    duplicateDay: (date: string, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => {
+        const target = nextFreeDay(slots, date)
+        return [...slots, ...slots.filter((slot) => slot.date === date).map((slot) => ({ ...slot, date: target }))]
+      }),
+    /** Moves every visit of a day to another day. */
+    moveDay: (from: string, to: string, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => slots.map((slot) => (slot.date === from ? { ...slot, date: to } : slot))),
+    removeDay: (date: string, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => slots.filter((slot) => slot.date !== date)),
+    /** Adds a visit of a service to a day, right after the day's last visit. */
+    addServiceToDay: (date: string, careServiceId: string, list: SlotList = 'slots') =>
+      editSlots(list, (slots) => {
+        const option = serviceOptions.find((item) => item.careServiceId === careServiceId)
+        const from = slots
+          .filter((slot) => slot.date === date)
+          .reduce((latest, slot) => (slot.endTime > latest ? slot.endTime : latest), '')
+        return option ? [...slots, ...visitsFrom(date, from || '08:00', [option])] : slots
+      }),
     /** Bulk edit: the same change on every chosen visit of a list. */
     updateSlots: (indices: readonly number[], patch: Partial<CustomSlot>, list: SlotList = 'slots') =>
       editSlots(list, (slots) =>
@@ -745,9 +796,17 @@ export function useBookingForm() {
       if (result.added > 0) setSchedule((current) => ({ ...current, slots: mergeSlots(current.slots, incoming).slots }))
       return result
     },
-    /** Drops the hand edits and rebuilds the RECURRING visits from the pattern. */
-    regenerateRecurring: () =>
-      setSchedule((current) => ({ ...current, recurringSlots: slotsFromRule(current), recurringEdited: false })),
+    /**
+     * RECURRING: replaces the visits with the ones the pattern built; the pattern keeps their outer time range because
+     * BookingService still validates the rule.
+     */
+    setRecurringSlots: (slots: CustomSlot[]) =>
+      setSchedule((current) => ({
+        ...current,
+        recurringSlots: slots.slice(0, MAX_CUSTOM_SLOTS),
+        startTime: slots.reduce((min, slot) => (slot.startTime < min ? slot.startTime : min), '23:59'),
+        endTime: slots.reduce((max, slot) => (slot.endTime > max ? slot.endTime : max), '00:00')
+      })),
     customerNote,
     setCustomerNote,
     agreed,

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router'
 
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
-import { SignOutButton } from '~/features/shared/auth/sign-out-button'
 import { NotificationBell } from '~/entities/notification/notification-bell'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
@@ -13,10 +12,8 @@ import { useScrollTopOnSamePage } from '~/shared/lib/use-scroll-top-on-same-page
 
 import { usePendingInvitations } from '../account-shell'
 import { useBookingsAttention } from '../hooks/use-bookings-attention'
+import { AccountMenu } from './account-menu'
 import { CenterChip } from './center-chip'
-
-const menuItem =
-  'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
 
 /**
  * Header that morphs on scroll ("Soft Bento", 2026-11-09, after the owner's EXE / UML landing headers): at the top of
@@ -184,43 +181,17 @@ export function CustomerHeader() {
                   {menuOpen ? (
                     <motion.div
                       animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-                      className='absolute top-full right-0 z-10 mt-3 w-64 origin-top-right rounded-3xl border border-white/70 bg-white/95 p-2 shadow-[var(--shadow-float)] backdrop-blur-xl'
+                      className='absolute top-full right-0 z-10 mt-3 w-72 origin-top-right rounded-3xl border border-white/70 bg-white/95 p-2 shadow-[var(--shadow-float)] backdrop-blur-xl'
                       exit={{ opacity: 0, scale: 0.96, y: -6, filter: 'blur(4px)' }}
                       id='customer-account-menu'
                       initial={{ opacity: 0, scale: 0.96, y: -6, filter: 'blur(4px)' }}
                       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      <div className='flex items-center gap-3 px-3 py-2'>
-                        <Avatar className='h-10 w-10 rounded-full' decorative name={displayName} />
-                        <div className='min-w-0'>
-                          <p className='truncate text-sm font-semibold text-on-surface'>{displayName}</p>
-                          {authUser?.email ? (
-                            <p className='truncate text-xs text-on-surface-variant'>{authUser.email}</p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className='my-1 border-t border-outline-variant' />
-                      <nav aria-label={t('customer.nav.accountMenu')} className='flex flex-col'>
-                        {[
-                          { to: '/customer/my-profile', icon: 'person', label: t('customer.nav.account') },
-                          { to: '/customer/patient-profiles', icon: 'group', label: t('customer.nav.relatives') },
-                          { to: '/customer/payments', icon: 'payments', label: t('customer.nav.payments') },
-                          { to: '/customer/wallet', icon: 'account_balance_wallet', label: t('wallet.nav.customer') },
-                          { to: '/customer/invitations', icon: 'mail', label: t('customer.nav.invitations') }
-                        ].map((item) => (
-                          <Link className={menuItem} key={item.to} onClick={() => setMenuOpen(false)} to={item.to}>
-                            <Icon className='text-xl text-on-surface-variant' name={item.icon} />
-                            {item.label}
-                          </Link>
-                        ))}
-                      </nav>
-                      <div className='my-1 border-t border-outline-variant' />
-                      <div className='flex items-center justify-between gap-2 px-3 py-1.5'>
-                        <span className='text-sm text-on-surface-variant'>{t('customer.nav.language')}</span>
-                        <LanguageSwitch />
-                      </div>
-                      <div className='my-1 border-t border-outline-variant' />
-                      <SignOutButton appearance='menu' />
+                      <AccountMenu
+                        displayName={displayName}
+                        email={authUser?.email}
+                        onNavigate={() => setMenuOpen(false)}
+                      />
                     </motion.div>
                   ) : null}
                 </AnimatePresence>

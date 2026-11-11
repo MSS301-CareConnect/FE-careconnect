@@ -124,20 +124,21 @@ export function BentoPageHeader({
   }
 
   return (
-    <header className={`flex flex-wrap items-end justify-between gap-x-6 gap-y-4 pt-2 pb-2 sm:pt-4 ${className}`}>
-      <div className='min-w-0 max-w-3xl'>
-        {crumbs}
-        {eyebrow ? (
-          <div className='mb-2 inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-[13px] font-semibold text-forest-700 ring-1 ring-forest-900/5'>
-            <span aria-hidden='true' className='h-1.5 w-1.5 rounded-full bg-mint-400' />
-            {eyebrow}
-          </div>
-        ) : null}
-        <h1 className='text-[28px] leading-tight text-forest-950 sm:text-[36px]'>{title}</h1>
-        {description ? <p className='mt-2 text-[15px] text-on-surface-variant'>{description}</p> : null}
-        {meta ? <div className='mt-2 text-sm text-on-surface-variant'>{meta}</div> : null}
+    // Actions sit on the title row; the description gets the full width below so it stays on one line.
+    <header className={`pt-2 pb-2 sm:pt-4 ${className}`}>
+      {crumbs}
+      {eyebrow ? (
+        <div className='mb-2 inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-[13px] font-semibold text-forest-700 ring-1 ring-forest-900/5'>
+          <span aria-hidden='true' className='h-1.5 w-1.5 rounded-full bg-mint-400' />
+          {eyebrow}
+        </div>
+      ) : null}
+      <div className='flex flex-wrap items-center justify-between gap-x-6 gap-y-3'>
+        <h1 className='min-w-0 text-[28px] leading-tight text-forest-950 sm:text-[36px]'>{title}</h1>
+        {actions ? <div className='flex flex-wrap items-center gap-2'>{actions}</div> : null}
       </div>
-      {actions ? <div className='flex flex-wrap items-center gap-2'>{actions}</div> : null}
+      {description ? <p className='mt-2 text-[15px] text-on-surface-variant'>{description}</p> : null}
+      {meta ? <div className='mt-2 text-sm text-on-surface-variant'>{meta}</div> : null}
     </header>
   )
 }

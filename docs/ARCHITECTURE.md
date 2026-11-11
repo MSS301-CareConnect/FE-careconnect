@@ -46,7 +46,9 @@ visit trend and outcomes, booking status and type, ratings, complaints and top c
 money: the center page reads `/payments/revenue` and its center wallet statistics, the admin page the platform
 revenue, the platform wallet statistics, Identity accounts by role and ProviderService partner counts, with a "needs
 attention" band (centers to approve, caregivers to verify, center withdrawals, escalated complaints). Charts come from
-`shared/ui/charts` (`ColumnChart`, `LineChart`, `DonutChart`, `BarList`, `KpiTile`, `ChartCard`): SVG / CSS
+`shared/ui/charts` (`ColumnChart`, `LineChart`, `DonutChart`, `BarList`, `KpiTile`, `ChartCard`; since 2026-11-11 the
+booking / visit trend switches between grouped columns (default) and lines, and `LineChart` reveals its lines with a
+clip because a `pathLength` draw under `non-scaling-stroke` broke them into dashes): SVG / CSS
 with `motion`, no chart library, the categorical palette `--color-chart-1..5` in `app.css` (checked for colour-vision
 deficiency), a legend for two or more series and every value in a tooltip and an accessible name.
 
@@ -961,6 +963,13 @@ Contract update workflow:
   payment history (`GET /payments`, real `refundedAmount`) and refunds (`GET /refunds`).
   PaymentService error codes map to `payment.errors.e<code>` translations.
 
+- RECURRING / CUSTOM schedule (2026-11-11): no visit is made up front. `schedule-pattern.tsx` (days, then a time per
+  chosen service, each day doing at least one) builds the visits on demand — RECURRING replaces its list, CUSTOM quick
+  add appends — and the list shows one card per day with a row per service (`schedule-day-list.tsx`,
+  `schedule-day-card.tsx`). `use-caregiver-busy.ts` reads the chosen caregiver's busy time
+  (`GET /bookings/held-schedules`, 31-day blocks) and marks visits that overlap another booking or its travel buffer;
+  BookingService's quote rejects caregiver / recipient conflicts and time off too. Caregivers accept a visit until its
+  check-in window closes; inside the window a visit not accepted yet is started directly (check-in accepts it).
 - Caregiver absences (2026-11-10, `BE/docs/2026-11-10-CAREGIVER_ABSENCE_AND_REFUND_REVIEW.md`): a visit nobody checked
   in to becomes CAREGIVER_MISSED, the customer is refunded in full to the wallet and BookingService opens an absence
   record (`CaregiverAbsence` tag). `entities/booking/caregiver-absence-queue.tsx` lists the pending ones of the signed-in
@@ -1095,3 +1104,107 @@ does not require creating empty packages.
 - [React i18next `useTranslation`](https://react.i18next.com/latest/usetranslation-hook)
 - [Vercel React Router preset](https://vercel.com/docs/frameworks/frontend/react-router)
 - [pnpm workspace settings](https://pnpm.io/settings)
+
+### 2026-11-11 — customer account area and center-manager lists
+
+- Customer account menu (`features/customer/layout/components/account-menu.tsx`) and the account shell group their
+  links (account · payments & wallet · updates); the menu shows the wallet balance (`GET /wallets/me`, read while open).
+  `/customer/payments` history opens a printable invoice per successful payment (`payment-invoice-dialog.tsx`), built
+  from the payment and the booking's service snapshot — no invoice endpoint. A customer's wallet chart says "refunds",
+  never "income".
+- `shared/ui/pagination.tsx` takes `pageSize` / `onPageSizeChange` / `totalElements`; `BentoPageHeader` (plain) puts
+  actions on the title row. The dashboard period (`entities/statistics/statistics-period.ts`) adds `custom`
+  (`?period=custom&from=&to=`), used by the manager statistics page (no banner, revenue first) and the admin dashboard.
+- Server-paged manager lists: services (`GET /center-services/center/{id}?keyword=`) and their price plans
+  (`GET /price-plans?centerOfferingId=&page=&size=`, CareCatalogService 2026-11-11), work shifts (page size, bulk open /
+  close / delete over the existing single-shift endpoints, single delete), the work calendar list and time-off tabs,
+  and a caregiver's absences. Absence and withdrawal queues fold visits per booking
+  (`entities/booking/booking-group-card.tsx`); the manager booking history shows the latest four entries first.
+
+### 2026-11-11 — care session attendance and customer visit reports
+
+`BE/docs/2026-11-11-CARE_SESSION_ATTENDANCE.md`. BookingService records lateness, early leave and a location flag on
+check-in (flag only, never blocks) and refuses a second open session (409 `5806`). A session the system closed, or a
+finished visit the customer reported, waits as `completionReview=PENDING` and its settlement is held; the manager decides
+it in the "Visits waiting for the center" queue on `/center-manager/bookings`
+(`manager-session-review-queue.tsx`, shows `customerReportNote`), and the manager visit dialog shows late / early
+minutes, distance and the flag. The caregiver care report is a status card plus a centred two-column dialog
+(`entities/aftercare/care-report-card.tsx`, `care-report-form.tsx` `variant='dialog'`). The customer visit dialog
+(`booking-occurrence-detail-dialog.tsx`) offers "the caregiver has not arrived" once a SCHEDULED / ACKNOWLEDGED visit
+has started (optional note) and "this visit was not delivered properly" within 24 hours after a COMPLETED visit ended
+(note of at least 10 characters) through `POST /booking-occurrences/{id}/customer-reports` (`reportVisitByCustomer`);
+once sent it shows the time (`customerReportedAt`). The 24 hours are a frontend constant mirroring BookingService's
+`booking.session.customer-report-window`; BookingService answers 409 `5823` / `5824` and 400 `5825`.
+`BookingReasonDialog` makes the reason optional when `minLength` is 0.
+
+### 2026-11-11 — requester names, invoice buyer, wallet balance in every account menu
+
+- Withdrawal queues name the requester from `requesterName` / `requesterPhoneNumber`, which PaymentService reads from
+  Identity `/users/batch` with its SERVICE token: a manager cannot read a customer's account (customers have no center),
+  so the former per-account lookups showed "Unknown".
+- The customer invoice (`payment-invoice-dialog.tsx`) takes the buyer from the session user, because BookingService
+  leaves `customer` out of a customer's own booking.
+- Every account menu starts its money part with `entities/wallet/wallet-balance-link.tsx` (available balance of
+  `GET /wallets/me`, read while the menu is open): customer and caregiver only since the revenue change below.
+
+### 2026-11-11 — center / platform revenue and booking settlement
+
+`BE/docs/2026-11-11-REVENUE_AND_BOOKING_SETTLEMENT.md`. Customer money reaches the center's and the platform's own
+accounts, so `/center-manager/wallet` became `/center-manager/revenue` (menu "Revenue") and `/admin/wallet` was folded
+into `/admin/revenue` (the former sample revenue page and its `admin.revenuePage` copy were removed). Both render
+`WalletDashboard`, which for a CENTER / PLATFORM owner shows only the period revenue (KPIs, revenue chart, movement mix,
+ledger; the center keeps its "money held for others" card): no balance, withdraw action or own withdrawal requests, and
+the ops account menu has no wallet card. PaymentService refuses a center withdrawal. The withdrawal queues are
+unchanged. `entities/wallet/booking-settlement-card.tsx` (manager and admin booking detail) reads
+`GET /wallets/bookings/{bookingId}/settlement`: paid, refunded, center service money, kept deposits, complaint
+deductions, what the center received, the commission, and each visit's outcome (404 = not paid yet).
+- The money sections of `/center-manager/statistics` and `/admin/dashboard` follow the same rule: the center tile is
+  "received by the center" (hint: commission deducted) with a received-only chart, the platform commission tile counts
+  its bookings, "held for others" sums customer and caregiver wallets only, and both link to the revenue pages.
+- `DonutChart` lays out by its own width (`@container`, side by side from `@lg`), so the "money the center holds" card
+  in a one-third column stacks the ring above a legend that no longer truncates.
+- Withdrawal payout (2026-11-11): "Transfer" in the review dialog opens `/<center-manager|admin>/withdrawals/:id/transfer`
+  (`entities/wallet/simulated-transfer-page.tsx`), a sandbox bank gateway: source account (the fixed sandbox test
+  account), then a fixed sandbox OTP, both checked in the browser, then `POST /wallet-withdrawals/{id}/transfers`. The
+  right column shows the payee and a VietQR code (`entities/wallet/viet-qr.ts`: EMVCo payload with NAPAS BIN, amount and
+  note, CRC-16, rendered by `qrcode.react` in the browser, so the account never goes to a QR web service). Withdrawal
+  forms pick the bank from that bank list; older free-text names are matched without case or diacritics, and an
+  unknown bank shows no QR.
+- PaymentService DB: `2026-11-10-withdrawals-by-center.sql` had not been applied on dev, so every transfer failed
+  (outbox insert with a null `booking_id`, 409). Applied 2026-11-11.
+- Wallet pages (every role, 2026-11-11): the ledger and the own withdrawal list always show the pager with a rows-per-page
+  picker; a ledger row opens `WalletTransactionDetailDialog` (amount, balance and held before → after, center, booking
+  link, payout reference — raw ledger notes are never shown) and an own request opens `WalletWithdrawalDetailDialog`
+  (timeline sent → waiting / transferred / rejected, bank account, handler, reference or reason), both in
+  `entities/wallet/wallet-detail-dialogs.tsx`.
+- `/center-manager/bookings` (2026-11-11, menu "Lịch đặt và phân công"): the list uses the full width with a rows-per-page
+  picker (`?size=`, default 10). Caregiver withdrawals, visits to confirm and caregiver absences moved from the right
+  rail to compact cards above the list (`components/manager-attention-strip.tsx`, count + "Details", hidden when empty);
+  "Details" opens the queue in a popup (`?queue=withdrawals|reviews|absences`) paged by BookingService (5 / 10 / 20).
+  Default page sizes: services and price plans 5, work shifts and caregivers 10.
+
+### 2026-11-11 — admin portal pass and customer center directory
+
+- `features/admin/ui/stat-cards.tsx` (`AdminStatCards`: the first card dark, a card with `onSelect` filters the list)
+  and `features/admin/data/use-center-options.ts` are shared by the admin features. Admin lists (centers, accounts,
+  caregivers, absences, bookings) keep page and `?size=` in the URL and use the sized `Pagination`.
+- `/admin/dashboard` has no banner: title and period filter share a row, platform money comes first.
+- `/admin/centers`: count cards, status tabs, and per row a "⋯" menu — edit in a dialog, caregivers / bookings / policy
+  of the center, archive (`components/archive-center-dialog.tsx`, shared with the center page).
+- `/admin/bookings`: `BookingsBrowser` takes `rowAction`; the admin menu opens a booking or cancels it for the platform
+  (`components/cancel-booking-dialog.tsx`). Bookings are created and changed by customers and centers only. The detail
+  history shows the latest four entries first.
+- `/admin/caregivers` is the caregiver directory of every center (`GET /caregivers/directory`, ADMIN: `centerId`,
+  `verification`, `status`, `keyword`, ordered by center then name), grouped per center; pending profiles are approved
+  or rejected on their row.
+- `/admin/caregiver-absences` folds a page's absences per booking and filters by center.
+- `/admin/policies` keeps the center in `?center=`. The policy form shows units inside the inputs, booking types in
+  words (never SHIFT / RECURRING / CUSTOM) and a sticky save bar with "unsaved changes".
+- `/admin/accounts`: the row "⋯" menu locks / unlocks / deactivates (`AccountAccess` with `menuLabel`).
+  `/admin/roles`: custom roles are renamed, described, stopped (`PUT /roles/{id}`) and deleted (`DELETE /roles/{id}`,
+  409 `1120` while an account holds the role).
+- `/admin/profile` is two columns (identity card + tabs). `PersonalInfoPanel` takes `title`; the password panel puts
+  its rules beside the fields; signed-in devices read "Chrome · Windows" through `shared/lib/user-agent.ts`.
+- `/customer/centers` pages and searches on the server (`useServiceCentersPage`, `?q=`, `?page=`, `?size=`);
+  ProviderService matches name and address without diacritics. Services still page in the browser over the collected
+  list because price sort and category groups are computed there; caregivers were already server-paged.

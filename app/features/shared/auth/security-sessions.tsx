@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import type { SessionRecord } from '~/shared/api/generated/contracts'
+import { parseUserAgent } from '~/shared/lib/user-agent'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
 import { StatusBadge } from '~/shared/ui/status-badge'
@@ -41,20 +42,25 @@ export function SecuritySessions() {
     }
   })
 
-  const pendingDeviceName = pendingSession?.userAgent || pendingSession?.deviceId || t('auth.security.unknownDevice')
+  // "Chrome · Windows 10/11" when the User-Agent is readable, else whatever the session carries.
+  function deviceName(session: SessionRecord | null) {
+    const device = parseUserAgent(session?.userAgent)
+    return device
+      ? `${device.browser} · ${device.os}`
+      : session?.userAgent || session?.deviceId || t('auth.security.unknownDevice')
+  }
+  const pendingDeviceName = deviceName(pendingSession)
 
   return (
     <section
       aria-labelledby='web-sessions-title'
-      className='space-y-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-6 shadow-xs'
+      className='space-y-4 rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'
     >
-      <div className='flex items-center gap-2.5'>
-        <span className='grid h-9 w-9 place-items-center rounded-xl bg-primary-fixed/60 text-primary'>
-          <Icon className='text-lg' name='devices' />
-        </span>
-        <h2 className='text-lg font-bold text-on-surface' id='web-sessions-title'>
+      <div>
+        <h2 className='text-lg font-bold tracking-tight text-forest-950' id='web-sessions-title'>
           {t('auth.security.sessionsTitle')}
         </h2>
+        <p className='mt-1 text-sm text-on-surface-variant'>{t('auth.security.sessionsHint')}</p>
       </div>
       {sessions.isPending ? (
         <p className='text-sm text-on-surface-variant' role='status'>
@@ -82,14 +88,21 @@ export function SecuritySessions() {
       {sessions.isSuccess && sessions.data.length > 0 ? (
         <ul className='divide-y divide-outline-variant/40'>
           {sessions.data.map((session) => {
-            const name = session.userAgent || session.deviceId || t('auth.security.unknownDevice')
+            const device = parseUserAgent(session.userAgent)
+            const name = deviceName(session)
             const activeAt = lastSeen(session.lastActiveAt, i18n.language)
             return (
               <li
                 className='flex flex-col justify-between gap-3 py-4 first:pt-1 last:pb-0 sm:flex-row sm:items-center'
                 key={session.sessionId}
               >
-                <div className='min-w-0 space-y-1'>
+                <span
+                  aria-hidden='true'
+                  className={`hidden h-11 w-11 shrink-0 place-items-center rounded-full sm:grid ${session.isCurrent ? 'bg-forest-900 text-mint-300' : 'bg-surface-container-low text-on-surface-variant'}`}
+                >
+                  <Icon className='text-xl' name={device?.mobile ? 'smartphone' : 'computer'} />
+                </span>
+                <div className='min-w-0 flex-1 space-y-1'>
                   <div className='flex flex-wrap items-center gap-2'>
                     <p className='min-w-0 break-words text-sm font-semibold text-on-surface'>{name}</p>
                     {session.isCurrent ? (

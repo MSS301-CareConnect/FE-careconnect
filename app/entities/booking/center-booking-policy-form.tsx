@@ -7,6 +7,7 @@ import { useFormErrors } from '~/shared/lib/use-form-errors'
 import { Button } from '~/shared/ui/button'
 import { FormAlert } from '~/shared/ui/form-alert'
 import { FormField, Input } from '~/shared/ui/form-field'
+import { Icon } from '~/shared/ui/icon'
 import { ErrorState } from '~/shared/ui/state-panels'
 import { useActionToast } from '~/shared/ui/use-action-toast'
 
@@ -45,9 +46,14 @@ interface FieldSpec {
 }
 
 // Spec §8 groups: advance notice, center / payment deadlines, payments, refunds, check-in window.
-const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn'; fields: FieldSpec[] }[] = [
+const GROUPS: {
+  key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn'
+  icon: string
+  fields: FieldSpec[]
+}[] = [
   {
     key: 'advance',
+    icon: 'event_upcoming',
     fields: [
       { name: 'shiftMinAdvanceMinutes', unit: 'hours', min: 0, max: MAX_MINUTES },
       { name: 'recurringMinAdvanceMinutes', unit: 'hours', min: 0, max: MAX_MINUTES },
@@ -56,6 +62,7 @@ const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn';
   },
   {
     key: 'deadlines',
+    icon: 'hourglass_top',
     fields: [
       { name: 'confirmationTimeoutMinutes', unit: 'hours', min: 1, max: MAX_MINUTES },
       { name: 'assignmentTimeoutMinutes', unit: 'hours', min: 1, max: MAX_MINUTES },
@@ -64,6 +71,7 @@ const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn';
   },
   {
     key: 'payment',
+    icon: 'payments',
     fields: [
       { name: 'depositPercent', unit: 'percent', min: 1, max: 100 },
       { name: 'remainingPaymentDueBeforeMinutes', unit: 'hours', min: 0, max: MAX_MINUTES },
@@ -72,6 +80,7 @@ const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn';
   },
   {
     key: 'refund',
+    icon: 'currency_exchange',
     fields: [
       { name: 'refundThresholdMinutes', unit: 'hours', min: 0, max: MAX_MINUTES },
       { name: 'refundPercentBeforeThreshold', unit: 'percent', min: 0, max: 100 },
@@ -81,6 +90,7 @@ const GROUPS: { key: 'advance' | 'deadlines' | 'payment' | 'refund' | 'checkIn';
   },
   {
     key: 'checkIn',
+    icon: 'how_to_reg',
     fields: [
       { name: 'checkInEarlyMinutes', unit: 'minutes', min: 0, max: MAX_CHECK_IN_MINUTES },
       { name: 'checkInLateMinutes', unit: 'minutes', min: 0, max: MAX_CHECK_IN_MINUTES }
@@ -268,90 +278,143 @@ function PolicyEditor({ policy }: { policy: CenterBookingPolicyRecord }) {
     errors.clearField(field)
   }
 
+  function reset() {
+    setValues(toValues(policy))
+    for (const field of Object.keys(values) as Field[]) errors.clearField(field)
+  }
+
   function errorText(field: Field) {
     const error = errors.fieldErrors[field]
     return error ? t(`${key}.errors.${error}`) : undefined
   }
 
+  const initial = toValues(policy)
+  const dirty = (Object.keys(initial) as Field[]).some((field) => initial[field] !== values[field])
+  // Groups with four inputs (payment with its reminders, refunds) take the full row.
+  const wide = (group: (typeof GROUPS)[number]) => group.fields.length > 3 || group.key === 'payment'
+
   return (
-    <form className='flex flex-col gap-6' noValidate onSubmit={submit} ref={formRef}>
-      <p className='rounded-2xl bg-mint-50 px-5 py-3.5 text-sm text-forest-800 ring-1 ring-mint-100'>
-        {policy.customized && policy.updatedAt
-          ? t(`${key}.customized`, { time: formatDateTime(policy.updatedAt, i18n.language) })
-          : t(`${key}.defaultInUse`)}
-      </p>
-      {GROUPS.map((group) => (
-        <fieldset
-          className='rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6'
-          key={group.key}
-        >
-          <legend className='px-1 text-lg font-bold tracking-tight text-forest-950'>
-            {t(`${key}.groups.${group.key}`)}
-          </legend>
-          <p className='mt-1 text-xs leading-5 text-on-surface-variant'>{t(`${key}.groupHints.${group.key}`)}</p>
-          <div className='mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-            {group.fields.map((spec) => (
-              <FormField
-                error={errorText(spec.name)}
-                hint={t(`${key}.units.${spec.unit}`)}
-                id={`${id}-${spec.name}`}
-                key={spec.name}
-                label={t(`${key}.fields.${spec.name}`)}
+    <form className='flex flex-col gap-5' noValidate onSubmit={submit} ref={formRef}>
+      <div className='flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-2xl bg-mint-50 px-5 py-3.5 text-sm text-forest-800 ring-1 ring-mint-100'>
+        <p className='flex items-start gap-2'>
+          <Icon className='mt-0.5 text-lg' name={policy.customized ? 'tune' : 'auto_awesome'} />
+          {policy.customized && policy.updatedAt
+            ? t(`${key}.customized`, { time: formatDateTime(policy.updatedAt, i18n.language) })
+            : t(`${key}.defaultInUse`)}
+        </p>
+        <p className='text-xs text-forest-700'>{t(`${key}.unitNote`)}</p>
+      </div>
+      <div className='grid gap-5 xl:grid-cols-2'>
+        {GROUPS.map((group) => (
+          <fieldset
+            className={`min-w-0 rounded-2xl border border-forest-900/[0.06] bg-surface-container-lowest p-5 shadow-[var(--shadow-card)] sm:p-6 ${wide(group) ? 'xl:col-span-2' : ''}`}
+            key={group.key}
+          >
+            {/* Floated so the legend sits inside the card, beside its icon, instead of on the border. */}
+            <legend className='float-left flex w-full items-center gap-3 text-lg font-bold tracking-tight text-forest-950'>
+              <span
+                aria-hidden='true'
+                className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mint-100 text-forest-900'
               >
-                {(control) => (
-                  <Input
-                    {...control}
-                    inputMode='decimal'
-                    onChange={(event) => change(spec.name, event.target.value)}
-                    value={values[spec.name]}
-                  />
-                )}
-              </FormField>
-            ))}
-            {group.key === 'payment' ? (
-              <FormField
-                error={errorText('remainingPaymentReminderMinutes')}
-                hint={t(`${key}.remindersHint`)}
-                id={`${id}-reminders`}
-                label={t(`${key}.fields.remainingPaymentReminderMinutes`)}
-              >
-                {(control) => (
-                  <Input
-                    {...control}
-                    onChange={(event) => change('remainingPaymentReminderMinutes', event.target.value)}
-                    value={values.remainingPaymentReminderMinutes}
-                  />
-                )}
-              </FormField>
+                <Icon className='text-xl' name={group.icon} />
+              </span>
+              {t(`${key}.groups.${group.key}`)}
+            </legend>
+            <p className='clear-both pt-2 text-sm leading-6 text-on-surface-variant'>
+              {t(`${key}.groupHints.${group.key}`)}
+            </p>
+            <div className={`mt-4 grid gap-4 sm:grid-cols-2 ${wide(group) ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+              {group.fields.map((spec) => (
+                <FormField
+                  error={errorText(spec.name)}
+                  id={`${id}-${spec.name}`}
+                  key={spec.name}
+                  label={t(`${key}.fields.${spec.name}`)}
+                >
+                  {(control) => (
+                    <div className='relative'>
+                      <Input
+                        {...control}
+                        aria-describedby={[`${id}-${spec.name}-unit`, control['aria-describedby']]
+                          .filter(Boolean)
+                          .join(' ')}
+                        className='pr-14 text-base font-semibold tabular-nums'
+                        inputMode='decimal'
+                        onChange={(event) => change(spec.name, event.target.value)}
+                        value={values[spec.name]}
+                      />
+                      <span
+                        className='pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm font-medium text-on-surface-variant'
+                        id={`${id}-${spec.name}-unit`}
+                      >
+                        {t(`${key}.units.${spec.unit}`)}
+                      </span>
+                    </div>
+                  )}
+                </FormField>
+              ))}
+              {group.key === 'payment' ? (
+                <FormField
+                  error={errorText('remainingPaymentReminderMinutes')}
+                  hint={t(`${key}.remindersHint`)}
+                  id={`${id}-reminders`}
+                  label={t(`${key}.fields.remainingPaymentReminderMinutes`)}
+                >
+                  {(control) => (
+                    <Input
+                      {...control}
+                      className='text-base font-semibold tabular-nums'
+                      onChange={(event) => change('remainingPaymentReminderMinutes', event.target.value)}
+                      value={values.remainingPaymentReminderMinutes}
+                    />
+                  )}
+                </FormField>
+              ) : null}
+            </div>
+            {group.key === 'checkIn' ? (
+              <p className='mt-4 flex items-start gap-2 rounded-xl bg-surface-container-low px-3.5 py-2.5 text-xs leading-5 text-on-surface-variant'>
+                <Icon className='text-base' name='info' />
+                {t(`${key}.checkInApplies`)}
+              </p>
             ) : null}
-          </div>
-          {group.key === 'checkIn' ? (
-            <p className='mt-3 text-xs leading-5 text-on-surface-variant'>{t(`${key}.checkInApplies`)}</p>
-          ) : null}
-        </fieldset>
-      ))}
+          </fieldset>
+        ))}
+      </div>
       {warnings.length > 0 ? (
         <div
-          className='rounded-2xl border border-peach-200 bg-peach-50 px-5 py-3.5 text-sm text-peach-700'
+          className='flex items-start gap-3 rounded-2xl border border-peach-200 bg-peach-50 px-5 py-3.5 text-sm text-peach-700'
           role='status'
         >
-          <p className='font-semibold'>{t(`${key}.tightTitle`)}</p>
-          <ul className='mt-1 list-disc space-y-1 pl-5'>
-            {warnings.map((warning) => (
-              <li key={warning.type}>
-                {t(`${key}.tight.${warning.type}`, {
-                  needed: hours.format(warning.needed / 60),
-                  available: hours.format(warning.available / 60)
-                })}
-              </li>
-            ))}
-          </ul>
+          <Icon className='mt-0.5 text-xl' name='warning' />
+          <div>
+            <p className='font-semibold'>{t(`${key}.tightTitle`)}</p>
+            <ul className='mt-1 list-disc space-y-1 pl-5'>
+              {warnings.map((warning) => (
+                <li key={warning.type}>
+                  {t(`${key}.tight.${warning.type}`, {
+                    needed: hours.format(warning.needed / 60),
+                    available: hours.format(warning.available / 60)
+                  })}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       ) : null}
       {errors.failure ? (
         <FormAlert tone={errors.failure.kind === 'system' ? 'error' : 'warning'}>{t(errors.failure.key)}</FormAlert>
       ) : null}
-      <div className='flex justify-end'>
+      {/* Stays in view on a long form, so saving never needs a scroll to the end. */}
+      <div className='sticky bottom-4 z-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-forest-900/[0.06] bg-white/95 px-4 py-3 shadow-[var(--shadow-float)] backdrop-blur'>
+        {dirty ? (
+          <p className='mr-auto flex items-center gap-2 text-sm font-medium text-peach-700'>
+            <span aria-hidden='true' className='h-2 w-2 rounded-full bg-peach-400' />
+            {t(`${key}.unsaved`)}
+          </p>
+        ) : null}
+        <Button disabled={!dirty || save.isPending} onClick={reset} type='button' variant='outline'>
+          {t(`${key}.reset`)}
+        </Button>
         <Button loading={save.isPending} loadingLabel={t('common.ui.working')} type='submit'>
           {t(`${key}.save`)}
         </Button>

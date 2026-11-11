@@ -182,7 +182,9 @@ export const commonEn = {
         label: 'Pagination',
         previous: 'Previous',
         next: 'Next',
-        pageOf: 'Page {{page}} of {{total}}'
+        pageOf: 'Page {{page}} of {{total}}',
+        pageSize: 'Rows per page',
+        total: '{{count, number}} in total'
       }
     },
     status: {
@@ -440,7 +442,9 @@ export const commonVi = {
         label: 'Phân trang',
         previous: 'Trước',
         next: 'Tiếp',
-        pageOf: 'Trang {{page}} / {{total}}'
+        pageOf: 'Trang {{page}} / {{total}}',
+        pageSize: 'Số dòng mỗi trang',
+        total: 'Tổng {{count, number}}'
       }
     },
     status: {

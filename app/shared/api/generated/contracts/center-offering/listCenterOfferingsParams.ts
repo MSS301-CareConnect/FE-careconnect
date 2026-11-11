@@ -9,6 +9,10 @@ import type { ListCenterOfferingsStatus } from './listCenterOfferingsStatus'
 
 export type ListCenterOfferingsParams = {
   status?: ListCenterOfferingsStatus
+  /**
+   * Part of the standard service name, case-insensitive; applied for the managing side only
+   */
+  keyword?: string
   page?: number
   size?: number
 }

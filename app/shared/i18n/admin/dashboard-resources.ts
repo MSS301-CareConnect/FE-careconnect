@@ -8,7 +8,7 @@ export const adminDashboardVi = {
     collected: 'Khách đã thanh toán',
     collectedHint: '{{count}} giao dịch thành công',
     commission: 'Hoa hồng nền tảng',
-    commissionHint: 'Ví nền tảng hiện có {{amount}}',
+    commissionHint: 'Thu trên {{count}} lịch đặt',
     customers: 'Khách hàng mới',
     customersHint: '{{count}} khách hàng trên nền tảng'
   },
@@ -17,13 +17,13 @@ export const adminDashboardVi = {
     hint: 'Những hàng đợi đang chờ quản trị viên.',
     pendingCenters: 'Trung tâm chờ duyệt',
     pendingCaregivers: 'Người chăm sóc chờ thẩm định',
-    pendingWithdrawals: 'Yêu cầu rút của trung tâm',
+    pendingWithdrawals: 'Yêu cầu rút tiền chờ xử lý',
     escalatedComplaints: 'Khiếu nại chuyển lên admin',
     open: 'Mở {{name}}',
     clear: 'Không có việc nào đang chờ'
   },
   finance: {
-    title: 'Dòng tiền nền tảng',
+    title: 'Doanh thu nền tảng',
     hint: 'Tiền khách thanh toán, hoàn tiền và hoa hồng nền tảng trong kỳ (PaymentService).',
     chartTitle: 'Hoa hồng theo thời gian',
     chartHint: 'Hoa hồng ghi nhận khi buổi chăm sóc được đối soát.',
@@ -35,8 +35,8 @@ export const adminDashboardVi = {
     caregiverForfeit: 'Cọc bị giữ — người chăm sóc hưởng',
     centerNet: 'Doanh thu thuần các trung tâm (trước hoa hồng)',
     commissionShare: 'Hoa hồng nền tảng',
-    liabilities: 'Đang giữ hộ khách, người chăm sóc, trung tâm',
-    viewWallet: 'Xem ví nền tảng'
+    liabilities: 'Số dư ví khách hàng và người chăm sóc',
+    viewRevenue: 'Xem doanh thu nền tảng'
   },
   operations: {
     title: 'Vận hành chăm sóc',
@@ -62,7 +62,7 @@ export const adminDashboardEn: typeof adminDashboardVi = {
     collected: 'Paid by customers',
     collectedHint: '{{count}} successful payments',
     commission: 'Platform commission',
-    commissionHint: 'The platform wallet holds {{amount}}',
+    commissionHint: 'From {{count}} bookings',
     customers: 'New customers',
     customersHint: '{{count}} customers on the platform'
   },
@@ -71,13 +71,13 @@ export const adminDashboardEn: typeof adminDashboardVi = {
     hint: 'Queues waiting for an administrator.',
     pendingCenters: 'Centers awaiting approval',
     pendingCaregivers: 'Caregivers awaiting verification',
-    pendingWithdrawals: 'Center withdrawal requests',
+    pendingWithdrawals: 'Withdrawal requests waiting',
     escalatedComplaints: 'Complaints escalated to admin',
     open: 'Open {{name}}',
     clear: 'Nothing is waiting'
   },
   finance: {
-    title: 'Platform money flow',
+    title: 'Platform revenue',
     hint: 'What customers paid, refunds and the platform commission in this period (PaymentService).',
     chartTitle: 'Commission over time',
     chartHint: 'Commission is recorded when a care visit is settled.',
@@ -89,8 +89,8 @@ export const adminDashboardEn: typeof adminDashboardVi = {
     caregiverForfeit: 'Kept deposits — caregivers',
     centerNet: 'Net revenue of all centers (before commission)',
     commissionShare: 'Platform commission',
-    liabilities: 'Held for customers, caregivers and centers',
-    viewWallet: 'Open the platform wallet'
+    liabilities: 'Customer and caregiver wallet balances',
+    viewRevenue: 'Open platform revenue'
   },
   operations: {
     title: 'Care operations',

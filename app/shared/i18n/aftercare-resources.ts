@@ -52,7 +52,14 @@ export const aftercareVi = {
     discardAndReload: 'Tải lại và bỏ ảnh đang chờ',
     saving: 'Đang lưu báo cáo…',
     saveDraft: 'Lưu nháp',
-    submit: 'Nộp báo cáo'
+    submit: 'Nộp báo cáo',
+    states: { none: 'Chưa viết', draft: 'Bản nháp', submitted: 'Đã nộp' },
+    open: { none: 'Viết báo cáo', draft: 'Viết tiếp báo cáo', submitted: 'Xem báo cáo' },
+    cardSubmitted: 'Đã nộp lúc {{time}}. Khách hàng và trung tâm đã xem được.',
+    details: 'Nội dung báo cáo',
+    summaryHint: 'Ăn uống, thuốc, vận động, tinh thần và những việc đã làm trong buổi.',
+    recommendationsHint: 'Không bắt buộc — điều gia đình hoặc người chăm sóc sau nên lưu ý.',
+    pickPhotos: 'Chọn ảnh từ máy'
   },
   review: {
     title: 'Đánh giá người chăm sóc',
@@ -158,7 +165,14 @@ export const aftercareEn = {
     discardAndReload: 'Reload and clear pending photos',
     saving: 'Saving report…',
     saveDraft: 'Save draft',
-    submit: 'Submit report'
+    submit: 'Submit report',
+    states: { none: 'Not written', draft: 'Draft', submitted: 'Submitted' },
+    open: { none: 'Write the report', draft: 'Continue the report', submitted: 'View the report' },
+    cardSubmitted: 'Submitted at {{time}}. The customer and the center can read it.',
+    details: 'Report details',
+    summaryHint: 'Meals, medicines, mobility, mood and what was done during the visit.',
+    recommendationsHint: 'Optional — what the family or the next caregiver should watch for.',
+    pickPhotos: 'Choose photos'
   },
   review: {
     title: 'Rate the caregiver',

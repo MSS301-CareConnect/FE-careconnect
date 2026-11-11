@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
-import { CareReportForm } from '~/entities/aftercare/care-report-form'
+import { CareReportCard } from '~/entities/aftercare/care-report-card'
 import { SessionNotesCard } from '~/entities/aftercare/session-notes-card'
 import { bookingKeys, fetchOccurrence } from '~/entities/booking/booking-api'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
@@ -98,7 +98,7 @@ export function CaregiverVisitDetailPage({ id }: { id: string }) {
             {data.sessionId ? (
               <div className='grid items-start gap-4 xl:grid-cols-2'>
                 <SessionNotesCard canWrite sessionId={data.sessionId} />
-                <CareReportForm bookingId={data.bookingId} sessionId={data.sessionId} />
+                <CareReportCard bookingId={data.bookingId} sessionId={data.sessionId} />
               </div>
             ) : null}
           </div>

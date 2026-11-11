@@ -11,7 +11,8 @@ import type { RequestHandlerOptions } from 'msw'
 import type {
   CaregiverOccurrenceListResponse,
   CaregiverOccurrencePageResponse,
-  CaregiverOccurrenceResponse
+  CaregiverOccurrenceResponse,
+  CustomerVisitReportResponse
 } from '../../contracts'
 
 import {
@@ -20,6 +21,7 @@ import {
   getDecideBookingOccurrenceNoShowResponseMock,
   getGetBookingOccurrenceResponseMock,
   getListMyBookingOccurrencesResponseMock,
+  getReportBookingOccurrenceByCustomerResponseMock,
   getReportBookingOccurrenceNoShowResponseMock
 } from './booking-occurrence.faker'
 
@@ -28,6 +30,7 @@ export {
   getGetBookingOccurrenceResponseMock,
   getAcknowledgeBookingOccurrencesResponseMock,
   getAcknowledgeBookingOccurrenceResponseMock,
+  getReportBookingOccurrenceByCustomerResponseMock,
   getReportBookingOccurrenceNoShowResponseMock,
   getDecideBookingOccurrenceNoShowResponseMock
 } from './booking-occurrence.faker'
@@ -136,6 +139,32 @@ export const getAcknowledgeBookingOccurrenceMockHandler = (
   )
 }
 
+export const getReportBookingOccurrenceByCustomerMockHandler = (
+  overrideResponse?:
+    | CustomerVisitReportResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<CustomerVisitReportResponse> | CustomerVisitReportResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/booking-occurrences/:id/customer-reports',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getReportBookingOccurrenceByCustomerResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
 export const getReportBookingOccurrenceNoShowMockHandler = (
   overrideResponse?:
     | CaregiverOccurrenceResponse
@@ -192,6 +221,7 @@ export const getBookingOccurrenceMock = () => [
   getGetBookingOccurrenceMockHandler(),
   getAcknowledgeBookingOccurrencesMockHandler(),
   getAcknowledgeBookingOccurrenceMockHandler(),
+  getReportBookingOccurrenceByCustomerMockHandler(),
   getReportBookingOccurrenceNoShowMockHandler(),
   getDecideBookingOccurrenceNoShowMockHandler()
 ]

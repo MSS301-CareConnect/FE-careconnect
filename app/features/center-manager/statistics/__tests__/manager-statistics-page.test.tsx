@@ -92,10 +92,20 @@ describe('ManagerStatisticsPage', () => {
     renderPage()
 
     expect(await screen.findByRole('heading', { name: 'Xu hướng lịch đặt & buổi chăm sóc' })).toBeInTheDocument()
+    // The trend opens as grouped columns and switches to lines.
+    expect(screen.getByRole('radio', { name: 'Cột' })).toBeChecked()
+    expect(screen.queryByRole('img', { name: /Lịch đặt mới/ })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('radio', { name: 'Đường' }))
+    expect(screen.getByRole('img', { name: /Lịch đặt mới/ })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Kết quả buổi chăm sóc' })).toBeInTheDocument()
     expect(await screen.findByText('Doanh thu thuần', { selector: 'p' })).toBeInTheDocument()
     expect(await screen.findByText('Lê Thị Hoa')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Phân bố đánh giá' })).toBeInTheDocument()
+    // Revenue only (2026-11-11): what the center received, no wallet balance and nothing withdrawn.
+    expect(await screen.findByText('Trung tâm thực nhận', { selector: 'p' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Xem trang doanh thu/ })).toHaveAttribute('href', '/center-manager/revenue')
+    expect(screen.queryByText(/ví trung tâm/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('Đã rút')).not.toBeInTheDocument()
     // Every number of the page uses one period: Vietnam calendar days for BookingService, instants for payments.
     const [fromDate, toDate] = vi.mocked(fetchCenterStatisticsBetween).mock.calls[0]
     expect(fromDate).toMatch(/^\d{4}-\d{2}-01$/)

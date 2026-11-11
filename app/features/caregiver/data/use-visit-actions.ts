@@ -32,15 +32,22 @@ export function checkInWindow(visit: CaregiverOccurrenceRecord) {
 
 export type VisitStep = 'accept' | 'start' | 'waitToStart' | 'continue' | 'none'
 
-/** The one thing the caregiver does next on a visit, given the current time. */
+/** True while a visit can still be accepted: BookingService takes it until its check-in window closes (2026-11-11). */
+const stillOpen = (visit: CaregiverOccurrenceRecord, now: number) =>
+  now < checkInWindow(visit).closes && now < new Date(visit.endAt).getTime()
+
+/**
+ * The one thing the caregiver does next on a visit, given the current time. A visit not accepted in time is not lost
+ * (2026-11-11): inside the check-in window it can be started straight away — checking in accepts it — and once the
+ * window closes nothing is left to do (BookingService marks it missed).
+ */
 export function nextVisitStep(visit: CaregiverOccurrenceRecord, now: number): VisitStep {
   if (visit.noShowReportedAt && !visit.noShowDecidedAt) return 'none'
-  if (visit.status === 'SCHEDULED') return 'accept'
   if (visit.status === 'IN_PROGRESS' || (visit.sessionId && visit.status !== 'COMPLETED')) return 'continue'
-  if (visit.status === 'ACKNOWLEDGED') {
-    const { opens, closes } = checkInWindow(visit)
-    if (now >= closes) return 'none'
-    return now >= opens ? 'start' : 'waitToStart'
+  if (visit.status === 'SCHEDULED' || visit.status === 'ACKNOWLEDGED') {
+    if (!stillOpen(visit, now)) return 'none'
+    if (now >= checkInWindow(visit).opens) return 'start'
+    return visit.status === 'SCHEDULED' ? 'accept' : 'waitToStart'
   }
   return 'none'
 }
@@ -75,11 +82,9 @@ export function useVisitActions(visit: CaregiverOccurrenceRecord, onStarted?: ()
   return { accept, start }
 }
 
-/** Visits of one booking the caregiver can still accept: assigned, not confirmed, not started, not being replaced. */
+/** Visits of one booking the caregiver can still accept: assigned, not confirmed, check-in still open, not being replaced. */
 export function acceptableVisits(visits: CaregiverOccurrenceRecord[], now: number) {
-  return visits.filter(
-    (visit) => visit.status === 'SCHEDULED' && !visit.needsReassignment && new Date(visit.startAt).getTime() > now
-  )
+  return visits.filter((visit) => visit.status === 'SCHEDULED' && !visit.needsReassignment && stillOpen(visit, now))
 }
 
 /**

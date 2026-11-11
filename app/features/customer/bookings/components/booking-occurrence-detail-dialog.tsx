@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { bookingKeys, submitReplacementConsent } from '~/entities/booking/booking-api'
+import { bookingKeys, reportVisitByCustomer, submitReplacementConsent } from '~/entities/booking/booking-api'
 import {
   bookingErrorKey,
   formatClock,
@@ -10,6 +11,7 @@ import {
   formatDateTime,
   formatMoney
 } from '~/entities/booking/booking-format'
+import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import { OccurrenceStatusBadge } from '~/entities/booking/booking-status-badge'
 import { calcOccurrenceDurationMinutes } from '~/entities/booking/booking-occurrence-list'
 import type {
@@ -19,12 +21,15 @@ import type {
   ProviderCaregiverPublicRecord
 } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
+import { useClock } from '~/shared/lib/use-clock'
 import { Avatar } from '~/shared/ui/avatar'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 
 const key = 'customer.bookingDetail.occurrenceDetail' as const
+// shortcut: mirrors BE booking.session.customer-report-window (24h); BE still answers 409 5823 if they drift.
+const REPORT_WINDOW_MS = 24 * 60 * 60 * 1000
 
 export interface BookingOccurrenceDetailDialogProps {
   occurrence: BookingOccurrenceRecord | null
@@ -59,6 +64,16 @@ export function BookingOccurrenceDetailDialog({
     }
   })
 
+  const now = useClock()
+  const [reportKind, setReportKind] = useState<'notArrived' | 'notDelivered' | null>(null)
+  const reportMutation = useMutation({
+    mutationFn: (note: string) => reportVisitByCustomer(occurrence?.id ?? '', note || undefined),
+    onSuccess: () => {
+      setReportKind(null)
+      void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(booking.id) })
+    }
+  })
+
   if (!occurrence) return null
 
   const durationMinutes = calcOccurrenceDurationMinutes(occurrence)
@@ -69,6 +84,13 @@ export function BookingOccurrenceDetailDialog({
     (isAssigned ? t('booking.occurrences.assigned') : t('booking.occurrences.unassigned'))
   const note = occurrence.note || booking.customerNote
   const isUpcoming = occurrence.status === 'SCHEDULED' || occurrence.status === 'ACKNOWLEDGED'
+  const canReportNotArrived =
+    isUpcoming && !occurrence.customerReportedAt && new Date(occurrence.startAt).getTime() <= now
+  const canReportNotDelivered =
+    occurrence.status === 'COMPLETED' &&
+    !occurrence.customerReportedAt &&
+    Boolean(occurrence.actualEndAt) &&
+    now - new Date(occurrence.actualEndAt ?? 0).getTime() <= REPORT_WINDOW_MS
 
   return (
     <Modal
@@ -370,10 +392,45 @@ export function BookingOccurrenceDetailDialog({
                   ) : null}
                 </div>
               ) : null}
+
+              {/* 2026-11-11: the customer tells the center nobody came, or a finished visit was not delivered. */}
+              {occurrence.customerReportedAt ? (
+                <p className='mt-3.5 flex items-center gap-1.5 border-t border-outline-variant/40 pt-3 text-xs font-medium text-on-surface-variant'>
+                  <Icon className='text-sm text-primary' name='outgoing_mail' />
+                  {t(`${key}.customerReport.sent`, { time: formatDateTime(occurrence.customerReportedAt, language) })}
+                </p>
+              ) : canReportNotArrived || canReportNotDelivered ? (
+                <div className='mt-3.5 border-t border-outline-variant/40 pt-3'>
+                  <button
+                    className='inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-error/40 bg-error-container/40 px-3 py-2 text-xs font-semibold text-error hover:bg-error-container/70'
+                    onClick={() => {
+                      reportMutation.reset()
+                      setReportKind(canReportNotArrived ? 'notArrived' : 'notDelivered')
+                    }}
+                    type='button'
+                  >
+                    <Icon className='text-sm' name='report' />
+                    {t(`${key}.customerReport.${canReportNotArrived ? 'notArrived' : 'notDelivered'}.action`)}
+                  </button>
+                </div>
+              ) : null}
             </section>
           </div>
         </div>
       </div>
+      {reportKind ? (
+        <BookingReasonDialog
+          confirmLabel={t(`${key}.customerReport.confirm`)}
+          description={t(`${key}.customerReport.${reportKind}.description`)}
+          error={reportMutation.error ? t(bookingErrorKey(reportMutation.error)) : undefined}
+          label={t(`${key}.customerReport.${reportKind}.label`)}
+          minLength={reportKind === 'notDelivered' ? 10 : 0}
+          onClose={() => setReportKind(null)}
+          onConfirm={(note) => reportMutation.mutate(note)}
+          pending={reportMutation.isPending}
+          title={t(`${key}.customerReport.${reportKind}.action`)}
+        />
+      ) : null}
     </Modal>
   )
 }

@@ -32,7 +32,7 @@ export const adminNavigation = [
     labelled: true,
     icon: 'account_balance',
     items: [
-      { key: 'wallet', to: '/admin/wallet', icon: 'account_balance_wallet' },
+      { key: 'revenue', to: '/admin/revenue', icon: 'monitoring' },
       { key: 'withdrawals', to: '/admin/withdrawals', icon: 'payments' }
     ]
   },

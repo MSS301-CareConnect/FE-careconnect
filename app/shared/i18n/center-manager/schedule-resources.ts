@@ -1,7 +1,6 @@
 export const managerScheduleVi = {
   title: 'Lịch làm việc & ngày nghỉ',
-  subtitle:
-    'Ai làm ca nào và ai nghỉ trong từng tuần. Ca được tạo và duyệt ở "Ca làm việc"; ngày nghỉ thêm ngay tại đây hoặc trong hồ sơ người chăm sóc.',
+  subtitle: 'Ai làm ca nào và ai nghỉ trong từng tuần; thêm ngày nghỉ ngay tại đây.',
   toolbar: 'Chế độ xem và bộ lọc',
   retry: 'Thử lại',
   loading: 'Đang tải lịch làm việc…',
@@ -22,6 +21,7 @@ export const managerScheduleVi = {
   week: {
     previous: 'Tuần trước',
     next: 'Tuần sau',
+    label: 'Tuần đang xem',
     thisWeek: 'Tuần này',
     range: '{{from}} – {{to}}'
   },
@@ -92,8 +92,7 @@ export const managerScheduleVi = {
 
 export const managerScheduleEn = {
   title: 'Work schedule & time off',
-  subtitle:
-    'Who works which shift and who is off, week by week. Shifts are created and approved in "Work shifts"; add time off here or on the caregiver profile.',
+  subtitle: 'Who works which shift and who is off, week by week; add time off right here.',
   toolbar: 'View and filters',
   retry: 'Try again',
   loading: 'Loading the work schedule…',
@@ -114,6 +113,7 @@ export const managerScheduleEn = {
   week: {
     previous: 'Previous week',
     next: 'Next week',
+    label: 'Week shown',
     thisWeek: 'This week',
     range: '{{from}} – {{to}}'
   },

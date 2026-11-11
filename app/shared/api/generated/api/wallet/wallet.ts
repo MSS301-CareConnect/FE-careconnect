@@ -19,6 +19,7 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
+  BookingSettlementResponse,
   GetMyWalletStatisticsParams,
   ListMyWalletTransactionsParams,
   ListWalletTransactionsParams,
@@ -596,6 +597,171 @@ export function useGetMyWalletStatistics<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetMyWalletStatisticsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getBookingSettlementResponse200 = {
+  data: BookingSettlementResponse
+  status: 200
+}
+
+export type getBookingSettlementResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getBookingSettlementResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getBookingSettlementResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getBookingSettlementResponseSuccess = getBookingSettlementResponse200 & {
+  headers: Headers
+}
+export type getBookingSettlementResponseError = (
+  getBookingSettlementResponse401 | getBookingSettlementResponse403 | getBookingSettlementResponse404
+) & {
+  headers: Headers
+}
+
+export const getGetBookingSettlementUrl = (bookingId: string) => {
+  return `${env.API_BASE_URL}/v1/wallets/bookings/${bookingId}/settlement`
+}
+
+/**
+ * @summary Settlement of one booking (paid, refunded, center net, commission) — ADMIN or the center's manager
+ */
+export const getBookingSettlement = async (
+  bookingId: string,
+  options?: RequestInit
+): Promise<getBookingSettlementResponseSuccess> => {
+  const res = await fetch(getGetBookingSettlementUrl(bookingId), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getBookingSettlementResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getBookingSettlementResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getBookingSettlementResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getBookingSettlementResponseSuccess
+}
+
+export const getGetBookingSettlementQueryKey = (bookingId: string) => {
+  return [`${env.API_BASE_URL}/v1/wallets/bookings/${bookingId}/settlement`] as const
+}
+
+export const getGetBookingSettlementQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBookingSettlement>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingSettlement>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetBookingSettlementQueryKey(bookingId)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBookingSettlement>>> = ({ signal }) =>
+    getBookingSettlement(bookingId, { signal, ...fetchOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: bookingId !== null && bookingId !== undefined,
+    ...queryOptions
+  } as UseQueryOptions<Awaited<ReturnType<typeof getBookingSettlement>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type GetBookingSettlementQueryResult = NonNullable<Awaited<ReturnType<typeof getBookingSettlement>>>
+export type GetBookingSettlementQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetBookingSettlement<
+  TData = Awaited<ReturnType<typeof getBookingSettlement>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingSettlement>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBookingSettlement>>,
+          TError,
+          Awaited<ReturnType<typeof getBookingSettlement>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBookingSettlement<
+  TData = Awaited<ReturnType<typeof getBookingSettlement>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingSettlement>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBookingSettlement>>,
+          TError,
+          Awaited<ReturnType<typeof getBookingSettlement>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBookingSettlement<
+  TData = Awaited<ReturnType<typeof getBookingSettlement>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingSettlement>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Settlement of one booking (paid, refunded, center net, commission) — ADMIN or the center's manager
+ */
+
+export function useGetBookingSettlement<
+  TData = Awaited<ReturnType<typeof getBookingSettlement>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  bookingId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getBookingSettlement>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetBookingSettlementQueryOptions(bookingId, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

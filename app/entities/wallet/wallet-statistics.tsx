@@ -30,8 +30,9 @@ type MetricKey =
 const METRICS: Record<WalletStatisticsRecord['ownerType'], MetricKey[]> = {
   CUSTOMER: ['totalPaid', 'refundedToWallet', 'refundedToGateway', 'netSpent', 'totalWithdrawn'],
   CAREGIVER: ['forfeitIncome', 'bookingCount', 'totalWithdrawn'],
-  CENTER: ['totalIncome', 'serviceIncome', 'commissionDeducted', 'forfeitIncome', 'complaintDebits', 'totalWithdrawn'],
-  PLATFORM: ['commissionIncome', 'grossCollected', 'totalRefunded', 'refundedToWallet']
+  // 2026-11-11: center and platform pages are revenue only (money reaches their own accounts, nothing to withdraw).
+  CENTER: ['totalIncome', 'serviceIncome', 'commissionDeducted', 'forfeitIncome', 'complaintDebits', 'bookingCount'],
+  PLATFORM: ['commissionIncome', 'grossCollected', 'totalRefunded', 'refundedToWallet', 'bookingCount']
 }
 const ICONS: Partial<Record<MetricKey, string>> = {
   totalIncome: 'trending_up',
@@ -66,10 +67,15 @@ export function WalletStatistics({ statistics }: { statistics: WalletStatisticsR
   const compact = new Intl.NumberFormat(i18n.language, { notation: 'compact', maximumFractionDigits: 1 })
   const platform = statistics.ownerType === 'PLATFORM'
   const customer = statistics.ownerType === 'CUSTOMER'
+  const showMix = statistics.ownerType === 'CENTER' || platform
   const series = [
-    { key: 'income', label: t('wallet.chart.income'), color: chartColors.c1 },
+    {
+      key: 'income',
+      label: t(customer ? 'wallet.chart.refunded' : platform ? 'wallet.chart.commission' : 'wallet.chart.income'),
+      color: chartColors.c1
+    },
     ...(customer ? [{ key: 'spent', label: t('wallet.chart.spent'), color: chartColors.c3 }] : []),
-    { key: 'withdrawn', label: t('wallet.chart.withdrawn'), color: chartColors.c2 }
+    ...(showMix ? [] : [{ key: 'withdrawn', label: t('wallet.chart.withdrawn'), color: chartColors.c2 }])
   ] as { key: 'income' | 'spent' | 'withdrawn'; label: string; color: string }[]
   const points = statistics.series.map((point) => ({
     key: point.period,
@@ -82,7 +88,6 @@ export function WalletStatistics({ statistics }: { statistics: WalletStatisticsR
     value: statistics.byType.find((row) => row.type === type)?.totalAmount ?? 0,
     color: TYPE_COLORS[index]
   }))
-  const showMix = statistics.ownerType === 'CENTER' || platform
 
   return (
     <div className='space-y-5'>
@@ -118,7 +123,10 @@ export function WalletStatistics({ statistics }: { statistics: WalletStatisticsR
         ) : null}
       </motion.dl>
       <div className={showMix ? 'grid gap-4 xl:grid-cols-3' : ''}>
-        <ChartCard className={showMix ? 'xl:col-span-2' : ''} title={t('wallet.chart.title')}>
+        <ChartCard
+          className={showMix ? 'xl:col-span-2' : ''}
+          title={t(showMix ? 'wallet.chart.revenueTitle' : 'wallet.chart.title')}
+        >
           <ColumnChart
             emptyLabel={t('wallet.chart.empty')}
             format={(value) => compact.format(value)}

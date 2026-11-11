@@ -9,10 +9,12 @@ import { useFormErrors } from '~/shared/lib/use-form-errors'
 import { toastSuccess } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { FormAlert } from '~/shared/ui/form-alert'
+import { Combobox } from '~/shared/ui/combobox'
 import { FormField, Input, Select } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog, Modal } from '~/shared/ui/modal'
 
+import { VIET_QR_BANKS } from './viet-qr'
 import { fetchMyCenterBalances, requestWithdrawal, walletKeys } from './wallet-api'
 
 type Field = 'amount' | 'bankName' | 'bankAccountNumber' | 'accountHolderName'
@@ -47,6 +49,8 @@ const ERROR_MAP = {
 
 const ACCOUNT_PATTERN = /^[0-9]{6,20}$/
 const MAX_TEXT = 100
+// Banks the handler can build a VietQR code for (2026-11-11); the stored value stays the bank name.
+const BANK_OPTIONS = VIET_QR_BANKS.map((bank) => ({ value: bank.name, name: bank.name, tag: bank.aliases[0] }))
 
 /** Digits only: "1.500.000" or "1,500,000" typed as money still reads as 1500000. */
 function parseAmount(text: string) {
@@ -261,14 +265,16 @@ export function WithdrawalDialog({
             </FormField>
             <FormField error={show(fieldErrors.bankName)} label={t('wallet.form.bankName')}>
               {(control) => (
-                <Input
+                <Combobox
                   {...control}
-                  maxLength={MAX_TEXT}
-                  onChange={(event) => {
-                    setBankName(event.target.value)
+                  icon='account_balance'
+                  onChange={(next) => {
+                    setBankName(next)
                     clearField('bankName')
                   }}
+                  options={BANK_OPTIONS}
                   placeholder={t('wallet.form.bankNamePlaceholder')}
+                  searchPlaceholder={t('wallet.form.bankSearch')}
                   value={bankName}
                 />
               )}

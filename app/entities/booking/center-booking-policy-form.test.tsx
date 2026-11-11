@@ -61,16 +61,16 @@ describe('CenterBookingPolicyForm', () => {
     renderForm()
 
     expect(await screen.findByText(/đang dùng chính sách mặc định/)).toBeInTheDocument()
-    expect(field('SHIFT')).toHaveValue('2')
-    expect(field('RECURRING')).toHaveValue('48')
-    expect(field('Nhắc trả nốt (giờ trước hạn)')).toHaveValue('72, 48')
+    expect(field('Lịch theo ca')).toHaveValue('2')
+    expect(field('Lịch định kỳ')).toHaveValue('48')
+    expect(field('Nhắc trả nốt (số giờ trước hạn)')).toHaveValue('72, 48')
     expect(field('Hủy sát giờ, không hoàn')).toHaveValue('2')
     // The defaults are already tight for RECURRING / CUSTOM (48h − 24h < 3 × 24h): warned, not blocked.
-    expect(screen.getByRole('status')).toHaveTextContent('RECURRING')
+    expect(screen.getByRole('status')).toHaveTextContent('Lịch định kỳ')
 
-    fireEvent.change(field('SHIFT'), { target: { value: '1,5' } })
-    fireEvent.change(field('Tỷ lệ cọc (RECURRING / CUSTOM)'), { target: { value: '40' } })
-    fireEvent.change(field('Nhắc trả nốt (giờ trước hạn)'), { target: { value: '48 72' } })
+    fireEvent.change(field('Lịch theo ca'), { target: { value: '1,5' } })
+    fireEvent.change(field('Tỷ lệ đặt cọc'), { target: { value: '40' } })
+    fireEvent.change(field('Nhắc trả nốt (số giờ trước hạn)'), { target: { value: '48 72' } })
     fireEvent.change(field('Hủy sát giờ, không hoàn'), { target: { value: '0,5' } })
     fireEvent.click(screen.getByRole('button', { name: 'Lưu chính sách' }))
 
@@ -101,17 +101,17 @@ describe('CenterBookingPolicyForm', () => {
     renderForm()
     await screen.findByText(/đang dùng chính sách mặc định/)
 
-    fireEvent.change(field('RECURRING'), { target: { value: '24' } })
+    fireEvent.change(field('Lịch định kỳ'), { target: { value: '24' } })
     fireEvent.change(field('Hoàn khi hủy dưới mốc'), { target: { value: '120' } })
     fireEvent.change(field('Hạn trung tâm xác nhận'), { target: { value: '' } })
-    fireEvent.change(field('Nhắc trả nốt (giờ trước hạn)'), { target: { value: '48, 48' } })
+    fireEvent.change(field('Nhắc trả nốt (số giờ trước hạn)'), { target: { value: '48, 48' } })
     fireEvent.click(screen.getByRole('button', { name: 'Lưu chính sách' }))
 
     expect(await screen.findByText(/Phải lớn hơn thời gian “Trả nốt trước buổi đầu”/)).toBeInTheDocument()
     expect(screen.getByText(/Giá trị lớn hơn mức cho phép/)).toBeInTheDocument()
     expect(screen.getByText('Nhập giá trị.')).toBeInTheDocument()
     expect(screen.getByText('Các mốc nhắc không được trùng nhau.')).toBeInTheDocument()
-    expect(field('RECURRING')).toHaveAttribute('aria-invalid', 'true')
+    expect(field('Lịch định kỳ')).toHaveAttribute('aria-invalid', 'true')
     expect(updateCenterBookingPolicyRequest).not.toHaveBeenCalled()
 
     fireEvent.change(field('Hoàn khi hủy dưới mốc'), { target: { value: '100' } })

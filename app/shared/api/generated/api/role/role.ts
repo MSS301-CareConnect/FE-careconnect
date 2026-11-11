@@ -23,6 +23,7 @@ import type {
 
 import type {
   CreateRoleRequest,
+  EmptyActionResponse,
   N400Response,
   N401Response,
   N403Response,
@@ -30,7 +31,8 @@ import type {
   N503Response,
   RoleActionResponse,
   RoleListResponse,
-  SetRolePermissionsRequest
+  SetRolePermissionsRequest,
+  UpdateRoleRequest
 } from '../../contracts'
 
 import { env } from '~/shared/config/env'
@@ -339,6 +341,266 @@ export const useCreateManagedRole = <
   queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof createManagedRole>>, TError, { data: CreateRoleRequest }, TContext> => {
   return useMutation(getCreateManagedRoleMutationOptions(options), queryClient)
+}
+export type updateManagedRoleResponse200 = {
+  data: RoleActionResponse
+  status: 200
+}
+
+export type updateManagedRoleResponse400 = {
+  data: N400Response
+  status: 400
+}
+
+export type updateManagedRoleResponse401 = {
+  data: N401Response
+  status: 401
+}
+
+export type updateManagedRoleResponse403 = {
+  data: N403Response
+  status: 403
+}
+
+export type updateManagedRoleResponse500 = {
+  data: N500Response
+  status: 500
+}
+
+export type updateManagedRoleResponse503 = {
+  data: N503Response
+  status: 503
+}
+
+export type updateManagedRoleResponseSuccess = updateManagedRoleResponse200 & {
+  headers: Headers
+}
+export type updateManagedRoleResponseError = (
+  | updateManagedRoleResponse400
+  | updateManagedRoleResponse401
+  | updateManagedRoleResponse403
+  | updateManagedRoleResponse500
+  | updateManagedRoleResponse503
+) & {
+  headers: Headers
+}
+
+export const getUpdateManagedRoleUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/roles/${id}`
+}
+
+export const updateManagedRole = async (
+  id: string,
+  updateRoleRequest: UpdateRoleRequest,
+  options?: RequestInit
+): Promise<updateManagedRoleResponseSuccess> => {
+  const res = await fetch(getUpdateManagedRoleUrl(id), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateRoleRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: updateManagedRoleResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: updateManagedRoleResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: updateManagedRoleResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateManagedRoleResponseSuccess
+}
+
+export const getUpdateManagedRoleMutationOptions = <
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateManagedRole>>,
+    TError,
+    { id: string; data: UpdateRoleRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateManagedRole>>,
+  TError,
+  { id: string; data: UpdateRoleRequest },
+  TContext
+> => {
+  const mutationKey = ['updateManagedRole']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateManagedRole>>,
+    { id: string; data: UpdateRoleRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return updateManagedRole(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type UpdateManagedRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updateManagedRole>>>
+export type UpdateManagedRoleMutationBody = UpdateRoleRequest
+export type UpdateManagedRoleMutationError = globalThis.Error & {
+  info?: N400Response | N401Response | N403Response | N500Response | N503Response
+  status?: number
+}
+
+export const useUpdateManagedRole = <
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateManagedRole>>,
+      TError,
+      { id: string; data: UpdateRoleRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateManagedRole>>,
+  TError,
+  { id: string; data: UpdateRoleRequest },
+  TContext
+> => {
+  return useMutation(getUpdateManagedRoleMutationOptions(options), queryClient)
+}
+export type deleteManagedRoleResponse200 = {
+  data: EmptyActionResponse
+  status: 200
+}
+
+export type deleteManagedRoleResponse400 = {
+  data: N400Response
+  status: 400
+}
+
+export type deleteManagedRoleResponse401 = {
+  data: N401Response
+  status: 401
+}
+
+export type deleteManagedRoleResponse403 = {
+  data: N403Response
+  status: 403
+}
+
+export type deleteManagedRoleResponse500 = {
+  data: N500Response
+  status: 500
+}
+
+export type deleteManagedRoleResponse503 = {
+  data: N503Response
+  status: 503
+}
+
+export type deleteManagedRoleResponseSuccess = deleteManagedRoleResponse200 & {
+  headers: Headers
+}
+export type deleteManagedRoleResponseError = (
+  | deleteManagedRoleResponse400
+  | deleteManagedRoleResponse401
+  | deleteManagedRoleResponse403
+  | deleteManagedRoleResponse500
+  | deleteManagedRoleResponse503
+) & {
+  headers: Headers
+}
+
+export const getDeleteManagedRoleUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/roles/${id}`
+}
+
+export const deleteManagedRole = async (
+  id: string,
+  options?: RequestInit
+): Promise<deleteManagedRoleResponseSuccess> => {
+  const res = await fetch(getDeleteManagedRoleUrl(id), {
+    ...options,
+    method: 'DELETE'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: deleteManagedRoleResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: deleteManagedRoleResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: deleteManagedRoleResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as deleteManagedRoleResponseSuccess
+}
+
+export const getDeleteManagedRoleMutationOptions = <
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteManagedRole>>, TError, { id: string }, TContext>
+  fetch?: RequestInit
+}): UseMutationOptions<Awaited<ReturnType<typeof deleteManagedRole>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['deleteManagedRole']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteManagedRole>>, { id: string }> = (props) => {
+    const { id } = props ?? {}
+
+    return deleteManagedRole(id, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteManagedRoleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteManagedRole>>>
+
+export type DeleteManagedRoleMutationError = globalThis.Error & {
+  info?: N400Response | N401Response | N403Response | N500Response | N503Response
+  status?: number
+}
+
+export const useDeleteManagedRole = <
+  TError = globalThis.Error & {
+    info?: N400Response | N401Response | N403Response | N500Response | N503Response
+    status?: number
+  },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteManagedRole>>, TError, { id: string }, TContext>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<Awaited<ReturnType<typeof deleteManagedRole>>, TError, { id: string }, TContext> => {
+  return useMutation(getDeleteManagedRoleMutationOptions(options), queryClient)
 }
 export type setManagedRolePermissionsResponse200 = {
   data: RoleActionResponse

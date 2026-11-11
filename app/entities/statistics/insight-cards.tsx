@@ -1,14 +1,18 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { OperationalStatisticsRecord } from '~/shared/api/generated/contracts'
+import { useFormat } from '~/shared/lib/format'
 import { BarList } from '~/shared/ui/charts/bar-list'
 import { ChartCard } from '~/shared/ui/charts/chart-card'
 import { chartColors, periodLabel } from '~/shared/ui/charts/chart-colors'
+import { ColumnChart } from '~/shared/ui/charts/column-chart'
 import { DonutChart } from '~/shared/ui/charts/donut-chart'
 import { LineChart } from '~/shared/ui/charts/line-chart'
+import { DatePicker } from '~/shared/ui/date-picker'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
 
-import { INSIGHT_PERIODS, type InsightPeriod } from './statistics-period'
+import { INSIGHT_PERIODS, type InsightPeriodState } from './statistics-period'
 
 const key = 'statistics.insights' as const
 const BOOKING_STATUSES = [
@@ -31,32 +35,70 @@ export function useCount() {
   return (value: number) => format.format(Math.round(value))
 }
 
-/** This month · last 30 days · this year, shared by every dashboard section on the page. */
-export function InsightPeriodSwitch({
-  value,
-  onChange
-}: {
-  value: InsightPeriod
-  onChange: (value: InsightPeriod) => void
-}) {
+/**
+ * This month · last 30 days · this year · custom range, shared by every dashboard section on the page. A custom range
+ * shows two day pickers; an end before the start gets a note and the numbers stay on "this month".
+ */
+export function InsightPeriodSwitch({ state, className = '' }: { state: InsightPeriodState; className?: string }) {
   const { t } = useTranslation()
+  const format = useFormat()
+  const { period, range, custom } = state
   return (
-    <div className='flex flex-wrap items-center justify-between gap-3'>
-      <p className='text-sm text-on-surface-variant'>{t(`${key}.periodHints.${value}`)}</p>
+    <div className={`flex flex-wrap items-center justify-end gap-x-3 gap-y-2 ${className}`}>
+      <p className='text-sm text-on-surface-variant tabular-nums'>
+        {period === 'custom'
+          ? t(`${key}.periodHints.custom`, { from: format.date(range.fromDate), to: format.date(range.toDate) })
+          : t(`${key}.periodHints.${period}`)}
+      </p>
       <SegmentedControl
-        className='w-full sm:w-[22rem]'
+        className='w-full sm:w-[30rem]'
         legend={t(`${key}.periodLegend`)}
-        onChange={onChange}
-        options={INSIGHT_PERIODS.map((period) => ({ value: period, label: t(`${key}.periods.${period}`) }))}
-        value={value}
+        onChange={state.choose}
+        options={INSIGHT_PERIODS.map((item) => ({ value: item, label: t(`${key}.periods.${item}`) }))}
+        value={period}
       />
+      {period === 'custom' ? (
+        <div className='flex w-full flex-wrap items-center justify-end gap-2'>
+          <div aria-label={t(`${key}.customRange`)} className='flex items-center gap-1.5' role='group'>
+            <DatePicker
+              aria-describedby={state.customInvalid ? 'insight-range-error' : undefined}
+              aria-invalid={state.customInvalid || undefined}
+              aria-label={t(`${key}.customFrom`)}
+              className='w-36'
+              onChange={(value) => state.setCustom(value, custom.to)}
+              value={custom.from}
+            />
+            <span className='text-sm text-on-surface-variant'>–</span>
+            <DatePicker
+              aria-describedby={state.customInvalid ? 'insight-range-error' : undefined}
+              aria-invalid={state.customInvalid || undefined}
+              aria-label={t(`${key}.customTo`)}
+              className='w-36'
+              min={custom.from || undefined}
+              onChange={(value) => state.setCustom(custom.from, value)}
+              value={custom.to}
+            />
+          </div>
+          {state.customInvalid ? (
+            <p className='w-full text-right text-sm text-error' id='insight-range-error'>
+              {t(`${key}.customInvalid`)}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }
 
-/** New bookings, completed and cancelled / missed visits per day (or month) of the period. */
+const TREND_VIEWS = ['column', 'line'] as const
+
+/**
+ * New bookings, completed and cancelled / missed visits per day (or month) of the period, as grouped columns (default:
+ * small daily counts read best as columns) or lines.
+ */
 export function BookingTrendCard({ data, className }: { data: OperationalStatisticsRecord; className?: string }) {
   const { t } = useTranslation()
+  const [view, setView] = useState<(typeof TREND_VIEWS)[number]>('column')
   const count = useCount()
   const series = [
     { key: 'bookings', label: t(`${key}.trend.bookings`), color: chartColors.c3 },
@@ -73,8 +115,25 @@ export function BookingTrendCard({ data, className }: { data: OperationalStatist
     }
   }))
   return (
-    <ChartCard className={className} description={t(`${key}.trend.hint`)} title={t(`${key}.trend.title`)}>
-      <LineChart format={count} points={points} series={series} />
+    <ChartCard
+      action={
+        <SegmentedControl
+          className='w-44'
+          legend={t(`${key}.trend.view`)}
+          onChange={setView}
+          options={TREND_VIEWS.map((item) => ({ value: item, label: t(`${key}.trend.views.${item}`) }))}
+          value={view}
+        />
+      }
+      className={className}
+      description={t(`${key}.trend.hint`)}
+      title={t(`${key}.trend.title`)}
+    >
+      {view === 'column' ? (
+        <ColumnChart format={count} points={points} series={series} />
+      ) : (
+        <LineChart format={count} points={points} series={series} />
+      )}
     </ChartCard>
   )
 }

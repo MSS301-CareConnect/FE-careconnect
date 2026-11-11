@@ -9,7 +9,7 @@ import type { UserResponse } from '~/shared/api/generated/contracts'
 import { Button } from '~/shared/ui/button'
 import { Modal } from '~/shared/ui/modal'
 
-import { useCenterOptions } from '../hooks/use-center-options'
+import { useCenterOptions } from '~/features/admin/data/use-center-options'
 import { useActionToast } from '~/shared/ui/use-action-toast'
 
 const key = 'admin.identity.accounts' as const

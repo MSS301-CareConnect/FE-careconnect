@@ -1,4 +1,5 @@
 import {
+  getBookingSettlement,
   getMyWallet,
   getMyWalletStatistics,
   getWallet,
@@ -8,6 +9,7 @@ import {
 } from '~/shared/api/generated/api/wallet/wallet'
 import {
   createWalletWithdrawal,
+  getWalletWithdrawal,
   getWalletWithdrawalStatistics,
   listWalletWithdrawals,
   rejectWalletWithdrawal,
@@ -40,6 +42,7 @@ export interface WithdrawalFilters {
   status?: WalletWithdrawalStatus
   ownerType?: WalletOwnerType
   page: number
+  size?: number
 }
 
 /** Every wallet query sits under `['wallet']`, so one invalidation refreshes balance, ledger, dashboard and requests. */
@@ -48,11 +51,14 @@ export const walletKeys = {
   mine: ['wallet', 'me'] as const,
   statistics: (from: string, to: string, groupBy: WalletStatisticsGroupBy) =>
     ['wallet', 'me', 'statistics', from, to, groupBy] as const,
-  transactions: (from: string, to: string, page: number) => ['wallet', 'me', 'transactions', from, to, page] as const,
+  transactions: (from: string, to: string, page: number, size: number) =>
+    ['wallet', 'me', 'transactions', from, to, page, size] as const,
   withdrawals: (filters: WithdrawalFilters) => ['wallet', 'withdrawals', filters] as const,
+  withdrawal: (withdrawalId: string) => ['wallet', 'withdrawals', 'detail', withdrawalId] as const,
   withdrawalStatistics: (scope: WalletWithdrawalScope, from: string, to: string, groupBy: WalletStatisticsGroupBy) =>
     ['wallet', 'withdrawals', 'statistics', scope, from, to, groupBy] as const,
   centerBalances: ['wallet', 'me', 'center-balances'] as const,
+  settlement: (bookingId: string) => ['wallet', 'settlement', bookingId] as const,
   wallet: (walletId: string) => ['wallet', 'detail', walletId] as const,
   walletTransactions: (walletId: string) => ['wallet', 'detail', walletId, 'transactions'] as const
 }
@@ -62,16 +68,21 @@ export async function fetchMyWallet() {
   return result(await getMyWallet(readOptions))
 }
 
+/** 2026-11-11: settlement of one booking for its center manager or an admin (404 until the booking is paid). */
+export async function fetchBookingSettlement(bookingId: string) {
+  return result(await getBookingSettlement(bookingId, readOptions))
+}
+
 export async function fetchMyWalletStatistics(from: string, to: string, groupBy: WalletStatisticsGroupBy) {
   return result(await getMyWalletStatistics({ from, to, groupBy }, readOptions))
 }
 
-export async function fetchMyWalletTransactions(from: string, to: string, page: number) {
-  return result(await listMyWalletTransactions({ from, to, page, size: WALLET_PAGE_SIZE }, readOptions))
+export async function fetchMyWalletTransactions(from: string, to: string, page: number, size = WALLET_PAGE_SIZE) {
+  return result(await listMyWalletTransactions({ from, to, page, size }, readOptions))
 }
 
-export async function fetchWithdrawals({ scope, status, ownerType, page }: WithdrawalFilters) {
-  return result(await listWalletWithdrawals({ scope, status, ownerType, page, size: WALLET_PAGE_SIZE }, readOptions))
+export async function fetchWithdrawals({ scope, status, ownerType, page, size = WALLET_PAGE_SIZE }: WithdrawalFilters) {
+  return result(await listWalletWithdrawals({ scope, status, ownerType, page, size }, readOptions))
 }
 
 /** Withdrawal dashboard of the caller's scope; the center REVIEW queue adds the money held for customers / caregivers. */
@@ -102,6 +113,10 @@ export async function fetchWalletTransactions(walletId: string) {
       readOptions
     )
   )
+}
+
+export async function fetchWithdrawal(withdrawalId: string) {
+  return result(await getWalletWithdrawal(withdrawalId, readOptions))
 }
 
 export async function requestWithdrawal(request: CreateWalletWithdrawalRequest) {

@@ -16,15 +16,13 @@ import { ManagerBookingQuickAction, type ManagerBookingAction } from './componen
 import { BOOKING_LIST_TABS, ManagerBookingFilters } from './components/manager-booking-filters'
 import { ManagerBookingQueue } from './components/manager-booking-queue'
 import { ManagerBookingTable } from './components/manager-booking-table'
-import { CaregiverAbsenceQueue } from '~/entities/booking/caregiver-absence-queue'
-
-import { ManagerWithdrawalQueue } from './components/manager-withdrawal-queue'
-import { useCenterCaregivers } from './hooks/use-center-caregivers'
+import { ManagerAttentionStrip } from './components/manager-attention-strip'
 import { useManagerBookings } from './hooks/use-manager-bookings'
 
 /**
  * The center's booking work queue: queue cards, group tabs, a toolbar, then the bookings with their running deadline
- * and the center's answer (confirm, assign, reject) right on the row. The list and counts refresh every 30 seconds.
+ * and the center's answer (confirm, assign, reject) right on the row, with other center work as cards above it. The
+ * list and counts refresh every 30 seconds.
  */
 export function ManagerBookingManagementPage() {
   const { t, i18n } = useTranslation()
@@ -35,7 +33,6 @@ export function ManagerBookingManagementPage() {
   const [quick, setQuick] = useState<{ id: string; action: ManagerBookingAction } | null>(null)
   useDocumentTitle(t(`${key}.documentTitle`))
   const actionCount = list.groupCount('action')
-  const { nameOf: caregiverNameOf } = useCenterCaregivers()
 
   return (
     <div className='mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'>
@@ -68,56 +65,63 @@ export function ManagerBookingManagementPage() {
       />
 
       <ManagerBookingQueue list={list} />
-      <ManagerWithdrawalQueue />
-      <CaregiverAbsenceQueue nameOf={caregiverNameOf} role='manager' />
-      <ManagerBookingFilters key={list.keyword} list={list} total={bookings.data?.totalElements} />
 
-      <div aria-labelledby={tabId(BOOKING_LIST_TABS, list.group)} id={tabPanelId(BOOKING_LIST_TABS)} role='tabpanel'>
-        {bookings.isPending ? <SkeletonBlock label={t(`${key}.loading`)} rows={5} /> : null}
-        {bookings.isError ? (
-          <ErrorState
-            message={t(bookingErrorKey(bookings.error))}
-            onRetry={() => void bookings.refetch()}
-            retryLabel={t('booking.actions.retry')}
-          />
-        ) : null}
-        {bookings.isSuccess && bookings.data.items.length === 0 ? (
-          <EmptyState
-            action={
-              list.hasFilters ? (
-                <Button onClick={list.reset} size='sm' variant='secondary'>
-                  {t(`${key}.filters.reset`)}
-                </Button>
-              ) : undefined
-            }
-            description={list.group === 'action' && !list.hasFilters ? t(`${key}.emptyGroup.actionHint`) : undefined}
-            icon={list.group === 'action' ? 'task_alt' : 'event_busy'}
-            title={list.hasFilters ? t(`${key}.empty`) : t(`${key}.emptyGroup.${list.group}`)}
-          />
-        ) : null}
-        {bookings.isSuccess && bookings.data.items.length > 0 ? (
-          <ManagerBookingTable
-            bookings={bookings.data.items}
-            now={now}
-            onAction={(booking: BookingSummaryRecord, action) => setQuick({ id: booking.id, action })}
+      {/* Other work for the center as compact cards; each opens its paged queue in a popup (2026-11-11). */}
+      <ManagerAttentionStrip />
+
+      <div className='@container min-w-0 space-y-4'>
+        <ManagerBookingFilters key={list.keyword} list={list} total={bookings.data?.totalElements} />
+
+        <div aria-labelledby={tabId(BOOKING_LIST_TABS, list.group)} id={tabPanelId(BOOKING_LIST_TABS)} role='tabpanel'>
+          {bookings.isPending ? <SkeletonBlock label={t(`${key}.loading`)} rows={5} /> : null}
+          {bookings.isError ? (
+            <ErrorState
+              message={t(bookingErrorKey(bookings.error))}
+              onRetry={() => void bookings.refetch()}
+              retryLabel={t('booking.actions.retry')}
+            />
+          ) : null}
+          {bookings.isSuccess && bookings.data.items.length === 0 ? (
+            <EmptyState
+              action={
+                list.hasFilters ? (
+                  <Button onClick={list.reset} size='sm' variant='secondary'>
+                    {t(`${key}.filters.reset`)}
+                  </Button>
+                ) : undefined
+              }
+              description={list.group === 'action' && !list.hasFilters ? t(`${key}.emptyGroup.actionHint`) : undefined}
+              icon={list.group === 'action' ? 'task_alt' : 'event_busy'}
+              title={list.hasFilters ? t(`${key}.empty`) : t(`${key}.emptyGroup.${list.group}`)}
+            />
+          ) : null}
+          {bookings.isSuccess && bookings.data.items.length > 0 ? (
+            <ManagerBookingTable
+              bookings={bookings.data.items}
+              now={now}
+              onAction={(booking: BookingSummaryRecord, action) => setQuick({ id: booking.id, action })}
+            />
+          ) : null}
+        </div>
+
+        {bookings.isSuccess ? (
+          <Pagination
+            ariaLabel={t(`${key}.pagination.label`)}
+            nextLabel={t(`${key}.pagination.next`)}
+            onPageChange={list.setPage}
+            onPageSizeChange={list.setSize}
+            page={bookings.data.page}
+            pageOfLabel={t(`${key}.pagination.pageOf`, {
+              page: bookings.data.page + 1,
+              total: Math.max(1, bookings.data.totalPages)
+            })}
+            pageSize={list.size}
+            previousLabel={t(`${key}.pagination.previous`)}
+            totalElements={bookings.data.totalElements}
+            totalPages={bookings.data.totalPages}
           />
         ) : null}
       </div>
-
-      {bookings.isSuccess && bookings.data.totalPages > 1 ? (
-        <Pagination
-          ariaLabel={t(`${key}.pagination.label`)}
-          nextLabel={t(`${key}.pagination.next`)}
-          onPageChange={list.setPage}
-          page={bookings.data.page}
-          pageOfLabel={t(`${key}.pagination.pageOf`, {
-            page: bookings.data.page + 1,
-            total: bookings.data.totalPages
-          })}
-          previousLabel={t(`${key}.pagination.previous`)}
-          totalPages={bookings.data.totalPages}
-        />
-      ) : null}
 
       {quick ? (
         <ManagerBookingQuickAction action={quick.action} bookingId={quick.id} onClose={() => setQuick(null)} />

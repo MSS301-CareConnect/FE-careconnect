@@ -1,57 +1,30 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { bookingErrorStatus, bookingKeys, cancelBookingRequest, fetchBooking } from '~/entities/booking/booking-api'
-import { bookingErrorKey, bookingTypeKey, formatDateTime, formatMoney } from '~/entities/booking/booking-format'
+import { bookingErrorStatus, bookingKeys, fetchBooking } from '~/entities/booking/booking-api'
+import { bookingTypeKey, formatDateTime, formatMoney } from '~/entities/booking/booking-format'
 import { BookingHistoryList } from '~/entities/booking/booking-history-list'
 import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-list'
-import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { useCaregiverNames, useCenterName } from '~/entities/provider/use-provider-names'
-import type { BookingStatus } from '~/shared/api/generated/contracts'
+import { BookingSettlementCard } from '~/entities/wallet/booking-settlement-card'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { classifyApiError } from '~/shared/api/api-error'
 import { SectionCard } from '~/shared/ui/section-card'
-import { useActionToast } from '~/shared/ui/use-action-toast'
 import { bentoBackLink, bentoContainer } from '~/shared/ui/bento-page-header'
 import { Icon } from '~/shared/ui/icon'
 
-// Statuses that still hold a schedule; BookingService rejects a cancel outside them.
-const CANCELLABLE: ReadonlySet<BookingStatus> = new Set([
-  'PENDING_CENTER_CONFIRMATION',
-  'PENDING_CAREGIVER_CONFIRMATION',
-  'PENDING_CAREGIVER_ASSIGNMENT',
-  'AWAITING_INITIAL_PAYMENT',
-  'CONFIRMED',
-  'IN_PROGRESS'
-])
+import { CancelBookingDialog, canAdminCancel } from './components/cancel-booking-dialog'
 
 /** M-11: one booking as the platform sees it, with the admin's cancel-on-behalf action (full refund like a center cancel). */
 export function AdminBookingDetailPage({ id }: { id: string }) {
   const { t, i18n } = useTranslation()
-  const queryClient = useQueryClient()
   const [cancelling, setCancelling] = useState(false)
   const booking = useQuery({ queryKey: bookingKeys.detail(id), queryFn: () => fetchBooking(id), retry: false })
   const centerName = useCenterName(booking.data?.centerId)
   const caregiverName = useCaregiverNames((booking.data?.occurrences ?? []).map((occurrence) => occurrence.caregiverId))
   useDocumentTitle(booking.data ? `#${booking.data.bookingCode}` : t('admin.bookingsPage.title'))
-  const notify = useActionToast()
-  const cancel = useMutation({
-    mutationFn: (reason: string) => cancelBookingRequest(id, { reason }),
-    onError: (error, reason) => {
-      if (notify.systemError(error, t('admin.toast.bookings.actions.cancel'), () => cancel.mutate(reason))) {
-        setCancelling(false)
-      }
-    },
-    onSuccess: async () => {
-      setCancelling(false)
-      notify.success(t('admin.toast.bookings.cancelled', { code: booking.data?.bookingCode ?? '' }))
-      await queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-    }
-  })
-
   if (booking.isPending)
     return (
       <p className='p-8 text-sm text-on-surface-variant' role='status'>
@@ -89,7 +62,7 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
             <span className='tabular-nums'>{formatMoney(data.totalAmount, language)}</span>
           </p>
         </div>
-        {CANCELLABLE.has(data.status) ? (
+        {canAdminCancel(data.status) ? (
           <button
             className='min-h-11 rounded-full border border-error/40 px-5 text-sm font-semibold text-error hover:bg-error-container/50'
             onClick={() => setCancelling(true)}
@@ -131,25 +104,12 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
       <SectionCard icon='event' title={t('admin.bookingsPage.occurrences')}>
         <BookingOccurrenceList caregiverName={caregiverName} occurrences={data.occurrences ?? []} />
       </SectionCard>
+      <BookingSettlementCard bookingId={id} />
       <SectionCard icon='history' title={t('admin.bookingsPage.history')}>
-        <BookingHistoryList bookingId={id} />
+        <BookingHistoryList bookingId={id} collapsedCount={4} />
       </SectionCard>
       {cancelling ? (
-        <BookingReasonDialog
-          confirmLabel={t('admin.bookingsPage.cancel')}
-          danger
-          description={t('admin.bookingsPage.cancelHint')}
-          error={
-            cancel.error && classifyApiError(cancel.error).kind !== 'system'
-              ? t(bookingErrorKey(cancel.error))
-              : undefined
-          }
-          label={t('admin.bookingsPage.reason')}
-          onClose={() => setCancelling(false)}
-          onConfirm={(reason) => cancel.mutate(reason)}
-          pending={cancel.isPending}
-          title={t('admin.bookingsPage.cancelTitle')}
-        />
+        <CancelBookingDialog bookingCode={data.bookingCode} bookingId={id} onClose={() => setCancelling(false)} />
       ) : null}
     </div>
   )

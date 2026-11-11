@@ -142,10 +142,14 @@ describe('Admin dashboard', () => {
   it('shows the admin queues, live operations and platform money for the chosen period', async () => {
     renderAdmin()
     expect(await screen.findByRole('heading', { name: 'Việc cần xử lý' })).toBeInTheDocument()
-    expect(await screen.findByRole('link', { name: 'Mở Yêu cầu rút của trung tâm' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: 'Mở Yêu cầu rút tiền chờ xử lý' })).toHaveAttribute(
       'href',
       '/admin/withdrawals'
     )
+    // Revenue only (2026-11-11): the platform has no wallet balance to show and links to its revenue page.
+    expect(await screen.findByText('Thu trên 4 lịch đặt')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Xem doanh thu nền tảng/ })).toHaveAttribute('href', '/admin/revenue')
+    expect(screen.queryByText(/Ví nền tảng/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Mở Khiếu nại chuyển lên admin' })).toHaveAttribute(
       'href',
       '/admin/reviews-complaints'

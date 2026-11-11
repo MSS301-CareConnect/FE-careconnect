@@ -29,22 +29,21 @@ export const managerStatisticsVi = {
       net: 'TB {{amount}} / giao dịch',
       gross: '{{count}} giao dịch thành công',
       refunded: '{{percent}} số đã thu',
-      wallet: 'Ví trung tâm có {{amount}}'
+      received: 'Đã trừ hoa hồng nền tảng {{amount}}'
     },
-    walletIncome: 'Thực nhận vào ví',
-    chartTitle: 'Tiền vào ví trung tâm theo thời gian',
-    chartHint: 'Tiền buổi đã phục vụ (sau hoa hồng) và cọc giữ lại, cùng số đã rút.',
+    received: 'Trung tâm thực nhận',
+    chartTitle: 'Doanh thu thực nhận theo thời gian',
+    chartHint: 'Tiền buổi đã phục vụ (sau hoa hồng nền tảng) và cọc giữ lại.',
     income: 'Thực nhận',
-    withdrawn: 'Đã rút',
-    breakdownTitle: 'Cơ cấu thu nhập của ví',
-    breakdownHint: 'Các khoản cộng / trừ vào ví trung tâm trong kỳ.',
+    breakdownTitle: 'Cơ cấu doanh thu thực nhận',
+    breakdownHint: 'Các khoản cộng / trừ vào doanh thu của trung tâm trong kỳ.',
     breakdown: {
       serviceIncome: 'Tiền buổi đã phục vụ',
       forfeitIncome: 'Cọc giữ lại (buổi chưa phân công)',
       commissionDeducted: 'Hoa hồng nền tảng đã trừ',
       complaintDebits: 'Trừ do hoàn khiếu nại'
     },
-    viewWallet: 'Xem ví trung tâm'
+    viewRevenue: 'Xem trang doanh thu'
   }
 }
 
@@ -79,21 +78,20 @@ export const managerStatisticsEn: typeof managerStatisticsVi = {
       net: 'Average {{amount}} per payment',
       gross: '{{count}} successful payments',
       refunded: '{{percent}} of what was collected',
-      wallet: 'The center wallet holds {{amount}}'
+      received: 'After {{amount}} platform commission'
     },
-    walletIncome: 'Received in the wallet',
-    chartTitle: 'Money into the center wallet over time',
-    chartHint: 'Served visits (after commission) and kept deposits, with what was withdrawn.',
+    received: 'Received by the center',
+    chartTitle: 'Received revenue over time',
+    chartHint: 'Served visits (after the platform commission) and kept deposits.',
     income: 'Received',
-    withdrawn: 'Withdrawn',
-    breakdownTitle: 'Wallet income breakdown',
-    breakdownHint: 'What was added to and taken from the center wallet in this period.',
+    breakdownTitle: 'Received revenue breakdown',
+    breakdownHint: "What was added to and taken from the center's revenue in this period.",
     breakdown: {
       serviceIncome: 'Served visits',
       forfeitIncome: 'Kept deposits (unassigned visits)',
       commissionDeducted: 'Platform commission deducted',
       complaintDebits: 'Complaint refunds deducted'
     },
-    viewWallet: 'Open the center wallet'
+    viewRevenue: 'Open the revenue page'
   }
 }

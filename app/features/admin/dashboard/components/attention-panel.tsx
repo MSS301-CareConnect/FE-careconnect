@@ -11,8 +11,9 @@ import { Icon } from '~/shared/ui/icon'
 const key = 'admin.dashboardPage.attention' as const
 
 /**
- * The admin's waiting queues as four links with live counts: centers to approve, caregivers to verify, center
- * withdrawals to transfer and complaints escalated by centers. A queue that cannot be read is left out.
+ * The admin's waiting queues as four links with live counts: centers to approve, caregivers to verify, withdrawal
+ * requests waiting for the admin (centers no longer withdraw since 2026-11-11) and complaints escalated by centers. A
+ * queue that cannot be read is left out.
  */
 export function AttentionPanel({ data, range }: { data: OperationalStatisticsRecord; range: InsightRange }) {
   const { t, i18n } = useTranslation()
@@ -33,7 +34,7 @@ export function AttentionPanel({ data, range }: { data: OperationalStatisticsRec
     {
       id: 'pendingCaregivers',
       icon: 'badge',
-      to: '/admin/caregivers',
+      to: '/admin/caregivers?verification=PENDING',
       count: providers.data ? (providers.data.caregiversByVerification?.PENDING ?? 0) : undefined
     },
     {

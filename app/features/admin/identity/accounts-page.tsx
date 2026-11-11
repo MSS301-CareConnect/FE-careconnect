@@ -1,10 +1,11 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
 import { accountKeys, fetchAccounts, fetchAccountStatistics } from '~/entities/identity/account-api'
 import { useCenterNames } from '~/entities/provider/use-provider-names'
+import { AdminStatCards } from '~/features/admin/ui/stat-cards'
 import { isForbiddenError } from '~/features/shared/auth/session-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import type {
@@ -13,32 +14,35 @@ import type {
   ListManagedUsersStatus
 } from '~/shared/api/generated/contracts'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
+import { BentoPageHeader, bentoCard, bentoContainer } from '~/shared/ui/bento-page-header'
 import { Button } from '~/shared/ui/button'
+import { Select, baseControlClass } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
-import { CountUp } from '~/shared/ui/motion'
-import { Pagination } from '~/shared/ui/pagination'
+import { Pagination, pageSizeOf } from '~/shared/ui/pagination'
 import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
-import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
 
+import { AccountAccess } from './components/account-access'
 import { AccountAvatar } from './components/account-avatar'
 import { CreateAccountDialog } from './components/create-account-dialog'
 import { RoleChips } from './components/role-chips'
 
 const key = 'admin.identity.accounts' as const
-const PAGE_SIZE = 20
+const DEFAULT_PAGE_SIZE = 10
 const ROLES = ['ADMIN', 'CENTER_MANAGER', 'CAREGIVER', 'CUSTOMER'] as const satisfies readonly ListManagedUsersRole[]
 const STATUSES = ['ACTIVE', 'LOCKED'] as const satisfies readonly ListManagedUsersStatus[]
-const control =
-  'min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25'
 
-/** IdentityService searches, filters and pages every account on the server (A-02); counts are platform-wide. */
+/**
+ * IdentityService searches, filters and pages every account on the server (A-02); counts are platform-wide. The count
+ * cards filter the list (all, active, locked, center managers); each row opens the account or, from its "⋯" menu,
+ * locks / unlocks or deactivates it (redesigned 2026-11-11). Filters, page and page size live in URL search parameters.
+ */
 export function AccountsPage() {
   const { t, i18n } = useTranslation()
-  const navigate = useNavigate()
   const authUser = useAuthUser()
   const [params, setParams] = useSearchParams()
   const page = Math.max(0, Number(params.get('page')) || 0)
+  const pageSize = pageSizeOf(params.get('size'), DEFAULT_PAGE_SIZE)
   const keyword = params.get('q') ?? ''
   const role = ROLES.find((item) => item === params.get('role'))
   const status = STATUSES.find((item) => item === params.get('status'))
@@ -46,7 +50,7 @@ export function AccountsPage() {
   const [creating, setCreating] = useState(false)
   useDocumentTitle(t(`${key}.documentTitle`))
 
-  const query: ListManagedUsersParams = { page, size: PAGE_SIZE, role, status, keyword: keyword || undefined }
+  const query: ListManagedUsersParams = { page, size: pageSize, role, status, keyword: keyword || undefined }
   const accounts = useQuery({
     queryKey: accountKeys.list(query),
     queryFn: () => fetchAccounts(query),
@@ -56,8 +60,8 @@ export function AccountsPage() {
   const statistics = useQuery({ queryKey: accountKeys.statistics, queryFn: fetchAccountStatistics, retry: false })
   const rows = accounts.data?.content ?? []
   const centerName = useCenterNames(rows.map((user) => user.centerId))
-  const canCreate = authUser?.permissions?.includes('user:manage') || authUser?.permissions?.includes('manager:create')
-  const number = new Intl.NumberFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN')
+  const canManage = Boolean(authUser?.permissions?.includes('user:manage'))
+  const canCreate = canManage || authUser?.permissions?.includes('manager:create')
   const date = new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-US' : 'vi-VN', { dateStyle: 'medium' })
 
   function update(next: Record<string, string | undefined>) {
@@ -77,17 +81,46 @@ export function AccountsPage() {
     update({ q: draft.trim() || undefined })
   }
 
-  const byStatus = statistics.data?.usersByStatus ?? {}
+  const byStatus = statistics.data?.usersByStatus
+  const loaded = statistics.isSuccess
   const metrics = [
-    { name: 'total', value: Object.values(byStatus).reduce((sum, count) => sum + count, 0), icon: 'groups' },
-    { name: 'active', value: byStatus.ACTIVE ?? 0, icon: 'verified_user' },
-    { name: 'locked', value: byStatus.LOCKED ?? 0, icon: 'lock' },
-    { name: 'managers', value: statistics.data?.usersByRole?.CENTER_MANAGER ?? 0, icon: 'manage_accounts' }
-  ] as const
+    {
+      id: 'total',
+      icon: 'groups',
+      label: t(`${key}.metrics.total`),
+      value: loaded ? Object.values(byStatus ?? {}).reduce((sum, count) => sum + count, 0) : undefined,
+      selected: !role && !status,
+      onSelect: () => update({ role: undefined, status: undefined })
+    },
+    {
+      id: 'active',
+      icon: 'verified_user',
+      label: t(`${key}.metrics.active`),
+      value: loaded ? (byStatus?.ACTIVE ?? 0) : undefined,
+      selected: status === 'ACTIVE',
+      onSelect: () => update({ status: status === 'ACTIVE' ? undefined : 'ACTIVE' })
+    },
+    {
+      id: 'locked',
+      icon: 'lock',
+      label: t(`${key}.metrics.locked`),
+      value: loaded ? (byStatus?.LOCKED ?? 0) : undefined,
+      selected: status === 'LOCKED',
+      onSelect: () => update({ status: status === 'LOCKED' ? undefined : 'LOCKED' })
+    },
+    {
+      id: 'managers',
+      icon: 'manage_accounts',
+      label: t(`${key}.metrics.managers`),
+      value: loaded ? (statistics.data.usersByRole?.CENTER_MANAGER ?? 0) : undefined,
+      selected: role === 'CENTER_MANAGER',
+      onSelect: () => update({ role: role === 'CENTER_MANAGER' ? undefined : 'CENTER_MANAGER' })
+    }
+  ]
   const hasFilters = Boolean(keyword || role || status)
 
   return (
-    <main className={`${bentoContainer} space-y-6`}>
+    <main className={bentoContainer}>
       <BentoPageHeader
         actions={
           canCreate ? (
@@ -100,36 +133,15 @@ export function AccountsPage() {
         title={t(`${key}.title`)}
       />
 
-      <section aria-label={t(`${key}.metrics.title`)} className='ops-stagger grid grid-cols-2 gap-3 xl:grid-cols-4'>
-        {metrics.map((metric, index) => (
-          <div
-            className={`flex min-h-[8.5rem] flex-col rounded-2xl border border-forest-900/[0.06] bg-white p-5 shadow-[var(--shadow-card)] ${index === 0 ? 'ops-stat-dark' : ''}`}
-            key={metric.name}
-          >
-            <p className='flex items-center justify-between gap-2 text-sm font-medium text-on-surface-variant'>
-              {t(`${key}.metrics.${metric.name}`)}
-              <span className='ops-stat-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mint-50'>
-                <Icon className='text-xl text-primary' name={metric.icon} />
-              </span>
-            </p>
-            <strong className='ops-stat-value mt-auto block pt-3 text-[34px] leading-none font-bold tracking-tight text-forest-950'>
-              {statistics.isSuccess ? (
-                <CountUp format={(n) => number.format(Math.round(n))} value={metric.value} />
-              ) : (
-                '—'
-              )}
-            </strong>
-          </div>
-        ))}
-      </section>
+      <AdminStatCards items={metrics} label={t(`${key}.metrics.title`)} />
 
-      <section className='flex flex-wrap items-end gap-3 rounded-xl border border-outline-variant/40 bg-white p-4'>
+      <section className={`${bentoCard} flex flex-wrap items-end gap-3 p-4`}>
         <form className='flex min-w-64 flex-1 gap-2' onSubmit={submitSearch} role='search'>
           <label className='sr-only' htmlFor='accounts-search'>
             {t(`${key}.search`)}
           </label>
           <input
-            className={`${control} flex-1`}
+            className={`${baseControlClass} flex-1`}
             id='accounts-search'
             onChange={(event) => setDraft(event.target.value)}
             placeholder={t(`${key}.search`)}
@@ -140,27 +152,27 @@ export function AccountsPage() {
             {t(`${key}.searchAction`)}
           </Button>
         </form>
-        <label className='flex flex-col gap-1 text-xs font-semibold text-on-surface-variant'>
+        <label className='flex min-w-44 flex-col gap-1 text-xs font-semibold text-on-surface-variant'>
           {t(`${key}.role`)}
-          <select className={control} onChange={(event) => update({ role: event.target.value })} value={role ?? ''}>
+          <Select onChange={(event) => update({ role: event.target.value })} value={role ?? ''}>
             <option value=''>{t(`${key}.allRoles`)}</option>
             {ROLES.map((item) => (
               <option key={item} value={item}>
                 {t(`admin.identity.roles.${item}`)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
-        <label className='flex flex-col gap-1 text-xs font-semibold text-on-surface-variant'>
+        <label className='flex min-w-44 flex-col gap-1 text-xs font-semibold text-on-surface-variant'>
           {t(`${key}.status`)}
-          <select className={control} onChange={(event) => update({ status: event.target.value })} value={status ?? ''}>
+          <Select onChange={(event) => update({ status: event.target.value })} value={status ?? ''}>
             <option value=''>{t(`${key}.allStatuses`)}</option>
             {STATUSES.map((item) => (
               <option key={item} value={item}>
                 {t(`admin.identity.status.${item}`)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         {hasFilters ? (
           <Button
@@ -186,63 +198,69 @@ export function AccountsPage() {
       ) : rows.length === 0 ? (
         <EmptyState description={t(`${key}.emptyHint`)} icon='person_search' title={t(`${key}.empty`)} />
       ) : (
-        <section className='overflow-hidden rounded-xl border border-outline-variant/40 bg-white'>
-          <p className='border-b border-outline-variant/30 px-5 py-3 text-sm text-on-surface-variant'>
-            {t(`${key}.results`, { count: accounts.data.totalElements })}
-          </p>
+        <section className={`${bentoCard} overflow-hidden`}>
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-220 text-left text-sm'>
-              <thead className='bg-surface-container-low text-xs font-semibold text-on-surface-variant'>
+            <table className='w-full min-w-240 text-left text-sm'>
+              <thead className='bg-surface-container-low/70 text-xs font-semibold text-on-surface-variant'>
                 <tr>
-                  {(['user', 'phone', 'roles', 'center', 'status', 'createdAt'] as const).map((column) => (
-                    <th className='px-4 py-3' key={column} scope='col'>
+                  {(['user', 'phone', 'roles', 'center', 'status', 'createdAt', 'action'] as const).map((column) => (
+                    <th className={`px-5 py-3 ${column === 'action' ? 'text-right' : ''}`} key={column} scope='col'>
                       {t(`${key}.columns.${column}`)}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody className='divide-y divide-outline-variant/25'>
-                {rows.map((user) => (
-                  <tr
-                    className='cursor-pointer transition-colors hover:bg-surface-container-low/60'
-                    key={user.id}
-                    onClick={() => navigate(`/admin/accounts/${user.id}`)}
-                  >
-                    <td className='px-4 py-3'>
-                      <div className='flex items-center gap-3'>
-                        <AccountAvatar
-                          className='h-9 w-9 rounded-full text-xs'
-                          name={user.fullName || user.email}
-                          roles={user.roles}
-                          userId={user.id}
-                        />
-                        <span className='min-w-0'>
-                          <Link
-                            className='block font-semibold text-on-surface hover:text-primary'
-                            onClick={(event) => event.stopPropagation()}
-                            to={`/admin/accounts/${user.id}`}
-                          >
-                            {user.fullName || user.email}
-                          </Link>
-                          <span className='block truncate text-xs text-on-surface-variant'>{user.email}</span>
+                {rows.map((user) => {
+                  const name = user.fullName || user.email || ''
+                  return (
+                    <tr className='transition-colors hover:bg-mint-50/60' key={user.id}>
+                      <td className='px-5 py-3.5'>
+                        <div className='flex items-center gap-3'>
+                          <AccountAvatar
+                            className='h-10 w-10 rounded-full text-xs'
+                            name={name}
+                            roles={user.roles}
+                            userId={user.id}
+                          />
+                          <span className='min-w-0'>
+                            <Link
+                              className='block font-semibold text-on-surface hover:text-primary focus-visible:outline-2 focus-visible:outline-primary'
+                              to={`/admin/accounts/${user.id}`}
+                            >
+                              {name}
+                            </Link>
+                            <span className='block truncate text-xs text-on-surface-variant'>{user.email}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td className='whitespace-nowrap px-5 py-3.5 tabular-nums'>{user.phoneNumber || '—'}</td>
+                      <td className='px-5 py-3.5'>
+                        <RoleChips roles={user.roles} />
+                      </td>
+                      <td className='whitespace-nowrap px-5 py-3.5'>
+                        {user.centerId ? centerName(user.centerId) : '—'}
+                      </td>
+                      <td className='px-5 py-3.5'>
+                        <StatusBadge dot tone={user.status === 'ACTIVE' ? 'success' : 'error'}>
+                          {t(`admin.identity.status.${user.status ?? 'ACTIVE'}`)}
+                        </StatusBadge>
+                      </td>
+                      <td className='whitespace-nowrap px-5 py-3.5 tabular-nums text-on-surface-variant'>
+                        {user.createdAt ? date.format(new Date(user.createdAt)) : '—'}
+                      </td>
+                      <td className='px-5 py-3.5'>
+                        <span className='flex justify-end'>
+                          <AccountAccess
+                            menuLabel={t(`${key}.rowActions`, { name })}
+                            readOnly={!canManage || user.id === authUser?.id}
+                            user={user}
+                          />
                         </span>
-                      </div>
-                    </td>
-                    <td className='whitespace-nowrap px-4 py-3 tabular-nums'>{user.phoneNumber || '—'}</td>
-                    <td className='px-4 py-3'>
-                      <RoleChips roles={user.roles} />
-                    </td>
-                    <td className='whitespace-nowrap px-4 py-3'>{user.centerId ? centerName(user.centerId) : '—'}</td>
-                    <td className='px-4 py-3'>
-                      <StatusBadge dot tone={user.status === 'ACTIVE' ? 'success' : 'error'}>
-                        {t(`admin.identity.status.${user.status ?? 'ACTIVE'}`)}
-                      </StatusBadge>
-                    </td>
-                    <td className='whitespace-nowrap px-4 py-3 tabular-nums text-on-surface-variant'>
-                      {user.createdAt ? date.format(new Date(user.createdAt)) : '—'}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -252,7 +270,10 @@ export function AccountsPage() {
         <Pagination
           ariaLabel={t(`${key}.pagination`)}
           onPageChange={(next) => update({ page: next > 0 ? String(next) : undefined })}
+          onPageSizeChange={(size) => update({ size: size === DEFAULT_PAGE_SIZE ? undefined : String(size) })}
           page={page}
+          pageSize={pageSize}
+          totalElements={accounts.data.totalElements}
           totalPages={accounts.data.totalPages}
         />
       ) : null}

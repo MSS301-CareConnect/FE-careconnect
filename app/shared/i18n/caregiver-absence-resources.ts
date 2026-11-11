@@ -7,7 +7,8 @@ export const caregiverAbsenceVi = {
   },
   source: {
     MISSED_CHECK_IN: 'Không check-in đúng hạn',
-    NO_SHOW_REPORT_REJECTED: 'Trung tâm bác báo cáo khách vắng'
+    NO_SHOW_REPORT_REJECTED: 'Trung tâm bác báo cáo khách vắng',
+    SESSION_NOT_DELIVERED: 'Ca tự đóng, trung tâm kết luận không thực hiện'
   },
   visit: 'Buổi {{number}} · {{time}}',
   caregiver: 'Người chăm sóc: {{name}}',
@@ -21,6 +22,9 @@ export const caregiverAbsenceVi = {
   openBooking: 'Xem lịch đặt',
   openVisit: 'Xem buổi',
   more: 'Còn {{count}} lần khác',
+  pendingCount: '{{count}} chờ kết luận',
+  showAll: 'Xem tất cả ({{count}})',
+  showLess: 'Thu gọn',
   manager: {
     title: 'Người chăm sóc vắng ca ({{count}})',
     description:
@@ -51,8 +55,12 @@ export const caregiverAbsenceVi = {
     stats: { pending: 'Chờ kết luận', excused: 'Có lý do', confirmed: 'Vi phạm', total: 'Tổng số lần' },
     center: 'Trung tâm: {{name}}',
     unknownCenter: 'Không rõ',
+    centerFilter: 'Trung tâm',
+    allCenters: 'Tất cả trung tâm',
+    reset: 'Xóa bộ lọc',
+    visitCount: '{{count}} buổi vắng',
     empty: 'Chưa có lần vắng ca nào',
-    emptyHint: 'Khi một buổi quá hạn check-in mà không có người đến, lần vắng sẽ hiện ở đây.',
+    emptyHint: 'Khi một buổi quá giờ điểm danh mà không có người đến, lần vắng sẽ hiện ở đây.',
     error: 'Chưa tải được danh sách vắng ca.',
     retry: 'Thử lại',
     loading: 'Đang tải danh sách vắng ca…'
@@ -81,7 +89,8 @@ export const caregiverAbsenceEn: typeof caregiverAbsenceVi = {
   },
   source: {
     MISSED_CHECK_IN: 'No check-in in time',
-    NO_SHOW_REPORT_REJECTED: 'The center rejected the customer no-show report'
+    NO_SHOW_REPORT_REJECTED: 'The center rejected the customer no-show report',
+    SESSION_NOT_DELIVERED: 'Closed by the system; the center found it not delivered'
   },
   visit: 'Visit {{number}} · {{time}}',
   caregiver: 'Caregiver: {{name}}',
@@ -95,6 +104,9 @@ export const caregiverAbsenceEn: typeof caregiverAbsenceVi = {
   openBooking: 'Open booking',
   openVisit: 'Open visit',
   more: '{{count}} more',
+  pendingCount: '{{count}} awaiting conclusion',
+  showAll: 'Show all ({{count}})',
+  showLess: 'Show less',
   manager: {
     title: 'Caregivers missed visits ({{count}})',
     description:
@@ -125,6 +137,10 @@ export const caregiverAbsenceEn: typeof caregiverAbsenceVi = {
     stats: { pending: 'Awaiting conclusion', excused: 'Excused', confirmed: 'Violations', total: 'Total' },
     center: 'Center: {{name}}',
     unknownCenter: 'Unknown',
+    centerFilter: 'Center',
+    allCenters: 'All centers',
+    reset: 'Clear filters',
+    visitCount: '{{count}} missed visits',
     empty: 'No absences yet',
     emptyHint: 'When a visit passes its check-in window with nobody there, the absence shows here.',
     error: 'The absence list could not be loaded.',

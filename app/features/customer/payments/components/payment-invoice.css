@@ -1,0 +1,18 @@
+/* "Print / save PDF" of the invoice dialog prints only the invoice, not the page behind it or the dialog chrome. */
+@media print {
+  body:has(.cc-invoice-print) * {
+    visibility: hidden;
+  }
+
+  .cc-invoice-print,
+  .cc-invoice-print * {
+    visibility: visible;
+  }
+
+  .cc-invoice-print {
+    position: fixed;
+    inset: 0;
+    padding: 24px;
+    background: #fff;
+  }
+}

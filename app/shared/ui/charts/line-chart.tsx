@@ -9,11 +9,14 @@ import { niceMax, type ChartSeries } from './chart-colors'
 import type { ColumnPoint } from './column-chart'
 
 const VIEW_HEIGHT = 100
+// Above this many periods the dots would crowd the line; the crosshair still marks the active period.
+const MAX_DOTS = 31
 
 /**
- * Change over time: one 2 px line per series on one y-axis, the first series with a soft area under it. A crosshair
- * follows the pointer (or ←/→ once the chart has focus) and a tooltip lists every series at that period; the focused
- * chart announces the same text, so identity never rests on colour alone.
+ * Change over time: one 2 px line per series on one y-axis, with a dot on every period of a short range. The lines are
+ * revealed left to right with a clip (a `pathLength` draw broke them into dashes under `non-scaling-stroke`). A
+ * crosshair follows the pointer (or ←/→ once the chart has focus) and a tooltip lists every series at that period; the
+ * focused chart announces the same text, so identity never rests on colour alone.
  */
 export function LineChart<K extends string>({
   series,
@@ -33,12 +36,11 @@ export function LineChart<K extends string>({
   const peak = Math.max(0, ...points.flatMap((point) => series.map((item) => point.values[item.key] ?? 0)))
   if (peak === 0 || points.length === 0) return <ChartEmpty label={emptyLabel ?? t('common.charts.empty')} />
   const max = niceMax(peak)
-  const xOf = (index: number) => (points.length === 1 ? 50 : (index / (points.length - 1)) * 100)
+  // A small inset keeps the first and last dots inside the plot.
+  const xOf = (index: number) => (points.length === 1 ? 50 : 2 + (index / (points.length - 1)) * 96)
   const yOf = (value: number) => VIEW_HEIGHT - (Math.max(0, value) / max) * VIEW_HEIGHT
   const pathOf = (key: K) =>
     points.map((point, index) => `${index ? 'L' : 'M'}${xOf(index)},${yOf(point.values[key] ?? 0)}`).join(' ')
-  const first = series[0]
-  const area = first ? `${pathOf(first.key)} L${xOf(points.length - 1)},${VIEW_HEIGHT} L${xOf(0)},${VIEW_HEIGHT} Z` : ''
   const labelEvery = Math.max(1, Math.ceil(points.length / 8))
   const current = active === null ? null : points[active]
   const describe = (point: ColumnPoint<K>) =>
@@ -65,7 +67,7 @@ export function LineChart<K extends string>({
       <ChartLegend series={series} />
       <div className='flex gap-2'>
         <div aria-hidden='true' className={`relative w-14 shrink-0 ${height}`}>
-          {[1, 0.5].map((ratio) => (
+          {[1, 0.5, 0].map((ratio) => (
             <span
               className='absolute right-0 -translate-y-1/2 text-[10px] text-on-surface-variant tabular-nums'
               key={ratio}
@@ -94,9 +96,9 @@ export function LineChart<K extends string>({
             >
               {[0, 0.5].map((ratio) => (
                 <line
-                  className='stroke-outline-variant'
+                  className='stroke-outline-variant/60'
                   key={ratio}
-                  strokeDasharray={ratio ? '3 3' : undefined}
+                  strokeDasharray='3 3'
                   vectorEffect='non-scaling-stroke'
                   x1='0'
                   x2='100'
@@ -112,22 +114,6 @@ export function LineChart<K extends string>({
                 y1={VIEW_HEIGHT}
                 y2={VIEW_HEIGHT}
               />
-              {first ? <path d={area} fill={first.color} opacity={0.12} /> : null}
-              {series.map((item) => (
-                <motion.path
-                  animate={{ pathLength: 1 }}
-                  d={pathOf(item.key)}
-                  fill='none'
-                  initial={{ pathLength: 0 }}
-                  key={item.key}
-                  stroke={item.color}
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  transition={{ duration: 0.9, ease: easeSoft }}
-                  vectorEffect='non-scaling-stroke'
-                />
-              ))}
               {active !== null ? (
                 <line
                   className='stroke-forest-900/30'
@@ -139,6 +125,48 @@ export function LineChart<K extends string>({
                 />
               ) : null}
             </svg>
+            <motion.div
+              animate={{ clipPath: 'inset(-8px 0% -8px -8px)' }}
+              aria-hidden='true'
+              className='pointer-events-none absolute inset-0'
+              initial={{ clipPath: 'inset(-8px 100% -8px -8px)' }}
+              transition={{ duration: 0.9, ease: easeSoft }}
+            >
+              <svg
+                className='absolute inset-0 h-full w-full overflow-visible'
+                preserveAspectRatio='none'
+                viewBox={`0 0 100 ${VIEW_HEIGHT}`}
+              >
+                {/* Last series first, so the first (the headline) stays on top where lines meet. */}
+                {[...series].reverse().map((item) => (
+                  <path
+                    d={pathOf(item.key)}
+                    fill='none'
+                    key={item.key}
+                    stroke={item.color}
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    vectorEffect='non-scaling-stroke'
+                  />
+                ))}
+              </svg>
+              {points.length <= MAX_DOTS
+                ? [...series].reverse().flatMap((item) =>
+                    points.map((point, index) => (
+                      <span
+                        className='absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full'
+                        key={`${item.key}-${point.key}`}
+                        style={{
+                          backgroundColor: item.color,
+                          left: `${xOf(index)}%`,
+                          top: `${yOf(point.values[item.key] ?? 0)}%`
+                        }}
+                      />
+                    ))
+                  )
+                : null}
+            </motion.div>
             {active !== null && current
               ? series.map((item) => (
                   <span

@@ -84,9 +84,11 @@ export function BookingReasonDialog({
         <label className='font-semibold text-on-surface' htmlFor={fieldId}>
           {label}
         </label>
-        <span aria-hidden='true' className='text-rose-600 font-bold'>
-          *
-        </span>
+        {minLength > 0 ? (
+          <span aria-hidden='true' className='text-rose-600 font-bold'>
+            *
+          </span>
+        ) : null}
       </div>
       <textarea
         className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 font-normal text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 transition-all'
@@ -94,7 +96,7 @@ export function BookingReasonDialog({
         maxLength={maxLength}
         onChange={(event) => setReason(event.target.value)}
         placeholder={t('booking.dialog.placeholder')}
-        required
+        required={minLength > 0}
         rows={4}
         value={reason}
       />

@@ -16,13 +16,14 @@ export function notificationTarget(
   portal: NotificationPortal
 ): string | undefined {
   const { type, refType, refId, bookingId, occurrenceId } = item
-  // 2026-11-10: a withdrawal result (transferred / rejected) opens the requester's wallet.
+  // 2026-11-10: a withdrawal result (transferred / rejected) opens the requester's wallet; a center's older request
+  // opens its revenue page (centers have no wallet page since 2026-11-11).
   if (
     refType === 'WALLET_WITHDRAWAL' ||
     type === 'WALLET_WITHDRAWAL_COMPLETED' ||
     type === 'WALLET_WITHDRAWAL_REJECTED'
   )
-    return `/${portal}/wallet`
+    return portal === 'customer' || portal === 'caregiver' ? `/${portal}/wallet` : `/${portal}/revenue`
   switch (portal) {
     case 'customer':
       if (refType === 'MANAGER_INVITATION' || type === 'RECIPIENT_INVITATION') return '/customer/invitations'

@@ -20,9 +20,10 @@ import { ErrorState } from '~/shared/ui/state-panels'
 const key = 'centerManager.statisticsPage.revenue' as const
 
 /**
- * Spec §9.3: the center's revenue (PaymentService `/payments/revenue`, the token decides the center) beside what reached
- * the center wallet in the same period (`/wallets/me/statistics`: served visits after commission, kept deposits,
- * complaint debits) and its chart.
+ * Spec §9.3: the center's revenue (PaymentService `/payments/revenue`, the token decides the center) beside what the
+ * center received in the same period (`/wallets/me/statistics`: served visits after commission, kept deposits,
+ * complaint debits) and its chart. Revenue only since 2026-11-11: the money is already in the center's own account, so
+ * no balance and nothing withdrawn.
  */
 export function CenterFinanceSection({ range }: { range: InsightRange }) {
   const { t, i18n } = useTranslation()
@@ -63,14 +64,11 @@ export function CenterFinanceSection({ range }: { range: InsightRange }) {
         { key: 'complaintDebits', value: statistics.complaintDebits ?? 0 }
       ].map((item) => ({ ...item, label: t(`${key}.breakdown.${item.key as 'serviceIncome'}`) }))
     : []
-  const series = [
-    { key: 'income', label: t(`${key}.income`), color: chartColors.c1 },
-    { key: 'withdrawn', label: t(`${key}.withdrawn`), color: chartColors.c2 }
-  ] as const
+  const series = [{ key: 'income', label: t(`${key}.income`), color: chartColors.c1 }] as const
   const points = (statistics?.series ?? []).map((point) => ({
     key: point.period,
     label: periodLabel(point.period),
-    values: { income: point.income ?? 0, withdrawn: point.withdrawn ?? 0 }
+    values: { income: point.income ?? 0 }
   }))
 
   return (
@@ -108,9 +106,11 @@ export function CenterFinanceSection({ range }: { range: InsightRange }) {
         />
         <KpiTile
           format={(value) => money(value)}
-          hint={statistics ? t(`${key}.hints.wallet`, { amount: money(statistics.availableBalance) }) : undefined}
-          icon='account_balance_wallet'
-          label={t(`${key}.walletIncome`)}
+          hint={
+            statistics ? t(`${key}.hints.received`, { amount: money(statistics.commissionDeducted ?? 0) }) : undefined
+          }
+          icon='trending_up'
+          label={t(`${key}.received`)}
           tone='mint'
           value={statistics?.totalIncome ?? 0}
         />
@@ -124,9 +124,9 @@ export function CenterFinanceSection({ range }: { range: InsightRange }) {
             action={
               <Link
                 className='inline-flex min-h-9 items-center gap-1 rounded-full bg-mint-50 px-3 text-xs font-semibold text-forest-800 hover:bg-mint-100'
-                to='/center-manager/wallet'
+                to='/center-manager/revenue'
               >
-                {t(`${key}.viewWallet`)}
+                {t(`${key}.viewRevenue`)}
                 <Icon className='text-base' name='arrow_forward' />
               </Link>
             }

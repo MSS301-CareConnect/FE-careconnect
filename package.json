@@ -29,6 +29,7 @@
     "i18next": "^26.3.6",
     "isbot": "^5",
     "motion": "^12.43.0",
+    "qrcode.react": "4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.11",

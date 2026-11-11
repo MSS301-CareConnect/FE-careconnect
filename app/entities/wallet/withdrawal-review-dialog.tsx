@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import type { WalletWithdrawalRecord } from '~/shared/api/generated/contracts'
 import { useFormat } from '~/shared/lib/format'
@@ -13,23 +14,16 @@ import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 import { Skeleton } from '~/shared/ui/skeleton'
 
-import {
-  fetchWallet,
-  fetchWalletTransactions,
-  rejectWithdrawal,
-  transferWithdrawal,
-  walletErrorKey,
-  walletKeys
-} from './wallet-api'
+import { fetchWallet, fetchWalletTransactions, rejectWithdrawal, walletErrorKey, walletKeys } from './wallet-api'
 import { WithdrawalStatusBadge } from './wallet-labels'
 import { WalletTransactionRow } from './wallet-transactions'
 
-type Step = 'view' | 'reject' | 'transfer'
+type Step = 'view' | 'reject'
 
 /**
  * One withdrawal for whoever handles it (2026-11-10): bank details (copyable), the money's center, and — when the viewer
- * is the handler and the request is open — a simulated bank transfer (the request then completes by itself; there is no
- * manual approve / confirm) or a rejection with a reason. The admin also sees the requester wallet and its latest
+ * is the handler and the request is open — the simulated bank gateway (`transferHref`, 2026-11-11; the request then
+ * completes by itself, there is no manual approve / confirm) or a rejection with a reason. The admin also sees the requester wallet and its latest
  * movements (`showWallet`, ADMIN-only endpoints).
  */
 export function WithdrawalReviewDialog({
@@ -38,6 +32,7 @@ export function WithdrawalReviewDialog({
   canHandle,
   handlerLabel,
   showWallet,
+  transferHref,
   onClose
 }: {
   withdrawal: WalletWithdrawalRecord
@@ -45,6 +40,8 @@ export function WithdrawalReviewDialog({
   canHandle: boolean
   handlerLabel: string
   showWallet: boolean
+  /** The simulated transfer page of this request. */
+  transferHref: string
   onClose: () => void
 }) {
   const { t } = useTranslation()
@@ -66,18 +63,10 @@ export function WithdrawalReviewDialog({
     retry: false
   })
   const act = useMutation({
-    mutationFn: (action: 'reject' | 'transfer') =>
-      action === 'reject' ? rejectWithdrawal(withdrawal.id, reason.trim()) : transferWithdrawal(withdrawal.id),
-    onSuccess: async (result, action) => {
+    mutationFn: () => rejectWithdrawal(withdrawal.id, reason.trim()),
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: walletKeys.all })
-      toastSuccess(
-        action === 'reject'
-          ? t('wallet.review.rejected')
-          : t('wallet.review.transferred', {
-              amount: money(result.amount),
-              reference: result.transferReference ?? ''
-            })
-      )
+      toastSuccess(t('wallet.review.rejected'))
       onClose()
     }
   })
@@ -89,7 +78,7 @@ export function WithdrawalReviewDialog({
       setFieldError(t('wallet.admin.rejectReasonRequired'))
       return
     }
-    act.mutate('reject')
+    act.mutate()
   }
 
   const footer = (
@@ -102,21 +91,18 @@ export function WithdrawalReviewDialog({
           <Button onClick={() => setStep('reject')} variant='danger'>
             {t('wallet.admin.reject')}
           </Button>
-          <Button leftIcon={<Icon name='send_money' />} onClick={() => setStep('transfer')} variant='accent'>
+          <Link
+            className='inline-flex min-h-11 items-center gap-2 rounded-full bg-peach-300 px-5 text-sm font-semibold text-forest-950 hover:bg-peach-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900'
+            to={transferHref}
+          >
+            <Icon className='text-lg' name='send_money' />
             {t('wallet.review.transfer')}
-          </Button>
+          </Link>
         </>
       ) : null}
       {step === 'reject' ? (
         <Button loading={act.isPending} onClick={confirmReject} variant='danger'>
           {t('wallet.admin.reject')}
-        </Button>
-      ) : null}
-      {step === 'transfer' ? (
-        <Button loading={act.isPending} onClick={() => act.mutate('transfer')} variant='accent'>
-          {act.isPending
-            ? t('wallet.review.transferring')
-            : t('wallet.review.transferConfirm', { amount: money(withdrawal.amount) })}
         </Button>
       ) : null}
     </>
@@ -139,6 +125,7 @@ export function WithdrawalReviewDialog({
               <p className='text-xs text-on-surface-variant'>
                 {t(`wallet.review.requesterKinds.${withdrawal.ownerType}`)}
                 {withdrawal.ownerType === 'CENTER' ? ` · ${names.requester}` : ''}
+                {withdrawal.requesterPhoneNumber ? ` · ${withdrawal.requesterPhoneNumber}` : ''}
               </p>
             </div>
             <WithdrawalStatusBadge status={withdrawal.status} />
@@ -210,22 +197,6 @@ export function WithdrawalReviewDialog({
                 />
               )}
             </FormField>
-          ) : null}
-          {step === 'transfer' ? (
-            <div className='flex gap-3 rounded-2xl border border-peach-200 bg-peach-50 p-4 text-forest-950'>
-              <Icon className='text-xl text-peach-700' name='account_balance' />
-              <div>
-                <p className='font-semibold'>{t('wallet.review.transferTitle')}</p>
-                <p className='mt-1 text-on-surface-variant'>
-                  {t('wallet.review.transferHint', {
-                    amount: money(withdrawal.amount),
-                    bank: withdrawal.bankName,
-                    account: withdrawal.bankAccountNumber,
-                    holder: withdrawal.accountHolderName
-                  })}
-                </p>
-              </div>
-            </div>
           ) : null}
           {act.isError ? <FormAlert tone='warning'>{t(walletErrorKey(act.error))}</FormAlert> : null}
         </div>

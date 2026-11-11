@@ -16,9 +16,10 @@ const ACTION_ICONS: Record<ShiftAction, string> = {
   duplicate: 'content_copy',
   open: 'lock_open',
   close: 'lock',
-  cancel: 'event_busy'
+  cancel: 'event_busy',
+  delete: 'delete'
 }
-const ACTION_ORDER: ShiftAction[] = ['view', 'edit', 'duplicate', 'open', 'close', 'cancel']
+const ACTION_ORDER: ShiftAction[] = ['view', 'edit', 'duplicate', 'open', 'close', 'cancel', 'delete']
 
 export function useShiftMenuItems(
   onAction: (action: ShiftAction, shift: ProviderWorkShiftRecord) => void,
@@ -31,7 +32,7 @@ export function useShiftMenuItems(
       id: action,
       label: t(`${k}.actions.${action}`),
       icon: ACTION_ICONS[action],
-      tone: action === 'cancel' ? 'danger' : 'default',
+      tone: action === 'cancel' || action === 'delete' ? 'danger' : 'default',
       onSelect: () => onAction(action, shift)
     }))
   }
@@ -67,12 +68,19 @@ export function ShiftTable({
   shifts,
   now,
   onOpen,
-  onAction
+  onAction,
+  selectedIds,
+  onToggle,
+  onToggleAll
 }: {
   shifts: ProviderWorkShiftRecord[]
   now: number
   onOpen: (shift: ProviderWorkShiftRecord) => void
   onAction: (action: ShiftAction, shift: ProviderWorkShiftRecord) => void
+  /** Shifts ticked for a bulk action (this page only). */
+  selectedIds: ReadonlySet<string>
+  onToggle: (shift: ProviderWorkShiftRecord) => void
+  onToggleAll: (checked: boolean) => void
 }) {
   const { t } = useTranslation()
   const format = useFormat()
@@ -86,6 +94,15 @@ export function ShiftTable({
           <caption className='sr-only'>{t(`${k}.table.caption`)}</caption>
           <thead className='border-b border-outline-variant/40 text-xs font-semibold text-on-surface-variant'>
             <tr>
+              <th className='w-10 py-3 pl-4' scope='col'>
+                <input
+                  aria-label={t(`${k}.bulk.selectAll`)}
+                  checked={shifts.length > 0 && shifts.every((shift) => selectedIds.has(shift.id))}
+                  className='size-4 accent-primary'
+                  onChange={(event) => onToggleAll(event.target.checked)}
+                  type='checkbox'
+                />
+              </th>
               <th className='px-4 py-3' scope='col'>
                 {t(`${k}.table.date`)}
               </th>
@@ -109,10 +126,19 @@ export function ShiftTable({
           <tbody className='divide-y divide-outline-variant/30'>
             {shifts.map((shift) => (
               <tr
-                className='cursor-pointer transition-colors duration-150 hover:bg-surface-container-low/60'
+                className={`cursor-pointer transition-colors duration-150 hover:bg-surface-container-low/60 ${selectedIds.has(shift.id) ? 'bg-mint-50' : ''}`}
                 key={shift.id}
                 onClick={() => onOpen(shift)}
               >
+                <td className='py-3 pl-4' onClick={(event) => event.stopPropagation()}>
+                  <input
+                    aria-label={t(`${k}.bulk.select`, { date: format.date(shift.workDate), time: timeOf(shift) })}
+                    checked={selectedIds.has(shift.id)}
+                    className='size-4 accent-primary'
+                    onChange={() => onToggle(shift)}
+                    type='checkbox'
+                  />
+                </td>
                 <td className='px-4 py-3'>
                   <button
                     className='rounded text-left font-semibold text-on-surface hover:text-primary focus-visible:outline-2 focus-visible:outline-primary'
@@ -152,6 +178,13 @@ export function ShiftTable({
       <ul className='divide-y divide-outline-variant/30 md:hidden'>
         {shifts.map((shift) => (
           <li className='flex items-start gap-3 px-4 py-3' key={shift.id}>
+            <input
+              aria-label={t(`${k}.bulk.select`, { date: format.date(shift.workDate), time: timeOf(shift) })}
+              checked={selectedIds.has(shift.id)}
+              className='mt-1 size-4 accent-primary'
+              onChange={() => onToggle(shift)}
+              type='checkbox'
+            />
             <button
               className='min-w-0 flex-1 space-y-2 text-left focus-visible:outline-2 focus-visible:outline-primary'
               onClick={() => onOpen(shift)}

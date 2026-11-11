@@ -34,7 +34,10 @@ export function passwordStrength(value: string) {
   return met >= 3 ? 1 : 0
 }
 
-/** Password change with show / hide, a strength bar and a live checklist; success reloads the sign-in page. */
+/**
+ * Password change with show / hide, a strength bar and a live checklist (beside the fields from `lg`, below them on
+ * phones); success reloads the sign-in page.
+ */
 export function PasswordChangePanel() {
   const { t } = useTranslation()
   const [currentPassword, setCurrentPassword] = useState('')
@@ -76,38 +79,59 @@ export function PasswordChangePanel() {
         </p>
       ) : null}
 
-      <form className='mt-6 flex max-w-lg flex-col gap-5' noValidate onSubmit={submit}>
-        <PasswordField
-          autoComplete='current-password'
-          id='profile-current-password'
-          label={t('auth.security.currentPassword')}
-          onChange={setCurrentPassword}
-          value={currentPassword}
-        />
-        <div>
+      <form
+        className='mt-6 grid gap-x-8 gap-y-5 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,18rem)]'
+        noValidate
+        onSubmit={submit}
+      >
+        <div className='flex max-w-lg flex-col gap-5'>
           <PasswordField
-            autoComplete='new-password'
-            id='profile-new-password'
-            label={t('auth.security.newPassword')}
-            onChange={setNewPassword}
-            value={newPassword}
+            autoComplete='current-password'
+            id='profile-current-password'
+            label={t('auth.security.currentPassword')}
+            onChange={setCurrentPassword}
+            value={currentPassword}
           />
-          {newPassword ? (
-            <div aria-live='polite' className='mt-2.5'>
-              <div aria-hidden='true' className='grid grid-cols-4 gap-1.5'>
-                {LEVELS.map((item, index) => (
-                  <span
-                    className={`h-1.5 rounded-full transition-colors duration-200 ${index <= LEVELS.indexOf(level) ? level.bar : 'bg-surface-container'}`}
-                    key={item.id}
-                  />
-                ))}
+          <div>
+            <PasswordField
+              autoComplete='new-password'
+              id='profile-new-password'
+              label={t('auth.security.newPassword')}
+              onChange={setNewPassword}
+              value={newPassword}
+            />
+            {newPassword ? (
+              <div aria-live='polite' className='mt-2.5'>
+                <div aria-hidden='true' className='grid grid-cols-4 gap-1.5'>
+                  {LEVELS.map((item, index) => (
+                    <span
+                      className={`h-1.5 rounded-full transition-colors duration-200 ${index <= LEVELS.indexOf(level) ? level.bar : 'bg-surface-container'}`}
+                      key={item.id}
+                    />
+                  ))}
+                </div>
+                <p className={`mt-1.5 text-xs font-semibold ${level.text}`}>
+                  {t(`${key}.strength`, { level: t(`${key}.levels.${level.id}`) })}
+                </p>
               </div>
-              <p className={`mt-1.5 text-xs font-semibold ${level.text}`}>
-                {t(`${key}.strength`, { level: t(`${key}.levels.${level.id}`) })}
-              </p>
-            </div>
-          ) : null}
-          <ul aria-label={t(`${key}.rulesLabel`)} className='mt-3 grid gap-1.5 text-sm sm:grid-cols-2'>
+            ) : null}
+          </div>
+          <div>
+            <PasswordField
+              autoComplete='new-password'
+              id='profile-confirm-password'
+              label={t('auth.security.confirmPassword')}
+              onChange={setConfirmPassword}
+              value={confirmPassword}
+            />
+            {mismatch ? <p className='mt-1.5 text-sm text-error'>{t('auth.security.passwordMismatch')}</p> : null}
+          </div>
+        </div>
+        <div className='h-fit rounded-2xl bg-surface-container-low p-4'>
+          <p className='text-sm font-semibold text-on-surface' id='password-rules-title'>
+            {t(`${key}.rulesLabel`)}
+          </p>
+          <ul aria-labelledby='password-rules-title' className='mt-2.5 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-1'>
             {RULES.map((rule) => {
               const met = rule.test(newPassword)
               return (
@@ -123,17 +147,7 @@ export function PasswordChangePanel() {
             })}
           </ul>
         </div>
-        <div>
-          <PasswordField
-            autoComplete='new-password'
-            id='profile-confirm-password'
-            label={t('auth.security.confirmPassword')}
-            onChange={setConfirmPassword}
-            value={confirmPassword}
-          />
-          {mismatch ? <p className='mt-1.5 text-sm text-error'>{t('auth.security.passwordMismatch')}</p> : null}
-        </div>
-        <div className='flex justify-end border-t border-outline-variant pt-5'>
+        <div className='flex justify-end border-t border-outline-variant pt-5 lg:col-span-2'>
           <Button loading={change.isPending} type='submit'>
             {change.isPending ? t('auth.security.processing') : t('auth.security.changePassword')}
           </Button>

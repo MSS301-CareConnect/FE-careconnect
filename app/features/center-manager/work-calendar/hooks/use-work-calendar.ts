@@ -10,6 +10,7 @@ import {
 } from '~/entities/provider/provider-api'
 import type { ListCenterCaregiversParams } from '~/shared/api/generated/contracts'
 import { addDays, isoWeekday } from '~/shared/lib/format'
+import { pageSizeOf } from '~/shared/ui/pagination'
 
 export const CALENDAR_VIEWS = ['team', 'list', 'timeOff'] as const
 export type CalendarView = (typeof CALENDAR_VIEWS)[number]
@@ -20,6 +21,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/
 // ProviderService pages hold at most 100 rows; a center rarely has more shifts in one week.
 const WEEK_LIMIT = 100
 const caregiverRequest: ListCenterCaregiversParams = { page: 0, size: 100 }
+export const CALENDAR_PAGE_SIZES = [10, 20, 50] as const
 
 export function mondayOf(day: string) {
   return addDays(day, 1 - isoWeekday(day))
@@ -38,6 +40,9 @@ export function useWorkCalendar(centerId: string, today: string, now: number) {
   const sunday = addDays(monday, 6)
   const caregiverId = params.get('caregiver') ?? ''
   const scope = TIME_OFF_SCOPES.find((item) => item === params.get('scope')) ?? 'current'
+  // The list and the time-off tab are paged by ProviderService (`?page=`, `?size=`); the team grid needs the whole week.
+  const page = Math.max(0, Number(params.get('page')) || 0)
+  const size = pageSizeOf(params.get('size'), 10, CALENDAR_PAGE_SIZES)
   const weekFrom = vnInstant(monday, '00:00')
   const weekTo = vnInstant(addDays(monday, 7), '00:00')
 
@@ -61,6 +66,14 @@ export function useWorkCalendar(centerId: string, today: string, now: number) {
     placeholderData: keepPreviousData,
     retry: false
   })
+  const scheduleListRequest = { ...scheduleRequest, page, size }
+  const scheduleList = useQuery({
+    queryKey: [...providerKeys.centerSchedules(centerId), 'list', scheduleListRequest],
+    queryFn: () => fetchCenterSchedules(centerId, scheduleListRequest),
+    enabled: Boolean(centerId) && view === 'list',
+    placeholderData: keepPreviousData,
+    retry: false
+  })
   const weekTimeOffRequest = { from: weekFrom, to: weekTo, caregiverId: caregiverId || undefined, size: WEEK_LIMIT }
   const weekTimeOffs = useQuery({
     queryKey: [...providerKeys.centerTimeOffs(centerId), weekTimeOffRequest],
@@ -78,12 +91,12 @@ export function useWorkCalendar(centerId: string, today: string, now: number) {
     enabled: Boolean(centerId),
     retry: false
   })
-  const timeOffRequest =
-    scope === 'week'
-      ? weekTimeOffRequest
-      : scope === 'past'
-        ? { to: nowIso, caregiverId: caregiverId || undefined, size: WEEK_LIMIT }
-        : { from: nowIso, caregiverId: caregiverId || undefined, size: WEEK_LIMIT }
+  const timeOffRequest = {
+    ...(scope === 'week' ? { from: weekFrom, to: weekTo } : scope === 'past' ? { to: nowIso } : { from: nowIso }),
+    caregiverId: caregiverId || undefined,
+    page,
+    size
+  }
   const timeOffs = useQuery({
     queryKey: [...providerKeys.centerTimeOffs(centerId), 'tab', timeOffRequest],
     queryFn: () => fetchCenterTimeOffs(centerId, timeOffRequest),
@@ -92,7 +105,7 @@ export function useWorkCalendar(centerId: string, today: string, now: number) {
     retry: false
   })
 
-  function update(values: Partial<Record<'view' | 'week' | 'caregiver' | 'scope', string>>) {
+  function update(values: Partial<Record<'view' | 'week' | 'caregiver' | 'scope' | 'page' | 'size', string>>) {
     setParams(
       (previous) => {
         const next = new URLSearchParams(previous)
@@ -100,6 +113,8 @@ export function useWorkCalendar(centerId: string, today: string, now: number) {
           if (value) next.set(name, value)
           else next.delete(name)
         }
+        // Any other change starts again from the first page.
+        if (!('page' in values)) next.delete('page')
         return next
       },
       { replace: true }
@@ -117,11 +132,16 @@ export function useWorkCalendar(centerId: string, today: string, now: number) {
     weekTimeOffs,
     leaveNow,
     timeOffs,
+    scheduleList,
+    page,
+    size,
     truncated: (schedules.data?.totalElements ?? 0) > (schedules.data?.items.length ?? 0),
     setView: (value: CalendarView) => update({ view: value === 'team' ? '' : value }),
     setWeek: (day: string) => update({ week: mondayOf(day) === mondayOf(today) ? '' : mondayOf(day) }),
     setCaregiver: (value: string) => update({ caregiver: value }),
-    setScope: (value: TimeOffScope) => update({ scope: value === 'current' ? '' : value })
+    setScope: (value: TimeOffScope) => update({ scope: value === 'current' ? '' : value }),
+    setPage: (value: number) => update({ page: value > 0 ? String(value) : '' }),
+    setSize: (value: number) => update({ size: value === 10 ? '' : String(value) })
   }
 }
 

@@ -57,7 +57,28 @@ export const managerWorkShiftsVi = {
     deadline: 'Hạn đăng ký {{value}}',
     total: '{{count}} ca'
   },
+  bulk: {
+    selectAll: 'Chọn tất cả ca trong trang',
+    select: 'Chọn ca {{date}} {{time}}',
+    selected: 'Đã chọn {{count}} ca',
+    clear: 'Bỏ chọn',
+    open: 'Mở đăng ký',
+    close: 'Đóng đăng ký',
+    delete: 'Xóa',
+    deleteTitle: 'Xóa {{count}} ca đã chọn?',
+    deleteHint: 'Chỉ xóa được ca chưa có người được duyệt; ca không đủ điều kiện sẽ được bỏ qua.',
+    done: 'Đã xử lý {{count}} ca',
+    partly: 'Đã xử lý {{done}} ca, bỏ qua {{skipped}} ca không đủ điều kiện hoặc lỗi'
+  },
+  remove: {
+    title: 'Xóa ca {{date}}?',
+    hint: 'Ca bị xóa khỏi danh sách và các lượt đăng ký đang chờ sẽ bị hủy. Không hoàn tác được.',
+    confirm: 'Xóa ca',
+    success: 'Đã xóa ca {{date}}',
+    hasApproved: 'Ca đã có người được duyệt nên không xóa được. Hãy hủy ca kèm lý do.'
+  },
   actions: {
+    delete: 'Xóa ca',
     view: 'Xem chi tiết',
     edit: 'Sửa ca',
     duplicate: 'Nhân bản',
@@ -320,7 +341,28 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
     deadline: 'Sign-up closes {{value}}',
     total: '{{count}} shifts'
   },
+  bulk: {
+    selectAll: 'Select every shift on this page',
+    select: 'Select the shift on {{date}} {{time}}',
+    selected: '{{count}} shifts selected',
+    clear: 'Clear selection',
+    open: 'Open sign-up',
+    close: 'Close sign-up',
+    delete: 'Delete',
+    deleteTitle: 'Delete the {{count}} selected shifts?',
+    deleteHint: 'Only shifts without an approved caregiver can be deleted; the others are skipped.',
+    done: '{{count}} shifts updated',
+    partly: '{{done}} shifts updated, {{skipped}} skipped (not allowed or failed)'
+  },
+  remove: {
+    title: 'Delete the shift on {{date}}?',
+    hint: 'The shift leaves the list and its waiting sign-ups are cancelled. This cannot be undone.',
+    confirm: 'Delete shift',
+    success: 'Shift on {{date}} deleted',
+    hasApproved: 'This shift has an approved caregiver and cannot be deleted. Cancel it with a reason instead.'
+  },
   actions: {
+    delete: 'Delete shift',
     view: 'View details',
     edit: 'Edit shift',
     duplicate: 'Duplicate',

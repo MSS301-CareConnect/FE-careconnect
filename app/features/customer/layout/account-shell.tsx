@@ -10,14 +10,16 @@ import { pageContainer } from '~/shared/ui/page-header'
 
 type Section = 'personal' | 'security' | 'relatives' | 'payments' | 'wallet' | 'invitations' | 'notifications'
 
-const SECTIONS: { id: Section; to: string; icon: string }[] = [
-  { id: 'personal', to: '/customer/my-profile', icon: 'person' },
-  { id: 'security', to: '/customer/my-profile?section=security', icon: 'lock' },
-  { id: 'relatives', to: '/customer/patient-profiles', icon: 'family_restroom' },
-  { id: 'payments', to: '/customer/payments', icon: 'payments' },
-  { id: 'wallet', to: '/customer/wallet', icon: 'account_balance_wallet' },
-  { id: 'invitations', to: '/customer/invitations', icon: 'mail' },
-  { id: 'notifications', to: '/customer/notifications', icon: 'notifications' }
+type Group = 'account' | 'finance' | 'updates'
+
+const SECTIONS: { id: Section; to: string; icon: string; group: Group }[] = [
+  { id: 'personal', to: '/customer/my-profile', icon: 'person', group: 'account' },
+  { id: 'security', to: '/customer/my-profile?section=security', icon: 'lock', group: 'account' },
+  { id: 'relatives', to: '/customer/patient-profiles', icon: 'family_restroom', group: 'account' },
+  { id: 'payments', to: '/customer/payments', icon: 'payments', group: 'finance' },
+  { id: 'wallet', to: '/customer/wallet', icon: 'account_balance_wallet', group: 'finance' },
+  { id: 'invitations', to: '/customer/invitations', icon: 'mail', group: 'updates' },
+  { id: 'notifications', to: '/customer/notifications', icon: 'notifications', group: 'updates' }
 ]
 
 function activeSection(pathname: string, search: string): Section | null {
@@ -48,7 +50,7 @@ export function CustomerAccountShell({ children }: { children: ReactNode }) {
   const pending = invitations.data?.length ?? 0
 
   return (
-    <div className={`${pageContainer} pb-16 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8`}>
+    <div className={`${pageContainer} pb-16 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:gap-8`}>
       <nav
         aria-label={t('customer.accountArea.label')}
         className='-mx-4 px-4 pt-4 sm:-mx-6 sm:px-6 lg:sticky lg:top-24 lg:mx-0 lg:mt-8 lg:self-start lg:rounded-3xl lg:border lg:border-forest-900/[0.06] lg:bg-white/80 lg:p-3 lg:shadow-[var(--shadow-card)] lg:backdrop-blur'
@@ -57,10 +59,18 @@ export function CustomerAccountShell({ children }: { children: ReactNode }) {
           {t('customer.accountArea.title')}
         </p>
         <ul className='cc-no-scrollbar flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0'>
-          {SECTIONS.map((section) => {
+          {SECTIONS.map((section, index) => {
             const active = section.id === current
+            const startsGroup = index === 0 || SECTIONS[index - 1].group !== section.group
             return (
-              <li className='shrink-0' key={section.id}>
+              <li className='shrink-0 lg:shrink' key={section.id}>
+                {startsGroup ? (
+                  <p
+                    className={`hidden px-3.5 pb-1 text-[11px] font-bold tracking-wide text-on-surface-variant uppercase lg:block ${index === 0 ? '' : 'mt-2 border-t border-forest-900/[0.06] pt-3'}`}
+                  >
+                    {t(`customer.accountArea.groups.${section.group}`)}
+                  </p>
+                ) : null}
                 <Link
                   aria-current={active ? 'page' : undefined}
                   className={`relative flex min-h-11 items-center gap-2.5 rounded-full px-3.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-forest-900 lg:rounded-2xl ${active ? 'font-semibold text-white' : 'text-on-surface-variant max-lg:bg-white/70 max-lg:ring-1 max-lg:ring-forest-900/5 hover:bg-mint-50 hover:text-forest-900'}`}
@@ -79,7 +89,7 @@ export function CustomerAccountShell({ children }: { children: ReactNode }) {
                     filled={active}
                     name={section.icon}
                   />
-                  <span className='relative'>{t(`customer.accountArea.${section.id}`)}</span>
+                  <span className='relative min-w-0 lg:truncate'>{t(`customer.accountArea.${section.id}`)}</span>
                   {section.id === 'invitations' && pending > 0 ? (
                     <span
                       aria-label={t('customer.accountArea.pendingInvitations', { count: pending })}

@@ -58,6 +58,9 @@ import type {
   BookingRecurrenceFrequency,
   BookingRefundRecord,
   BookingServiceRequest,
+  BookingSettlementOccurrenceRecord,
+  BookingSettlementRecord,
+  BookingSettlementResponse,
   BookingSlotRequest,
   BookingSnapshotEmergencyContactRecord,
   BookingSnapshotMedicationRecord,
@@ -96,8 +99,11 @@ import type {
   CareReportResponse,
   CareSessionEndRequest,
   CareSessionForceEndRequest,
+  CareSessionPage,
+  CareSessionPageResponse,
   CareSessionRecord,
   CareSessionResponse,
+  CareSessionReviewRequest,
   CareSessionStartRequest,
   CareTaskCreateRequest,
   CareTaskRecord,
@@ -190,6 +196,8 @@ import type {
   CsrfResponse,
   CsrfToken,
   CurrentUserResponse,
+  CustomerVisitReportRequest,
+  CustomerVisitReportResponse,
   DepositForfeiturePage,
   DepositForfeiturePageResponse,
   DepositForfeitureRecord,
@@ -237,6 +245,7 @@ import type {
   NotificationsUpdatedRecord,
   NotificationsUpdatedResponse,
   OccurrenceAcknowledgementRequest,
+  OccurrenceFinalStatus,
   OccurrenceServiceRecord,
   OccurrenceStatisticsRecord,
   OccurrenceStatus,
@@ -266,6 +275,8 @@ import type {
   PricePlanBatchUpdateRequest,
   PricePlanDraft,
   PricePlanListResponse,
+  PricePlanPage,
+  PricePlanPageResponse,
   PricePlanRecord,
   PricePlanRequest,
   PricePlanResponse,
@@ -376,7 +387,9 @@ import type {
   ServiceQuoteListResponse,
   ServiceQuoteRecord,
   ServiceQuoteRequest,
+  SessionCompletionReview,
   SessionListResponse,
+  SessionLocationFlag,
   SessionNotePage,
   SessionNotePageResponse,
   SessionNoteRecord,
@@ -394,6 +407,7 @@ import type {
   UnreadCountRecord,
   UnreadCountResponse,
   UpdateProfileRequest,
+  UpdateRoleRequest,
   UserListResponse,
   UserPage,
   UserResponse,
@@ -608,6 +622,8 @@ export const getWalletWithdrawalRecordMock = (
   id: faker.string.uuid(),
   walletId: faker.string.uuid(),
   requesterUserId: faker.string.uuid(),
+  requesterName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), null]),
+  requesterPhoneNumber: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), null]),
   ownerType: getWalletOwnerTypeMock(),
   centerId: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.uuid(), null]), undefined]),
   amount: faker.number.float({ fractionDigits: 2 }),
@@ -762,6 +778,65 @@ export const getWalletTransactionPageResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getWalletTransactionPageMock() },
+  ...overrideResponse
+})
+
+export const getOccurrenceFinalStatusMock = (): OccurrenceFinalStatus =>
+  faker.helpers.arrayElement(['COMPLETED', 'CANCELLED', 'MISSED', 'CUSTOMER_NO_SHOW'] as const)
+
+export const getBookingSettlementOccurrenceRecordMock = (
+  overrideResponse: Partial<BookingSettlementOccurrenceRecord> = {}
+): BookingSettlementOccurrenceRecord => ({
+  occurrenceId: faker.string.uuid(),
+  startAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+  priceAmount: faker.number.float({ fractionDigits: 2 }),
+  paidAmount: faker.number.float({ fractionDigits: 2 }),
+  refundedAmount: faker.number.float({ fractionDigits: 2 }),
+  keptDepositAmount: faker.number.float({ fractionDigits: 2 }),
+  centerAmount: faker.number.float({ fractionDigits: 2 }),
+  commissionAmount: faker.number.float({ fractionDigits: 2 }),
+  finalStatus: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([getOccurrenceFinalStatusMock(), null]),
+    undefined
+  ]),
+  settledAt: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', null]),
+    undefined
+  ]),
+  ...overrideResponse
+})
+
+export const getBookingSettlementRecordMock = (
+  overrideResponse: Partial<BookingSettlementRecord> = {}
+): BookingSettlementRecord => ({
+  bookingId: faker.string.uuid(),
+  centerId: faker.string.uuid(),
+  commissionPercent: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), null]),
+    undefined
+  ]),
+  paidAmount: faker.number.float({ fractionDigits: 2 }),
+  refundedAmount: faker.number.float({ fractionDigits: 2 }),
+  centerServiceAmount: faker.number.float({ fractionDigits: 2 }),
+  centerKeptDepositAmount: faker.number.float({ fractionDigits: 2 }),
+  caregiverKeptDepositAmount: faker.number.float({ fractionDigits: 2 }),
+  complaintDebitAmount: faker.number.float({ fractionDigits: 2 }),
+  centerNetAmount: faker.number.float({ fractionDigits: 2 }),
+  commissionAmount: faker.number.float({ fractionDigits: 2 }),
+  settledCount: faker.number.int(),
+  pendingCount: faker.number.int(),
+  occurrences: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getBookingSettlementOccurrenceRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getBookingSettlementResponseMock = (
+  overrideResponse: Partial<BookingSettlementResponse> = {}
+): BookingSettlementResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingSettlementRecordMock() },
   ...overrideResponse
 })
 
@@ -1923,6 +1998,13 @@ export const getCreateRoleRequestMock = (overrideResponse: Partial<CreateRoleReq
   ...overrideResponse
 })
 
+export const getUpdateRoleRequestMock = (overrideResponse: Partial<UpdateRoleRequest> = {}): UpdateRoleRequest => ({
+  roleName: faker.string.alpha({ length: { min: 1, max: 20 } }),
+  description: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  active: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  ...overrideResponse
+})
+
 export const getSetRolePermissionsRequestMock = (
   overrideResponse: Partial<SetRolePermissionsRequest> = {}
 ): SetRolePermissionsRequest => ({
@@ -2471,6 +2553,26 @@ export const getPricePlanResponseMock = (overrideResponse: Partial<PricePlanResp
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getPricePlanRecordMock() },
+  ...overrideResponse
+})
+
+export const getPricePlanPageMock = (overrideResponse: Partial<PricePlanPage> = {}): PricePlanPage => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getPricePlanRecordMock()
+  })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getPricePlanPageResponseMock = (
+  overrideResponse: Partial<PricePlanPageResponse> = {}
+): PricePlanPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPricePlanPageMock() },
   ...overrideResponse
 })
 
@@ -3348,7 +3450,9 @@ export const getNotificationTypeMock = (): NotificationType =>
     'CHECK_IN_LATE',
     'CAREGIVER_ABSENCE_UPDATED',
     'WALLET_WITHDRAWAL_COMPLETED',
-    'WALLET_WITHDRAWAL_REJECTED'
+    'WALLET_WITHDRAWAL_REJECTED',
+    'SESSION_LOCATION_FLAGGED',
+    'CUSTOMER_VISIT_REPORT'
   ] as const)
 
 export const getOutboxStatusMock = (): OutboxStatus =>
@@ -3790,6 +3894,23 @@ export const getBookingOccurrenceRecordMock = (
     ] as const),
     undefined
   ]),
+  customerReportedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  ...overrideResponse
+})
+
+export const getCustomerVisitReportRequestMock = (
+  overrideResponse: Partial<CustomerVisitReportRequest> = {}
+): CustomerVisitReportRequest => ({
+  note: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 1000 } }), undefined]),
+  ...overrideResponse
+})
+
+export const getCustomerVisitReportResponseMock = (
+  overrideResponse: Partial<CustomerVisitReportResponse> = {}
+): CustomerVisitReportResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getBookingOccurrenceRecordMock() },
   ...overrideResponse
 })
 
@@ -4296,6 +4417,12 @@ export const getCareTaskRecordMock = (overrideResponse: Partial<CareTaskRecord> 
   ...overrideResponse
 })
 
+export const getSessionLocationFlagMock = (): SessionLocationFlag =>
+  faker.helpers.arrayElement(['NO_LOCATION', 'OUT_OF_RANGE'] as const)
+
+export const getSessionCompletionReviewMock = (): SessionCompletionReview =>
+  faker.helpers.arrayElement(['PENDING', 'CONFIRMED', 'NOT_DELIVERED'] as const)
+
 export const getCareSessionRecordMock = (overrideResponse: Partial<CareSessionRecord> = {}): CareSessionRecord => ({
   sessionId: faker.string.uuid(),
   occurrenceId: faker.string.uuid(),
@@ -4307,12 +4434,53 @@ export const getCareSessionRecordMock = (overrideResponse: Partial<CareSessionRe
   endedBy: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   endReason: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
   autoClosed: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  lateMinutes: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  earlyLeaveMinutes: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  checkInDistanceMeters: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  locationFlag: faker.helpers.arrayElement([getSessionLocationFlagMock(), undefined]),
+  completionReview: faker.helpers.arrayElement([getSessionCompletionReviewMock(), undefined]),
+  reviewedAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  reviewNote: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  customerReportNote: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  bookingCode: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  recipientName: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), undefined]),
+  occurrenceNo: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  startAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  endAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   tasks: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
       ...getCareTaskRecordMock()
     })),
     undefined
   ]),
+  ...overrideResponse
+})
+
+export const getCareSessionReviewRequestMock = (
+  overrideResponse: Partial<CareSessionReviewRequest> = {}
+): CareSessionReviewRequest => ({
+  delivered: faker.datatype.boolean(),
+  note: faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 1000 } }), undefined]),
+  ...overrideResponse
+})
+
+export const getCareSessionPageMock = (overrideResponse: Partial<CareSessionPage> = {}): CareSessionPage => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getCareSessionRecordMock()
+  })),
+  page: faker.number.int(),
+  size: faker.number.int(),
+  totalElements: faker.number.int(),
+  totalPages: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCareSessionPageResponseMock = (
+  overrideResponse: Partial<CareSessionPageResponse> = {}
+): CareSessionPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getCareSessionPageMock() },
   ...overrideResponse
 })
 
@@ -4922,7 +5090,7 @@ export const getCaregiverAbsenceStatusMock = (): CaregiverAbsenceStatus =>
   faker.helpers.arrayElement(['PENDING', 'EXCUSED', 'CONFIRMED'] as const)
 
 export const getCaregiverAbsenceSourceMock = (): CaregiverAbsenceSource =>
-  faker.helpers.arrayElement(['MISSED_CHECK_IN', 'NO_SHOW_REPORT_REJECTED'] as const)
+  faker.helpers.arrayElement(['MISSED_CHECK_IN', 'NO_SHOW_REPORT_REJECTED', 'SESSION_NOT_DELIVERED'] as const)
 
 export const getCaregiverAbsenceExplanationRequestMock = (
   overrideResponse: Partial<CaregiverAbsenceExplanationRequest> = {}

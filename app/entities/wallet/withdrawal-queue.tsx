@@ -231,6 +231,7 @@ export function WithdrawalQueue({ portal }: { portal: 'admin' | 'manager' }) {
           names={namesOf(selected)}
           onClose={() => update({ withdrawal: undefined })}
           showWallet={portal === 'admin'}
+          transferHref={`${portal === 'admin' ? '/admin' : '/center-manager'}/withdrawals/${selected.id}/transfer`}
           withdrawal={selected}
         />
       ) : null}

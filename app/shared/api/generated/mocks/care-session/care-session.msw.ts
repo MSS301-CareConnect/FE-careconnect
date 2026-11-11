@@ -9,6 +9,7 @@ import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
 import type {
+  CareSessionPageResponse,
   CareSessionResponse,
   CareTaskResponse,
   SessionNotePageResponse,
@@ -22,20 +23,50 @@ import {
   getForceEndCareSessionResponseMock,
   getGetCareSessionResponseMock,
   getListCareSessionNotesResponseMock,
+  getListCareSessionsForReviewResponseMock,
+  getReviewCareSessionResponseMock,
   getStartCareSessionResponseMock,
   getUpdateCareSessionTaskResponseMock
 } from './care-session.faker'
 
 export {
+  getListCareSessionsForReviewResponseMock,
   getStartCareSessionResponseMock,
   getGetCareSessionResponseMock,
   getEndCareSessionResponseMock,
+  getReviewCareSessionResponseMock,
   getForceEndCareSessionResponseMock,
   getCreateCareSessionTaskResponseMock,
   getUpdateCareSessionTaskResponseMock,
   getListCareSessionNotesResponseMock,
   getCreateCareSessionNoteResponseMock
 } from './care-session.faker'
+
+export const getListCareSessionsForReviewMockHandler = (
+  overrideResponse?:
+    | CareSessionPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<CareSessionPageResponse> | CareSessionPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/care-sessions',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListCareSessionsForReviewResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 
 export const getStartCareSessionMockHandler = (
   overrideResponse?:
@@ -102,6 +133,30 @@ export const getEndCareSessionMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getEndCareSessionResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getReviewCareSessionMockHandler = (
+  overrideResponse?:
+    | CareSessionResponse
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CareSessionResponse> | CareSessionResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.post(
+    '*/v1/care-sessions/:id/review',
+    async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getReviewCareSessionResponseMock(),
         { status: 200 }
       )
     },
@@ -231,9 +286,11 @@ export const getCreateCareSessionNoteMockHandler = (
   )
 }
 export const getCareSessionMock = () => [
+  getListCareSessionsForReviewMockHandler(),
   getStartCareSessionMockHandler(),
   getGetCareSessionMockHandler(),
   getEndCareSessionMockHandler(),
+  getReviewCareSessionMockHandler(),
   getForceEndCareSessionMockHandler(),
   getCreateCareSessionTaskMockHandler(),
   getUpdateCareSessionTaskMockHandler(),

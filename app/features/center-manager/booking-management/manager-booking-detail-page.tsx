@@ -32,6 +32,7 @@ import { SectionCard } from '~/shared/ui/section-card'
 import { ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
+import { BookingSettlementCard } from '~/entities/wallet/booking-settlement-card'
 import { BentoPageHeader } from '~/shared/ui/bento-page-header'
 import { CaregiverAssignDialog } from './components/caregiver-assign-dialog'
 import { ManagerBookingActionDialog } from './components/manager-booking-action-dialog'
@@ -307,13 +308,14 @@ export function ManagerBookingDetailPage() {
               services={data.services}
             />
           </SectionCard>
+          <BookingSettlementCard bookingId={data.id} />
           {data.recipientSnapshot ? (
             <SectionCard icon='personal_injury' title={t(`${k}.patient`)}>
               <BookingRecipientSnapshot snapshot={data.recipientSnapshot} />
             </SectionCard>
           ) : null}
           <SectionCard icon='history' title={t(`${k}.history`)}>
-            <BookingHistoryList bookingId={data.id} />
+            <BookingHistoryList bookingId={data.id} collapsedCount={4} />
           </SectionCard>
         </div>
         <ManagerBookingSummary booking={data} />

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import { fetchPublicCenter, fetchPublicCenters, providerKeys } from '~/entities/provider/provider-api'
 import type { PublicCenterRecord } from '~/shared/api/generated/contracts'
@@ -52,6 +52,23 @@ export function useServiceCenters({ enabled = true }: { enabled?: boolean } = {}
     retry: false,
     staleTime: 5 * 60_000,
     enabled
+  })
+}
+
+/**
+ * One page of the public directory, searched on the server (`keyword` matches name or address, diacritics ignored by
+ * ProviderService since 2026-11-11). The center directory page uses this; pickers keep the whole list above.
+ */
+export function useServiceCentersPage(params: { page: number; size: number; keyword?: string }) {
+  return useQuery({
+    queryKey: [...providerKeys.publicCenters, 'page', params],
+    queryFn: async () => {
+      const result = await fetchPublicCenters(params)
+      return { ...result, items: result.items.map(toOption) }
+    },
+    placeholderData: keepPreviousData,
+    retry: false,
+    staleTime: 60_000
   })
 }
 

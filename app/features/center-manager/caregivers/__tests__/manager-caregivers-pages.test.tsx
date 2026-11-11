@@ -163,7 +163,7 @@ describe('Center Manager Provider caregivers', () => {
     expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
     expect(fetchCaregivers).toHaveBeenCalledWith('center-1', {
       page: 0,
-      size: 20,
+      size: 10,
       verification: undefined,
       status: undefined
     })

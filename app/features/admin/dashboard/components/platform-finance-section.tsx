@@ -21,7 +21,8 @@ const key = 'admin.dashboardPage' as const
 
 /**
  * Platform money of the period: what customers paid and what was refunded (`/payments/revenue` without a center = the
- * whole platform), the commission series and what the platform holds for others (platform wallet statistics).
+ * whole platform), the commission series and the wallet balances still owed to customers and caregivers (platform
+ * revenue statistics). Revenue only since 2026-11-11: no platform balance, and a center ledger is revenue, not a debt.
  */
 export function PlatformFinanceSection({ range }: { range: InsightRange }) {
   const { t, i18n } = useTranslation()
@@ -56,7 +57,7 @@ export function PlatformFinanceSection({ range }: { range: InsightRange }) {
   const data = revenue.data
   const platform = wallet.data
   const held = (platform.liabilities ?? [])
-    .filter((row) => row.ownerType !== 'PLATFORM')
+    .filter((row) => row.ownerType === 'CUSTOMER' || row.ownerType === 'CAREGIVER')
     .reduce((sum, row) => sum + row.availableBalance + row.heldBalance, 0)
   const points = platform.series.map((point) => ({
     key: point.period,
@@ -90,7 +91,7 @@ export function PlatformFinanceSection({ range }: { range: InsightRange }) {
         />
         <KpiTile
           format={(value) => money(value)}
-          hint={t(`${key}.kpis.commissionHint`, { amount: money(platform.availableBalance) })}
+          hint={t(`${key}.kpis.commissionHint`, { count: platform.bookingCount })}
           icon='percent'
           label={t(`${key}.kpis.commission`)}
           tone='mint'
@@ -115,9 +116,9 @@ export function PlatformFinanceSection({ range }: { range: InsightRange }) {
           action={
             <Link
               className='inline-flex min-h-9 items-center gap-1 rounded-full bg-mint-50 px-3 text-xs font-semibold text-forest-800 hover:bg-mint-100'
-              to='/admin/wallet'
+              to='/admin/revenue'
             >
-              {t(`${key}.finance.viewWallet`)}
+              {t(`${key}.finance.viewRevenue`)}
               <Icon className='text-base' name='arrow_forward' />
             </Link>
           }

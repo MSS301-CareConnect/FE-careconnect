@@ -190,14 +190,14 @@ export const bookingEn = {
       frequency: 'How often',
       startDate: 'From',
       endDate: 'To',
-      startTime: 'Start',
-      endTime: 'End',
       weekdays: 'On these days',
       noVisits: 'No visit falls in this range. Widen the dates or pick other days.',
       listLegend: 'Visits from this pattern',
-      listHint: 'Change the time of a visit, remove a day off or add a visit within the dates above.',
-      edited: 'You edited the list, so changing the pattern no longer rebuilds it.',
-      regenerate: 'Rebuild from the pattern',
+      listHint: 'Change a time, remove a day off or add a day within the dates above.',
+      build_one: 'Create {{count}} visit',
+      build_other: 'Create {{count}} visits',
+      rebuild_one: 'Create {{count}} visit again (replaces the {{existing}} listed)',
+      rebuild_other: 'Create {{count}} visits again (replaces the {{existing}} listed)',
       outsideRange: 'Outside the dates of the pattern.'
     },
     custom: {
@@ -206,10 +206,13 @@ export const bookingEn = {
       date: 'Date',
       start: 'Start',
       end: 'End',
-      visit: 'Visit {{number}}',
-      duplicate: 'Duplicate visit {{number}}',
-      remove: 'Remove visit {{number}}',
-      add: 'Add a visit',
+      dayVisits_one: '{{count}} service',
+      dayVisits_other: '{{count}} services',
+      duplicateDay: 'Copy {{day}} to the next free day',
+      removeDay: 'Remove {{day}}',
+      remove: 'Remove {{service}} on {{day}}',
+      addDay: 'Add a day',
+      addService: 'Add {{service}}',
       overlap: 'Overlaps another visit.',
       missingDate: 'Choose a date.',
       service: 'Service',
@@ -218,13 +221,12 @@ export const bookingEn = {
       planFixed: '{{plan}} needs a visit of exactly {{duration}}.',
       planMinimum: '{{plan}} needs a visit of at least {{duration}}.',
       planFix: 'End at {{time}}',
-      multiHint: 'Each visit does one service; visits must not overlap.',
-      assignService: 'Service for the {{count}} chosen visits',
+      multiHint: 'Each visit does one service; a day does at least one of them and visits must not overlap.',
       withoutVisit: 'No visit yet for: {{names}}',
-      empty: 'No visit yet. Add one or use quick add.',
+      empty: 'No visit yet. Use quick add or add a day.',
       quickAdd: {
         title: 'Quick add',
-        description: 'Add many visits at once from a daily or weekly pattern.',
+        description: 'Add many visits at once: pick the days, then the time of each service.',
         submit_one: 'Add {{count}} visit',
         submit_other: 'Add {{count}} visits',
         nothing: 'No new visit: the pattern is empty or every visit is already in the list.',
@@ -234,25 +236,61 @@ export const bookingEn = {
       }
     },
     bulk: {
-      label: 'Edit the chosen visits',
-      chooseAll: 'Choose all visits',
-      choose: 'Choose visit {{number}}',
-      selected_one: '{{count}} visit chosen',
-      selected_other: '{{count}} visits chosen',
+      label: 'Edit the chosen days',
+      chooseAll: 'Choose all days',
+      choose: 'Choose {{day}}',
+      selected_one: '{{count}} day chosen',
+      selected_other: '{{count}} days chosen',
       start: 'Start',
       end: 'End',
-      apply_one: 'Set time for {{count}} visit',
-      apply_other: 'Set time for {{count}} visits',
-      remove_one: 'Remove {{count}} visit',
-      remove_other: 'Remove {{count}} visits',
+      apply: 'Set the time',
+      remove_one: 'Remove {{count}} day',
+      remove_other: 'Remove {{count}} days',
       clear: 'Clear choice'
     },
+    clearAll: {
+      action: 'Remove all',
+      title: 'Remove every day?',
+      description:
+        'The {{days}} days and their {{count}} visits leave the list. You can build them again with the pattern or quick add above.',
+      confirm: 'Remove all days'
+    },
+    pattern: {
+      timesLegend: 'Time of each service',
+      timesHint: 'The visit is done at this time on every day above.',
+      timesHintMulti:
+        'Tick the services done on each day above (at least one) and set the time of each; they must not overlap.',
+      planFixed: '{{plan}} · each visit lasts {{duration}}',
+      planMinimum: '{{plan}} · at least {{duration}}',
+      overlap: 'Overlaps another service of the same day.',
+      noService: 'Tick at least one service.',
+      preview_one: 'Makes {{count}} visit over {{days}} days.',
+      preview_other: 'Makes {{count}} visits over {{days}} days.',
+      tooMany: 'A booking holds at most {{max}} visits: shorten the dates or pick fewer days or services.',
+      checking: 'Checking the schedule of {{name}}…',
+      blocked_one: '{{count}} visit cannot be booked: change the time or the days, or skip it.',
+      blocked_other: '{{count}} visits cannot be booked: change the time or the days, or skip them.',
+      skip_one: 'Skip {{skipped}}, use the other {{count}} visit',
+      skip_other: 'Skip {{skipped}}, use the other {{count}} visits',
+      moreDates: '{{dates}} and {{count}} more',
+      snag: {
+        tooEarly: '{{dates}}: too soon, book at least {{duration}} ahead.',
+        busy: '{{dates}}: {{name}} already has another booking at this time.',
+        buffer: '{{dates}}: too close to another booking of {{name}}, keep {{buffer}} free for travel.'
+      }
+    },
+    busy: {
+      summary_one:
+        '{{count}} visit clashes with another booking of {{name}} (they also need {{buffer}} between bookings to travel).',
+      summary_other:
+        '{{count}} visits clash with other bookings of {{name}} (they also need {{buffer}} between bookings to travel).',
+      removeAll_one: 'Remove the clashing visit',
+      removeAll_other: 'Remove the {{count}} clashing visits',
+      row: '{{name}} already has another booking at this time.',
+      bufferRow: 'Too close to another booking of {{name}}: keep {{buffer}} free for travel.'
+    },
     duration: {
-      mismatch_one:
-        'Most visits last {{usual}}, but {{count}} visit lasts differently. Check it if that was not on purpose.',
-      mismatch_other:
-        'Most visits last {{usual}}, but {{count}} visits last differently. Check them if that was not on purpose.',
-      rowDiffers: 'Lasts {{duration}}, the others {{usual}}.',
+      rowDiffers: 'Lasts {{duration}}, the other visits of this service {{usual}}.',
       fix: 'Set to {{usual}}'
     },
     invalidTime: 'The end must be after the start.',
@@ -558,14 +596,14 @@ export const bookingVi = {
       frequency: 'Tần suất',
       startDate: 'Từ ngày',
       endDate: 'Đến ngày',
-      startTime: 'Bắt đầu',
-      endTime: 'Kết thúc',
       weekdays: 'Vào các thứ',
       noVisits: 'Không có buổi nào trong khoảng này. Hãy mở rộng ngày hoặc chọn thứ khác.',
       listLegend: 'Các buổi theo lịch lặp',
-      listHint: 'Có thể đổi giờ từng buổi, xóa ngày nghỉ hoặc thêm buổi trong khoảng ngày ở trên.',
-      edited: 'Bạn đã chỉnh danh sách nên đổi lịch lặp sẽ không tạo lại các buổi.',
-      regenerate: 'Tạo lại theo lịch lặp',
+      listHint: 'Có thể đổi giờ, xóa ngày nghỉ hoặc thêm ngày trong khoảng ngày ở trên.',
+      build_one: 'Tạo {{count}} buổi',
+      build_other: 'Tạo {{count}} buổi',
+      rebuild_one: 'Tạo lại {{count}} buổi (thay {{existing}} buổi hiện có)',
+      rebuild_other: 'Tạo lại {{count}} buổi (thay {{existing}} buổi hiện có)',
       outsideRange: 'Nằm ngoài khoảng ngày của lịch lặp.'
     },
     custom: {
@@ -574,10 +612,13 @@ export const bookingVi = {
       date: 'Ngày',
       start: 'Bắt đầu',
       end: 'Kết thúc',
-      visit: 'Buổi {{number}}',
-      duplicate: 'Nhân bản buổi {{number}}',
-      remove: 'Xóa buổi {{number}}',
-      add: 'Thêm buổi',
+      dayVisits_one: '{{count}} dịch vụ',
+      dayVisits_other: '{{count}} dịch vụ',
+      duplicateDay: 'Sao chép {{day}} sang ngày trống kế tiếp',
+      removeDay: 'Xóa {{day}}',
+      remove: 'Bỏ {{service}} ngày {{day}}',
+      addDay: 'Thêm ngày',
+      addService: 'Thêm {{service}}',
       overlap: 'Trùng giờ với buổi khác.',
       missingDate: 'Hãy chọn ngày.',
       service: 'Dịch vụ',
@@ -586,13 +627,12 @@ export const bookingVi = {
       planFixed: '{{plan}} cần buổi dài đúng {{duration}}.',
       planMinimum: '{{plan}} cần buổi dài ít nhất {{duration}}.',
       planFix: 'Kết thúc lúc {{time}}',
-      multiHint: 'Mỗi buổi làm một dịch vụ; các buổi không được trùng giờ nhau.',
-      assignService: 'Dịch vụ cho {{count}} buổi đã chọn',
+      multiHint: 'Mỗi buổi làm một dịch vụ; mỗi ngày làm ít nhất một dịch vụ và các buổi không được trùng giờ nhau.',
       withoutVisit: 'Chưa có buổi cho: {{names}}',
-      empty: 'Chưa có buổi nào. Thêm từng buổi hoặc dùng thêm nhanh.',
+      empty: 'Chưa có buổi nào. Dùng thêm nhanh hoặc thêm từng ngày.',
       quickAdd: {
         title: 'Thêm nhanh',
-        description: 'Thêm nhiều buổi một lần theo lịch hằng ngày hoặc hằng tuần.',
+        description: 'Thêm nhiều buổi một lần: chọn các ngày, rồi giờ của từng dịch vụ.',
         submit_one: 'Thêm {{count}} buổi',
         submit_other: 'Thêm {{count}} buổi',
         nothing: 'Không có buổi mới: lịch trống hoặc các buổi đã có trong danh sách.',
@@ -602,25 +642,61 @@ export const bookingVi = {
       }
     },
     bulk: {
-      label: 'Sửa các buổi đã chọn',
-      chooseAll: 'Chọn tất cả các buổi',
-      choose: 'Chọn buổi {{number}}',
-      selected_one: 'Đã chọn {{count}} buổi',
-      selected_other: 'Đã chọn {{count}} buổi',
+      label: 'Sửa các ngày đã chọn',
+      chooseAll: 'Chọn tất cả các ngày',
+      choose: 'Chọn {{day}}',
+      selected_one: 'Đã chọn {{count}} ngày',
+      selected_other: 'Đã chọn {{count}} ngày',
       start: 'Bắt đầu',
       end: 'Kết thúc',
-      apply_one: 'Đặt giờ cho {{count}} buổi',
-      apply_other: 'Đặt giờ cho {{count}} buổi',
-      remove_one: 'Xóa {{count}} buổi',
-      remove_other: 'Xóa {{count}} buổi',
+      apply: 'Đặt giờ',
+      remove_one: 'Xóa {{count}} ngày',
+      remove_other: 'Xóa {{count}} ngày',
       clear: 'Bỏ chọn'
     },
+    clearAll: {
+      action: 'Xóa tất cả',
+      title: 'Xóa tất cả các ngày?',
+      description:
+        '{{days}} ngày cùng {{count}} buổi sẽ bị xóa khỏi danh sách. Bạn có thể tạo lại bằng lịch lặp hoặc thêm nhanh ở trên.',
+      confirm: 'Xóa tất cả các ngày'
+    },
+    pattern: {
+      timesLegend: 'Giờ của từng dịch vụ',
+      timesHint: 'Buổi chăm sóc diễn ra vào giờ này ở mọi ngày đã chọn ở trên.',
+      timesHintMulti:
+        'Tick các dịch vụ làm trong mỗi ngày đã chọn (ít nhất một) và đặt giờ cho từng dịch vụ; các giờ không được trùng nhau.',
+      planFixed: '{{plan}} · mỗi buổi dài {{duration}}',
+      planMinimum: '{{plan}} · tối thiểu {{duration}}',
+      overlap: 'Trùng giờ với dịch vụ khác trong cùng ngày.',
+      noService: 'Hãy tick ít nhất một dịch vụ.',
+      preview_one: 'Sẽ tạo {{count}} buổi trong {{days}} ngày.',
+      preview_other: 'Sẽ tạo {{count}} buổi trong {{days}} ngày.',
+      tooMany: 'Mỗi lịch đặt tối đa {{max}} buổi: hãy thu hẹp khoảng ngày hoặc bớt thứ / dịch vụ.',
+      checking: 'Đang kiểm tra lịch của {{name}}…',
+      blocked_one: '{{count}} buổi không đặt được: hãy đổi giờ, đổi ngày hoặc bỏ qua buổi này.',
+      blocked_other: '{{count}} buổi không đặt được: hãy đổi giờ, đổi ngày hoặc bỏ qua các buổi này.',
+      skip_one: 'Bỏ qua {{skipped}} buổi vướng, dùng {{count}} buổi còn lại',
+      skip_other: 'Bỏ qua {{skipped}} buổi vướng, dùng {{count}} buổi còn lại',
+      moreDates: '{{dates}} và {{count}} ngày khác',
+      snag: {
+        tooEarly: '{{dates}}: quá sớm, cần đặt trước ít nhất {{duration}}.',
+        busy: '{{dates}}: {{name}} đã có lịch khác vào giờ này.',
+        buffer: '{{dates}}: quá sát lịch khác của {{name}}, cần trống {{buffer}} để di chuyển.'
+      }
+    },
+    busy: {
+      summary_one:
+        '{{count}} buổi trùng lịch khác của {{name}} (giữa hai lịch khác nhau cần trống {{buffer}} để di chuyển).',
+      summary_other:
+        '{{count}} buổi trùng lịch khác của {{name}} (giữa hai lịch khác nhau cần trống {{buffer}} để di chuyển).',
+      removeAll_one: 'Bỏ buổi bị trùng',
+      removeAll_other: 'Bỏ {{count}} buổi bị trùng',
+      row: '{{name}} đã có lịch khác vào giờ này.',
+      bufferRow: 'Quá sát lịch khác của {{name}}: cần trống {{buffer}} để di chuyển.'
+    },
     duration: {
-      mismatch_one:
-        'Phần lớn các buổi dài {{usual}}, nhưng có {{count}} buổi dài khác. Hãy kiểm tra lại nếu không cố ý.',
-      mismatch_other:
-        'Phần lớn các buổi dài {{usual}}, nhưng có {{count}} buổi dài khác. Hãy kiểm tra lại nếu không cố ý.',
-      rowDiffers: 'Dài {{duration}}, các buổi khác {{usual}}.',
+      rowDiffers: 'Dài {{duration}}, các buổi khác của dịch vụ này {{usual}}.',
       fix: 'Đưa về {{usual}}'
     },
     invalidTime: 'Giờ kết thúc phải sau giờ bắt đầu.',

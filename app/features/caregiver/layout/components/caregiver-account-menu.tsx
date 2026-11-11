@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { SignOutButton } from '~/features/shared/auth/sign-out-button'
+import { WalletBalanceLink } from '~/entities/wallet/wallet-balance-link'
 import { setAppLanguage, type SupportedLanguage } from '~/shared/i18n/i18n'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
@@ -78,13 +79,10 @@ export function CaregiverAccountMenu({ avatarUrl, name }: { avatarUrl?: string; 
             </div>
           </div>
           <div className='py-1'>
+            <WalletBalanceLink onNavigate={() => setOpen(false)} to='/caregiver/wallet' />
             <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/profile'>
               <Icon className='text-lg text-primary' name='person' />
               {t('caregiver.nav.profile')}
-            </Link>
-            <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/wallet'>
-              <Icon className='text-lg text-primary' name='account_balance_wallet' />
-              {t('wallet.nav.caregiver')}
             </Link>
             <Link className={linkClass} onClick={() => setOpen(false)} to='/caregiver/earnings'>
               <Icon className='text-lg text-primary' name='savings' />

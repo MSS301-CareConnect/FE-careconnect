@@ -7,9 +7,23 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { EmptyActionResponse, PricePlanListResponse, PricePlanResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  PricePlanListResponse,
+  PricePlanPageResponse,
+  PricePlanResponse
+} from '../../contracts'
 
-import { getPricePlanRecordMock } from '../../contracts/index.faker'
+import { getPricePlanPageMock, getPricePlanRecordMock } from '../../contracts/index.faker'
+
+export const getListPricePlansPageResponseMock = (
+  overrideResponse: Partial<Extract<PricePlanPageResponse, object>> = {}
+): PricePlanPageResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getPricePlanPageMock() },
+  ...overrideResponse
+})
 
 export const getCreatePricePlanResponseMock = (
   overrideResponse: Partial<Extract<PricePlanResponse, object>> = {}

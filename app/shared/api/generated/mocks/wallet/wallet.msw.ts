@@ -9,6 +9,7 @@ import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
 import type {
+  BookingSettlementResponse,
   WalletCenterBalanceListResponse,
   WalletResponse,
   WalletStatisticsResponse,
@@ -16,6 +17,7 @@ import type {
 } from '../../contracts'
 
 import {
+  getGetBookingSettlementResponseMock,
   getGetMyWalletResponseMock,
   getGetMyWalletStatisticsResponseMock,
   getGetWalletResponseMock,
@@ -28,6 +30,7 @@ export {
   getGetMyWalletResponseMock,
   getListMyWalletTransactionsResponseMock,
   getGetMyWalletStatisticsResponseMock,
+  getGetBookingSettlementResponseMock,
   getGetWalletResponseMock,
   getListWalletTransactionsResponseMock,
   getListMyWalletCenterBalancesResponseMock
@@ -102,6 +105,32 @@ export const getGetMyWalletStatisticsMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getGetMyWalletStatisticsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetBookingSettlementMockHandler = (
+  overrideResponse?:
+    | BookingSettlementResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<BookingSettlementResponse> | BookingSettlementResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/wallets/bookings/:bookingId/settlement',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetBookingSettlementResponseMock(),
         { status: 200 }
       )
     },
@@ -188,6 +217,7 @@ export const getWalletMock = () => [
   getGetMyWalletMockHandler(),
   getListMyWalletTransactionsMockHandler(),
   getGetMyWalletStatisticsMockHandler(),
+  getGetBookingSettlementMockHandler(),
   getGetWalletMockHandler(),
   getListWalletTransactionsMockHandler(),
   getListMyWalletCenterBalancesMockHandler()

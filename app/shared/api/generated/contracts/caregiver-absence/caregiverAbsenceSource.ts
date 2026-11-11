@@ -13,5 +13,6 @@ export type CaregiverAbsenceSource = (typeof CaregiverAbsenceSource)[keyof typeo
 
 export const CaregiverAbsenceSource = {
   MISSED_CHECK_IN: 'MISSED_CHECK_IN',
-  NO_SHOW_REPORT_REJECTED: 'NO_SHOW_REPORT_REJECTED'
+  NO_SHOW_REPORT_REJECTED: 'NO_SHOW_REPORT_REJECTED',
+  SESSION_NOT_DELIVERED: 'SESSION_NOT_DELIVERED'
 } as const

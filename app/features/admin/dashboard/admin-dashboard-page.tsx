@@ -16,7 +16,7 @@ import { fetchSystemStatisticsBetween, statisticsKeys } from '~/entities/statist
 import { useInsightPeriod } from '~/entities/statistics/statistics-period'
 import { TopCaregiversCard } from '~/entities/statistics/top-caregivers-card'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
+import { bentoContainer } from '~/shared/ui/bento-page-header'
 import { Skeleton } from '~/shared/ui/skeleton'
 import { ErrorState } from '~/shared/ui/state-panels'
 
@@ -40,14 +40,16 @@ function DashboardSection({ title, hint, children }: { title: string; hint: stri
 }
 
 /**
- * Platform overview (2026-11-10): one period (`?period=`) for every live number — the admin's waiting queues, care
- * operations (BookingService `/statistics/system` with its per-center breakdown), platform money (PaymentService) and
- * users / partners (Identity, ProviderService). No sample data (A-15).
+ * Platform overview (2026-11-10): one period (`?period=`) for every live number — platform money first
+ * (PaymentService), then the admin's waiting queues, care operations (BookingService `/statistics/system` with its
+ * per-center breakdown) and users / partners (Identity, ProviderService). No banner: the title shares a row with the
+ * period filter (2026-11-11). No sample data (A-15).
  */
 export function AdminDashboardPage() {
   const { t } = useTranslation()
   useDocumentTitle(t(`${key}.documentTitle`))
-  const { period, range, choose } = useInsightPeriod()
+  const insight = useInsightPeriod()
+  const { range } = insight
   const statistics = useQuery({
     queryKey: statisticsKeys.systemRange(range.fromDate, range.toDate),
     queryFn: () => fetchSystemStatisticsBetween(range.fromDate, range.toDate),
@@ -56,8 +58,14 @@ export function AdminDashboardPage() {
 
   return (
     <div className={`${bentoContainer} space-y-8`}>
-      <BentoPageHeader description={t(`${key}.subtitle`)} icon='dashboard' title={t(`${key}.title`)} variant='hero' />
-      <InsightPeriodSwitch onChange={choose} value={period} />
+      <header className='flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2 sm:pt-4'>
+        <h1 className='text-[26px] leading-tight text-forest-950 sm:text-[30px]'>{t(`${key}.title`)}</h1>
+        <InsightPeriodSwitch className='flex-1' state={insight} />
+      </header>
+
+      <DashboardSection hint={t(`${key}.finance.hint`)} title={t(`${key}.finance.title`)}>
+        <PlatformFinanceSection range={range} />
+      </DashboardSection>
 
       {statistics.isPending ? (
         <div aria-label={t('statistics.loading')} className='space-y-4' role='status'>
@@ -91,10 +99,6 @@ export function AdminDashboardPage() {
           </div>
         </DashboardSection>
       ) : null}
-
-      <DashboardSection hint={t(`${key}.finance.hint`)} title={t(`${key}.finance.title`)}>
-        <PlatformFinanceSection range={range} />
-      </DashboardSection>
 
       <DashboardSection hint={t(`${key}.partners.hint`)} title={t(`${key}.partners.title`)}>
         <PartnersSection />

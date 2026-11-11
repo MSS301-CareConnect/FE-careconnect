@@ -39,8 +39,13 @@ export const statisticsVi = {
   },
   insights: {
     periodLegend: 'Kỳ thống kê',
-    periods: { month: 'Tháng này', last30: '30 ngày qua', year: 'Năm nay' },
+    periods: { month: 'Tháng này', last30: '30 ngày qua', year: 'Năm nay', custom: 'Tùy chỉnh' },
+    customRange: 'Khoảng thời gian tùy chỉnh',
+    customFrom: 'Từ ngày',
+    customTo: 'Đến ngày',
+    customInvalid: 'Ngày kết thúc phải từ ngày bắt đầu trở đi. Số liệu đang hiển thị theo tháng này.',
     periodHints: {
+      custom: '{{from}} – {{to}}',
       month: 'Từ đầu tháng đến hôm nay',
       last30: '30 ngày gần nhất',
       year: 'Từ đầu năm đến hôm nay (theo tháng)'
@@ -64,7 +69,9 @@ export const statisticsVi = {
       hint: 'Lịch đặt theo ngày tạo; buổi chăm sóc theo giờ bắt đầu.',
       bookings: 'Lịch đặt mới',
       completed: 'Buổi hoàn thành',
-      cancelled: 'Buổi hủy / vắng'
+      cancelled: 'Buổi hủy / vắng',
+      view: 'Dạng biểu đồ',
+      views: { column: 'Cột', line: 'Đường' }
     },
     outcomes: {
       title: 'Kết quả buổi chăm sóc',
@@ -152,8 +159,13 @@ export const statisticsEn = {
   },
   insights: {
     periodLegend: 'Period',
-    periods: { month: 'This month', last30: 'Last 30 days', year: 'This year' },
+    periods: { month: 'This month', last30: 'Last 30 days', year: 'This year', custom: 'Custom' },
+    customRange: 'Custom date range',
+    customFrom: 'From',
+    customTo: 'To',
+    customInvalid: 'The end date must be on or after the start date. The numbers shown are for this month.',
     periodHints: {
+      custom: '{{from}} – {{to}}',
       month: 'Month to date',
       last30: 'The last 30 days',
       year: 'Year to date (by month)'
@@ -177,7 +189,9 @@ export const statisticsEn = {
       hint: 'Bookings by creation day; visits by start time.',
       bookings: 'New bookings',
       completed: 'Completed visits',
-      cancelled: 'Cancelled / missed visits'
+      cancelled: 'Cancelled / missed visits',
+      view: 'Chart type',
+      views: { column: 'Columns', line: 'Line' }
     },
     outcomes: {
       title: 'Care visit outcomes',

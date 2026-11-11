@@ -25,6 +25,8 @@ import type {
   CaregiverOccurrenceListResponse,
   CaregiverOccurrencePageResponse,
   CaregiverOccurrenceResponse,
+  CustomerVisitReportRequest,
+  CustomerVisitReportResponse,
   ListMyBookingOccurrencesParams,
   NoShowDecisionRequest,
   NoShowReportRequest,
@@ -710,6 +712,160 @@ export const useAcknowledgeBookingOccurrence = <
   queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof acknowledgeBookingOccurrence>>, TError, { id: string }, TContext> => {
   return useMutation(getAcknowledgeBookingOccurrenceMutationOptions(options), queryClient)
+}
+export type reportBookingOccurrenceByCustomerResponse200 = {
+  data: CustomerVisitReportResponse
+  status: 200
+}
+
+export type reportBookingOccurrenceByCustomerResponse400 = {
+  data: void
+  status: 400
+}
+
+export type reportBookingOccurrenceByCustomerResponse401 = {
+  data: void
+  status: 401
+}
+
+export type reportBookingOccurrenceByCustomerResponse403 = {
+  data: void
+  status: 403
+}
+
+export type reportBookingOccurrenceByCustomerResponse404 = {
+  data: void
+  status: 404
+}
+
+export type reportBookingOccurrenceByCustomerResponse409 = {
+  data: void
+  status: 409
+}
+
+export type reportBookingOccurrenceByCustomerResponse500 = {
+  data: void
+  status: 500
+}
+
+export type reportBookingOccurrenceByCustomerResponse503 = {
+  data: void
+  status: 503
+}
+
+export type reportBookingOccurrenceByCustomerResponseSuccess = reportBookingOccurrenceByCustomerResponse200 & {
+  headers: Headers
+}
+export type reportBookingOccurrenceByCustomerResponseError = (
+  | reportBookingOccurrenceByCustomerResponse400
+  | reportBookingOccurrenceByCustomerResponse401
+  | reportBookingOccurrenceByCustomerResponse403
+  | reportBookingOccurrenceByCustomerResponse404
+  | reportBookingOccurrenceByCustomerResponse409
+  | reportBookingOccurrenceByCustomerResponse500
+  | reportBookingOccurrenceByCustomerResponse503
+) & {
+  headers: Headers
+}
+
+export const getReportBookingOccurrenceByCustomerUrl = (id: string) => {
+  return `${env.API_BASE_URL}/v1/booking-occurrences/${id}/customer-reports`
+}
+
+/**
+ * @summary CUSTOMER reports a visit — nobody has come yet, or a finished visit was not delivered properly (within 24 hours)
+ */
+export const reportBookingOccurrenceByCustomer = async (
+  id: string,
+  customerVisitReportRequest?: CustomerVisitReportRequest,
+  options?: RequestInit
+): Promise<reportBookingOccurrenceByCustomerResponseSuccess> => {
+  const res = await fetch(getReportBookingOccurrenceByCustomerUrl(id), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(customerVisitReportRequest)
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: reportBookingOccurrenceByCustomerResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: reportBookingOccurrenceByCustomerResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: reportBookingOccurrenceByCustomerResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as reportBookingOccurrenceByCustomerResponseSuccess
+}
+
+export const getReportBookingOccurrenceByCustomerMutationOptions = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reportBookingOccurrenceByCustomer>>,
+    TError,
+    { id: string; data?: CustomerVisitReportRequest },
+    TContext
+  >
+  fetch?: RequestInit
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reportBookingOccurrenceByCustomer>>,
+  TError,
+  { id: string; data?: CustomerVisitReportRequest },
+  TContext
+> => {
+  const mutationKey = ['reportBookingOccurrenceByCustomer']
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reportBookingOccurrenceByCustomer>>,
+    { id: string; data?: CustomerVisitReportRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return reportBookingOccurrenceByCustomer(id, data, fetchOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ReportBookingOccurrenceByCustomerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reportBookingOccurrenceByCustomer>>
+>
+export type ReportBookingOccurrenceByCustomerMutationBody = CustomerVisitReportRequest | undefined
+export type ReportBookingOccurrenceByCustomerMutationError = globalThis.Error & { info?: void; status?: number }
+
+/**
+ * @summary CUSTOMER reports a visit — nobody has come yet, or a finished visit was not delivered properly (within 24 hours)
+ */
+export const useReportBookingOccurrenceByCustomer = <
+  TError = globalThis.Error & { info?: void; status?: number },
+  TContext = unknown
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof reportBookingOccurrenceByCustomer>>,
+      TError,
+      { id: string; data?: CustomerVisitReportRequest },
+      TContext
+    >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof reportBookingOccurrenceByCustomer>>,
+  TError,
+  { id: string; data?: CustomerVisitReportRequest },
+  TContext
+> => {
+  return useMutation(getReportBookingOccurrenceByCustomerMutationOptions(options), queryClient)
 }
 export type reportBookingOccurrenceNoShowResponse200 = {
   data: CaregiverOccurrenceResponse

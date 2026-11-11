@@ -15,6 +15,7 @@ import {
   createPricePlan,
   deletePricePlan,
   listPricePlans,
+  listPricePlansPage,
   updatePricePlan,
   updatePricePlansBatch
 } from '~/shared/api/generated/api/price-plan/price-plan'
@@ -66,7 +67,11 @@ export const careCatalogKeys = {
   items: ['care-catalog', 'items'] as const,
   centerOfferings: (centerId: string) => ['care-catalog', 'center-offerings', centerId] as const,
   centerOffering: (id: string) => ['care-catalog', 'center-offering', id] as const,
-  pricePlans: (centerOfferingId: string) => ['care-catalog', 'price-plans', centerOfferingId] as const
+  centerOfferingPage: (centerId: string, params: { keyword: string; page: number; size: number }) =>
+    ['care-catalog', 'center-offerings', centerId, 'page', params] as const,
+  pricePlans: (centerOfferingId: string) => ['care-catalog', 'price-plans', centerOfferingId] as const,
+  pricePlanPage: (centerOfferingId: string, page: number, size: number) =>
+    ['care-catalog', 'price-plans', centerOfferingId, 'page', page, size] as const
 }
 
 /** Collect every page because the current service screens filter the complete catalog locally. */
@@ -94,6 +99,14 @@ export async function removeCatalog(id: string) {
 export async function fetchCenterOfferings(centerId: string): Promise<CenterOfferingRecord[]> {
   return collectPages((page) => listCenterOfferings(centerId, { page, size: pageSize }, readOptions).then(result))
 }
+/** One page of a center's offerings for the managing side, optionally narrowed by service name (2026-11-11). */
+export async function fetchCenterOfferingPage(
+  centerId: string,
+  params: { keyword: string; page: number; size: number }
+) {
+  const { keyword, page, size } = params
+  return result(await listCenterOfferings(centerId, { keyword: keyword || undefined, page, size }, readOptions))
+}
 /** One offering; customers only see it while it is sellable, otherwise the backend answers 404. */
 export async function fetchCenterOffering(id: string): Promise<CenterOfferingRecord> {
   return result(await getCenterOffering(id, readOptions))
@@ -110,6 +123,10 @@ export async function removeOffering(id: string) {
 }
 export async function fetchPricePlans(centerOfferingId: string) {
   return result(await listPricePlans(centerOfferingId, readOptions))
+}
+/** One page of an offering's price plans, oldest first (the managing screen; 2026-11-11). */
+export async function fetchPricePlanPage(centerOfferingId: string, page: number, size: number) {
+  return result(await listPricePlansPage({ centerOfferingId, page, size }, readOptions))
 }
 export async function createOfferingPricePlan(request: PricePlanRequest) {
   return result(await createPricePlan(request, await writeOptions()))

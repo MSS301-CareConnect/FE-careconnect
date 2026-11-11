@@ -40,6 +40,7 @@ import {
   getListMyProviderCaregiverSchedulesResponseMock,
   getListPendingVerificationProviderCaregiversResponseMock,
   getListProviderBookableSchedulesResponseMock,
+  getListProviderCaregiverDirectoryResponseMock,
   getListProviderCaregiverServicesResponseMock,
   getListProviderCaregiverTimeOffsResponseMock,
   getReplaceProviderCaregiverServicesResponseMock,
@@ -63,6 +64,7 @@ export {
   getGetMyProviderCaregiverProfileResponseMock,
   getListMyProviderCaregiverSchedulesResponseMock,
   getGetProviderCaregiverByUserResponseMock,
+  getListProviderCaregiverDirectoryResponseMock,
   getListPendingVerificationProviderCaregiversResponseMock,
   getSearchProviderCaregiversResponseMock,
   getCheckProviderCaregiverAvailabilityResponseMock,
@@ -355,6 +357,32 @@ export const getGetProviderCaregiverByUserMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getGetProviderCaregiverByUserResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getListProviderCaregiverDirectoryMockHandler = (
+  overrideResponse?:
+    | ProviderCaregiverPageResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<ProviderCaregiverPageResponse> | ProviderCaregiverPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/caregivers/directory',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListProviderCaregiverDirectoryResponseMock(),
         { status: 200 }
       )
     },
@@ -707,6 +735,7 @@ export const getProviderCaregiverMock = () => [
   getGetMyProviderCaregiverProfileMockHandler(),
   getListMyProviderCaregiverSchedulesMockHandler(),
   getGetProviderCaregiverByUserMockHandler(),
+  getListProviderCaregiverDirectoryMockHandler(),
   getListPendingVerificationProviderCaregiversMockHandler(),
   getSearchProviderCaregiversMockHandler(),
   getCheckProviderCaregiverAvailabilityMockHandler(),

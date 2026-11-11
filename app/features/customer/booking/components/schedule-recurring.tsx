@@ -1,65 +1,36 @@
 import { useTranslation } from 'react-i18next'
 
-import { useFormat } from '~/shared/lib/format'
-import { Button } from '~/shared/ui/button'
-import { Icon } from '~/shared/ui/icon'
-
 import type { BookingForm } from '../hooks/use-booking-form'
-import { ScheduleRuleFields } from './schedule-rule-fields'
-import { ScheduleSlotList } from './schedule-slot-list'
-import { minimumVisitMinutes } from './visit-duration'
+import { ScheduleDayList } from './schedule-day-list'
+import { SchedulePattern } from './schedule-pattern'
 
 /**
- * RECURRING (CR-1): the pattern builds the visit list, which stays editable like custom visits — change one visit's
- * time, drop a day off or add a visit within the dates. Once edited, changing the pattern no longer rebuilds the list.
+ * RECURRING (2026-11-11): the pattern (days + a time per service) builds the visit list only when the customer presses
+ * the button; the list, one card per day, stays editable — change a time, drop a day off, add a day within the dates.
+ * Changing the pattern afterwards does not rebuild it; pressing the button again replaces it.
  */
 export function ScheduleRecurring({ form }: { form: BookingForm }) {
   const { t } = useTranslation()
-  const format = useFormat()
-  const { schedule, recurringIssues: issues } = form
-  const tooEarlyReason = t('customer.booking.schedule.tooEarlyDay', {
-    duration: format.duration(form.noticeMinutes.RECURRING)
-  })
+  const { schedule } = form
+  const existing = schedule.recurringSlots.length
 
   return (
     <div className='flex flex-col gap-6'>
-      <ScheduleRuleFields
-        earliestDay={form.earliestDay}
+      <SchedulePattern
+        form={form}
         idPrefix='recurring'
-        issues={issues}
-        minimumMinutes={minimumVisitMinutes(form)}
-        onChange={form.updateSchedule}
+        onRuleChange={form.updateSchedule}
+        onSubmit={form.setRecurringSlots}
         rule={schedule}
-        tooEarlyReason={tooEarlyReason}
+        submitLabel={(count) =>
+          existing > 0
+            ? t('customer.booking.schedule.recurring.rebuild', { count, existing })
+            : t('customer.booking.schedule.recurring.build', { count })
+        }
       />
 
-      {schedule.recurringEdited ? (
-        <div
-          aria-live='polite'
-          className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50/60 p-3 text-sm text-on-surface'
-        >
-          <span className='flex items-start gap-2'>
-            <Icon className='text-lg text-primary' name='edit_note' />
-            {t('customer.booking.schedule.recurring.edited')}
-          </span>
-          <Button
-            leftIcon={<Icon className='text-lg' name='restart_alt' />}
-            onClick={form.regenerateRecurring}
-            size='sm'
-            variant='outline'
-          >
-            {t('customer.booking.schedule.recurring.regenerate')}
-          </Button>
-        </div>
-      ) : null}
-
-      {issues.noVisits && !schedule.recurringEdited ? (
-        <p className='flex items-start gap-2 rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-on-surface-variant'>
-          <Icon className='text-lg' name='event_busy' />
-          {t('customer.booking.schedule.recurring.noVisits')}
-        </p>
-      ) : (
-        <ScheduleSlotList
+      {existing > 0 ? (
+        <ScheduleDayList
           form={form}
           hint={t('customer.booking.schedule.recurring.listHint')}
           issues={form.recurringSlotIssues}
@@ -69,7 +40,7 @@ export function ScheduleRecurring({ form }: { form: BookingForm }) {
           minDay={schedule.startDate && schedule.startDate > form.earliestDay ? schedule.startDate : form.earliestDay}
           slots={schedule.recurringSlots}
         />
-      )}
+      ) : null}
     </div>
   )
 }

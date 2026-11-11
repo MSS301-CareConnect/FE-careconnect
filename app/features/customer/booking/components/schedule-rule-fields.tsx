@@ -1,23 +1,20 @@
 import { useTranslation } from 'react-i18next'
 
 import { WEEKDAYS } from '~/entities/booking/booking-format'
-import { addMinutesToTime, minutesBetween } from '~/shared/lib/format'
 import { DatePicker } from '~/shared/ui/date-picker'
 import { FormField } from '~/shared/ui/form-field'
 import { SegmentedControl } from '~/shared/ui/segmented-control'
-import { TimeSelect } from '~/shared/ui/time-select'
 
 import type { RecurrenceRule, RuleIssues } from '../hooks/schedule-slots'
 
 /**
- * Frequency, weekdays, date range and time range of a pattern — the RECURRING booking itself and the CUSTOM quick add
- * (CR-1). Errors show under the field they belong to.
+ * Frequency, weekdays and date range of a pattern — the RECURRING booking itself and the CUSTOM quick add (CR-1). The
+ * time of each service is chosen beside it (`ScheduleServiceTimes`). Errors show under the field they belong to.
  */
 export function ScheduleRuleFields({
   rule,
   issues,
   earliestDay,
-  minimumMinutes,
   tooEarlyReason,
   idPrefix,
   onChange
@@ -25,18 +22,12 @@ export function ScheduleRuleFields({
   rule: RecurrenceRule
   issues: RuleIssues
   earliestDay: string
-  minimumMinutes: number
   tooEarlyReason: string
   idPrefix: string
   onChange: (patch: Partial<RecurrenceRule>) => void
 }) {
   const { t } = useTranslation()
   const weekdayErrorId = `${idPrefix}-weekday-error`
-
-  function changeStart(startTime: string) {
-    const keep = minutesBetween(startTime, rule.endTime) >= minimumMinutes
-    onChange({ startTime, endTime: keep ? rule.endTime : addMinutesToTime(startTime, minimumMinutes) })
-  }
 
   return (
     <div className='flex flex-col gap-5'>
@@ -117,17 +108,6 @@ export function ScheduleRuleFields({
               onChange={(endDate) => onChange({ endDate })}
               value={rule.endDate}
             />
-          )}
-        </FormField>
-        <FormField label={t('customer.booking.schedule.recurring.startTime')}>
-          {(props) => <TimeSelect {...props} onChange={changeStart} step={15} value={rule.startTime} />}
-        </FormField>
-        <FormField
-          error={issues.invalidTime ? t('customer.booking.schedule.invalidTime') : undefined}
-          label={t('customer.booking.schedule.recurring.endTime')}
-        >
-          {(props) => (
-            <TimeSelect {...props} onChange={(endTime) => onChange({ endTime })} step={15} value={rule.endTime} />
           )}
         </FormField>
       </div>

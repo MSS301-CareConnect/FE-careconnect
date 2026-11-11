@@ -16,7 +16,7 @@ import { StatusBadge } from '~/shared/ui/status-badge'
 
 import { useCaregiverFormat } from '../../ui/caregiver-format'
 import { CaregiverError, cgCard } from '../../ui/caregiver-page'
-import { parseUserAgent } from './user-agent'
+import { parseUserAgent } from '~/shared/lib/user-agent'
 
 /** Same cache key as the shared security screen so both stay in step. */
 const SESSIONS_KEY = ['auth', 'web-sessions'] as const

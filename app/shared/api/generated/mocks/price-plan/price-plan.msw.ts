@@ -8,18 +8,25 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { EmptyActionResponse, PricePlanListResponse, PricePlanResponse } from '../../contracts'
+import type {
+  EmptyActionResponse,
+  PricePlanListResponse,
+  PricePlanPageResponse,
+  PricePlanResponse
+} from '../../contracts'
 
 import {
   getCreatePricePlanResponseMock,
   getDeletePricePlanResponseMock,
   getGetPricePlanResponseMock,
+  getListPricePlansPageResponseMock,
   getListPricePlansResponseMock,
   getUpdatePricePlanResponseMock,
   getUpdatePricePlansBatchResponseMock
 } from './price-plan.faker'
 
 export {
+  getListPricePlansPageResponseMock,
   getCreatePricePlanResponseMock,
   getUpdatePricePlansBatchResponseMock,
   getGetPricePlanResponseMock,
@@ -27,6 +34,30 @@ export {
   getDeletePricePlanResponseMock,
   getListPricePlansResponseMock
 } from './price-plan.faker'
+
+export const getListPricePlansPageMockHandler = (
+  overrideResponse?:
+    | PricePlanPageResponse
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PricePlanPageResponse> | PricePlanPageResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/price-plans',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getListPricePlansPageResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
 
 export const getCreatePricePlanMockHandler = (
   overrideResponse?:
@@ -172,6 +203,7 @@ export const getListPricePlansMockHandler = (
   )
 }
 export const getPricePlanMock = () => [
+  getListPricePlansPageMockHandler(),
   getCreatePricePlanMockHandler(),
   getUpdatePricePlansBatchMockHandler(),
   getGetPricePlanMockHandler(),

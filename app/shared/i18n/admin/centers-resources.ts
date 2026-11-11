@@ -1,7 +1,15 @@
 export const adminCentersVi = {
   documentTitle: 'Trung tâm | Quản trị CareConnect',
   title: 'Trung tâm',
-  subtitle: 'Duyệt và theo dõi trạng thái trung tâm.',
+  subtitle: 'Duyệt trung tâm mới, theo dõi trạng thái và mở nhanh người chăm sóc, lịch đặt, chính sách của từng trung tâm.',
+  stats: { label: 'Số trung tâm theo trạng thái', total: 'Trung tâm đang quản lý' },
+  menu: {
+    label: 'Thao tác với {{name}}',
+    caregivers: 'Người chăm sóc',
+    bookings: 'Lịch đặt',
+    policy: 'Chính sách đặt lịch',
+    restore: 'Khôi phục'
+  },
   add: 'Thêm trung tâm',
   exportPage: 'Xuất trang hiện tại (CSV)',
   tabsLabel: 'Lọc theo trạng thái',
@@ -246,7 +254,15 @@ export const adminCentersVi = {
 export const adminCentersEn = {
   documentTitle: 'Centers | CareConnect Admin',
   title: 'Centers',
-  subtitle: 'Approve centers and follow their status.',
+  subtitle: 'Review new centers, follow their status and jump to each center’s caregivers, bookings and policy.',
+  stats: { label: 'Centers by status', total: 'Managed centers' },
+  menu: {
+    label: 'Actions for {{name}}',
+    caregivers: 'Caregivers',
+    bookings: 'Bookings',
+    policy: 'Booking policy',
+    restore: 'Restore'
+  },
   add: 'Add center',
   exportPage: 'Export this page (CSV)',
   tabsLabel: 'Filter by status',
