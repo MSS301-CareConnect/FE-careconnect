@@ -158,16 +158,14 @@ function ChooseManagerDialog({
       return false
     }
     const name = options.find((user) => user.id === selected)?.fullName ?? ''
-    return link
-      .mutateAsync(selected)
-      .then(() => {
-        notify.success(t('admin.toast.centers.managerLinked', { name }))
-        return true
-      })
-      .catch((error: unknown) => {
-        notify.systemError(error, t('admin.toast.centers.actions.link'))
-        return false
-      })
+    try {
+      await link.mutateAsync(selected)
+      notify.success(t('admin.toast.centers.managerLinked', { name }))
+      return true
+    } catch (error) {
+      notify.systemError(error, t('admin.toast.centers.actions.link'))
+      return false
+    }
   }
 
   // Lock the previous manager only after the new one is linked.
@@ -196,11 +194,10 @@ function ChooseManagerDialog({
             <Button
               loading={link.isPending || locked.isPending}
               loadingLabel={t('common.ui.working')}
-              onClick={() =>
-                void submit().then((linked) => {
-                  if (linked && current?.id && lockOld) locked.mutate()
-                })
-              }
+              onClick={async () => {
+                const linked = await submit()
+                if (linked && current?.id && lockOld) locked.mutate()
+              }}
             >
               {t(`${key}.assign`)}
             </Button>

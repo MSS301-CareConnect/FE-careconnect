@@ -77,6 +77,11 @@ export function addDays(day: string, amount: number) {
   return date.toISOString().slice(0, 10)
 }
 
+/** Monday of the week (ISO, Monday first) that holds a calendar date. */
+export function mondayOf(day: string) {
+  return addDays(day, 1 - isoWeekday(day))
+}
+
 /** Minutes between two HH:mm values on the same day; negative or zero when the range is empty. */
 export function minutesBetween(start: string, end: string) {
   const [startHours, startMinutes] = start.split(':').map(Number)

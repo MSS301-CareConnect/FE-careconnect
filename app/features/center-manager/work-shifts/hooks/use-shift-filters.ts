@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router'
 
 import { SHIFT_STATUS_CODES, type ShiftStatusCode } from '~/entities/provider/work-shift'
-import { addDays, isoWeekday } from '~/shared/lib/format'
+import { addDays, mondayOf } from '~/shared/lib/format'
 import { pageSizeOf } from '~/shared/ui/pagination'
 
 export type RangePreset = 'upcoming' | 'next7' | 'thisMonth' | 'all' | 'custom'
@@ -10,10 +10,6 @@ export type ShiftView = 'table' | 'week'
 const RANGES: readonly RangePreset[] = ['upcoming', 'next7', 'thisMonth', 'all', 'custom']
 
 export const SHIFT_PAGE_SIZES = [10, 20, 50] as const
-
-export function mondayOf(day: string) {
-  return addDays(day, 1 - isoWeekday(day))
-}
 
 /**
  * Filters of the shift list kept in the URL (shareable, survive reload): status, date range (preset or custom),

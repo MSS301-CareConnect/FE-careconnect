@@ -9,6 +9,7 @@ import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { fetchPayment, paymentErrorKey, paymentKeys } from '~/entities/payment/payment-api'
 import { AssignedCaregiverCard } from '~/entities/provider/assigned-caregiver-card'
 import type { PaymentRecord } from '~/shared/api/generated/contracts'
+import { copyText } from '~/shared/lib/clipboard'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Avatar } from '~/shared/ui/avatar'
 import { Icon } from '~/shared/ui/icon'
@@ -106,13 +107,10 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
     void payment.refetch()
   }
 
-  function copyToClipboard(key: string, text: string) {
-    if (navigator?.clipboard?.writeText) {
-      void navigator.clipboard.writeText(text).then(() => {
-        setCopiedKey(key)
-        window.setTimeout(() => setCopiedKey(null), 2000)
-      })
-    }
+  async function copyToClipboard(key: string, text: string) {
+    if (!(await copyText(text))) return
+    setCopiedKey(key)
+    window.setTimeout(() => setCopiedKey(null), 2000)
   }
 
   return (
@@ -245,7 +243,7 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                     <button
                       aria-label={t('customer.payment.copyCode')}
                       className='inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-sans text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors'
-                      onClick={() => copyToClipboard('ref', data.id)}
+                      onClick={() => void copyToClipboard('ref', data.id)}
                       title={t('customer.payment.copyCode')}
                       type='button'
                     >
@@ -269,7 +267,7 @@ export function PaymentResultPage({ paymentId, outcome }: { paymentId: string; o
                       <button
                         aria-label={t('customer.payment.copyCode')}
                         className='inline-flex items-center rounded-md p-1 text-xs text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors'
-                        onClick={() => copyToClipboard('booking', booking.data!.bookingCode)}
+                        onClick={() => void copyToClipboard('booking', booking.data!.bookingCode)}
                         title={t('customer.payment.copyCode')}
                         type='button'
                       >

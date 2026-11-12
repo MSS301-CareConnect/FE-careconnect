@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useOutlet } from 'react-router'
 import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
 
+import { useEscapeKey } from '~/shared/lib/use-escape-key'
+import { useStoredFlag } from '~/shared/lib/use-stored-flag'
 import { PageTransition } from '~/shared/ui/page-transition'
 import { Toaster } from '~/shared/ui/toaster'
 
@@ -11,14 +13,6 @@ import { ManagerTopbar } from './components/manager-topbar'
 import '~/shared/ui/ops-theme.css'
 
 const COLLAPSED_KEY = 'careconnect.manager.sidebarCollapsed'
-
-function readCollapsed() {
-  try {
-    return typeof localStorage !== 'undefined' && localStorage.getItem(COLLAPSED_KEY) === '1'
-  } catch {
-    return false
-  }
-}
 
 /**
  * Center Manager shell ("Soft Bento", 2026-11-09): the floating forest rail (collapsible from 1024 px, a drawer below),
@@ -30,27 +24,9 @@ export function CenterManagerLayout() {
   const { pathname } = useLocation()
   const outlet = useOutlet()
   const [open, setOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(readCollapsed)
+  const [collapsed, toggleCollapsed] = useStoredFlag(COLLAPSED_KEY)
 
-  useEffect(() => {
-    if (!open) return
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [open])
-
-  function toggleCollapsed() {
-    setCollapsed((value) => {
-      try {
-        localStorage.setItem(COLLAPSED_KEY, value ? '0' : '1')
-      } catch {
-        // A blocked storage only loses the preference.
-      }
-      return !value
-    })
-  }
+  useEscapeKey(open, () => setOpen(false))
 
   return (
     <div className='theme-ops cc-mesh min-h-screen bg-fixed text-on-surface'>

@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
 import type { CaregiverOccurrenceRecord } from '~/shared/api/generated/contracts'
+import { copyText } from '~/shared/lib/clipboard'
 import { formatPhone, phoneHref } from '~/shared/lib/phone'
+import { toastSuccess } from '~/shared/ui/app-toast'
 import { Icon } from '~/shared/ui/icon'
 
 import { directionsUrl, useCaregiverFormat } from '../../ui/caregiver-format'
@@ -94,11 +95,9 @@ export function VisitLogistics({ visit }: { visit: CaregiverOccurrenceRecord }) 
             <button
               aria-label={t('caregiver.visits.card.copyAddress')}
               className='cg-press grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-outline-variant text-on-surface-variant hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-primary'
-              onClick={() =>
-                void navigator.clipboard
-                  ?.writeText(people.address)
-                  .then(() => toast.success(t('caregiver.visits.card.addressCopied')))
-              }
+              onClick={async () => {
+                if (await copyText(people.address)) toastSuccess(t('caregiver.visits.card.addressCopied'))
+              }}
               type='button'
             >
               <Icon className='text-lg' name='content_copy' />
