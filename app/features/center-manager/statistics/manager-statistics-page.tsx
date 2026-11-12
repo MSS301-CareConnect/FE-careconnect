@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -17,24 +16,13 @@ import { useInsightPeriod } from '~/entities/statistics/statistics-period'
 import { TopCaregiversCard } from '~/entities/statistics/top-caregivers-card'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { bentoContainer } from '~/shared/ui/bento-page-header'
+import { DashboardSection } from '~/shared/ui/dashboard-section'
 import { Skeleton } from '~/shared/ui/skeleton'
 import { ErrorState } from '~/shared/ui/state-panels'
 
 import { CenterFinanceSection } from './components/center-finance-section'
 
 const key = 'centerManager.statisticsPage' as const
-
-function DashboardSection({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
-  return (
-    <section className='space-y-4'>
-      <div>
-        <h2 className='text-[22px] font-bold tracking-tight text-forest-950'>{title}</h2>
-        <p className='text-sm text-on-surface-variant'>{hint}</p>
-      </div>
-      {children}
-    </section>
-  )
-}
 
 /**
  * The center dashboard (2026-11-10): one period (`?period=`, or a custom `?from=&to=` range) drives every section —

@@ -24,6 +24,11 @@ const GROUPS = [
   {
     id: 'finance',
     items: [{ to: '/customer/payments', icon: 'payments', label: 'customer.nav.payments' }]
+  },
+  {
+    // The header shows the stroke screening as an icon (and not at all on phones), so it is named here too.
+    id: 'health',
+    items: [{ to: '/customer/stroke-screening', icon: 'monitor_heart', label: 'customer.nav.strokeScreening' }]
   }
 ] as const
 

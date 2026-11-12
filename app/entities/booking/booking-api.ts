@@ -73,33 +73,21 @@ import type {
   CaregiverWithdrawalRequest,
   ListCaregiverWithdrawalsParams
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { env } from '~/shared/config/env'
 import { syncServerClock } from '~/shared/lib/server-clock'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async (headers: HeadersInit = {}) => ({
-  credentials: 'include' as const,
-  headers: { ...(await csrfHeaders()), ...headers }
-})
-
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`BookingService returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('BookingService')
 
 /** HTTP status attached by the generated fetch client when the backend answered with an error. */
 export function bookingErrorStatus(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null || !('status' in error)) return undefined
-  return typeof error.status === 'number' ? error.status : undefined
+  return apiErrorStatus(error)
 }
 
 /** Application error code from the backend APIResponse body, such as 5226 CAREGIVER_NOT_AVAILABLE. */
 export function bookingErrorCode(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null || !('info' in error)) return undefined
-  const info = error.info
-  if (typeof info !== 'object' || info === null || !('code' in info)) return undefined
-  return typeof info.code === 'number' ? info.code : undefined
+  return apiErrorCode(error)
 }
 
 export const bookingKeys = {

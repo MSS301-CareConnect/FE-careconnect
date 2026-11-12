@@ -9,22 +9,12 @@ import {
   revokeCareRecipientInvitation
 } from '~/shared/api/generated/api/care-recipient/care-recipient'
 import type { ManagerCreateRequest } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
 
 import { careRecipientErrorCode } from './care-recipient-api'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
-
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`CareRecipientService returned code ${response.data.code}`)
-  return response.data.result
-}
-
-function success(response: { data: { code: number } }): void {
-  if (response.data.code !== 200) throw new Error(`CareRecipientService returned code ${response.data.code}`)
-}
+const { result, success } = serviceResponse('CareRecipientService')
 
 export const managerKeys = {
   managers: (recipientId: string) => ['care-recipient', 'managers', recipientId] as const,

@@ -9,27 +9,24 @@ import type {
   RegistrationOtp,
   VerifyRegistrationRequest
 } from '~/shared/api/generated/contracts'
+import { serviceResponse, writeOptions } from '~/shared/api/request'
 
-import { csrfHeaders } from './session-api'
-
-function requireSuccess(code: number) {
-  if (code !== 200) throw new Error(`IdentityService returned code ${code}`)
-}
+const { success } = serviceResponse('IdentityService')
 
 export async function beginRegistration(request: RegisterRequest): Promise<RegistrationOtp> {
-  const response = await registerCustomer(request, { credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await registerCustomer(request, await writeOptions())
+  success(response)
   return response.data.result
 }
 
 export async function verifyRegistration(request: VerifyRegistrationRequest): Promise<void> {
-  const response = await verifyCustomerRegistration(request, { credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await verifyCustomerRegistration(request, await writeOptions())
+  success(response)
 }
 
 export async function resendOtp(request: RegistrationEmailRequest): Promise<RegistrationOtp> {
-  const response = await resendRegistrationOtp(request, { credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await resendRegistrationOtp(request, await writeOptions())
+  success(response)
   return response.data.result
 }
 

@@ -7,6 +7,7 @@ import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
 import { fetchCaregivers, providerKeys } from '~/entities/provider/provider-api'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
+import { downloadCsv } from '~/shared/lib/csv'
 import { calendarDayOf } from '~/shared/lib/format'
 import { foldText } from '~/shared/lib/fold-text'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
@@ -34,10 +35,6 @@ const VERIFICATIONS = ['VERIFIED', 'PENDING', 'REJECTED'] as const
 const EXPERIENCE = ['lt2', '2-5', '5-10', 'gt10'] as const
 const EXPERIENCE_LABELS = { lt2: 'lt2', '2-5': 'range2to5', '5-10': 'range5to10', gt10: 'gt10' } as const
 const SORTS = ['rating', 'experience', 'newest', 'name'] as const
-
-function csvCell(value: string) {
-  return `"${(/^[=+@-]/.test(value) ? `'${value}` : value).replaceAll('"', '""')}"`
-}
 
 /**
  * Center Manager caregiver roster: numbers for the center, one filter row (server-side status / verification, search,
@@ -133,16 +130,7 @@ export function ManagerCaregiversPage() {
         t(`${providerKey}.${verificationLabels[person.verificationStatus]}`)
       ])
     ]
-    const url = URL.createObjectURL(
-      new Blob(['﻿' + rows.map((row) => row.map(csvCell).join(',')).join('\r\n')], {
-        type: 'text/csv;charset=utf-8'
-      })
-    )
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = 'caregivers.csv'
-    anchor.click()
-    URL.revokeObjectURL(url)
+    downloadCsv('caregivers.csv', rows)
   }
 
   if (!centerId)

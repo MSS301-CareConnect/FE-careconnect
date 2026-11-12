@@ -16,19 +16,14 @@ import {
   payRemainingInvoice
 } from '~/shared/api/generated/api/remaining-invoice/remaining-invoice'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
 // D16: PaymentService only opens VNPay checkouts; the VNPay page lets the customer pick QR, ATM or card.
 const VNPAY = { provider: 'VNPAY' as const }
 export const PAYMENT_PAGE_SIZE = 10
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`PaymentService returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('PaymentService')
 
 export const paymentKeys = {
   all: ['payment'] as const,

@@ -8,14 +8,9 @@ import { fetchCenters, providerKeys } from '~/entities/provider/provider-api'
 import { fetchProviderStatistics, statisticsKeys } from '~/entities/statistics/statistics-api'
 import { AdminStatCards } from '~/features/admin/ui/stat-cards'
 import type { ProviderCenterRecord } from '~/shared/api/generated/contracts'
+import { downloadCsv } from '~/shared/lib/csv'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import {
-  BentoPageHeader,
-  bentoCard,
-  bentoContainer,
-  bentoTabClass,
-  bentoTabList
-} from '~/shared/ui/bento-page-header'
+import { BentoPageHeader, bentoCard, bentoContainer, bentoTabClass, bentoTabList } from '~/shared/ui/bento-page-header'
 import { Button } from '~/shared/ui/button'
 import { baseControlClass } from '~/shared/ui/form-field'
 import { Icon } from '~/shared/ui/icon'
@@ -36,10 +31,6 @@ const STAT_STATUSES = [
   { status: 'PENDING', icon: 'pending_actions' },
   { status: 'SUSPENDED', icon: 'lock' }
 ] as const
-
-function csvCell(value: string) {
-  return `"${(/^[=+@-]/.test(value) ? `'${value}` : value).replaceAll('"', '""')}"`
-}
 
 /**
  * Centers of the platform (redesigned 2026-11-11): count cards and status tabs from `/care-centers/statistics`, a
@@ -119,15 +110,7 @@ export function AdminCentersPage() {
         t(`${key}.status.${center.centerStatus}`)
       ])
     ]
-    const blob = new Blob(['﻿' + lines.map((row) => row.map(csvCell).join(',')).join('\r\n')], {
-      type: 'text/csv;charset=utf-8'
-    })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = 'admin-centers.csv'
-    anchor.click()
-    URL.revokeObjectURL(url)
+    downloadCsv('admin-centers.csv', lines)
   }
 
   const stats = [

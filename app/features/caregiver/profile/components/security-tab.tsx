@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '~/shared/ui/app-toast'
 
 import { validPassword } from '~/entities/identity/password-rules'
 import { PasswordField } from '~/features/shared/auth/password-field'
@@ -155,15 +155,13 @@ function DevicesCard() {
       return target
     },
     onSuccess: async (target) => {
-      toast.success(
-        t(target === 'others' ? 'caregiver.me.security.signedOutOthers' : 'caregiver.me.security.signedOut')
-      )
+      toastSuccess(t(target === 'others' ? 'caregiver.me.security.signedOutOthers' : 'caregiver.me.security.signedOut'))
       setPending(null)
       await queryClient.invalidateQueries({ queryKey: SESSIONS_KEY })
     },
     onError: () => {
       setPending(null)
-      toast.error(t('caregiver.me.security.actionError'))
+      toastError(t('caregiver.me.security.actionError'))
     }
   })
 

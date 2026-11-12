@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { providerKeys, updateCaregiverSchedule } from '~/entities/provider/provider-api'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
@@ -38,7 +38,7 @@ export function CalendarItemDialog({ item, onClose }: { item: CalendarItem | nul
       })
     },
     onSuccess: async () => {
-      toast.success(t('caregiver.work.calendar.slot.cancelledToast'))
+      toastSuccess(t('caregiver.work.calendar.slot.cancelledToast'))
       closeConfirm()
       onClose()
       await queryClient.invalidateQueries({ queryKey: providerKeys.mySchedules })

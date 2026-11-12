@@ -10,21 +10,12 @@ import {
   updateNotificationsReadState
 } from '~/shared/api/generated/api/notification/notification'
 import type { ListNotificationsParams } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { env } from '~/shared/config/env'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
 export const NOTIFICATION_PAGE_SIZE = 10
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`BookingService returned code ${response.data.code}`)
-  return response.data.result
-}
-
-function success(response: { data: { code: number } }): void {
-  if (response.data.code !== 200) throw new Error(`BookingService returned code ${response.data.code}`)
-}
+const { result, success } = serviceResponse('BookingService')
 
 export const notificationKeys = {
   all: ['notification'] as const,

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useLocation, useOutlet } from 'react-router'
 import { AiChatWidget } from '~/features/shared/ai-chat/ai-chat-widget'
+import { useStoredFlag } from '~/shared/lib/use-stored-flag'
 import { PageTransition } from '~/shared/ui/page-transition'
 
 import { CaregiverToaster } from '../ui/caregiver-toaster'
@@ -20,14 +21,6 @@ import './caregiver-theme.css'
 
 const COLLAPSED_KEY = 'careconnect.caregiver.sidebarCollapsed'
 
-function readCollapsed() {
-  try {
-    return typeof localStorage !== 'undefined' && localStorage.getItem(COLLAPSED_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
 /**
  * Caregiver shell ("Soft Bento", 2026-11-09): the floating forest rail from 1024 px (collapsible), a floating pill tab
  * bar on phones and a light topbar over the mint → peach page. Only the content animates between pages (fade, blur and
@@ -35,7 +28,7 @@ function readCollapsed() {
  */
 export function CaregiverLayout() {
   const { pathname } = useLocation()
-  const [collapsed, setCollapsed] = useState(readCollapsed)
+  const [collapsed, toggle] = useStoredFlag(COLLAPSED_KEY)
   const today = useToday()
   const toAccept = useVisitsToAccept(today).data?.totalElements ?? 0
   const requests = useBookingRequests().data?.totalElements ?? 0
@@ -47,17 +40,6 @@ export function CaregiverLayout() {
   useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [pageKey])
-
-  function toggle() {
-    setCollapsed((value) => {
-      try {
-        localStorage.setItem(COLLAPSED_KEY, value ? '0' : '1')
-      } catch {
-        // A blocked storage only loses the preference.
-      }
-      return !value
-    })
-  }
 
   return (
     <div className='theme-caregiver cc-mesh min-h-dvh bg-fixed text-on-surface'>

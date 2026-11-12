@@ -1,7 +1,7 @@
 import { getCurrentUser } from '~/shared/api/generated/api/account/account'
 import { loginWeb, logoutWebSession } from '~/shared/api/generated/api/authentication/authentication'
 import type { LoginRequest, UserResponse } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { refreshSession } from '~/shared/api/session-refresh'
 
 export { csrfHeaders } from '~/shared/api/csrf'
@@ -13,13 +13,11 @@ function statusOf(error: unknown): number | undefined {
   return typeof error.status === 'number' ? error.status : undefined
 }
 
-function requireSuccess(code: number) {
-  if (code !== 200) throw new Error(`IdentityService returned code ${code}`)
-}
+const { success } = serviceResponse('IdentityService')
 
 async function currentUser(): Promise<UserResponse> {
-  const response = await getCurrentUser({ credentials: 'include' })
-  requireSuccess(response.data.code)
+  const response = await getCurrentUser(readOptions)
+  success(response)
   if (!response.data.result.id || !response.data.result.roles) throw new Error('Incomplete user session')
   return response.data.result
 }
@@ -41,15 +39,15 @@ export async function loadSession(): Promise<UserResponse | null> {
 }
 
 export async function signIn(credentials: LoginRequest): Promise<UserResponse> {
-  const response = await loginWeb(credentials, { credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await loginWeb(credentials, await writeOptions())
+  success(response)
   if (!response.data.result.authenticated) throw new Error('Login failed')
   return currentUser()
 }
 
 export async function signOut(): Promise<void> {
-  const response = await logoutWebSession({ credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await logoutWebSession(await writeOptions())
+  success(response)
 }
 
 export function isCredentialError(error: unknown) {

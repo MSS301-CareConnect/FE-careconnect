@@ -47,8 +47,10 @@ export function CatalogItemViewDialog({ item, onClose, onEdit }: CatalogItemView
               {t(`${key}.title`)}
             </h2>
           </div>
+          {/* Focus starts inside the dialog so Escape (handled on the overlay) closes it, like the delete dialog. */}
           <button
             aria-label={t(`${key}.close`)}
+            autoFocus
             className='rounded-xl p-1.5 text-outline transition-colors hover:bg-surface-container-low hover:text-on-surface'
             onClick={onClose}
             type='button'

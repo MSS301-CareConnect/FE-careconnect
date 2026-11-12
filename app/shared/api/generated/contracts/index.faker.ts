@@ -401,6 +401,9 @@ import type {
   ShiftRegistrationRequest,
   SpecialNotesRecord,
   StatisticsTrendPointRecord,
+  StrokeScreeningRequest,
+  StrokeScreeningResponse,
+  StrokeScreeningResult,
   TimeOffRequest,
   TimeSlotRequest,
   TopCaregiverRecord,
@@ -1145,6 +1148,41 @@ export const getAiConversationDetailResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getAiConversationDetailMock() },
+  ...overrideResponse
+})
+
+export const getStrokeScreeningRequestMock = (
+  overrideResponse: Partial<StrokeScreeningRequest> = {}
+): StrokeScreeningRequest => ({
+  hypertension: faker.datatype.boolean(),
+  highCholesterol: faker.datatype.boolean(),
+  myocardialInfarctionHistory: faker.datatype.boolean(),
+  anginaOrChdHistory: faker.datatype.boolean(),
+  diabetes: faker.datatype.boolean(),
+  sex: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
+  age: faker.number.int({ min: 18, max: 120 }),
+  bmi: faker.number.float({ min: 10, max: 80, fractionDigits: 2 }),
+  currentSmoker: faker.datatype.boolean(),
+  ...overrideResponse
+})
+
+export const getStrokeScreeningResultMock = (
+  overrideResponse: Partial<StrokeScreeningResult> = {}
+): StrokeScreeningResult => ({
+  predictedClass: faker.number.int(),
+  modelScore: faker.number.float({ min: 0, max: 1, fractionDigits: 2 }),
+  screeningResult: faker.helpers.arrayElement(['NEEDS_FURTHER_ASSESSMENT', 'LOWER_SCREENING_PATTERN'] as const),
+  recommendation: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  disclaimer: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  ...overrideResponse
+})
+
+export const getStrokeScreeningResponseMock = (
+  overrideResponse: Partial<StrokeScreeningResponse> = {}
+): StrokeScreeningResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: { ...getStrokeScreeningResultMock() },
   ...overrideResponse
 })
 

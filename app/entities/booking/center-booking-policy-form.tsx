@@ -405,7 +405,8 @@ function PolicyEditor({ policy }: { policy: CenterBookingPolicyRecord }) {
         <FormAlert tone={errors.failure.kind === 'system' ? 'error' : 'warning'}>{t(errors.failure.key)}</FormAlert>
       ) : null}
       {/* Stays in view on a long form, so saving never needs a scroll to the end. */}
-      <div className='sticky bottom-4 z-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-forest-900/[0.06] bg-white/95 px-4 py-3 shadow-[var(--shadow-float)] backdrop-blur'>
+      {/* From lg the AI assistant pill sits at the bottom right (bottom-6, 56 px): keep the save bar above it. */}
+      <div className='sticky bottom-4 z-10 flex flex-wrap lg:bottom-24 items-center justify-end gap-3 rounded-2xl border border-forest-900/[0.06] bg-white/95 px-4 py-3 shadow-[var(--shadow-float)] backdrop-blur'>
         {dirty ? (
           <p className='mr-auto flex items-center gap-2 text-sm font-medium text-peach-700'>
             <span aria-hidden='true' className='h-2 w-2 rounded-full bg-peach-400' />

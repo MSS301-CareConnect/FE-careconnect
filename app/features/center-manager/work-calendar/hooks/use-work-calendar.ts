@@ -9,7 +9,7 @@ import {
   providerKeys
 } from '~/entities/provider/provider-api'
 import type { ListCenterCaregiversParams } from '~/shared/api/generated/contracts'
-import { addDays, isoWeekday } from '~/shared/lib/format'
+import { addDays, mondayOf } from '~/shared/lib/format'
 import { pageSizeOf } from '~/shared/ui/pagination'
 
 export const CALENDAR_VIEWS = ['team', 'list', 'timeOff'] as const
@@ -22,10 +22,6 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/
 const WEEK_LIMIT = 100
 const caregiverRequest: ListCenterCaregiversParams = { page: 0, size: 100 }
 export const CALENDAR_PAGE_SIZES = [10, 20, 50] as const
-
-export function mondayOf(day: string) {
-  return addDays(day, 1 - isoWeekday(day))
-}
 
 /**
  * Center work calendar state in the URL (`view`, `week` = its Monday, `caregiver`, `scope` of the time-off tab) and the

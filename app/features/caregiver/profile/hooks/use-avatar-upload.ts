@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastError, toastSuccess, toastWarning } from '~/shared/ui/app-toast'
 
 import { invalidateOwnerMedia } from '~/entities/provider/invalidate-provider-media'
 import { providerKeys, removeMedia, uploadMedia } from '~/entities/provider/provider-api'
@@ -36,10 +36,10 @@ export function useAvatarUpload(
     },
     onMutate: (file) => setPreview(URL.createObjectURL(file)),
     onSuccess: (leftOld) => {
-      toast.success(t('caregiver.me.header.photoUpdated'))
-      if (leftOld) toast.warning(t('caregiver.me.header.oldPhotoLeft'))
+      toastSuccess(t('caregiver.me.header.photoUpdated'))
+      if (leftOld) toastWarning(t('caregiver.me.header.oldPhotoLeft'))
     },
-    onError: () => toast.error(t('caregiver.me.header.photoError')),
+    onError: () => toastError(t('caregiver.me.header.photoError')),
     onSettled: async () => {
       setPreview((value) => {
         if (value) URL.revokeObjectURL(value)

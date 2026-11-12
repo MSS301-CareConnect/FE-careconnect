@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { RemoveTimeOffDialog, TimeOffDialog } from '~/entities/provider/caregiver-time-offs'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import type { ProviderTimeOffRecord } from '~/shared/api/generated/contracts'
-import { addDays, calendarDayOf, useFormat } from '~/shared/lib/format'
+import { addDays, calendarDayOf, mondayOf, useFormat } from '~/shared/lib/format'
 import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Button } from '~/shared/ui/button'
@@ -21,13 +21,7 @@ import { ScheduleList } from './components/schedule-list'
 import { TeamWeekGrid } from './components/team-week-grid'
 import { TimeOffTable } from './components/time-off-table'
 import { WorkCalendarStats, type CalendarNumbers } from './components/work-calendar-stats'
-import {
-  CALENDAR_PAGE_SIZES,
-  mondayOf,
-  TIME_OFF_SCOPES,
-  useWorkCalendar,
-  type CalendarView
-} from './hooks/use-work-calendar'
+import { CALENDAR_PAGE_SIZES, TIME_OFF_SCOPES, useWorkCalendar, type CalendarView } from './hooks/use-work-calendar'
 
 const k = 'centerManager.schedules' as const
 const weekButton =

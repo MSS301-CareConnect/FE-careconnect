@@ -106,19 +106,9 @@ import type {
   WorkShiftCancelRequest,
   WorkShiftStatusRequest
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
-
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`ProviderService returned code ${response.data.code}`)
-  return response.data.result
-}
-
-function success(response: { data: { code: number } }): void {
-  if (response.data.code !== 200) throw new Error(`ProviderService returned code ${response.data.code}`)
-}
+const { result, success } = serviceResponse('ProviderService')
 
 export const providerKeys = {
   centers: ['provider', 'centers'] as const,

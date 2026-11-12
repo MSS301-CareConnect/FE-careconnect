@@ -180,7 +180,7 @@ export function ManagerBookingDetailPage() {
                 {t(`${k}.reject`)}
               </Button>
             ) : null}
-            {ACCEPTED.includes(data.status) && hasUpcoming ? (
+            {ACCEPTED.includes(data.status) && hasUpcoming && !past ? (
               <Button leftIcon={<Icon name='switch_account' />} onClick={() => setDialog('reassign')} variant='outline'>
                 {t(`${k}.reassignAll`)}
               </Button>
@@ -190,7 +190,7 @@ export function ManagerBookingDetailPage() {
                 {t('booking.address.action')}
               </Button>
             ) : null}
-            {ACCEPTED.includes(data.status) ? (
+            {ACCEPTED.includes(data.status) && !past ? (
               <Button
                 className='text-error! hover:text-error!'
                 leftIcon={<Icon name='event_busy' />}
@@ -299,6 +299,7 @@ export function ManagerBookingDetailPage() {
               onSelectOccurrence={setVisit}
               renderActions={(occurrence) => (
                 <ManagerOccurrenceActions
+                  bookingClosing={past}
                   bookingId={data.id}
                   bookingStatus={data.status}
                   caregivers={caregivers}

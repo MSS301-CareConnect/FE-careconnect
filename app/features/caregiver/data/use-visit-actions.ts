@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '~/shared/ui/app-toast'
 
 import { acknowledgeOccurrence, acknowledgeOccurrences, bookingKeys, checkIn } from '~/entities/booking/booking-api'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
@@ -64,19 +64,19 @@ export function useVisitActions(visit: CaregiverOccurrenceRecord, onStarted?: ()
   const accept = useMutation({
     mutationFn: () => acknowledgeOccurrence(visit.id),
     onSuccess: async () => {
-      toast.success(t('caregiver.visitDetail.actions.accepted'))
+      toastSuccess(t('caregiver.visitDetail.actions.accepted'))
       await refresh()
     },
-    onError: (error) => toast.error(t(bookingErrorKey(error)))
+    onError: (error) => toastError(t(bookingErrorKey(error)))
   })
   const start = useMutation({
     mutationFn: async () => checkIn({ occurrenceId: visit.id, ...(await currentPosition()) }),
     onSuccess: async () => {
-      toast.success(t('caregiver.visitDetail.actions.started'))
+      toastSuccess(t('caregiver.visitDetail.actions.started'))
       await refresh()
       onStarted?.()
     },
-    onError: (error) => toast.error(t(bookingErrorKey(error)))
+    onError: (error) => toastError(t(bookingErrorKey(error)))
   })
 
   return { accept, start }
@@ -97,10 +97,10 @@ export function useAcceptVisits(onDone?: () => void) {
   return useMutation({
     mutationFn: (visits: CaregiverOccurrenceRecord[]) => acknowledgeOccurrences(visits.map((visit) => visit.id)),
     onSuccess: async (accepted) => {
-      toast.success(t('caregiver.booking.accept.done', { count: accepted.length }))
+      toastSuccess(t('caregiver.booking.accept.done', { count: accepted.length }))
       onDone?.()
       await queryClient.invalidateQueries({ queryKey: bookingKeys.all })
     },
-    onError: (error) => toast.error(t(bookingErrorKey(error)))
+    onError: (error) => toastError(t(bookingErrorKey(error)))
   })
 }

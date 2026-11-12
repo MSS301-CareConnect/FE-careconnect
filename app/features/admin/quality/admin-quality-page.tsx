@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
+import { downloadCsv } from '~/shared/lib/csv'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { Icon } from '~/shared/ui/icon'
 import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
@@ -7,11 +8,6 @@ import { qualityPreview } from './quality-preview'
 
 const key = 'admin.qualityPage' as const
 const card = 'rounded-xl bg-white p-5 shadow-sm'
-
-function csvCell(value: string | number) {
-  const cell = String(value)
-  return `"${(/^[=+@-]/.test(cell) ? `'${cell}` : cell).replaceAll('"', '""')}"`
-}
 
 export function AdminQualityPage() {
   const { t, i18n } = useTranslation()
@@ -61,15 +57,7 @@ export function AdminQualityPage() {
         t(`${key}.statuses.${record.status}`)
       ])
     ]
-    const blob = new Blob(['\uFEFF' + rows.map((row) => row.map(csvCell).join(',')).join('\r\n')], {
-      type: 'text/csv;charset=utf-8'
-    })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = 'admin-caregiver-quality-preview.csv'
-    anchor.click()
-    URL.revokeObjectURL(url)
+    downloadCsv('admin-caregiver-quality-preview.csv', rows)
   }
   return (
     <div className={`${bentoContainer} space-y-6`}>

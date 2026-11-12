@@ -8,20 +8,22 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { PaymentResponse } from '../../contracts'
+import type { StrokeScreeningResponse } from '../../contracts'
 
-import { getSubmitPaymentDemoResultResponseMock } from './payment-demo.faker'
+import { getPredictStrokeScreeningResponseMock } from './stroke-screening.faker'
 
-export { getSubmitPaymentDemoResultResponseMock } from './payment-demo.faker'
+export { getPredictStrokeScreeningResponseMock } from './stroke-screening.faker'
 
-export const getSubmitPaymentDemoResultMockHandler = (
+export const getPredictStrokeScreeningMockHandler = (
   overrideResponse?:
-    | PaymentResponse
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<PaymentResponse> | PaymentResponse),
+    | StrokeScreeningResponse
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0]
+      ) => Promise<StrokeScreeningResponse> | StrokeScreeningResponse),
   options?: RequestHandlerOptions
 ) => {
   return http.post(
-    '*/v1/payments/:id/demo-results',
+    '*/v1/ai/stroke-screening/predict',
     async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
       await delay(150)
 
@@ -30,11 +32,11 @@ export const getSubmitPaymentDemoResultMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getSubmitPaymentDemoResultResponseMock(),
+          : getPredictStrokeScreeningResponseMock(),
         { status: 200 }
       )
     },
     options
   )
 }
-export const getPaymentDemoMock = () => [getSubmitPaymentDemoResultMockHandler()]
+export const getStrokeScreeningMock = () => [getPredictStrokeScreeningMockHandler()]

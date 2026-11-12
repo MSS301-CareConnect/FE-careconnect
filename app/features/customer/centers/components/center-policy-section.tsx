@@ -37,7 +37,12 @@ export function CenterPolicySection({ centerId }: { centerId: string }) {
       ) : null}
       {data ? (
         <ul className='flex flex-col gap-2 text-sm leading-6 text-on-surface-variant'>
-          <li>{t(`${key}.deposit`, { percent: percent.format(data.depositPercent / 100) })}</li>
+          <li>
+            {t(`${key}.deposit`, {
+              hours: hours.format(data.remainingPaymentDueBeforeMinutes / 60),
+              percent: percent.format(data.depositPercent / 100)
+            })}
+          </li>
           <li>
             {t(`${key}.before`, {
               hours: threshold,

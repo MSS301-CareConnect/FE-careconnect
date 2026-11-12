@@ -27,21 +27,12 @@ import type {
   PricePlanBatchUpdateRequest,
   PricePlanRequest
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
 const pageSize = 100
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`CareCatalogService returned code ${response.data.code}`)
-  return response.data.result
-}
-
-function success(response: { data: { code: number } }): void {
-  if (response.data.code !== 200) throw new Error(`CareCatalogService returned code ${response.data.code}`)
-}
+const { result, success } = serviceResponse('CareCatalogService')
 
 async function collectPages<T>(load: (page: number) => Promise<{ items: T[]; totalPages: number }>): Promise<T[]> {
   const items: T[] = []

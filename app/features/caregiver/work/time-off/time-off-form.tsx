@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { createTimeOff, providerKeys } from '~/entities/provider/provider-api'
 import { apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
@@ -89,7 +89,7 @@ export function TimeOffForm({
         reason: reason.trim() || undefined
       }),
     onSuccess: async () => {
-      toast.success(t('caregiver.work.timeOff.added'))
+      toastSuccess(t('caregiver.work.timeOff.added'))
       reset()
       onClose()
       await queryClient.invalidateQueries({ queryKey: providerKeys.timeOffs(caregiverId) })

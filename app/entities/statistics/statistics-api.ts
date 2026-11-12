@@ -1,12 +1,9 @@
 import { getCenterStatistics, getSystemStatistics } from '~/shared/api/generated/api/statistics/statistics'
 import { getProviderStatistics } from '~/shared/api/generated/api/provider-center/provider-center'
+import { readOptions, serviceResponse } from '~/shared/api/request'
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`Statistics API returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('Statistics API')
 
-const readOptions = { credentials: 'include' as const }
 // Admin dashboard ranks centers from one page of the per-center breakdown.
 const TOP_CENTER_PAGE_SIZE = 100
 

@@ -7,15 +7,15 @@
  */
 import { faker } from '@faker-js/faker'
 
-import type { PaymentResponse } from '../../contracts'
+import type { StrokeScreeningResponse } from '../../contracts'
 
-import { getPaymentRecordMock } from '../../contracts/index.faker'
+import { getStrokeScreeningResultMock } from '../../contracts/index.faker'
 
-export const getSubmitPaymentDemoResultResponseMock = (
-  overrideResponse: Partial<Extract<PaymentResponse, object>> = {}
-): PaymentResponse => ({
+export const getPredictStrokeScreeningResponseMock = (
+  overrideResponse: Partial<Extract<StrokeScreeningResponse, object>> = {}
+): StrokeScreeningResponse => ({
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
-  result: { ...getPaymentRecordMock() },
+  result: { ...getStrokeScreeningResultMock() },
   ...overrideResponse
 })

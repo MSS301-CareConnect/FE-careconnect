@@ -2,10 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { bookingKeys, cancelBookingRequest } from '~/entities/booking/booking-api'
+import { isPastDeadline } from '~/entities/booking/booking-deadline'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import { classifyApiError } from '~/shared/api/api-error'
-import type { BookingStatus } from '~/shared/api/generated/contracts'
+import type { BookingDeadlineType, BookingStatus } from '~/shared/api/generated/contracts'
 import { useActionToast } from '~/shared/ui/use-action-toast'
 
 // Statuses that still hold a schedule; BookingService rejects a cancel outside them.
@@ -18,8 +19,12 @@ const CANCELLABLE: ReadonlySet<BookingStatus> = new Set([
   'IN_PROGRESS'
 ])
 
-export function canAdminCancel(status: BookingStatus) {
-  return CANCELLABLE.has(status)
+/** A booking past its running deadline is being closed by BookingService (409 5116), so it offers no cancel either. */
+export function canAdminCancel(
+  booking: { status: BookingStatus; deadlineAt?: string; deadlineType?: BookingDeadlineType },
+  now: number
+) {
+  return CANCELLABLE.has(booking.status) && !isPastDeadline(booking, now)
 }
 
 /** M-11: the admin cancels a booking on behalf of the platform (full refund like a center cancel), with a reason. */

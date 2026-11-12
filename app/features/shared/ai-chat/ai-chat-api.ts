@@ -7,17 +7,11 @@ import {
   updateAiConversation
 } from '~/shared/api/generated/api/ai-chat/ai-chat'
 import type { AiChatPromptPayload } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { apiErrorCode, apiErrorStatus, apiRequestErrorKey } from '~/shared/api/error-details'
 import { refreshSession } from '~/shared/api/session-refresh'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
-
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`AIService returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('AIService')
 
 /**
  * The chat endpoints are public but AIService still reads the session cookie to tell a guest from a signed-in user,

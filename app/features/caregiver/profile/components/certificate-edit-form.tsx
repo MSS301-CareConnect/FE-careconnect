@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { certificateReviewErrorKey } from '~/entities/provider/certificate-ai'
 import { fetchProviderMedia, providerKeys, saveCertificate } from '~/entities/provider/provider-api'
@@ -54,7 +54,7 @@ export function CertificateEditForm({
   const save = useMutation({
     mutationFn: () => saveCertificate(certificate.id, certificateRequestOf(details, certificate.version)),
     onSuccess: async () => {
-      toast.success(
+      toastSuccess(
         t(resetsReview ? 'caregiver.me.certificates.editForm.savedReset' : 'caregiver.me.certificates.editForm.saved')
       )
       setConfirming(false)

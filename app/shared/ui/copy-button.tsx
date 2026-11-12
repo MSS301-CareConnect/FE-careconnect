@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { copyText } from '../lib/clipboard'
 import { Icon } from './icon'
 
 /**
@@ -29,8 +30,8 @@ export function CopyButton({
     <button
       aria-label={copied ? t('common.kit.copied') : `${t('common.kit.copy')} ${value}`}
       className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-primary transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-primary ${className}`}
-      onClick={() => {
-        void navigator.clipboard?.writeText(value).then(() => setCopied(true))
+      onClick={async () => {
+        if (await copyText(value)) setCopied(true)
       }}
       type='button'
     >

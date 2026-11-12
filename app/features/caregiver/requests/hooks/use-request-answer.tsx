@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '~/shared/ui/app-toast'
 
 import { acceptAsCaregiverRequest, bookingKeys, declineAsCaregiverRequest } from '~/entities/booking/booking-api'
 import { bookingErrorKey } from '~/entities/booking/booking-format'
@@ -18,11 +18,11 @@ export function useRequestAnswer(onDone?: () => void) {
   const [declining, setDeclining] = useState<string | null>(null)
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-  const failed = (error: unknown) => toast.error(t(bookingErrorKey(error)))
+  const failed = (error: unknown) => toastError(t(bookingErrorKey(error)))
   const accept = useMutation({
     mutationFn: (id: string) => acceptAsCaregiverRequest(id),
     onSuccess: async () => {
-      toast.success(t('caregiver.requests.accepted'))
+      toastSuccess(t('caregiver.requests.accepted'))
       onDone?.()
       await refresh()
     },
@@ -32,7 +32,7 @@ export function useRequestAnswer(onDone?: () => void) {
     mutationFn: ({ id, reason }: { id: string; reason: string }) => declineAsCaregiverRequest(id, reason),
     onSuccess: async (record) => {
       setDeclining(null)
-      toast.success(
+      toastSuccess(
         record.status === 'PENDING_CAREGIVER_ASSIGNMENT'
           ? t('caregiver.requests.declinedToCenter')
           : t('caregiver.requests.declined')

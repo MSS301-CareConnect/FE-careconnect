@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { fetchTimeOffs, providerKeys, removeTimeOff } from '~/entities/provider/provider-api'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
@@ -40,7 +40,7 @@ export function TimeOffPanel({ caregiverId, today }: { caregiverId?: string; tod
   const remove = useMutation({
     mutationFn: (item: ProviderTimeOffRecord) => removeTimeOff(caregiverId ?? '', item.id),
     onSuccess: async () => {
-      toast.success(t('caregiver.work.timeOff.deleted'))
+      toastSuccess(t('caregiver.work.timeOff.deleted'))
       setDeleting(null)
       await queryClient.invalidateQueries({ queryKey: providerKeys.timeOffs(caregiverId ?? '') })
     }
