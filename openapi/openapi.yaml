@@ -52,6 +52,8 @@ tags:
     description: PaymentService remaining-balance invoices issued after a booking completes.
   - name: AiChat
     description: AIService chatbot (2026-11-09) — guests get a few prompts a day without images; every signed-in role keeps conversations and may attach up to three images.
+  - name: StrokeScreening
+    description: AIService stroke screening (2026-11-12) — a CUSTOMER sends nine health facts of a cared-for person; AIService forwards them to the internal StrokeModelService and returns a screening pattern, never a diagnosis.
 paths:
   /v1/auth/csrf:
     get:
@@ -9571,6 +9573,35 @@ paths:
           description: AIService error
         '503':
           description: AIService error
+  /v1/ai/stroke-screening/predict:
+    post:
+      tags:
+        - StrokeScreening
+      summary: CUSTOMER — screen health facts for a stroke-history pattern (Logistic Regression + SMOTE); support only, not a diagnosis
+      operationId: predictStrokeScreening
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StrokeScreeningRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrokeScreeningResponse'
+        '400':
+          description: AIService error
+        '401':
+          description: AIService error
+        '403':
+          description: AIService error
+        '500':
+          description: AIService error
+        '503':
+          description: AIService error (8613 STROKE_MODEL_UNAVAILABLE)
   /v1/certificates/pending-audit:
     get:
       tags:
@@ -11290,6 +11321,77 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/AiConversationDetail'
+    StrokeScreeningRequest:
+      type: object
+      required:
+        [
+          hypertension,
+          highCholesterol,
+          myocardialInfarctionHistory,
+          anginaOrChdHistory,
+          diabetes,
+          sex,
+          age,
+          bmi,
+          currentSmoker
+        ]
+      properties:
+        hypertension:
+          type: boolean
+        highCholesterol:
+          type: boolean
+        myocardialInfarctionHistory:
+          type: boolean
+        anginaOrChdHistory:
+          type: boolean
+        diabetes:
+          type: boolean
+        sex:
+          type: string
+          enum: [MALE, FEMALE]
+        age:
+          type: integer
+          minimum: 18
+          maximum: 120
+        bmi:
+          type: number
+          format: double
+          minimum: 10
+          maximum: 80
+        currentSmoker:
+          type: boolean
+    StrokeScreeningResult:
+      type: object
+      required: [predictedClass, modelScore, screeningResult, recommendation, disclaimer]
+      properties:
+        predictedClass:
+          type: integer
+          description: 0 or 1; not shown to the user.
+        modelScore:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: Model index between 0 and 1 — never a probability of having a stroke.
+        screeningResult:
+          type: string
+          enum: [NEEDS_FURTHER_ASSESSMENT, LOWER_SCREENING_PATTERN]
+        recommendation:
+          type: string
+          description: Vietnamese text written by StrokeModelService, shown verbatim.
+        disclaimer:
+          type: string
+          description: Vietnamese text written by StrokeModelService, always shown under the result.
+    StrokeScreeningResponse:
+      type: object
+      required: [code, message, result]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          $ref: '#/components/schemas/StrokeScreeningResult'
     AiConversationUpdateRequest:
       type: object
       required: [title, version]

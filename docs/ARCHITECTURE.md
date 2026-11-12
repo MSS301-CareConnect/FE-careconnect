@@ -410,14 +410,14 @@ targets and keyboard focus rings:
 - `status-badge.tsx` (`StatusBadge`): semantic `success`, `warning`, `error`, `info`, and `neutral` pills with optional status dot.
 - `form-field.tsx` (`FormField`, `TextInput`, `SelectInput`, `TextareaInput`): accessible label, helper text, error message, and `aria-invalid`/`aria-describedby` wiring.
 - `modal.tsx` (`Modal`, `ConfirmDialog`): native `<dialog>` modal and accessible confirmation dialog replacing browser `window.confirm`.
-- `toast.tsx` (`ToastProvider`, `useToast`): non-blocking status notifications (`aria-live="polite"`).
-- `toaster.tsx`, `app-toast.ts`, `use-action-toast.ts`: the admin portal's sonner toasts (bottom-right, token colors,
-  mounted once in `AdminLayout`). A mutation's success is a toast; a system failure (5xx, network) is a toast with a
+- `toaster.tsx`, `app-toast.ts`, `use-action-toast.ts`: the sonner toasts of every portal (token colors; bottom-right
+  by default, mounted once per portal layout — the caregiver `CaregiverToaster` passes bottom-centre and its tab-bar
+  offsets). Features call `toastSuccess` / `toastInfo` / `toastWarning` / `toastError` / `toastSystemError` instead of
+  importing sonner. A mutation's success is a toast; a system failure (5xx, network) is a toast with a
   retry that keeps the form and its input; validation errors stay under the field and business errors at the end of
   the form (`FormAlert`). `toastSystemError` returns `false` for non-system errors so the caller renders them inline.
-  Other portals keep their inline outcomes until the admin pattern is extended to them.
+- `dashboard-section.tsx` (`DashboardSection`): a titled band of the admin dashboard and the manager statistics page.
 - `pagination.tsx` (`Pagination`): accessible pagination bar with `tabular-nums`.
-- `data-table.tsx` (`DataTableShell`): responsive table wrapper with sticky header support.
 - `state-panels.tsx` (`SkeletonBlock`, `TableSkeleton`, `CardGridSkeleton`, `EmptyState`, `ErrorState`, `ForbiddenState`, `OfflineBanner`): unified loading, empty, error, 403, and offline states.
 - `section-card.tsx`, `language-switch.tsx`, `site-footer.tsx`, `icon.tsx`: generic layout cards, VI/EN language switcher, footer, and Material Symbols icon wrapper.
 - Added by the customer redesign (2026-11-03): `page-header.tsx` (`PageHeader`, `pageContainer`), `tabs.tsx` (sliding
@@ -429,7 +429,9 @@ targets and keyboard focus rings:
   previews that open in the viewer). `Avatar` takes `viewable` so a real photo opens the viewer; `Modal` takes
   `dismissOnBackdrop={false}` for forms and bounds its height to the screen. `shared/lib/format.ts` (`useFormat`) gives
   money "100.000 ₫", dates dd/mm/yyyy and 24-hour times in both languages; `use-clock.ts` and `fold-text.ts` support
-  countdowns and diacritic-insensitive search.
+  countdowns and diacritic-insensitive search. Also in `shared/lib`: `csv.ts` (`csvCell`, `downloadCsv`),
+  `clipboard.ts` (`copyText`, resolves false instead of rejecting), `use-stored-flag.ts` (a '1' / '0' `localStorage`
+  preference such as a collapsed sidebar) and `use-escape-key.ts`.
 
 - Pickers and dropdowns (redesigned 2026-11-05). `use-anchored-popover.ts` places a panel next to its field in the
   browser top layer (`popover="manual"` + `showPopover()`), so dialogs and `overflow` containers never clip it; it opens
@@ -773,7 +775,10 @@ points. Its base URL reads
 typed response data/status and throws for non-success HTTP responses, allowing
 TanStack Query to enter its error state. Do not wrap every generated call in a
 repository. Add a custom fetch mutator only when authentication, refresh, correlation
-IDs, or a normalized API-error contract requires it.
+IDs, or a normalized API-error contract requires it. The hand-written gateway wrappers
+share `shared/api/request.ts`: `readOptions` (cookies), `writeOptions()` (cookies, a fresh
+CSRF header and `X-Client-Type: web`) and `serviceResponse('<Service>')`, whose `result` /
+`success` throw when the APIResponse `code` is not 200.
 
 Faker is a development dependency and may be used by unit tests, component examples,
 or deterministic fixtures. MSW handlers may be used by integration tests or an
@@ -1158,6 +1163,7 @@ the ops account menu has no wallet card. PaymentService refuses a center withdra
 unchanged. `entities/wallet/booking-settlement-card.tsx` (manager and admin booking detail) reads
 `GET /wallets/bookings/{bookingId}/settlement`: paid, refunded, center service money, kept deposits, complaint
 deductions, what the center received, the commission, and each visit's outcome (404 = not paid yet).
+
 - The money sections of `/center-manager/statistics` and `/admin/dashboard` follow the same rule: the center tile is
   "received by the center" (hint: commission deducted) with a received-only chart, the platform commission tile counts
   its bookings, "held for others" sums customer and caregiver wallets only, and both link to the revenue pages.
@@ -1208,3 +1214,22 @@ deductions, what the center received, the commission, and each visit's outcome (
 - `/customer/centers` pages and searches on the server (`useServiceCentersPage`, `?q=`, `?page=`, `?size=`);
   ProviderService matches name and address without diacritics. Services still page in the browser over the collected
   list because price sort and category groups are computed there; caregivers were already server-paged.
+
+### 2026-11-12 — customer stroke screening
+
+`/customer/stroke-screening` (guarded customer layout, `features/customer/stroke-screening`) calls AIService
+`POST /api/v1/ai/stroke-screening/predict` through the gateway (tag `StrokeScreening`, `predictStrokeScreening`, CUSTOMER
+only; AIService forwards to its internal StrokeModelService, which the browser never calls). It is a cookie POST, so it
+sends the Identity CSRF header (`writeOptions`). The form asks nine facts — sex, age (18–120 whole years), BMI (10–80,
+comma or dot, with an optional height / weight calculator) and six yes / no history questions with no default answer
+— and keeps "Run screening" disabled until every answer is valid, with the reason under the inputs or the button.
+Choosing a family profile (`entities/care-recipient`, the booking form's list request) starts a fresh draft prefilled
+with age, sex (MALE / FEMALE only) and BMI from height and weight; its chronic conditions are shown as a reference, never
+turned into answers. The result names the pattern (`NEEDS_FURTHER_ASSESSMENT` peach, `LOWER_SCREENING_PATTERN` mint;
+`predictedClass` is never shown), shows `modelScore` as a "model index" meter that is explicitly not a probability, the
+backend `recommendation` verbatim, three translated next steps, the answers it used and, directly under it, the backend
+`disclaimer`; changing an answer afterwards marks the result as outdated. Failures are a `FormAlert` at the end of the
+form: 8613 / 503 / 404 (endpoint not deployed) read "not available" with a retry, 401 asks to retry after the session
+refresh, 403 and 400 have no retry, a network error says it is not a result. Nothing is stored. The header shows the page
+as a round icon item (name in a tooltip and for screen readers) because the floating bar (at most 1180 px) is full at
+`xl`; nav links are `px-3`/`xl:px-3.5` with `gap-0.5` to make room. The account menu lists it under "Health" with its name.

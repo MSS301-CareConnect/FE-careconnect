@@ -30,7 +30,8 @@ export const customerLayoutEn = {
     hotlineNumber: '1900 6868',
     emergency: 'Medical emergency: call 115',
     loading: 'Loading…',
-    groups: { account: 'Account', finance: 'Payments & wallet' }
+    groups: { account: 'Account', finance: 'Payments & wallet', health: 'Health' },
+    strokeScreening: 'Stroke screening'
   },
   accountArea: {
     label: 'Account sections',
@@ -90,7 +91,8 @@ export const customerLayoutVi = {
     hotlineNumber: '1900 6868',
     emergency: 'Cấp cứu y tế: gọi 115',
     loading: 'Đang tải…',
-    groups: { account: 'Tài khoản', finance: 'Thanh toán & ví' }
+    groups: { account: 'Tài khoản', finance: 'Thanh toán & ví', health: 'Sức khỏe' },
+    strokeScreening: 'Sàng lọc đột quỵ'
   },
   accountArea: {
     label: 'Các mục tài khoản',

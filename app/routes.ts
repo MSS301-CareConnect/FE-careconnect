@@ -95,6 +95,7 @@ export default [
       route('payments/:paymentId/success', 'routes/customer/payment-success.tsx'),
       route('payments/:paymentId/failure', 'routes/customer/payment-failure.tsx'),
       route('patient-profiles/new', 'routes/customer/patient-create.tsx'),
+      route('stroke-screening', 'routes/customer/stroke-screening.tsx'),
       // Account area: one shell (sidebar on desktop, tabs on phones) around the pages of the account menu.
       layout('routes/customer/account-layout.tsx', [
         route('my-profile', 'routes/customer/my-profile.tsx'),

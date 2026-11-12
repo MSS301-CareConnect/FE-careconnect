@@ -46,6 +46,7 @@ import {
 } from './customer/managers-resources'
 import { centerPickerEn, centerPickerVi } from './customer/center-picker-resources'
 import { customerCentersEn, customerCentersVi } from './customer/centers-resources'
+import { strokeScreeningEn, strokeScreeningVi } from './customer/stroke-screening-resources'
 import { caregiverLayoutEn, caregiverLayoutVi } from './caregiver/layout-resources'
 import { caregiverProfileEn, caregiverProfileVi } from './caregiver/profile-resources'
 import { caregiverProviderEn, caregiverProviderVi } from './caregiver/provider-resources'
@@ -136,7 +137,8 @@ export const resources = {
         managers: customerManagersEn,
         invitations: customerInvitationsEn,
         centerPicker: centerPickerEn,
-        centers: customerCentersEn
+        centers: customerCentersEn,
+        strokeScreening: strokeScreeningEn
       },
       caregiver: {
         ...caregiverLayoutEn,
@@ -225,7 +227,8 @@ export const resources = {
         managers: customerManagersVi,
         invitations: customerInvitationsVi,
         centerPicker: centerPickerVi,
-        centers: customerCentersVi
+        centers: customerCentersVi,
+        strokeScreening: strokeScreeningVi
       },
       caregiver: {
         ...caregiverLayoutVi,

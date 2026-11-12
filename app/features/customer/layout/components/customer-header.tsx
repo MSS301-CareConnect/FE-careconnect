@@ -29,12 +29,25 @@ export function CustomerHeader() {
   const homePath = isCustomer ? '/customer' : '/'
   const attention = useBookingsAttention(isCustomer)
   const pendingInvitations = usePendingInvitations(isCustomer).data?.length ?? 0
-  const navigation = [
+  const navigation: { to: string; label: string; end: boolean; icon?: string }[] = [
     { to: homePath, label: t('customer.nav.home'), end: true },
     { to: '/customer/caregivers', label: t('customer.nav.caregivers'), end: false },
     { to: '/customer/services', label: t('customer.nav.services'), end: false },
     { to: '/customer/centers', label: t('customer.nav.centers'), end: false },
-    ...(isCustomer ? [{ to: '/customer/bookings', label: t('customer.nav.bookings'), end: false }] : [])
+    ...(isCustomer
+      ? [
+          { to: '/customer/bookings', label: t('customer.nav.bookings'), end: false },
+          // AIService stroke screening (2026-11-12), CUSTOMER only like the endpoint. A round icon item (name in a
+          // tooltip and for screen readers): the floating bar is at most 1180 px and five labels already fill it at
+          // xl; the account menu lists it with its name too.
+          {
+            to: '/customer/stroke-screening',
+            label: t('customer.nav.strokeScreening'),
+            end: false,
+            icon: 'monitor_heart'
+          }
+        ]
+      : [])
   ]
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -95,15 +108,16 @@ export function CustomerHeader() {
           <span className='max-sm:sr-only'>{t('common.brand')}</span>
         </Link>
 
-        <nav aria-label={t('customer.nav.mainNav')} className='mx-auto hidden items-center gap-1 lg:flex'>
-          {navigation.map(({ to, label, end }) => (
+        <nav aria-label={t('customer.nav.mainNav')} className='mx-auto hidden items-center gap-0.5 lg:flex'>
+          {navigation.map(({ to, label, end, icon }) => (
             <NavLink
               className={({ isActive }) =>
-                `relative inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap xl:px-4 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900 ${isActive ? 'text-white' : 'text-forest-800/75 hover:bg-white/80 hover:text-forest-950'}`
+                `relative inline-flex min-h-10 items-center gap-1.5 rounded-full text-sm font-semibold whitespace-nowrap ${icon ? 'w-10 justify-center' : 'px-3 xl:px-3.5'} transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900 ${isActive ? 'text-white' : 'text-forest-800/75 hover:bg-white/80 hover:text-forest-950'}`
               }
               end={end}
               key={to}
               onClick={toTopIfOpen(to)}
+              title={icon ? label : undefined}
               to={to}
               viewTransition
             >
@@ -117,7 +131,8 @@ export function CustomerHeader() {
                       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                     />
                   ) : null}
-                  <span className='relative'>{label}</span>
+                  {icon ? <Icon className='relative text-xl' filled={isActive} name={icon} /> : null}
+                  <span className={icon ? 'sr-only' : 'relative'}>{label}</span>
                   {to === '/customer/bookings' && attention > 0 ? (
                     <span
                       aria-label={t('customer.nav.bookingsAttention', { count: attention })}
