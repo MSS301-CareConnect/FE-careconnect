@@ -51,7 +51,10 @@ export function BookingReasonDialog({
   const dialog = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const fieldId = useId()
+  const errorId = `${fieldId}-error`
   const [reason, setReason] = useState('')
+  // The note under the field appears once the user has left it, not while the dialog first opens.
+  const [touched, setTouched] = useState(false)
   const trimmed = reason.trim()
   const valid = trimmed.length >= minLength && trimmed.length <= maxLength
 
@@ -66,11 +69,12 @@ export function BookingReasonDialog({
   if (!canConfirm && missingRequirement) {
     missingList.push(missingRequirement)
   }
+  const reasonMessage =
+    minLength > 1 ? t('booking.dialog.reasonNeededMin', { count: minLength }) : t('booking.dialog.reasonNeeded')
   if (isReasonMissing) {
-    missingList.push(
-      minLength > 1 ? t('booking.dialog.reasonNeededMin', { count: minLength }) : t('booking.dialog.reasonNeeded')
-    )
+    missingList.push(reasonMessage)
   }
+  const showReasonError = touched && isReasonMissing && minLength > 0
   const tooltipText = isConfirmDisabled
     ? pending
       ? t('booking.actions.working')
@@ -91,17 +95,25 @@ export function BookingReasonDialog({
         ) : null}
       </div>
       <textarea
-        className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 font-normal text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 transition-all'
+        aria-describedby={showReasonError ? errorId : undefined}
+        aria-invalid={showReasonError || undefined}
+        aria-required={minLength > 0 || undefined}
+        className='mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 font-normal text-on-surface focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 aria-[invalid=true]:border-error transition-all'
         id={fieldId}
         maxLength={maxLength}
+        onBlur={() => setTouched(true)}
         onChange={(event) => setReason(event.target.value)}
         placeholder={t('booking.dialog.placeholder')}
-        required={minLength > 0}
         rows={4}
         value={reason}
       />
       {minLength > 1 ? (
         <p className='mt-1 text-xs text-on-surface-variant'>{t('booking.dialog.minLength', { count: minLength })}</p>
+      ) : null}
+      {showReasonError ? (
+        <p className='mt-1 text-xs font-medium text-error' id={errorId} role='alert'>
+          {reasonMessage}
+        </p>
       ) : null}
     </div>
   )
@@ -115,6 +127,7 @@ export function BookingReasonDialog({
     >
       <form
         className='flex max-h-[calc(100vh-2.5rem)] flex-col'
+        noValidate
         onSubmit={(event) => {
           event.preventDefault()
           if (valid && canConfirm && !pending) onConfirm(trimmed)

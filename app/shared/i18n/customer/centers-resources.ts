@@ -48,7 +48,8 @@ export const customerCentersVi = {
     },
     policy: {
       title: 'Đặt cọc & hoàn tiền',
-      deposit: 'Lịch định kỳ hoặc tùy chọn đặt cọc {{percent}}; lịch theo ca thanh toán đủ khi đặt.',
+      deposit:
+        'Mọi lịch đặt (theo ca, định kỳ, tùy chọn) đặt cọc {{percent}}, phần còn lại trả trước buổi đầu {{hours}} giờ; buổi đầu sát hơn mốc này thì trả đủ một lần.',
       before: 'Hủy trước {{hours}} giờ so với buổi chăm sóc: hoàn {{percent}}.',
       after: 'Hủy trong vòng {{hours}} giờ: hoàn {{percent}}.',
       late: 'Hủy khi còn dưới {{hours}} giờ: không hoàn tiền.',
@@ -109,7 +110,8 @@ export const customerCentersEn = {
     },
     policy: {
       title: 'Deposit & refunds',
-      deposit: 'Recurring or custom bookings take a {{percent}} deposit; shift bookings are paid in full.',
+      deposit:
+        'Every booking (shift, recurring or custom) takes a {{percent}} deposit and the rest {{hours}} hours before the first visit; a first visit closer than that is paid in full at once.',
       before: 'Cancel {{hours}} hours or more before a visit: {{percent}} refunded.',
       after: 'Cancel within {{hours}} hours: {{percent}} refunded.',
       late: 'Cancel less than {{hours}} hours before: no refund.',
