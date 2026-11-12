@@ -10,6 +10,8 @@ import type { StrokeScreeningState } from '../hooks/use-stroke-screening'
 import { YES_NO_FIELDS } from '../stroke-screening-form'
 
 const key = 'customer.strokeScreening' as const
+/** StrokeModelService's logistic regression returns class 1 ("assess further") when the score is above 0.5. */
+const DECISION_THRESHOLD = 0.5
 
 /** The right column: how it works before the first screening, "analysing" while it runs, then the result. */
 export function ScreeningResultPanel({ state, onEdit }: { state: StrokeScreeningState; onEdit: () => void }) {
@@ -93,7 +95,9 @@ function ResultCard({
     result.screeningResult === 'LOWER_SCREENING_PATTERN' ? 'LOWER_SCREENING_PATTERN' : 'NEEDS_FURTHER_ASSESSMENT'
   const needs = outcome === 'NEEDS_FURTHER_ASSESSMENT'
   const score = Math.min(1, Math.max(0, result.modelScore))
-  const percent = new Intl.NumberFormat(i18n.language, { style: 'percent', maximumFractionDigits: 0 }).format(score)
+  const scoreFormat = new Intl.NumberFormat(i18n.language, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const scoreText = scoreFormat.format(score)
+  const thresholdText = scoreFormat.format(DECISION_THRESHOLD)
   const decimal = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
   const factors = YES_NO_FIELDS.filter((field) => field !== 'currentSmoker' && request[field]).length
   const summary = [
@@ -133,23 +137,41 @@ function ResultCard({
           <div className='mt-5'>
             <div className='flex items-baseline justify-between gap-3'>
               <p className='text-sm font-semibold text-forest-900'>{t(`${key}.result.score.label`)}</p>
-              <p className='text-2xl font-extrabold text-forest-950 tabular-nums'>{percent}</p>
+              <p className='text-2xl font-extrabold text-forest-950 tabular-nums'>{scoreText}</p>
             </div>
-            <div
-              aria-label={t(`${key}.result.score.label`)}
-              aria-valuemax={100}
-              aria-valuemin={0}
-              aria-valuenow={Math.round(score * 100)}
-              aria-valuetext={percent}
-              className='mt-2 h-2.5 overflow-hidden rounded-full bg-white ring-1 ring-forest-900/5'
-              role='meter'
-            >
+            <div className='relative mt-2'>
               <div
-                className={`h-full rounded-full transition-[width] duration-700 ${needs ? 'bg-gradient-to-r from-peach-200 to-peach-400' : 'bg-gradient-to-r from-mint-300 to-forest-600'}`}
-                style={{ width: `${Math.round(score * 100)}%` }}
+                aria-label={t(`${key}.result.score.label`)}
+                aria-valuemax={100}
+                aria-valuemin={0}
+                aria-valuenow={Math.round(score * 100)}
+                aria-valuetext={scoreText}
+                className='h-2.5 overflow-hidden rounded-full bg-white ring-1 ring-forest-900/5'
+                role='meter'
+              >
+                <div
+                  className={`h-full rounded-full transition-[width] duration-700 ${needs ? 'bg-gradient-to-r from-peach-200 to-peach-400' : 'bg-gradient-to-r from-mint-300 to-forest-600'}`}
+                  style={{ width: `${Math.round(score * 100)}%` }}
+                />
+              </div>
+              <span
+                aria-hidden='true'
+                className='absolute -top-1 h-4.5 w-0.5 -translate-x-1/2 rounded-full bg-forest-900/60'
+                style={{ left: `${DECISION_THRESHOLD * 100}%` }}
               />
             </div>
-            <p className='mt-1.5 text-xs text-on-surface-variant'>{t(`${key}.result.score.caption`)}</p>
+            <div className='relative mt-1 h-4' aria-hidden='true'>
+              <span
+                className='absolute -translate-x-1/2 text-[11px] font-semibold text-forest-800 tabular-nums'
+                style={{ left: `${DECISION_THRESHOLD * 100}%` }}
+              >
+                {t(`${key}.result.score.thresholdMark`, { threshold: thresholdText })}
+              </span>
+            </div>
+            <p className='mt-1.5 text-xs leading-5 text-on-surface-variant'>{t(`${key}.result.score.caption`)}</p>
+            <p className='mt-1 text-xs leading-5 text-on-surface-variant'>
+              {t(`${key}.result.score.threshold`, { threshold: thresholdText })}
+            </p>
           </div>
         </div>
 
