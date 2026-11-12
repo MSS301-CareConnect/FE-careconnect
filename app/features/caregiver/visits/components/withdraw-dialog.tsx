@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { bookingErrorCode, bookingKeys, withdrawFromVisits } from '~/entities/booking/booking-api'
 import type { CaregiverOccurrenceRecord, CaregiverWithdrawalReason } from '~/shared/api/generated/contracts'
@@ -53,7 +53,7 @@ export function WithdrawDialog({
       }
     },
     onSuccess: () => {
-      toast.success(t(`${key}.sent`, { count: visits.length }))
+      toastSuccess(t(`${key}.sent`, { count: visits.length }))
       onClose()
     },
     // A chunk may have gone through before a later one failed, so the lists are refreshed either way.

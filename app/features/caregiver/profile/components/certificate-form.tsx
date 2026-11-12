@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState, type DragEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { createCertificate, providerKeys, uploadMedia } from '~/entities/provider/provider-api'
 import { validateProviderFiles } from '~/entities/provider/provider-media-panel'
@@ -65,7 +65,7 @@ export function CertificateForm({
       return certificateId
     },
     onSuccess: async (certificateId) => {
-      toast.success(t('caregiver.me.certificates.form.saved'))
+      toastSuccess(t('caregiver.me.certificates.form.saved'))
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) }),
         queryClient.invalidateQueries({ queryKey: providerKeys.media('CERTIFICATE', certificateId) })

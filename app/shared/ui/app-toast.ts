@@ -15,6 +15,16 @@ export function toastInfo(message: string) {
   toast.info(message, { duration: SUCCESS_MS })
 }
 
+/** A finished action with a side effect worth knowing, such as an old photo that could not be removed. */
+export function toastWarning(message: string) {
+  toast.warning(message)
+}
+
+/** A failed action whose message is already translated (the caregiver portal shows every failure this way). */
+export function toastError(message: string) {
+  toast.error(message)
+}
+
 /**
  * A system failure (5xx, unavailable service, lost connection) as a toast with an optional retry. Validation and
  * business failures stay in their form (U-10), so this returns false for them and shows nothing.

@@ -4,20 +4,33 @@ import { Toaster as SonnerToaster } from 'sonner'
 
 import { Icon } from './icon'
 
+type SonnerProps = ComponentProps<typeof SonnerToaster>
+
 /**
- * Sonner styled with the project tokens instead of its defaults. Bottom right: the admin topbar (notifications, account
- * menu) and each page's primary buttons live at the top right, so toasts there would cover them.
+ * Sonner styled with the project tokens instead of its defaults. Bottom right by default: the admin topbar
+ * (notifications, account menu) and each page's primary buttons live at the top right, so toasts there would cover
+ * them. A portal with a phone tab bar (caregiver) passes its own position and offsets.
  */
 export function Toaster({
-  mobileOffset
+  mobileOffset,
+  offset,
+  position = 'bottom-right',
+  regionLabel,
+  closeLabel
 }: {
   /** Space kept free on phones, e.g. above a bottom navigation bar. */
-  mobileOffset?: ComponentProps<typeof SonnerToaster>['mobileOffset']
+  mobileOffset?: SonnerProps['mobileOffset']
+  offset?: SonnerProps['offset']
+  position?: SonnerProps['position']
+  /** Accessible name of the toast region; defaults to `common.toast.region`. */
+  regionLabel?: string
+  /** Accessible name of each close button; defaults to `common.toast.close`. */
+  closeLabel?: string
 } = {}) {
   const { t } = useTranslation()
   return (
     <SonnerToaster
-      containerAriaLabel={t('common.toast.region')}
+      containerAriaLabel={regionLabel ?? t('common.toast.region')}
       gap={10}
       icons={{
         success: <Icon className='text-xl' name='check_circle' />,
@@ -26,11 +39,12 @@ export function Toaster({
         info: <Icon className='text-xl' name='info' />
       }}
       mobileOffset={mobileOffset}
-      position='bottom-right'
+      offset={offset}
+      position={position}
       toastOptions={{
         unstyled: true,
         closeButton: true,
-        closeButtonAriaLabel: t('common.toast.close'),
+        closeButtonAriaLabel: closeLabel ?? t('common.toast.close'),
         classNames: {
           toast:
             'group relative flex w-full items-start gap-3 rounded-xl border py-3 pr-10 pl-4 font-sans text-sm leading-5 shadow-[0_10px_28px_-12px_rgb(15_35_25/0.35)] sm:w-[23rem]',

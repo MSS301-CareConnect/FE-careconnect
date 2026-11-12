@@ -18,7 +18,7 @@ import { SectionCard } from '~/shared/ui/section-card'
 import { currentPosition } from '../../data/use-visit-actions'
 import { StickyActionBar, SuccessCheck } from '../../ui/action-bits'
 import { Button } from '~/shared/ui/button'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 const TASK_TONE: Record<CareTaskRecord['status'], string> = {
   PENDING: 'bg-surface-container-low',
@@ -61,7 +61,7 @@ export function VisitChecklist({ sessionId }: { sessionId: string }) {
   const finish = useMutation({
     mutationFn: async () => checkOut(sessionId, await currentPosition()),
     onSuccess: (updated) => {
-      toast.success(t('caregiver.visitDetail.actions.finished'))
+      toastSuccess(t('caregiver.visitDetail.actions.finished'))
       queryClient.setQueryData(bookingKeys.session(sessionId), updated)
       void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
     }

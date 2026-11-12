@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
-import { csrfHeaders, sessionQueryKey } from '~/features/shared/auth/session-api'
-import { updateMyProfile } from '~/shared/api/generated/api/account/account'
+import { sessionQueryKey } from '~/features/shared/auth/session-api'
+import { saveMyProfile } from '~/features/shared/profile/profile-api'
 import type {
   ProviderCaregiverRecord,
   ProviderCaregiverSkillRecord,
   UserResponse
 } from '~/shared/api/generated/contracts'
+import { toastError, toastSuccess } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 
@@ -18,13 +18,8 @@ import { formatPhone, useCaregiverFormat } from '../../ui/caregiver-format'
 import { cgCard } from '../../ui/caregiver-page'
 
 /** `PUT /users/me` with the current name and the new phone, as the customer profile screen does. */
-async function savePhone(user: UserResponse, phoneNumber: string): Promise<UserResponse> {
-  const response = await updateMyProfile(
-    { fullName: user.fullName, phoneNumber },
-    { credentials: 'include', headers: await csrfHeaders() }
-  )
-  if (response.data.code !== 200 || !response.data.result.id) throw new Error('Profile update failed')
-  return response.data.result
+function savePhone(user: UserResponse, phoneNumber: string): Promise<UserResponse> {
+  return saveMyProfile({ fullName: user.fullName, phoneNumber })
 }
 
 /** One banner for everything the center keeps, instead of a lock label on every row (2026-11-05). */
@@ -74,10 +69,10 @@ export function InfoTab({
     mutationFn: () => savePhone(user as UserResponse, phone.trim()),
     onSuccess: (updated) => {
       queryClient.setQueryData(sessionQueryKey, updated)
-      toast.success(t('caregiver.me.info.phoneSaved'))
+      toastSuccess(t('caregiver.me.info.phoneSaved'))
       setEditing(false)
     },
-    onError: () => toast.error(t('caregiver.me.info.phoneError'))
+    onError: () => toastError(t('caregiver.me.info.phoneError'))
   })
   const gender =
     profile.gender === 'MALE' || profile.gender === 'FEMALE' || profile.gender === 'OTHER'

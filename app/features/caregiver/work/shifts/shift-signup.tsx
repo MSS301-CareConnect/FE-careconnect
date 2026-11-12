@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import {
   cancelMyShiftRegistration,
@@ -98,7 +98,7 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
     mutationFn: ({ shift, note }: { shift: ProviderWorkShiftRecord; note: string }) =>
       registerForShift(shift.id, { caregiverNote: note || undefined }),
     onSuccess: async () => {
-      toast.success(t('caregiver.work.shifts.registered'))
+      toastSuccess(t('caregiver.work.shifts.registered'))
       setRegistering(null)
       await refresh()
     }
@@ -106,7 +106,7 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
   const cancel = useMutation({
     mutationFn: (item: ProviderShiftRegistrationRecord) => cancelMyShiftRegistration(item.id, item.version),
     onSuccess: async () => {
-      toast.success(t('caregiver.work.shifts.cancelled'))
+      toastSuccess(t('caregiver.work.shifts.cancelled'))
       setCancelling(null)
       await refresh()
     }
@@ -115,7 +115,7 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
     mutationFn: ({ item, reason }: { item: ProviderShiftRegistrationRecord; reason: string }) =>
       updateCaregiverSchedule(item.scheduleId!, { status: 'CANCELLED', reason, version: item.scheduleVersion! }),
     onSuccess: async () => {
-      toast.success(t('caregiver.work.shifts.withdrawn'))
+      toastSuccess(t('caregiver.work.shifts.withdrawn'))
       setWithdrawing(null)
       await refresh()
     }

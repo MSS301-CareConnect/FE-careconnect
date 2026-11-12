@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toastSuccess } from '~/shared/ui/app-toast'
 
 import { ProviderMediaPanel } from '~/entities/provider/provider-media-panel'
 import { providerKeys, removeCertificate } from '~/entities/provider/provider-api'
@@ -73,7 +73,7 @@ export function CertificatesTab({
   const remove = useMutation({
     mutationFn: (certificate: ProviderCertificateRecord) => removeCertificate(certificate.id, certificate.version),
     onSuccess: async () => {
-      toast.success(t('caregiver.me.certificates.deleted'))
+      toastSuccess(t('caregiver.me.certificates.deleted'))
       setDeleting(null)
       await queryClient.invalidateQueries({ queryKey: providerKeys.certificates(caregiverId) })
     },
