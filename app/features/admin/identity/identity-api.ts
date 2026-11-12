@@ -18,17 +18,9 @@ import type {
   UpdateRoleRequest,
   UpdateProfileRequest
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/features/shared/auth/session-api'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
-function result<T>(response: { data: { code: number; result?: T } }): T {
-  if (response.data.code !== 200) throw new Error(`IdentityService returned code ${response.data.code}`)
-  return response.data.result as T
-}
-
-const readOptions = { credentials: 'include' as const }
-async function writeOptions() {
-  return { credentials: 'include' as const, headers: await csrfHeaders() }
-}
+const { result } = serviceResponse('IdentityService')
 
 export const roleKeys = {
   roles: ['identity', 'roles'] as const,

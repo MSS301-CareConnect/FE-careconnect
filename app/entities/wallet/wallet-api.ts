@@ -22,19 +22,14 @@ import type {
   WalletWithdrawalScope,
   WalletWithdrawalStatus
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 import { apiErrorCode, apiErrorStatus, apiRequestErrorKey, type ApiRequestErrorKey } from '~/shared/api/error-details'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
 export const WALLET_PAGE_SIZE = 10
 // Whole history for the admin ledger view: PaymentService needs a range, the ledger starts with the 2026 rollout.
 const HISTORY_FROM = '2026-01-01T00:00:00.000Z'
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`PaymentService returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('PaymentService')
 
 export interface WithdrawalFilters {
   /** OWN (default): the caller's wallet, ADMIN everything. REVIEW: the queue the caller handles. */

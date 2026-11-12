@@ -1,20 +1,18 @@
 import { requestPasswordReset, resetPassword } from '~/shared/api/generated/api/account/account'
 import type { PasswordResetEmailRequest, ResetPasswordRequest } from '~/shared/api/generated/contracts'
 
-import { csrfHeaders } from '~/shared/api/csrf'
+import { serviceResponse, writeOptions } from '~/shared/api/request'
 
-function requireSuccess(code: number) {
-  if (code !== 200) throw new Error(`IdentityService returned code ${code}`)
-}
+const { success } = serviceResponse('IdentityService')
 
 export async function sendPasswordResetCode(request: PasswordResetEmailRequest): Promise<void> {
-  const response = await requestPasswordReset(request, { credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await requestPasswordReset(request, await writeOptions())
+  success(response)
 }
 
 export async function confirmPasswordReset(request: ResetPasswordRequest): Promise<void> {
-  const response = await resetPassword(request, { credentials: 'include', headers: await csrfHeaders() })
-  requireSuccess(response.data.code)
+  const response = await resetPassword(request, await writeOptions())
+  success(response)
 }
 
 export function passwordRecoveryErrorKey(error: unknown) {

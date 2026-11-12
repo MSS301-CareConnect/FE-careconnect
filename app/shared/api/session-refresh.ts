@@ -1,6 +1,6 @@
 import { refreshWebSession } from '~/shared/api/generated/api/authentication/authentication'
 
-import { csrfHeaders } from './csrf'
+import { writeOptions } from './request'
 
 let refreshPromise: Promise<void> | null = null
 const REFRESH_LOCK = 'careconnect-web-session-refresh'
@@ -8,7 +8,7 @@ const LAST_REFRESH_KEY = 'careconnect-web-last-refresh'
 const RECENT_REFRESH_MS = 5_000
 
 async function rotateSession() {
-  const response = await refreshWebSession({ credentials: 'include', headers: await csrfHeaders() })
+  const response = await refreshWebSession(await writeOptions())
   if (response.data.code !== 200 || !response.data.result.authenticated) throw new Error('Session refresh failed')
 }
 

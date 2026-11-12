@@ -6,17 +6,9 @@ import {
   setManagedUserStatus
 } from '~/shared/api/generated/api/account/account'
 import type { ListManagedUsersParams, ProvisionUserRequest } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
-const readOptions = { credentials: 'include' as const }
-async function writeOptions() {
-  return { credentials: 'include' as const, headers: await csrfHeaders() }
-}
-
-function result<T>(response: { data: { code: number; result?: T } }): T {
-  if (response.data.code !== 200) throw new Error(`IdentityService returned code ${response.data.code}`)
-  return response.data.result as T
-}
+const { result } = serviceResponse('IdentityService')
 
 /** Every account query sits under `['identity', 'users']`, so one invalidation refreshes lists, pickers and stats. */
 export const accountKeys = {

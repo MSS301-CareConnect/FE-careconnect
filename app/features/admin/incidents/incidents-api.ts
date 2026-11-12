@@ -9,10 +9,8 @@ import {
   skipProviderOutboxEvents
 } from '~/shared/api/generated/api/provider-outbox/provider-outbox'
 import type { OutboxStatus } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
 const PAGE_SIZE = 50
 
 export type IncidentSource = 'booking' | 'provider'
@@ -29,10 +27,7 @@ export interface IncidentRow {
   updatedAt?: string
 }
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`Outbox returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('Outbox')
 
 export const incidentKeys = {
   all: ['admin', 'incidents'] as const,

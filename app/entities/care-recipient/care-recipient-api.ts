@@ -26,32 +26,19 @@ import type {
   RecipientAddressRecord,
   RecipientAddressRequest
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { apiErrorCode, apiErrorStatus } from '~/shared/api/error-details'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
-
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`CareRecipientService returned code ${response.data.code}`)
-  return response.data.result
-}
-
-function success(response: { data: { code: number } }): void {
-  if (response.data.code !== 200) throw new Error(`CareRecipientService returned code ${response.data.code}`)
-}
+const { result, success } = serviceResponse('CareRecipientService')
 
 /** HTTP status attached by the generated fetch client when the backend answered with an error. */
 export function careRecipientErrorStatus(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null || !('status' in error)) return undefined
-  return typeof error.status === 'number' ? error.status : undefined
+  return apiErrorStatus(error)
 }
 
 /** Application error code from the backend APIResponse body, such as 2104 FULLNAME_REQUIRED. */
 export function careRecipientErrorCode(error: unknown): number | undefined {
-  if (typeof error !== 'object' || error === null || !('info' in error)) return undefined
-  const info = error.info
-  if (typeof info !== 'object' || info === null || !('code' in info)) return undefined
-  return typeof info.code === 'number' ? info.code : undefined
+  return apiErrorCode(error)
 }
 
 export const careRecipientKeys = {

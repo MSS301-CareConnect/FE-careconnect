@@ -24,16 +24,11 @@ import type {
   ComplaintStatus,
   FeedbackRequest
 } from '~/shared/api/generated/contracts'
-import { csrfHeaders } from '~/shared/api/csrf'
+import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
-const readOptions = { credentials: 'include' as const }
-const writeOptions = async () => ({ credentials: 'include' as const, headers: await csrfHeaders() })
 const PAGE = { page: 0, size: 50 }
 
-function result<T>(response: { data: { code: number; result: T } }): T {
-  if (response.data.code !== 200) throw new Error(`BookingService returned code ${response.data.code}`)
-  return response.data.result
-}
+const { result } = serviceResponse('BookingService')
 
 export const aftercareKeys = {
   reports: (bookingId: string) => ['aftercare', 'reports', bookingId] as const,
