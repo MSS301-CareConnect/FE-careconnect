@@ -10,6 +10,7 @@ import { BookingOccurrenceList } from '~/entities/booking/booking-occurrence-lis
 import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { useCaregiverNames, useCenterName } from '~/entities/provider/use-provider-names'
 import { BookingSettlementCard } from '~/entities/wallet/booking-settlement-card'
+import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { SectionCard } from '~/shared/ui/section-card'
 import { bentoBackLink, bentoContainer } from '~/shared/ui/bento-page-header'
@@ -21,6 +22,7 @@ import { CancelBookingDialog, canAdminCancel } from './components/cancel-booking
 export function AdminBookingDetailPage({ id }: { id: string }) {
   const { t, i18n } = useTranslation()
   const [cancelling, setCancelling] = useState(false)
+  const now = useClock(30_000)
   const booking = useQuery({ queryKey: bookingKeys.detail(id), queryFn: () => fetchBooking(id), retry: false })
   const centerName = useCenterName(booking.data?.centerId)
   const caregiverName = useCaregiverNames((booking.data?.occurrences ?? []).map((occurrence) => occurrence.caregiverId))
@@ -62,7 +64,7 @@ export function AdminBookingDetailPage({ id }: { id: string }) {
             <span className='tabular-nums'>{formatMoney(data.totalAmount, language)}</span>
           </p>
         </div>
-        {canAdminCancel(data.status) ? (
+        {canAdminCancel(data, now) ? (
           <button
             className='min-h-11 rounded-full border border-error/40 px-5 text-sm font-semibold text-error hover:bg-error-container/50'
             onClick={() => setCancelling(true)}

@@ -24,6 +24,8 @@ const action = 'rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-prima
 const VISIT_CANCELLABLE: ReadonlySet<BookingStatus> = new Set(['CONFIRMED', 'IN_PROGRESS'])
 
 export interface ManagerOccurrenceActionsProps {
+  /** The booking passed its running deadline and BookingService is closing it: no reassignment or cancellation. */
+  bookingClosing?: boolean
   bookingId: string
   bookingStatus: BookingStatus
   occurrence: BookingOccurrenceRecord
@@ -35,6 +37,7 @@ export interface ManagerOccurrenceActionsProps {
  * and the care session ID.
  */
 export function ManagerOccurrenceActions({
+  bookingClosing = false,
   bookingId,
   bookingStatus,
   occurrence,
@@ -74,7 +77,7 @@ export function ManagerOccurrenceActions({
     mutationFn: (reason: string) => cancelBookingRequest(bookingId, { reason, occurrenceIds: [occurrence.id] }),
     onSuccess: refresh
   })
-  const upcoming = isUpcomingOccurrence(occurrence)
+  const upcoming = isUpcomingOccurrence(occurrence) && !bookingClosing
 
   const awaitingDecision = Boolean(detail.data?.noShowReportedAt && !detail.data.noShowDecidedAt)
   const sessionId = occurrence.status === 'IN_PROGRESS' ? detail.data?.sessionId : undefined

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 
 import { BookingsBrowser } from '~/entities/booking/bookings-browser'
 import type { BookingSummaryRecord } from '~/shared/api/generated/contracts'
+import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ActionMenu } from '~/shared/ui/action-menu'
 import { BentoPageHeader, bentoContainer } from '~/shared/ui/bento-page-header'
@@ -21,6 +22,7 @@ export function AdminBookingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [cancelling, setCancelling] = useState<BookingSummaryRecord | null>(null)
+  const now = useClock(30_000)
   useDocumentTitle(t('admin.bookingsPage.title'))
   return (
     <div className={bentoContainer}>
@@ -36,7 +38,7 @@ export function AdminBookingsPage() {
                 label: t('admin.bookingsPage.open'),
                 onSelect: () => navigate(detailPath(booking.id))
               },
-              ...(canAdminCancel(booking.status)
+              ...(canAdminCancel(booking, now)
                 ? [
                     {
                       id: 'cancel',
