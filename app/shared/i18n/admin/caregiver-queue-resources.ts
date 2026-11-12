@@ -35,7 +35,27 @@ export const adminCaregiverQueueVi = {
   rejectTitle: 'Từ chối hồ sơ người chăm sóc',
   rejectHint: 'Hồ sơ của {{name}} sẽ bị từ chối và trung tâm thấy lý do này.',
   decideError: 'Không lưu được quyết định — hồ sơ có thể vừa được cập nhật, vui lòng tải lại.',
-  pagination: 'Phân trang danh sách người chăm sóc'
+  pagination: 'Phân trang danh sách người chăm sóc',
+  profile: {
+    back: 'Danh sách người chăm sóc',
+    loading: 'Đang tải hồ sơ người chăm sóc…',
+    error: 'Không tải được hồ sơ người chăm sóc này.',
+    info: 'Thông tin cá nhân',
+    gender: 'Giới tính',
+    genders: { MALE: 'Nam', FEMALE: 'Nữ', OTHER: 'Khác' },
+    birthday: 'Ngày sinh',
+    birthdayValue: '{{date}} · {{age}} tuổi',
+    experience: 'Kinh nghiệm',
+    joined: 'Tham gia từ',
+    email: 'Email',
+    phone: 'Số điện thoại',
+    bio: 'Giới thiệu',
+    noBio: 'Người chăm sóc chưa viết giới thiệu.',
+    services: 'Dịch vụ đảm nhận',
+    noServices: 'Trung tâm chưa giao dịch vụ nào.',
+    servicesError: 'Không tải được danh sách dịch vụ.',
+    certificates: 'Chứng chỉ'
+  }
 }
 
 export const adminCaregiverQueueEn = {
@@ -75,5 +95,25 @@ export const adminCaregiverQueueEn = {
   rejectTitle: 'Reject this caregiver profile',
   rejectHint: 'The profile of {{name}} will be rejected and the center sees this reason.',
   decideError: 'The decision was not saved — the profile may have just changed. Please reload.',
-  pagination: 'Caregiver list pages'
+  pagination: 'Caregiver list pages',
+  profile: {
+    back: 'Caregiver list',
+    loading: 'Loading the caregiver profile…',
+    error: 'This caregiver profile could not be loaded.',
+    info: 'Personal details',
+    gender: 'Gender',
+    genders: { MALE: 'Male', FEMALE: 'Female', OTHER: 'Other' },
+    birthday: 'Date of birth',
+    birthdayValue: '{{date}} · {{age}} years old',
+    experience: 'Experience',
+    joined: 'Joined',
+    email: 'Email',
+    phone: 'Phone',
+    bio: 'About',
+    noBio: 'The caregiver has not written an introduction yet.',
+    services: 'Services',
+    noServices: 'The center has not assigned any service yet.',
+    servicesError: 'The services could not be loaded.',
+    certificates: 'Certificates'
+  }
 }

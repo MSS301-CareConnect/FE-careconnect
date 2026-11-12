@@ -238,7 +238,10 @@ Admin bookings (`/admin/bookings` and the center page's Bookings tab) use
 DAILY / WEEKLY schedules into visits and shows SHIFT and CUSTOM bookings on their first day (`booking-month.ts`; the list
 carries no per-visit times of a CUSTOM booking), both reading
 `GET /bookings` with URL-held filters. Booking history hides machine reasons such as
-`paymentReference=…` (`booking-history-reason.ts`) and shows "deposit received" instead.
+`paymentReference=…` (`booking-history-reason.ts`) and shows "deposit received" instead; expiry codes
+(`PAYMENT_OVERDUE`…) read as words, and every history lists the newest entry first (BookingService sorts it, 2026-11-12).
+A customer's EXPIRED / CANCELLED booking that kept money (paid − refunded − being refunded of its own payments,
+`GET /payments?bookingId=`) shows a "deposit lost" badge and the reason in the status panel (`hooks/use-kept-deposit.ts`).
 The Services page's Price plans tab compares the plans of every active center per
 standard service, read-only, since only center managers edit plans in CareCatalog.
 
@@ -1203,6 +1206,11 @@ deductions, what the center received, the commission, and each visit's outcome (
 - `/admin/caregivers` is the caregiver directory of every center (`GET /caregivers/directory`, ADMIN: `centerId`,
   `verification`, `status`, `keyword`, ordered by center then name), grouped per center; pending profiles are approved
   or rejected on their row.
+- `/admin/caregivers/:id` (2026-11-12, `admin-caregiver-profile-page.tsx`) is the caregiver profile every "Profile" link
+  opens (directory row, account detail, the center's caregiver list): photo, center, states, personal details, contact
+  from the Identity account, introduction, assigned services and certificates with the review dialog; a pending profile
+  is approved or rejected there. The old `?caregiver=` popup of `/admin/centers/:id/caregivers` redirects to it. The
+  caregiver account menu no longer lists the earnings page (the wallet balance already shows that money).
 - `/admin/caregiver-absences` folds a page's absences per booking and filters by center.
 - `/admin/policies` keeps the center in `?center=`. The policy form shows units inside the inputs, booking types in
   words (never SHIFT / RECURRING / CUSTOM) and a sticky save bar with "unsaved changes".

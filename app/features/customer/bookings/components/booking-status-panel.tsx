@@ -19,6 +19,7 @@ import { useClock } from '~/shared/lib/use-clock'
 import { Icon } from '~/shared/ui/icon'
 
 import { awaitsRemaining } from '../booking-lifecycle'
+import { useKeptDeposit } from '../hooks/use-kept-deposit'
 
 const SHORT_HOLD_MS = 15 * 60_000
 const primaryAction =
@@ -58,6 +59,7 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
   const depositKnown = deposit.amount !== undefined
   const awaitingRemaining = awaitsRemaining(booking)
   const now = useClock(30_000)
+  const keptDeposit = useKeptDeposit(booking)
   const queryClient = useQueryClient()
   // Past its deadline but not closed by BookingService yet: say it is closing instead of "still waiting".
   const closing = isPastDeadline(booking, now)
@@ -144,6 +146,18 @@ export function BookingStatusPanel({ booking }: { booking: BookingDetailRecord }
               <Icon className='text-lg' name='storefront' />
               {t('customer.bookingDetail.next.otherCenter')}
             </Link>
+          </div>
+        ) : null}
+        {keptDeposit ? (
+          <div
+            className='mt-3 rounded-xl border border-error/30 bg-error-container p-3 text-on-error-container'
+            role='note'
+          >
+            <p className='flex items-center gap-1.5 text-sm font-semibold'>
+              <Icon className='text-lg' name='money_off' />
+              {t('customer.bookingDetail.keptDeposit.title', { amount: formatMoney(keptDeposit.amount, language) })}
+            </p>
+            <p className='mt-1 text-sm leading-6'>{t(`customer.bookingDetail.keptDeposit.${keptDeposit.reason}`)}</p>
           </div>
         ) : null}
         {booking.refund?.totalRefund !== undefined ? (

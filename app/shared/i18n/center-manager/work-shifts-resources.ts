@@ -70,6 +70,13 @@ export const managerWorkShiftsVi = {
     done: 'Đã xử lý {{count}} ca',
     partly: 'Đã xử lý {{done}} ca, bỏ qua {{skipped}} ca không đủ điều kiện hoặc lỗi'
   },
+  quickApprove: {
+    button: 'Duyệt nhanh {{count}} đăng ký',
+    done: 'Đã duyệt {{count}} đăng ký',
+    partly:
+      'Đã duyệt {{approved}} đăng ký, còn {{skipped}} đăng ký chưa duyệt được (ca đã đủ người, trùng lịch hoặc nghỉ phép) — mở ca để xem',
+    none: 'Không duyệt được đăng ký nào: ca đã đủ người, trùng lịch hoặc nghỉ phép — mở ca để xem'
+  },
   remove: {
     title: 'Xóa ca {{date}}?',
     hint: 'Ca bị xóa khỏi danh sách và các lượt đăng ký đang chờ sẽ bị hủy. Không hoàn tác được.',
@@ -80,6 +87,7 @@ export const managerWorkShiftsVi = {
   actions: {
     delete: 'Xóa ca',
     view: 'Xem chi tiết',
+    approve: 'Duyệt nhanh đăng ký',
     edit: 'Sửa ca',
     duplicate: 'Nhân bản',
     cancel: 'Hủy ca',
@@ -354,6 +362,13 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
     done: '{{count}} shifts updated',
     partly: '{{done}} shifts updated, {{skipped}} skipped (not allowed or failed)'
   },
+  quickApprove: {
+    button: 'Quick approve {{count}} sign-ups',
+    done: '{{count}} sign-ups approved',
+    partly:
+      '{{approved}} sign-ups approved, {{skipped}} could not be (shift full, overlap or time off) — open the shift to check',
+    none: 'No sign-up could be approved: shift full, overlap or time off — open the shift to check'
+  },
   remove: {
     title: 'Delete the shift on {{date}}?',
     hint: 'The shift leaves the list and its waiting sign-ups are cancelled. This cannot be undone.',
@@ -364,6 +379,7 @@ export const managerWorkShiftsEn: typeof managerWorkShiftsVi = {
   actions: {
     delete: 'Delete shift',
     view: 'View details',
+    approve: 'Quick approve sign-ups',
     edit: 'Edit shift',
     duplicate: 'Duplicate',
     cancel: 'Cancel shift',

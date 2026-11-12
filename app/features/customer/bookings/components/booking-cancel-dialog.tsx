@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { bookingKeys, cancelBookingRequest, previewCancellation } from '~/entities/booking/booking-api'
 import { bookingErrorKey, formatDateTime, formatMoney, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
-import { RefundPolicySummary, refundRuleLabel, useCenterBookingPolicy } from '~/entities/payment/refund-policy'
+import { RefundPolicyDialog, refundRuleLabel, useCenterBookingPolicy } from '~/entities/payment/refund-policy'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { Icon } from '~/shared/ui/icon'
 
@@ -202,13 +202,12 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
           </span>
           <button
             type='button'
-            onClick={() => setShowFullPolicy(!showFullPolicy)}
+            onClick={() => setShowFullPolicy(true)}
+            aria-haspopup='dialog'
             className='flex items-center gap-1 font-semibold text-primary hover:underline'
           >
-            {t(
-              showFullPolicy ? 'customer.bookingDetail.cancel.tiers.less' : 'customer.bookingDetail.cancel.tiers.more'
-            )}
-            <Icon className={`text-sm transition-transform ${showFullPolicy ? 'rotate-180' : ''}`} name='expand_more' />
+            {t('customer.bookingDetail.cancel.tiers.more')}
+            <Icon className='text-sm' name='open_in_new' />
           </button>
         </div>
 
@@ -257,9 +256,11 @@ export function BookingCancelDialog({ booking, onClose }: { booking: BookingDeta
           </div>
         ) : null}
 
-        <div className={showFullPolicy ? 'mt-3.5 pt-3.5 border-t border-outline-variant/40' : 'hidden'}>
-          <RefundPolicySummary centerId={booking.centerId} />
-        </div>
+        <RefundPolicyDialog
+          centerId={booking.centerId}
+          onClose={() => setShowFullPolicy(false)}
+          open={showFullPolicy}
+        />
       </div>
 
       {/* Financial Refund Calculation Section */}

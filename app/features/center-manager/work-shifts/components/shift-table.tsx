@@ -14,12 +14,13 @@ const ACTION_ICONS: Record<ShiftAction, string> = {
   view: 'visibility',
   edit: 'edit',
   duplicate: 'content_copy',
+  approve: 'how_to_reg',
   open: 'lock_open',
   close: 'lock',
   cancel: 'event_busy',
   delete: 'delete'
 }
-const ACTION_ORDER: ShiftAction[] = ['view', 'edit', 'duplicate', 'open', 'close', 'cancel', 'delete']
+const ACTION_ORDER: ShiftAction[] = ['view', 'approve', 'edit', 'duplicate', 'open', 'close', 'cancel', 'delete']
 
 export function useShiftMenuItems(
   onAction: (action: ShiftAction, shift: ProviderWorkShiftRecord) => void,

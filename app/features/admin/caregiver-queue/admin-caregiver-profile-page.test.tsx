@@ -1,12 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   fetchCaregiver,
-  fetchCaregivers,
-  fetchCenter,
+  fetchCaregiverServices,
   fetchCertificates,
   fetchProviderMedia,
   verifyCertificate
@@ -14,13 +13,12 @@ import {
 import type { ProviderCaregiverRecord, ProviderCertificateRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
 
-import { AdminCenterCaregiversPage } from '../admin-center-caregivers-page'
+import { AdminCaregiverProfilePage } from './admin-caregiver-profile-page'
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
-  fetchCenter: vi.fn(),
-  fetchCaregivers: vi.fn(),
   fetchCaregiver: vi.fn(),
+  fetchCaregiverServices: vi.fn(),
   fetchCertificates: vi.fn(),
   fetchProviderMedia: vi.fn(),
   verifyCertificate: vi.fn()
@@ -29,7 +27,11 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
 const caregiver: ProviderCaregiverRecord = {
   id: 'cg-1',
   centerId: 'ct-1',
+  centerName: 'Care One',
   fullName: 'Lan Nguyen',
+  gender: 'FEMALE',
+  experienceYears: 4,
+  bio: 'Five years with elderly care.',
   caregiverStatus: 'ACTIVE',
   verificationStatus: 'VERIFIED',
   version: 2
@@ -50,10 +52,8 @@ function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/admin/centers/ct-1/caregivers?caregiver=cg-1']}>
-        <Routes>
-          <Route element={<AdminCenterCaregiversPage />} path='/admin/centers/:id/caregivers' />
-        </Routes>
+      <MemoryRouter>
+        <AdminCaregiverProfilePage id='cg-1' />
       </MemoryRouter>
     </QueryClientProvider>
   )
@@ -61,16 +61,26 @@ function renderPage() {
 
 beforeEach(async () => {
   vi.clearAllMocks()
-  vi.mocked(fetchCenter).mockResolvedValue({ id: 'ct-1', name: 'Care One' } as never)
-  vi.mocked(fetchCaregivers).mockResolvedValue({
-    items: [caregiver],
-    page: 0,
-    size: 20,
-    totalElements: 1,
-    totalPages: 1
-  })
+  vi.mocked(fetchCaregiverServices).mockResolvedValue([
+    { centerServiceId: 'svc-1', serviceName: 'Elderly care' } as never
+  ])
   vi.mocked(fetchCaregiver).mockResolvedValue(caregiver)
   await setAppLanguage('en', false)
+})
+
+describe('AdminCaregiverProfilePage', () => {
+  it('shows the profile, the assigned services and the certificates', async () => {
+    vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(fetchProviderMedia).mockResolvedValue([])
+    renderPage()
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Lan Nguyen' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Care One/ })).toHaveAttribute('href', '/admin/centers/ct-1?tab=staff')
+    expect(screen.getByText('Female')).toBeInTheDocument()
+    expect(screen.getByText('Five years with elderly care.')).toBeInTheDocument()
+    expect(await screen.findByText('Elderly care')).toBeInTheDocument()
+    expect(fetchCaregiver).toHaveBeenCalledWith('cg-1')
+  })
 })
 
 describe('Admin certificate review (two steps)', () => {

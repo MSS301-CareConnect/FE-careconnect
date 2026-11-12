@@ -10,7 +10,12 @@ import {
   fetchCenterBookingPolicy,
   previewCancellation
 } from '~/entities/booking/booking-api'
-import { fetchOpenInvoiceOfBooking, redirectToCheckout, startInvoiceCheckout } from '~/entities/payment/payment-api'
+import {
+  fetchBookingPayments,
+  fetchOpenInvoiceOfBooking,
+  redirectToCheckout,
+  startInvoiceCheckout
+} from '~/entities/payment/payment-api'
 import { fetchPublicCaregiver } from '~/entities/provider/provider-api'
 import type { BookingDetailRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -29,6 +34,7 @@ vi.mock('~/entities/booking/booking-api', async (importOriginal) => ({
 vi.mock('~/entities/payment/payment-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/payment/payment-api')>()),
   fetchOpenInvoiceOfBooking: vi.fn(),
+  fetchBookingPayments: vi.fn().mockResolvedValue([]),
   startInvoiceCheckout: vi.fn(),
   redirectToCheckout: vi.fn()
 }))
@@ -117,6 +123,46 @@ describe('CustomerBookingDetailPage', () => {
     expect(await screen.findByText('Lịch đặt được cập nhật trạng thái')).toBeInTheDocument()
   })
 
+  it('marks a lost deposit with its reason and names the expiry code in the newest-first history', async () => {
+    vi.mocked(fetchBooking).mockResolvedValue({ ...booking, status: 'EXPIRED', expiredReason: 'PAYMENT_OVERDUE' })
+    vi.mocked(fetchBookingPayments).mockResolvedValue([
+      {
+        id: 'pay-1',
+        bookingId: 'bk-1',
+        paymentType: 'DEPOSIT',
+        status: 'SUCCESS',
+        amount: 60000,
+        refundedAmount: 0,
+        currency: 'VND'
+      }
+    ])
+    vi.mocked(fetchBookingHistory).mockResolvedValue({
+      items: [
+        { eventType: 'BOOKING_STATUS_CHANGED', toStatus: 'CONFIRMED', changedAt: '2026-10-26T01:00:00Z' },
+        {
+          eventType: 'BOOKING_STATUS_CHANGED',
+          fromStatus: 'CONFIRMED',
+          toStatus: 'EXPIRED',
+          reason: 'PAYMENT_OVERDUE',
+          changedAt: '2026-10-28T01:00:00Z'
+        }
+      ],
+      page: 0,
+      size: 50,
+      totalElements: 2,
+      totalPages: 1
+    })
+    renderPage()
+
+    expect(await screen.findByText('Mất cọc')).toBeInTheDocument()
+    expect(screen.getByText(/Bạn bị mất 60\.000/)).toBeInTheDocument()
+    expect(screen.getByText(/chưa thanh toán phần còn lại đúng hạn nên trung tâm giữ cọc/)).toBeInTheDocument()
+    const reason = await screen.findByText('Khách chưa thanh toán phần còn lại đúng hạn')
+    expect(screen.queryByText('PAYMENT_OVERDUE')).not.toBeInTheDocument()
+    const entries = within(reason.closest('ol') as HTMLElement).getAllByRole('listitem')
+    expect(entries[0]).toContainElement(reason)
+  })
+
   it('cancels an unpaid booking as a whole without a refund preview', async () => {
     const cancelled = { ...booking, status: 'CANCELLED' as const, cancelReason: 'Đổi kế hoạch' }
     vi.mocked(fetchBooking).mockResolvedValueOnce(booking).mockResolvedValue(cancelled)
@@ -176,9 +222,14 @@ describe('CustomerBookingDetailPage', () => {
     expect(within(dialog).getByText(/Giữ lại 18/)).toBeInTheDocument()
     expect(within(dialog).queryByText(/AFTER_THRESHOLD/)).not.toBeInTheDocument()
     // The policy panel reads the center booking policy (spec §10.2), not the old platform tiers.
-    expect(within(dialog).getByText('Từ 24 giờ trở lên')).toBeInTheDocument()
-    expect(within(dialog).getByText('Từ 2 đến dưới 24 giờ')).toBeInTheDocument()
-    expect(within(dialog).getByText('Dưới 2 giờ')).toBeInTheDocument()
+    // The full policy opens as its own popup instead of stretching the cancel dialog.
+    expect(screen.queryByText('Từ 24 giờ trở lên')).not.toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: /Xem chi tiết/ }))
+    const policy = await screen.findByRole('dialog', { name: 'Hoàn tiền khi bạn hủy' })
+    expect(within(policy).getByText('Từ 24 giờ trở lên')).toBeInTheDocument()
+    expect(within(policy).getByText('Từ 2 đến dưới 24 giờ')).toBeInTheDocument()
+    expect(within(policy).getByText('Dưới 2 giờ')).toBeInTheDocument()
+    fireEvent.click(within(policy).getByRole('button', { name: 'Đã hiểu' }))
     // Tier badges come from the same policy: no-refund window of 2 hours, not a fixed text.
     expect(within(dialog).getByText('Sát giờ < 2 giờ')).toBeInTheDocument()
     expect(within(dialog).getAllByText(/70\s?%/).length).toBeGreaterThan(0)

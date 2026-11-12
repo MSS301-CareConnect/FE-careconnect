@@ -5,10 +5,12 @@ import { useNavigate, useParams, useSearchParams } from 'react-router'
 
 import {
   changeWorkShiftStatus,
+  fetchShiftRegistrations,
   fetchWorkShiftStatistics,
   fetchWorkShifts,
   providerKeys,
-  removeWorkShift
+  removeWorkShift,
+  reviewShiftRegistration
 } from '~/entities/provider/provider-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { apiErrorCode } from '~/shared/api/error-details'
@@ -16,7 +18,7 @@ import type { ProviderWorkShiftRecord } from '~/shared/api/generated/contracts'
 import { addDays, calendarDayOf, mondayOf, useFormat } from '~/shared/lib/format'
 import { useClock } from '~/shared/lib/use-clock'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
-import { toastSuccess, toastSystemError } from '~/shared/ui/app-toast'
+import { toastSuccess, toastSystemError, toastWarning } from '~/shared/ui/app-toast'
 import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
@@ -43,6 +45,25 @@ type Dialog =
   | { kind: 'cancel'; shift: ProviderWorkShiftRecord }
   | { kind: 'delete'; shift: ProviderWorkShiftRecord }
   | { kind: 'bulkDelete' }
+
+// shortcut: no cross-shift approve endpoint, and the per-shift bulk review is all-or-nothing, so sign-ups are approved one
+// by one (earliest first, up to the free places, first 50 pending) and a conflict / time off only skips that caregiver;
+// add a batch endpoint if this gets slow.
+async function approvePending(shift: ProviderWorkShiftRecord) {
+  const pending = (await fetchShiftRegistrations(shift.id, 0, { status: 'PENDING', size: 50 })).items
+    .filter((registration) => registration.registrationStatus === 'PENDING')
+    .sort((a, b) => (a.createdAt ?? '').localeCompare(b.createdAt ?? ''))
+  let approved = 0
+  for (const registration of pending.slice(0, shift.capacity - (shift.approvedCount ?? 0))) {
+    try {
+      await reviewShiftRegistration(registration.id, { status: 'APPROVED', version: registration.version })
+      approved++
+    } catch {
+      // Left pending for the manager to review in the shift detail.
+    }
+  }
+  return { approved, skipped: pending.length - approved }
+}
 
 /**
  * Center Manager "Work shifts": numbers for the whole filter, server-side filters in the URL, a list or a week
@@ -138,6 +159,32 @@ export function ManagerWorkShiftsPage() {
       toastSuccess(skipped ? t(`${k}.bulk.partly`, { done, skipped }) : t(`${k}.bulk.done`, { count: done }))
     }
   })
+  const quickApprove = useMutation({
+    mutationFn: async (list: ProviderWorkShiftRecord[]) => {
+      const results = await Promise.allSettled(
+        list.filter((shift) => allowedShiftActions(shift, now).has('approve')).map(approvePending)
+      )
+      let approved = 0
+      let skipped = 0
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          approved += result.value.approved
+          skipped += result.value.skipped
+        }
+      }
+      return { approved, skipped }
+    },
+    onSuccess: async ({ approved, skipped }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: providerKeys.shifts(centerId) }),
+        queryClient.invalidateQueries({ queryKey: ['provider', 'registrations'] })
+      ])
+      setSelectedIds(new Set())
+      if (approved === 0) toastWarning(t(`${k}.quickApprove.none`))
+      else if (skipped) toastSuccess(t(`${k}.quickApprove.partly`, { approved, skipped }))
+      else toastSuccess(t(`${k}.quickApprove.done`, { count: approved }))
+    }
+  })
 
   function openDetail(shift: ProviderWorkShiftRecord) {
     setParams(
@@ -167,6 +214,7 @@ export function ManagerWorkShiftsPage() {
     // The detail stays in the URL underneath: closing the form or the cancel dialog returns to it.
     else if (action === 'edit' || action === 'duplicate') setDialog({ kind: 'form', mode: action, shift })
     else if (action === 'cancel') setDialog({ kind: 'cancel', shift })
+    else if (action === 'approve') quickApprove.mutate([shift])
     else if (action === 'delete') {
       remove.reset()
       setDialog({ kind: 'delete', shift })
@@ -266,6 +314,24 @@ export function ManagerWorkShiftsPage() {
                 <span className='mr-1 text-sm font-semibold text-forest-900 tabular-nums'>
                   {t(`${k}.bulk.selected`, { count: selected.length })}
                 </span>
+                <Button
+                  disabled={!selected.some((shift) => allowedShiftActions(shift, now).has('approve'))}
+                  leftIcon={<Icon name='how_to_reg' />}
+                  loading={quickApprove.isPending}
+                  onClick={() => quickApprove.mutate(selected)}
+                  size='sm'
+                >
+                  {t(`${k}.quickApprove.button`, {
+                    count: selected.reduce(
+                      (sum, shift) =>
+                        sum +
+                        (allowedShiftActions(shift, now).has('approve')
+                          ? Math.min(shift.pendingCount ?? 0, shift.capacity - (shift.approvedCount ?? 0))
+                          : 0),
+                      0
+                    )
+                  })}
+                </Button>
                 {BULK_SHIFT_ACTIONS.map((action) => (
                   <Button
                     disabled={!selected.some((shift) => allowedShiftActions(shift, now).has(action))}

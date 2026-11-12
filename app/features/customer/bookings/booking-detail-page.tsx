@@ -12,7 +12,7 @@ import { BookingStatusBadge } from '~/entities/booking/booking-status-badge'
 import { BookingVisitSchedule } from '~/entities/booking/booking-visit-schedule'
 import { ServiceAddressDialog, canChangeServiceAddress } from '~/entities/booking/service-address-dialog'
 import { fetchPublicCaregiver, providerKeys } from '~/entities/provider/provider-api'
-import type { BookingOccurrenceRecord, OccurrenceStatus } from '~/shared/api/generated/contracts'
+import type { BookingDetailRecord, BookingOccurrenceRecord, OccurrenceStatus } from '~/shared/api/generated/contracts'
 import { calendarDayOf } from '~/shared/lib/format'
 import { useDocumentTitle } from '~/shared/lib/use-document-title'
 import { ActionMenu } from '~/shared/ui/action-menu'
@@ -33,10 +33,24 @@ import { BookingOverviewCard } from './components/booking-overview-card'
 import { BookingStatusPanel } from './components/booking-status-panel'
 import { CaregiverChangeDialog } from './components/caregiver-change-dialog'
 import { OccurrenceRescheduleDialog } from './components/occurrence-reschedule-dialog'
+import { useKeptDeposit } from './hooks/use-kept-deposit'
 
 const key = 'customer.bookingDetail' as const
 // Visits that have taken place: reports and complaints apply only after one of these.
 const VISITED: ReadonlySet<OccurrenceStatus> = new Set(['IN_PROGRESS', 'COMPLETED', 'CAREGIVER_MISSED'])
+
+// Hooks cannot run after the page's early returns, so the badge reads the loaded booking here.
+function KeptDepositBadge({ booking }: { booking: BookingDetailRecord }) {
+  const { t } = useTranslation()
+  const kept = useKeptDeposit(booking)
+  if (!kept) return null
+  return (
+    <span className='inline-flex items-center gap-1 rounded-full bg-error-container px-2.5 py-0.5 text-xs font-semibold text-on-error-container'>
+      <Icon className='text-sm' name='money_off' />
+      {t('customer.bookingDetail.keptDeposit.badge')}
+    </span>
+  )
+}
 
 function DetailSkeleton({ label }: { label: string }) {
   return (
@@ -172,6 +186,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
         meta={
           <span className='flex flex-wrap items-center gap-x-2 gap-y-1'>
             <BookingStatusBadge status={data.status} />
+            <KeptDepositBadge booking={data} />
             <span className='sr-only'>{t(`${key}.code`)}</span>
             <span className='font-mono text-[13px] text-on-surface tabular-nums'>{data.bookingCode}</span>
             <CopyButton className='-my-2 -ml-1.5 text-xs' compact value={data.bookingCode} />

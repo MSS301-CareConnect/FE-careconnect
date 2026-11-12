@@ -1,221 +1,16 @@
-import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { apiRequestErrorKey } from '~/shared/api/error-details'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
-import { CertificateAiBadge } from '~/entities/provider/certificate-ai-badge'
-import { CertificateReviewDialog } from '~/entities/provider/certificate-review-dialog'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
-import { baseControlClass } from '~/shared/ui/form-field'
-import { useActionToast } from '~/shared/ui/use-action-toast'
 import { Icon } from '~/shared/ui/icon'
-import { ConfirmDialog } from '~/shared/ui/modal'
 
-import {
-  fetchCaregiver,
-  fetchCaregivers,
-  fetchCenter,
-  fetchCertificates,
-  providerKeys,
-  verifyCaregiver
-} from '~/entities/provider/provider-api'
+import { fetchCaregivers, fetchCenter, providerKeys } from '~/entities/provider/provider-api'
 import { BentoPageHeader, bentoBackLink, bentoContainer } from '~/shared/ui/bento-page-header'
 
 const key = 'admin.provider' as const
 const statusKeys = { ACTIVE: 'active', INACTIVE: 'inactive', SUSPENDED: 'suspended', ARCHIVED: 'archived' } as const
 const verificationKeys = { PENDING: 'pending', VERIFIED: 'verified', REJECTED: 'rejected' } as const
-// Certificates: the center confirms, the AI reads the photos, then the admin decides in the review dialog (2026-11-09).
-const certificateKeys = {
-  PENDING: 'pending',
-  CENTER_VERIFIED: 'centerVerified',
-  ADMIN_VERIFIED: 'verified',
-  REJECTED: 'rejected'
-} as const
-
-function CaregiverReview({ id, centerId }: { id: string; centerId: string }) {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
-  // The reason belongs to one rejection at a time; it is asked inside that rejection's dialog (A-07).
-  const [reason, setReason] = useState('')
-  const [reasonMissing, setReasonMissing] = useState(false)
-  const [confirmReject, setConfirmReject] = useState<{ type: 'caregiver' } | null>(null)
-  const [reviewingId, setReviewingId] = useState<string | null>(null)
-  const caregiver = useQuery({ queryKey: providerKeys.caregiver(id), queryFn: () => fetchCaregiver(id), retry: false })
-  const certificates = useQuery({
-    queryKey: providerKeys.certificates(id),
-    queryFn: () => fetchCertificates(id),
-    retry: false
-  })
-  const notify = useActionToast()
-  const review = useMutation({
-    mutationFn: (status: 'VERIFIED' | 'REJECTED') =>
-      verifyCaregiver(id, {
-        status,
-        reason: status === 'REJECTED' ? reason.trim() : undefined,
-        version: caregiver.data!.version
-      }),
-    onSuccess: async (_saved, status) => {
-      setConfirmReject(null)
-      notify.success(
-        t(status === 'VERIFIED' ? 'admin.toast.caregivers.verified' : 'admin.toast.caregivers.rejected', {
-          name: caregiver.data?.fullName ?? ''
-        })
-      )
-      await queryClient.invalidateQueries({ queryKey: providerKeys.caregiver(id) })
-      await queryClient.invalidateQueries({ queryKey: providerKeys.caregivers(centerId) })
-    },
-    onError: (error) => {
-      setConfirmReject(null)
-      notify.systemError(error, t('admin.toast.caregivers.actions.review'))
-    }
-  })
-  const reviewingCertificate = certificates.data?.find((item) => item.id === reviewingId)
-  if (caregiver.isPending) return <p role='status'>{t(`${key}.loading`)}</p>
-  if (caregiver.isError)
-    return (
-      <div role='alert'>
-        <p>{t(`${key}.caregiverLoadError`)}</p>
-        <button className='text-primary underline' onClick={() => void caregiver.refetch()} type='button'>
-          {t(`${key}.retry`)}
-        </button>
-      </div>
-    )
-  if (caregiver.data.centerId !== centerId) return <p role='alert'>{t(`${key}.caregiverLoadError`)}</p>
-  return (
-    <section className='space-y-5 rounded-xl bg-white p-6 shadow-xl'>
-      <div>
-        <h2 className='text-xl font-bold'>{caregiver.data.fullName}</h2>
-      </div>
-      <div className='flex flex-wrap items-center gap-3 text-sm'>
-        <span className='flex items-center gap-2'>
-          <strong>{t(`${key}.status`)}:</strong>
-          <ProviderStatusBadge status={caregiver.data.caregiverStatus}>
-            {t(`${key}.${statusKeys[caregiver.data.caregiverStatus]}`)}
-          </ProviderStatusBadge>
-        </span>
-        <span className='flex items-center gap-2'>
-          <strong>{t(`${key}.verification`)}:</strong>
-          <ProviderStatusBadge status={caregiver.data.verificationStatus}>
-            {t(`${key}.${verificationKeys[caregiver.data.verificationStatus]}`)}
-          </ProviderStatusBadge>
-        </span>
-      </div>
-      <div className='flex gap-3'>
-        <button
-          className='rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-50'
-          disabled={review.isPending}
-          onClick={() => review.mutate('VERIFIED')}
-          type='button'
-        >
-          {t(`${key}.verify`)}
-        </button>
-        <button
-          className='rounded-lg border px-3 py-2 disabled:opacity-50'
-          disabled={review.isPending}
-          onClick={() => {
-            setReason('')
-            setReasonMissing(false)
-            setConfirmReject({ type: 'caregiver' })
-          }}
-          type='button'
-        >
-          {t(`${key}.reject`)}
-        </button>
-      </div>
-      {review.isError ? <p role='alert'>{t(apiRequestErrorKey(review.error, `${key}.actionError`))}</p> : null}
-      <div className='space-y-3 border-t pt-4'>
-        <h3 className='font-semibold'>{t(`${key}.certificates`)}</h3>
-        {certificates.isPending ? <p role='status'>{t(`${key}.loading`)}</p> : null}
-        {certificates.isError ? (
-          <div role='alert'>
-            <p>{t(`${key}.certificateLoadError`)}</p>
-            <button className='text-primary underline' onClick={() => void certificates.refetch()} type='button'>
-              {t(`${key}.retry`)}
-            </button>
-          </div>
-        ) : null}
-        {certificates.isSuccess && certificates.data.length === 0 ? <p>{t(`${key}.certificateEmpty`)}</p> : null}
-        {certificates.isSuccess ? (
-          <ul className='divide-y'>
-            {certificates.data.map((certificate) => (
-              <li className='flex flex-wrap items-center justify-between gap-3 py-3' key={certificate.id}>
-                <div>
-                  <strong>{certificate.certificateName}</strong>
-                  <p className='mt-1 flex items-center gap-2 text-sm text-outline'>
-                    <span>{certificate.issuedBy}</span>
-                    <ProviderStatusBadge status={certificate.verificationStatus}>
-                      {t(`${key}.${certificateKeys[certificate.verificationStatus]}`)}
-                    </ProviderStatusBadge>
-                    {certificate.verificationStatus === 'CENTER_VERIFIED' ? (
-                      <CertificateAiBadge certificate={certificate} />
-                    ) : null}
-                  </p>
-                </div>
-                <div className='flex gap-2'>
-                  {certificate.verificationStatus === 'PENDING' ? (
-                    <span className='text-xs text-on-surface-variant'>{t(`${key}.awaitingCenter`)}</span>
-                  ) : null}
-                  {certificate.verificationStatus === 'CENTER_VERIFIED' ||
-                  certificate.verificationStatus === 'ADMIN_VERIFIED' ? (
-                    <button
-                      className='text-primary underline'
-                      onClick={() => setReviewingId(certificate.id)}
-                      type='button'
-                    >
-                      {t('admin.certificatesPage.open')}
-                    </button>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-      <ConfirmDialog
-        cancelLabel={t(`${key}.cancel`)}
-        confirmLabel={t(`${key}.reject`)}
-        description={t(`${key}.confirmReject`)}
-        loading={review.isPending}
-        onClose={() => setConfirmReject(null)}
-        onConfirm={() => {
-          if (!reason.trim()) {
-            setReasonMissing(true)
-            return
-          }
-          if (confirmReject?.type === 'caregiver') review.mutate('REJECTED')
-        }}
-        open={Boolean(confirmReject)}
-        title={t(`${key}.reject`)}
-        tone='danger'
-      >
-        <label className='block text-sm font-semibold' htmlFor='reject-reason'>
-          {t(`${key}.reason`)}
-        </label>
-        <textarea
-          aria-describedby={reasonMissing ? 'reject-reason-error' : undefined}
-          aria-invalid={reasonMissing ? true : undefined}
-          className={`${baseControlClass} mt-1 min-h-20`}
-          id='reject-reason'
-          maxLength={500}
-          onChange={(event) => {
-            setReason(event.target.value)
-            setReasonMissing(false)
-          }}
-          value={reason}
-        />
-        {reasonMissing ? (
-          <p className='mt-1 text-xs font-medium text-error' id='reject-reason-error'>
-            {t(`${key}.reasonMissing`)}
-          </p>
-        ) : null}
-      </ConfirmDialog>
-      {reviewingCertificate ? (
-        <CertificateReviewDialog certificate={reviewingCertificate} onClose={() => setReviewingId(null)} />
-      ) : null}
-    </section>
-  )
-}
 
 export function AdminCenterCaregiversPage() {
   const { id = '' } = useParams()
@@ -235,6 +30,8 @@ export function AdminCenterCaregiversPage() {
     retry: false,
     enabled: Boolean(id)
   })
+  // Links from before 2026-11-12 opened the profile here as `?caregiver=`; it has its own page now.
+  if (selected) return <Navigate replace to={`/admin/caregivers/${selected}`} />
   function update(name: string, value: string) {
     setParams((previous) => {
       const next = new URLSearchParams(previous)
@@ -293,13 +90,12 @@ export function AdminCenterCaregiversPage() {
                       </div>
                     </div>
                   </div>
-                  <button
+                  <Link
                     className='rounded-lg bg-surface-container-low px-3 py-2 text-sm font-semibold text-primary hover:bg-secondary-container'
-                    onClick={() => update('caregiver', person.id)}
-                    type='button'
+                    to={`/admin/caregivers/${person.id}`}
                   >
                     {t(`${key}.centerDetails`)}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -324,20 +120,6 @@ export function AdminCenterCaregiversPage() {
             </button>
           </div>
         </section>
-      ) : null}
-      {selected ? (
-        <div className='fixed inset-0 z-50 overflow-y-auto bg-on-surface/50 p-4'>
-          <div className='mx-auto my-10 max-w-2xl'>
-            <button
-              className='mb-3 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-primary'
-              onClick={() => update('caregiver', '')}
-              type='button'
-            >
-              {t(`${key}.close`)}
-            </button>
-            <CaregiverReview centerId={id} id={selected} key={selected} />
-          </div>
-        </div>
       ) : null}
     </main>
   )

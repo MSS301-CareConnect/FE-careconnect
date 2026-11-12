@@ -29,15 +29,19 @@ function HistoryReasonText({ reason }: { reason?: string | null }) {
   if (!shown) return null
   return (
     <p className='mt-1 text-sm text-on-surface-variant'>
-      {shown.kind === 'depositReceived' ? t('booking.history.depositReceived') : shown.text}
+      {shown.kind === 'depositReceived'
+        ? t('booking.history.depositReceived')
+        : shown.kind === 'expired'
+          ? t(`booking.expiredReason.${shown.code}`)
+          : shown.text}
     </p>
   )
 }
 
 /**
- * Status changes and occurrence events of one booking, oldest first, from GET /bookings/{id}/history. With
- * `collapsedCount` (the customer page, 2026-11-09) only the latest entries show until "Show earlier" is pressed,
- * so a long history does not stretch the page.
+ * Status changes and occurrence events of one booking, newest first (2026-11-12), from GET /bookings/{id}/history.
+ * With `collapsedCount` only the latest entries show until "Show earlier" is pressed, so a long history does not
+ * stretch the page.
  */
 export function BookingHistoryList({ bookingId, collapsedCount }: { bookingId: string; collapsedCount?: number }) {
   const { t, i18n } = useTranslation()
@@ -71,9 +75,10 @@ export function BookingHistoryList({ bookingId, collapsedCount }: { bookingId: s
   if (history.data.items.length === 0)
     return <p className='text-sm text-on-surface-variant'>{t('booking.history.empty')}</p>
 
-  const all = history.data.items
+  // BookingService sends newest first; sorting here too keeps the order on a backend not rebuilt yet.
+  const all = [...history.data.items].sort((a, b) => Date.parse(b.changedAt) - Date.parse(a.changedAt))
   const hiddenCount = collapsedCount && !expanded ? Math.max(0, all.length - collapsedCount) : 0
-  const shown = hiddenCount > 0 ? all.slice(hiddenCount) : all
+  const shown = hiddenCount > 0 ? all.slice(0, collapsedCount) : all
   const canCollapse = Boolean(collapsedCount && all.length > collapsedCount)
 
   return (

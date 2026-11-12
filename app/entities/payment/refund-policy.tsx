@@ -3,7 +3,9 @@ import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import { bookingKeys, fetchCenterBookingPolicy } from '~/entities/booking/booking-api'
+import { Button } from '~/shared/ui/button'
 import { Icon } from '~/shared/ui/icon'
+import { Modal } from '~/shared/ui/modal'
 
 // Rule codes of PaymentService refund quotes (spec §10.2); unknown codes read as the generic policy line.
 const NAMED_RULES = [
@@ -37,7 +39,7 @@ export function useCenterBookingPolicy(centerId: string | undefined) {
 }
 
 /** Refunds per cancelled visit from the center booking policy PaymentService applies (spec §10.2). */
-export function RefundPolicySummary({ centerId }: { centerId: string | undefined }) {
+export function RefundPolicySummary({ centerId, bare = false }: { centerId: string | undefined; bare?: boolean }) {
   const { t, i18n } = useTranslation()
   const policy = useCenterBookingPolicy(centerId)
   const percent = new Intl.NumberFormat(i18n.language, { style: 'percent', maximumFractionDigits: 2 })
@@ -48,11 +50,13 @@ export function RefundPolicySummary({ centerId }: { centerId: string | undefined
   const late = data && data.lateCancelNoRefundMinutes > 0 ? hours.format(data.lateCancelNoRefundMinutes / 60) : null
 
   return (
-    <section aria-labelledby='refund-policy-title' className='flex flex-col gap-3 text-sm'>
-      <h3 className='flex items-center gap-2 text-base font-bold text-on-surface' id='refund-policy-title'>
-        <Icon className='text-xl text-primary' name='currency_exchange' />
-        {t('payment.refundPolicy.title')}
-      </h3>
+    <section aria-labelledby={bare ? undefined : 'refund-policy-title'} className='flex flex-col gap-3 text-sm'>
+      {bare ? null : (
+        <h3 className='flex items-center gap-2 text-base font-bold text-on-surface' id='refund-policy-title'>
+          <Icon className='text-xl text-primary' name='currency_exchange' />
+          {t('payment.refundPolicy.title')}
+        </h3>
+      )}
       <p className='leading-6 text-on-surface-variant'>{t('payment.refundPolicy.intro')}</p>
       {policy.isPending && centerId ? (
         <p className='text-on-surface-variant' role='status'>
@@ -118,5 +122,29 @@ export function RefundPolicySummary({ centerId }: { centerId: string | undefined
         </>
       ) : null}
     </section>
+  )
+}
+
+/** The full refund policy as a popup, so opening it does not stretch the page or dialog underneath. */
+export function RefundPolicyDialog({
+  centerId,
+  open,
+  onClose
+}: {
+  centerId: string | undefined
+  open: boolean
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <Modal
+      footer={<Button onClick={onClose}>{t('payment.refundPolicy.close')}</Button>}
+      onClose={onClose}
+      open={open}
+      size='md'
+      title={t('payment.refundPolicy.title')}
+    >
+      <RefundPolicySummary bare centerId={centerId} />
+    </Modal>
   )
 }

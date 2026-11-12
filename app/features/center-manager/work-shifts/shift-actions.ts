@@ -2,7 +2,7 @@ import type { ProviderWorkShiftRecord } from '~/shared/api/generated/contracts'
 
 import { vnInstant } from './shift-form-model'
 
-export type ShiftAction = 'view' | 'edit' | 'duplicate' | 'open' | 'close' | 'cancel' | 'delete'
+export type ShiftAction = 'view' | 'edit' | 'duplicate' | 'approve' | 'open' | 'close' | 'cancel' | 'delete'
 
 /** Actions that also run on several selected shifts at once (cancelling needs a reason per shift, so it stays single). */
 export const BULK_SHIFT_ACTIONS = ['open', 'close', 'delete'] as const
@@ -23,6 +23,7 @@ export function allowedShiftActions(shift: ProviderWorkShiftRecord, now: number)
   actions.add('cancel')
   const deadlineOpen = !shift.registrationDeadline || new Date(shift.registrationDeadline).getTime() > now
   const hasPlaces = (shift.approvedCount ?? 0) < shift.capacity
+  if ((shift.pendingCount ?? 0) > 0 && hasPlaces) actions.add('approve')
   if (shift.shiftStatus === 'OPEN') actions.add('close')
   else if (deadlineOpen && hasPlaces) actions.add('open')
   return actions

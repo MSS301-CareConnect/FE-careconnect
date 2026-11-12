@@ -12,6 +12,7 @@ import {
   fetchWorkShift,
   fetchWorkShiftStatistics,
   fetchWorkShifts,
+  reviewShiftRegistration,
   reviewShiftRegistrations
 } from '~/entities/provider/provider-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
@@ -31,6 +32,7 @@ vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   fetchCaregivers: vi.fn(),
   fetchProviderMedia: vi.fn(),
   reviewShiftRegistrations: vi.fn(),
+  reviewShiftRegistration: vi.fn(),
   cancelWorkShift: vi.fn()
 }))
 
@@ -250,6 +252,42 @@ describe('Center Manager work shifts', () => {
         ]
       })
     )
+  })
+
+  it('quick-approves the pending sign-ups of the selected shifts, earliest first and up to the free places', async () => {
+    vi.mocked(fetchWorkShifts).mockResolvedValue(
+      page([shift(), shift({ id: 'shift-2', capacity: 2, approvedCount: 1, pendingCount: 2 })])
+    )
+    const pending = (id: string, workShiftId: string, createdAt: string) => ({
+      id,
+      workShiftId,
+      caregiverId: `c-${id}`,
+      registrationStatus: 'PENDING' as const,
+      version: 0,
+      createdAt
+    })
+    vi.mocked(fetchShiftRegistrations).mockImplementation(async (id) => {
+      const items =
+        id === 'shift-1'
+          ? [pending('r1', id, '2026-11-02T01:00:00Z'), pending('r2', id, '2026-11-02T02:00:00Z')]
+          : [pending('r4', id, '2026-11-02T05:00:00Z'), pending('r3', id, '2026-11-02T03:00:00Z')]
+      return { items, page: 0, size: 50, totalElements: 2, totalPages: 1 }
+    })
+    // r2 overlaps another shift: skipped without blocking the rest.
+    vi.mocked(reviewShiftRegistration).mockImplementation(async (id) => {
+      if (id === 'r2') throw new Error('conflict')
+      return { ...pending(id, '', ''), registrationStatus: 'APPROVED' }
+    })
+    renderAt()
+
+    fireEvent.click(await screen.findByLabelText('Select every shift on this page'))
+    fireEvent.click(screen.getByRole('button', { name: 'Quick approve 3 sign-ups' }))
+
+    await waitFor(() => expect(reviewShiftRegistration).toHaveBeenCalledTimes(3))
+    const approvedIds = vi.mocked(reviewShiftRegistration).mock.calls.map(([id]) => id)
+    expect(approvedIds.sort()).toEqual(['r1', 'r2', 'r3'])
+    expect(reviewShiftRegistration).toHaveBeenCalledWith('r1', { status: 'APPROVED', version: 0 })
+    expect(fetchShiftRegistrations).toHaveBeenCalledWith('shift-1', 0, { status: 'PENDING', size: 50 })
   })
 
   it('requires a reason to cancel a shift', async () => {

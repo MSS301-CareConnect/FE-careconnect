@@ -29,6 +29,7 @@ export const paymentKeys = {
   all: ['payment'] as const,
   detail: (id: string) => ['payment', 'detail', id] as const,
   history: (page: number) => ['payment', 'history', page] as const,
+  ofBooking: (bookingId: string) => ['payment', 'booking', bookingId] as const,
   refunds: (page: number) => ['payment', 'refunds', page] as const,
   invoices: (page: number) => ['payment', 'invoices', page] as const,
   bookingInvoice: (bookingId: string) => ['payment', 'invoices', 'booking', bookingId] as const,
@@ -75,6 +76,11 @@ export async function fetchPayment(id: string) {
 
 export async function fetchPaymentHistory(page: number) {
   return result(await listPayments({ page, size: PAYMENT_PAGE_SIZE }, readOptions))
+}
+
+/** Every payment of one booking (a booking has at most a deposit and a remaining-balance payment). */
+export async function fetchBookingPayments(bookingId: string) {
+  return result(await listPayments({ bookingId, page: 0, size: 20 }, readOptions)).items
 }
 
 export async function fetchRefundHistory(page: number) {

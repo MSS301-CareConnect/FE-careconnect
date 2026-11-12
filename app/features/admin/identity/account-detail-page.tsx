@@ -54,7 +54,7 @@ function CaregiverProfileLink({ userId, roles }: { userId: string | undefined; r
       <dd className='mt-1'>
         <Link
           className='inline-flex items-center gap-1 font-semibold text-primary hover:underline'
-          to={`/admin/centers/${caregiver.data.centerId}/caregivers?caregiver=${caregiver.data.id}`}
+          to={`/admin/caregivers/${caregiver.data.id}`}
         >
           {caregiver.data.fullName}
           <Icon className='text-base' name='arrow_forward' />

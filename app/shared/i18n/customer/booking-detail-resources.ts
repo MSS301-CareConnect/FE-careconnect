@@ -36,6 +36,14 @@ export const bookingDetailEn = {
   occurrences: 'Care visits',
   history: 'History',
   refunded: 'Refund: {{refund}}',
+  keptDeposit: {
+    badge: 'Deposit lost',
+    title: 'You lost {{amount}} of your deposit',
+    overdue:
+      'Reason: the remaining balance was not paid in time, so the center kept the deposit under its booking policy.',
+    lateCancel:
+      'Reason: the booking was cancelled after the center’s refund cut-off, so this part of the payment was not refunded.'
+  },
   payDeposit: 'Pay {{deposit}}',
   payDepositNoAmount: 'Pay the initial payment',
   remaining: {
@@ -142,7 +150,6 @@ export const bookingDetailEn = {
     tiers: {
       title: 'Center refund policy',
       more: 'Details',
-      less: 'Hide',
       refund: 'Refund {{percent}}',
       none: 'No refund',
       from: '{{hours}} h or more before',
@@ -275,6 +282,12 @@ export const bookingDetailVi = {
   occurrences: 'Các buổi chăm sóc',
   history: 'Lịch sử',
   refunded: 'Tiền hoàn: {{refund}}',
+  keptDeposit: {
+    badge: 'Mất cọc',
+    title: 'Bạn bị mất {{amount}} tiền cọc',
+    overdue: 'Lý do: chưa thanh toán phần còn lại đúng hạn nên trung tâm giữ cọc theo chính sách đặt lịch.',
+    lateCancel: 'Lý do: lịch đặt bị hủy sau mốc hoàn tiền của trung tâm nên phần tiền này không được hoàn.'
+  },
   payDeposit: 'Thanh toán {{deposit}}',
   payDepositNoAmount: 'Thanh toán khoản đầu',
   remaining: {
@@ -382,7 +395,6 @@ export const bookingDetailVi = {
     tiers: {
       title: 'Chính sách hoàn tiền trung tâm',
       more: 'Xem chi tiết',
-      less: 'Thu gọn',
       refund: 'Hoàn {{percent}}',
       none: 'Không hoàn',
       from: 'Trước ≥ {{hours}} giờ',

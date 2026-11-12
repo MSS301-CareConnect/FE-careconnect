@@ -63,7 +63,8 @@ export const paymentSharedVi = {
     fullRefund: 'Trung tâm hủy hoặc người chăm sóc vắng mặt: hoàn toàn bộ số tiền đã trả.',
     overdue: 'Không trả đủ phần còn lại trước hạn: lịch đặt hết hạn và trung tâm giữ {{percent}} số tiền đã trả.',
     loading: 'Đang tải chính sách hoàn tiền…',
-    unavailable: 'Chưa tải được chính sách hoàn tiền. Bạn vẫn xem được số tiền hoàn trước khi xác nhận hủy.'
+    unavailable: 'Chưa tải được chính sách hoàn tiền. Bạn vẫn xem được số tiền hoàn trước khi xác nhận hủy.',
+    close: 'Đã hiểu'
   },
   errors: {
     e6004: 'Không tìm thấy giao dịch thanh toán.',
@@ -150,7 +151,8 @@ export const paymentSharedEn = {
       'If the remaining balance is not paid in time, the booking expires and the center keeps {{percent}} of what was paid.',
     loading: 'Loading the refund policy…',
     unavailable:
-      'The refund policy could not be loaded. You can still preview the refund before confirming a cancellation.'
+      'The refund policy could not be loaded. You can still preview the refund before confirming a cancellation.',
+    close: 'Got it'
   },
   errors: {
     e6004: 'Payment not found.',

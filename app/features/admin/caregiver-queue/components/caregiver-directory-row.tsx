@@ -87,7 +87,7 @@ export function CaregiverDirectoryRow({
         <Link
           aria-label={t(`${key}.openProfileOf`, { name: caregiver.fullName })}
           className='inline-flex min-h-9 items-center gap-1 rounded-full bg-mint-50 px-3.5 text-sm font-semibold text-forest-800 transition-colors hover:bg-mint-100 focus-visible:outline-2 focus-visible:outline-forest-900'
-          to={`/admin/centers/${caregiver.centerId}/caregivers?caregiver=${caregiver.id}`}
+          to={`/admin/caregivers/${caregiver.id}`}
         >
           {t(`${key}.openProfile`)}
           <Icon className='text-base' name='chevron_right' />
