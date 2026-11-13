@@ -92,7 +92,7 @@ describe('Stroke screening page', () => {
       anginaOrChdHistory: true,
       currentSmoker: true
     })
-    expect(screen.getByRole('meter', { name: 'Chỉ số mô hình' })).toHaveAttribute('aria-valuenow', '81')
+    expect(screen.getByRole('meter', { name: 'Điểm sàng lọc của mô hình' })).toHaveAttribute('aria-valuetext', '0,81')
     expect(screen.getByText('Nên trao đổi với bác sĩ.')).toBeInTheDocument()
     expect(screen.getByText('Kết quả chỉ dùng để hỗ trợ sàng lọc.')).toBeInTheDocument()
     expect(screen.queryByText(/predictedClass|Xác suất mắc/)).not.toBeInTheDocument()
@@ -118,7 +118,7 @@ describe('Stroke screening page', () => {
     expect(await screen.findByText(/Dịch vụ sàng lọc tạm thời chưa sẵn sàng/)).toBeInTheDocument()
     expect(screen.getByLabelText('Tuổi')).toHaveValue('68')
     fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }))
-    expect(await screen.findByRole('heading', { name: 'Mức tương đồng thấp hơn' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Mẫu sàng lọc hiện tại ở mức thấp hơn' })).toBeInTheDocument()
   })
 
   it('does not offer a retry when the account may not use the tool', async () => {

@@ -241,6 +241,20 @@ export const bookingDetailEn = {
     editAddress: 'Change address',
     note: 'Your notes',
     noNote: 'No special notes'
+  },
+  center: {
+    title: 'Care center',
+    subtitle: 'The center that confirms, assigns and is responsible for this booking',
+    photoAlt: 'Photo of {{name}}',
+    address: 'Address',
+    hours: 'Opening hours',
+    phone: 'Hotline',
+    call: 'Call {{phone}}',
+    view: 'View center',
+    loading: 'Loading center details…',
+    unavailable: 'This center no longer takes new bookings. Your booking stays with it.',
+    error: 'Could not load the center details.',
+    retry: 'Try again'
   }
 }
 
@@ -486,5 +500,19 @@ export const bookingDetailVi = {
     editAddress: 'Đổi địa chỉ',
     note: 'Ghi chú của bạn',
     noNote: 'Không có ghi chú thêm'
+  },
+  center: {
+    title: 'Trung tâm phụ trách',
+    subtitle: 'Trung tâm xác nhận, phân công và chịu trách nhiệm cho lịch đặt này',
+    photoAlt: 'Ảnh {{name}}',
+    address: 'Địa chỉ',
+    hours: 'Giờ hoạt động',
+    phone: 'Hotline',
+    call: 'Gọi {{phone}}',
+    view: 'Xem trung tâm',
+    loading: 'Đang tải thông tin trung tâm…',
+    unavailable: 'Trung tâm hiện không nhận lịch mới. Lịch đặt này vẫn do trung tâm phụ trách.',
+    error: 'Không tải được thông tin trung tâm.',
+    retry: 'Thử lại'
   }
 }

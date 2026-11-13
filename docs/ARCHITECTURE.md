@@ -1234,7 +1234,8 @@ comma or dot, with an optional height / weight calculator) and six yes / no hist
 Choosing a family profile (`entities/care-recipient`, the booking form's list request) starts a fresh draft prefilled
 with age, sex (MALE / FEMALE only) and BMI from height and weight; its chronic conditions are shown as a reference, never
 turned into answers. The result names the pattern (`NEEDS_FURTHER_ASSESSMENT` peach, `LOWER_SCREENING_PATTERN` mint;
-`predictedClass` is never shown), shows `modelScore` as a "model index" meter that is explicitly not a probability, the
+`predictedClass` is never shown), shows `modelScore` as a "model screening score" (0–1, two decimals) on a meter with the 0.5 decision threshold of
+StrokeModelService marked and explained (above it → "assess further"), explicitly not a probability, the
 backend `recommendation` verbatim, three translated next steps, the answers it used and, directly under it, the backend
 `disclaimer`; changing an answer afterwards marks the result as outdated. Failures are a `FormAlert` at the end of the
 form: 8613 / 503 / 404 (endpoint not deployed) read "not available" with a retry, 401 asks to retry after the session

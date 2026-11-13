@@ -1,6 +1,6 @@
 export const strokeScreeningVi = {
   documentTitle: 'Sàng lọc đột quỵ | CareConnect',
-  title: 'Sàng lọc nguy cơ liên quan đến đột quỵ',
+  title: 'Sàng lọc đặc điểm liên quan đến tiền sử đột quỵ',
   subtitle:
     'Trả lời 9 câu hỏi về sức khỏe của người thân để xem thông tin có tương đồng với nhóm từng ghi nhận đột quỵ hay không. Công cụ hỗ trợ sàng lọc, không thay thế bác sĩ.',
   breadcrumb: { label: 'Đường dẫn', home: 'Trang chủ', current: 'Sàng lọc đột quỵ' },
@@ -98,15 +98,18 @@ export const strokeScreeningVi = {
     announce: 'Đã có kết quả sàng lọc.',
     NEEDS_FURTHER_ASSESSMENT: {
       title: 'Nên được đánh giá thêm',
-      lead: 'Thông tin có nhiều đặc điểm tương đồng với nhóm từng ghi nhận đột quỵ. Hãy trao đổi với bác sĩ hoặc nhân viên y tế.'
+      lead: 'Thông tin được cung cấp có nhiều đặc điểm tương đồng với nhóm người từng khai báo có tiền sử đột quỵ trong dữ liệu nghiên cứu. Kết quả này không phải chẩn đoán và không thể hiện xác suất mắc bệnh trong tương lai.'
     },
     LOWER_SCREENING_PATTERN: {
-      title: 'Mức tương đồng thấp hơn',
-      lead: 'Thông tin ít tương đồng với nhóm từng ghi nhận đột quỵ. Vẫn nên duy trì kiểm tra sức khỏe định kỳ.'
+      title: 'Mẫu sàng lọc hiện tại ở mức thấp hơn',
+      lead: 'Thông tin được cung cấp có ít đặc điểm tương đồng với nhóm người từng khai báo có tiền sử đột quỵ trong dữ liệu nghiên cứu. Kết quả này không phải chẩn đoán và không thể hiện xác suất mắc bệnh trong tương lai.'
     },
     score: {
-      label: 'Chỉ số mô hình',
-      caption: 'Mức tương đồng với mẫu dữ liệu, không phải xác suất mắc đột quỵ.'
+      label: 'Điểm sàng lọc của mô hình',
+      caption: 'Điểm này thể hiện mức độ phù hợp với mẫu dữ liệu của mô hình, không phải xác suất bị đột quỵ.',
+      threshold:
+        'Ngưỡng {{threshold}}: điểm vượt ngưỡng cho kết quả “Nên được đánh giá thêm”, không vượt ngưỡng cho kết quả “Mẫu sàng lọc hiện tại ở mức thấp hơn”.',
+      thresholdMark: 'Ngưỡng {{threshold}}'
     },
     recommendation: 'Khuyến nghị',
     nextSteps: 'Bước tiếp theo',
@@ -136,7 +139,7 @@ export const strokeScreeningVi = {
 
 export const strokeScreeningEn = {
   documentTitle: 'Stroke screening | CareConnect',
-  title: 'Stroke-related risk screening',
+  title: 'Screening for traits linked to a history of stroke',
   subtitle:
     'Answer 9 questions about your family member’s health to see whether it resembles the group with a recorded stroke. A screening aid, not a replacement for a doctor.',
   breadcrumb: { label: 'Breadcrumb', home: 'Home', current: 'Stroke screening' },
@@ -237,15 +240,18 @@ export const strokeScreeningEn = {
     announce: 'The screening result is ready.',
     NEEDS_FURTHER_ASSESSMENT: {
       title: 'Further assessment advised',
-      lead: 'The details share many traits with the group that had a recorded stroke. Please talk to a doctor or health worker.'
+      lead: 'The details provided share many traits with people who reported a history of stroke in the research data. This is not a diagnosis and does not show the probability of having a stroke in the future.'
     },
     LOWER_SCREENING_PATTERN: {
-      title: 'Lower resemblance',
-      lead: 'The details share fewer traits with the group that had a recorded stroke. Regular health check-ups are still advised.'
+      title: 'Current screening pattern is lower',
+      lead: 'The details provided share few traits with people who reported a history of stroke in the research data. This is not a diagnosis and does not show the probability of having a stroke in the future.'
     },
     score: {
-      label: 'Model index',
-      caption: 'Resemblance to the data pattern, not the probability of having a stroke.'
+      label: 'Model screening score',
+      caption: 'This score shows how closely the details fit the model’s data pattern, not the probability of having a stroke.',
+      threshold:
+        'Threshold {{threshold}}: a score above it gives “Further assessment advised”; a score at or below it gives “Current screening pattern is lower”.',
+      thresholdMark: 'Threshold {{threshold}}'
     },
     recommendation: 'Recommendation',
     nextSteps: 'Next steps',

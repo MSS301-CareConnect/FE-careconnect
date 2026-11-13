@@ -29,6 +29,7 @@ import { BookingCancelDialog } from './components/booking-cancel-dialog'
 import { BookingDetailSummary } from './components/booking-detail-summary'
 import { BookingLifecycleStepper } from './components/booking-lifecycle-stepper'
 import { BookingOccurrenceDetailDialog } from './components/booking-occurrence-detail-dialog'
+import { BookingCenterCard } from './components/booking-center-card'
 import { BookingOverviewCard } from './components/booking-overview-card'
 import { BookingStatusPanel } from './components/booking-status-panel'
 import { CaregiverChangeDialog } from './components/caregiver-change-dialog'
@@ -215,6 +216,7 @@ export function CustomerBookingDetailPage({ id }: { id: string }) {
             now={now}
             onEditAddress={canChangeServiceAddress(data, now) ? () => setEditingAddress(true) : undefined}
           />
+          <BookingCenterCard centerId={data.centerId} />
           <SectionCard
             icon='event_note'
             title={`${t(`${key}.occurrences`)}${occurrences.length ? ` (${occurrences.length})` : ''}`}
