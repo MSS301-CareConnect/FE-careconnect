@@ -50,10 +50,13 @@ export function ShiftFormDialog({
   centerId,
   today,
   now,
+  preset,
   onClose
 }: {
   mode: ShiftFormMode
   shift?: ProviderWorkShiftRecord
+  /** Create only: values to start from (day and time of a visit that needs a caregiver). */
+  preset?: Partial<ShiftFormValues>
   centerId: string
   today: string
   now: number
@@ -64,8 +67,8 @@ export function ShiftFormDialog({
   const queryClient = useQueryClient()
   const formRef = useRef<HTMLFormElement>(null)
   const initial = useMemo(
-    () => (shift ? shiftFormFromRecord(shift, mode, today) : emptyShiftForm(today)),
-    [shift, mode, today]
+    () => (shift ? shiftFormFromRecord(shift, mode, today) : { ...emptyShiftForm(today), ...preset }),
+    [shift, mode, today, preset]
   )
   const [values, setValues] = useState<ShiftFormValues>(initial)
   const [confirmDiscard, setConfirmDiscard] = useState(false)

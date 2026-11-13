@@ -19,6 +19,8 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
+  CaregiverWorkStatisticsListResponse,
+  GetCaregiverWorkStatisticsParams,
   GetCenterStatisticsParams,
   GetSystemStatisticsParams,
   OperationalStatisticsResponse
@@ -227,6 +229,188 @@ export function useGetCenterStatistics<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetCenterStatisticsQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return withQueryKey(query, queryOptions.queryKey)
+}
+
+export type getCaregiverWorkStatisticsResponse200 = {
+  data: CaregiverWorkStatisticsListResponse
+  status: 200
+}
+
+export type getCaregiverWorkStatisticsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getCaregiverWorkStatisticsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getCaregiverWorkStatisticsResponse500 = {
+  data: void
+  status: 500
+}
+
+export type getCaregiverWorkStatisticsResponse503 = {
+  data: void
+  status: 503
+}
+
+export type getCaregiverWorkStatisticsResponseSuccess = getCaregiverWorkStatisticsResponse200 & {
+  headers: Headers
+}
+export type getCaregiverWorkStatisticsResponseError = (
+  | getCaregiverWorkStatisticsResponse401
+  | getCaregiverWorkStatisticsResponse403
+  | getCaregiverWorkStatisticsResponse500
+  | getCaregiverWorkStatisticsResponse503
+) & {
+  headers: Headers
+}
+
+export const getGetCaregiverWorkStatisticsUrl = (params?: GetCaregiverWorkStatisticsParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `${env.API_BASE_URL}/v1/statistics/caregivers?${stringifiedParams}`
+    : `${env.API_BASE_URL}/v1/statistics/caregivers`
+}
+
+/**
+ * @summary Caregiver track record (all time); CENTER_MANAGER is scoped to the token center, ADMIN filters by centerId
+ */
+export const getCaregiverWorkStatistics = async (
+  params?: GetCaregiverWorkStatisticsParams,
+  options?: RequestInit
+): Promise<getCaregiverWorkStatisticsResponseSuccess> => {
+  const res = await fetch(getGetCaregiverWorkStatisticsUrl(params), {
+    ...options,
+    method: 'GET'
+  })
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+  if (!res.ok) {
+    const err: globalThis.Error & { info?: getCaregiverWorkStatisticsResponseError['data']; status?: number } =
+      new globalThis.Error()
+    const data: getCaregiverWorkStatisticsResponseError['data'] = body ? JSON.parse(body) : {}
+    err.info = data
+    err.status = res.status
+    throw err
+  }
+  const data: getCaregiverWorkStatisticsResponseSuccess['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getCaregiverWorkStatisticsResponseSuccess
+}
+
+export const getGetCaregiverWorkStatisticsQueryKey = (params?: GetCaregiverWorkStatisticsParams) => {
+  return [`${env.API_BASE_URL}/v1/statistics/caregivers`, ...(params ? [params] : [])] as const
+}
+
+export const getGetCaregiverWorkStatisticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetCaregiverWorkStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  }
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetCaregiverWorkStatisticsQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>> = ({ signal }) =>
+    getCaregiverWorkStatistics(params, { signal, ...fetchOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCaregiverWorkStatisticsQueryResult = NonNullable<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>>
+export type GetCaregiverWorkStatisticsQueryError = globalThis.Error & { info?: void; status?: number }
+
+export function useGetCaregiverWorkStatistics<
+  TData = Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params: undefined | GetCaregiverWorkStatisticsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getCaregiverWorkStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCaregiverWorkStatistics<
+  TData = Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetCaregiverWorkStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getCaregiverWorkStatistics>>
+        >,
+        'initialData'
+      >
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCaregiverWorkStatistics<
+  TData = Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetCaregiverWorkStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Caregiver track record (all time); CENTER_MANAGER is scoped to the token center, ADMIN filters by centerId
+ */
+
+export function useGetCaregiverWorkStatistics<
+  TData = Awaited<ReturnType<typeof getCaregiverWorkStatistics>>,
+  TError = globalThis.Error & { info?: void; status?: number }
+>(
+  params?: GetCaregiverWorkStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCaregiverWorkStatistics>>, TError, TData>>
+    fetch?: RequestInit
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCaregiverWorkStatisticsQueryOptions(params, options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

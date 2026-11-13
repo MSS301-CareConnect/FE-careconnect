@@ -21,6 +21,8 @@ export interface CaregiverOccurrenceRecord {
   endAt: string
   checkInOpensAt?: string
   checkInClosesAt?: string
+  /** CAREGIVER_MISSED visit only (manager / admin) — when the full refund will be sent; while set the center can still record the caregiver's check-in. */
+  missedRefundAt?: string
   durationMinutes?: number
   /** Service done in this visit; absent when the visit covers every service of the booking */
   careServiceId?: string

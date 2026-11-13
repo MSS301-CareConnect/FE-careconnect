@@ -42,7 +42,9 @@ export function ShiftCard({
   now,
   onRegister,
   onCancel,
-  onWithdraw
+  onWithdraw,
+  selected,
+  onToggleSelect
 }: {
   shift: ShiftView
   registration?: ProviderShiftRegistrationRecord
@@ -51,6 +53,9 @@ export function ShiftCard({
   onRegister?: () => void
   onCancel?: () => void
   onWithdraw?: () => void
+  /** Set together with onToggleSelect to show a checkbox for quick multi sign-up. */
+  selected?: boolean
+  onToggleSelect?: () => void
 }) {
   const { t } = useTranslation()
   const format = useCaregiverFormat()
@@ -61,7 +66,24 @@ export function ShiftCard({
   const deadlineOpen = shift.registrationDeadline ? new Date(shift.registrationDeadline).getTime() > now : true
 
   return (
-    <article className={`${cgCard} flex h-full flex-col gap-3 p-4 sm:p-5`}>
+    <article
+      className={`${cgCard} relative flex h-full flex-col gap-3 p-4 sm:p-5 ${selected ? 'ring-2 ring-primary' : ''}`}
+    >
+      {onToggleSelect ? (
+        <label className='absolute top-2 right-2 grid h-11 w-11 cursor-pointer place-items-center'>
+          <input
+            aria-label={t('caregiver.work.shifts.select', {
+              date: format.shortDay(shift.workDate),
+              time: format.timeRangeWithDuration(shift.startTime, shift.endTime)
+            })}
+            checked={Boolean(selected)}
+            className='h-5 w-5 cursor-pointer accent-primary disabled:cursor-not-allowed'
+            disabled={full}
+            onChange={onToggleSelect}
+            type='checkbox'
+          />
+        </label>
+      ) : null}
       <div className='flex flex-col-reverse items-start gap-2'>
         <div className='min-w-0'>
           <p className='text-lg font-bold text-on-surface tabular-nums'>{format.shortDay(shift.workDate)}</p>

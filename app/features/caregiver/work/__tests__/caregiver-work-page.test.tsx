@@ -120,6 +120,29 @@ describe('Work schedule — shift sign-up', () => {
     await waitFor(() => expect(registerForShift).toHaveBeenCalledWith('shift-1', { caregiverNote: 'Em tới sớm' }))
   })
 
+  it('signs up for every selected shift at once and keeps failed ones selected', async () => {
+    const second = { ...shift, id: 'shift-2', startTime: '20:00:00', endTime: '23:00:00' }
+    vi.mocked(fetchWorkShifts).mockResolvedValue({
+      items: [shift, second],
+      page: 0,
+      size: 100,
+      totalElements: 2,
+      totalPages: 1
+    })
+    vi.mocked(registerForShift)
+      .mockResolvedValueOnce({} as never)
+      .mockRejectedValueOnce(new Error('boom'))
+    renderWork('shifts')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Chọn tất cả (2)' }))
+    expect(screen.getByText('Đã chọn 2 ca')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Đăng ký nhanh 2 ca' }))
+    await waitFor(() => expect(registerForShift).toHaveBeenCalledTimes(2))
+    expect(registerForShift).toHaveBeenNthCalledWith(1, 'shift-1', { caregiverNote: undefined })
+    expect(registerForShift).toHaveBeenNthCalledWith(2, 'shift-2', { caregiverNote: undefined })
+    expect(await screen.findByText('Đã chọn 1 ca')).toBeInTheDocument()
+  })
+
   it('keeps a shift already signed up out of "Open shifts" and withdraws the pending sign-up with its version', async () => {
     vi.mocked(fetchMyShiftRegistrations).mockResolvedValue({
       items: [

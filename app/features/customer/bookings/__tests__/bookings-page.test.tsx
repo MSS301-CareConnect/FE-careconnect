@@ -134,6 +134,24 @@ describe('CustomerBookingsPage', () => {
     expect(screen.getByRole('button', { name: 'Bỏ lọc Đã hủy' })).toBeInTheDocument()
   })
 
+  it('pages the list with a rows-per-page picker and keeps the size in the URL', async () => {
+    const many = Array.from({ length: 12 }, (_, index) =>
+      booking({
+        id: `bk-${index}`,
+        bookingCode: `BK${String(index).padStart(4, '0')}`,
+        recipientName: `Người ${index}`
+      })
+    )
+    vi.mocked(fetchBookingCollection).mockResolvedValue({ items: many, totalElements: many.length, truncated: false })
+    renderPage('/customer/bookings?size=5')
+
+    expect(await screen.findAllByRole('link', { name: /^Người \d+$/ })).toHaveLength(5)
+    const pager = screen.getByRole('navigation', { name: /trang/i })
+    expect(within(pager).getByLabelText('Số dòng mỗi trang')).toHaveValue('5')
+    fireEvent.change(within(pager).getByLabelText('Số dòng mỗi trang'), { target: { value: '20' } })
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /^Người \d+$/ })).toHaveLength(12))
+  })
+
   it('invites a new customer to book when there is no booking at all', async () => {
     vi.mocked(fetchBookingCollection).mockResolvedValue({ items: [], totalElements: 0, truncated: false })
     renderPage()

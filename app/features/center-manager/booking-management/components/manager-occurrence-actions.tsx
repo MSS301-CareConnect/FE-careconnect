@@ -12,12 +12,13 @@ import {
 } from '~/entities/booking/booking-api'
 import { bookingErrorKey, hasStarted, isUpcomingOccurrence } from '~/entities/booking/booking-format'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
+import { CenterCheckInDialog } from '~/entities/booking/center-check-in-dialog'
 import type { BookingOccurrenceRecord, BookingStatus } from '~/shared/api/generated/contracts'
 
 import type { useCenterCaregivers } from '../hooks/use-center-caregivers'
 import { CaregiverAssignDialog } from './caregiver-assign-dialog'
 
-type Dialog = 'assign' | 'approve' | 'reject' | 'forceEnd' | 'cancel' | null
+type Dialog = 'assign' | 'approve' | 'reject' | 'forceEnd' | 'cancel' | 'checkIn' | null
 const action = 'rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-primary shadow-sm hover:bg-surface-container'
 // Spec §10.1 (B16): once paid, the center cancels single visits (full refund of what was paid for them); an unpaid
 // booking is rejected or cancelled whole.
@@ -46,9 +47,9 @@ export function ManagerOccurrenceActions({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [dialog, setDialog] = useState<Dialog>(null)
-  const started =
-    occurrence.status === 'IN_PROGRESS' ||
-    ((occurrence.status === 'SCHEDULED' || occurrence.status === 'ACKNOWLEDGED') && hasStarted(occurrence.startAt))
+  const waitingCheckIn =
+    (occurrence.status === 'SCHEDULED' || occurrence.status === 'ACKNOWLEDGED') && hasStarted(occurrence.startAt)
+  const started = occurrence.status === 'IN_PROGRESS' || occurrence.status === 'CAREGIVER_MISSED' || waitingCheckIn
   const detail = useQuery({
     queryKey: bookingKeys.occurrence(occurrence.id),
     queryFn: () => fetchOccurrence(occurrence.id),
@@ -78,6 +79,14 @@ export function ManagerOccurrenceActions({
     onSuccess: refresh
   })
   const upcoming = isUpcomingOccurrence(occurrence) && !bookingClosing
+  // A started visit nobody checked in to, or a missed one whose refund is still waiting (2026-11-13): the center can
+  // record the caregiver's check-in.
+  const canCheckIn =
+    Boolean(occurrence.caregiverId) &&
+    Boolean(detail.data) &&
+    !detail.data?.sessionId &&
+    ((waitingCheckIn && !detail.data?.noShowReportedAt) ||
+      (occurrence.status === 'CAREGIVER_MISSED' && Boolean(detail.data?.missedRefundAt)))
 
   const awaitingDecision = Boolean(detail.data?.noShowReportedAt && !detail.data.noShowDecidedAt)
   const sessionId = occurrence.status === 'IN_PROGRESS' ? detail.data?.sessionId : undefined
@@ -106,6 +115,11 @@ export function ManagerOccurrenceActions({
             {t('centerManager.bookingDetail.occurrence.rejectNoShow')}
           </button>
         </>
+      ) : null}
+      {canCheckIn ? (
+        <button className={action} onClick={() => setDialog('checkIn')} type='button'>
+          {t('centerManager.bookingDetail.occurrence.checkIn')}
+        </button>
       ) : null}
       {sessionId ? (
         <button className={`${action} text-error`} onClick={() => setDialog('forceEnd')} type='button'>
@@ -163,6 +177,14 @@ export function ManagerOccurrenceActions({
           onConfirm={(reason) => cancel.mutate(reason)}
           pending={cancel.isPending}
           title={t('centerManager.bookingDetail.occurrence.cancelTitle', { number: occurrence.occurrenceNo })}
+        />
+      ) : null}
+      {dialog === 'checkIn' ? (
+        <CenterCheckInDialog
+          occurrenceId={occurrence.id}
+          occurrenceNo={occurrence.occurrenceNo}
+          onClose={() => setDialog(null)}
+          startAt={occurrence.startAt}
         />
       ) : null}
       {dialog === 'forceEnd' ? (

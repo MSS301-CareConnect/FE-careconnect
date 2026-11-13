@@ -61,6 +61,7 @@ export function ScheduleDayCard({
     noService: t('customer.booking.schedule.custom.noService'),
     busy: t('customer.booking.schedule.busy.row', { name: caregiver }),
     buffer: t('customer.booking.schedule.busy.bufferRow', { name: caregiver, buffer }),
+    unavailable: t('customer.booking.schedule.availability.row', { name: caregiver }),
     // Depends on the visit's plan: written per row below.
     planLength: null
   }
@@ -255,6 +256,11 @@ export function ScheduleDayCard({
                       })}
                     </button>
                   ) : null}
+                </p>
+              ) : !issue && form.noneFreeOf(slot) ? (
+                <p className='mt-1 flex items-center gap-1.5 text-sm text-on-warning-container'>
+                  <Icon className='text-base' name='person_search' />
+                  {t('customer.booking.schedule.availability.noneFreeRow')}
                 </p>
               ) : null}
             </li>

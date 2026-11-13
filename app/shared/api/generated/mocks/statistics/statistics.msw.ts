@@ -8,11 +8,19 @@
 import { HttpResponse, delay, http } from 'msw'
 import type { RequestHandlerOptions } from 'msw'
 
-import type { OperationalStatisticsResponse } from '../../contracts'
+import type { CaregiverWorkStatisticsListResponse, OperationalStatisticsResponse } from '../../contracts'
 
-import { getGetCenterStatisticsResponseMock, getGetSystemStatisticsResponseMock } from './statistics.faker'
+import {
+  getGetCaregiverWorkStatisticsResponseMock,
+  getGetCenterStatisticsResponseMock,
+  getGetSystemStatisticsResponseMock
+} from './statistics.faker'
 
-export { getGetCenterStatisticsResponseMock, getGetSystemStatisticsResponseMock } from './statistics.faker'
+export {
+  getGetCenterStatisticsResponseMock,
+  getGetCaregiverWorkStatisticsResponseMock,
+  getGetSystemStatisticsResponseMock
+} from './statistics.faker'
 
 export const getGetCenterStatisticsMockHandler = (
   overrideResponse?:
@@ -33,6 +41,32 @@ export const getGetCenterStatisticsMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getGetCenterStatisticsResponseMock(),
+        { status: 200 }
+      )
+    },
+    options
+  )
+}
+
+export const getGetCaregiverWorkStatisticsMockHandler = (
+  overrideResponse?:
+    | CaregiverWorkStatisticsListResponse
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0]
+      ) => Promise<CaregiverWorkStatisticsListResponse> | CaregiverWorkStatisticsListResponse),
+  options?: RequestHandlerOptions
+) => {
+  return http.get(
+    '*/v1/statistics/caregivers',
+    async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+      await delay(150)
+
+      return HttpResponse.json(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getGetCaregiverWorkStatisticsResponseMock(),
         { status: 200 }
       )
     },
@@ -65,4 +99,8 @@ export const getGetSystemStatisticsMockHandler = (
     options
   )
 }
-export const getStatisticsMock = () => [getGetCenterStatisticsMockHandler(), getGetSystemStatisticsMockHandler()]
+export const getStatisticsMock = () => [
+  getGetCenterStatisticsMockHandler(),
+  getGetCaregiverWorkStatisticsMockHandler(),
+  getGetSystemStatisticsMockHandler()
+]

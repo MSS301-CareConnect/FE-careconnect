@@ -36,6 +36,7 @@ import {
 import { fitsPlan, isFixedPlan, lengthOf, type ServiceOption, type ShiftSlot } from './service-slots'
 import { useBookingProviders } from './use-booking-providers'
 import { useCaregiverBusy } from './use-caregiver-busy'
+import { useVisitAvailability } from './use-free-caregiver-check'
 
 export { MAX_CUSTOM_SLOTS, type CustomSlot } from './schedule-slots'
 
@@ -100,6 +101,8 @@ export type SlotIssue =
   /** 2026-11-11: the chosen caregiver has another booking at that time, or within its travel buffer. */
   | 'busy'
   | 'buffer'
+  /** 2026-11-13: the chosen caregiver has no approved shift, is off or is booked elsewhere then (ProviderService). */
+  | 'unavailable'
 export type MissingReason =
   | 'recipient'
   | 'center'
@@ -453,6 +456,17 @@ export function useBookingForm() {
     earliestDay,
     activeSlots.map((slot) => slot.date)
   )
+  // 2026-11-13: who can take each visit — the chosen caregiver (an error) or anyone of the center (a warning only).
+  const availability = useVisitAvailability(
+    centerId,
+    careServiceIds,
+    caregiverId,
+    activeSlots,
+    (slot) =>
+      Boolean(slot.date && slot.startTime && slot.endTime) &&
+      slot.startTime < slot.endTime &&
+      !tooEarly(slot.date, slot.startTime)
+  )
 
   // Errors show on the visit that has them; RECURRING visits must also stay within the dates of the pattern.
   function issuesOf(slots: CustomSlot[], range?: { from: string; to: string }): (SlotIssue | null)[] {
@@ -466,7 +480,7 @@ export function useBookingForm() {
       const option = serviceOfSlot(slot.careServiceId)
       if (multiService && !option) return 'noService'
       if (option && !fitsPlan(option.plan, lengthOf(slot))) return 'planLength'
-      return busy.conflictOf(slot)
+      return busy.conflictOf(slot) ?? (availability.availabilityOf(slot) === 'unavailable' ? 'unavailable' : null)
     })
   }
   /** With several services, each needs at least one visit. */
@@ -705,6 +719,9 @@ export function useBookingForm() {
     centerName: center?.name ?? caregiver.data?.centerName,
     centerCaregivers,
     chosenCaregiver,
+    careServiceIds,
+    /** "Let the center assign": no caregiver of the center is free for this visit (it can still be booked). */
+    noneFreeOf: (slot: CustomSlot) => availability.availabilityOf(slot) === 'noneFree',
     caregiversFiltered: careServiceIds.length > 0,
     serviceOptions,
     multiService,

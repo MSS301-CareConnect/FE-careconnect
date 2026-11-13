@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router'
 import { bookingKeys, fetchBookingCollection } from '~/entities/booking/booking-api'
 import { BOOKING_STATUSES } from '~/entities/booking/booking-format'
 import { fetchOutstandingDebt, paymentKeys } from '~/entities/payment/payment-api'
+import { pageSizeOf } from '~/shared/ui/pagination'
 
 import {
   BOOKING_GROUPS,
@@ -26,8 +27,8 @@ const LEGACY_SORTS: Record<string, BookingSort> = {
 
 /**
  * The customer's bookings grouped into tabs. BookingService filters one status at a time, so the list reads the
- * customer's bookings once (newest 500) and groups, searches, sorts and pages them here. Tab, keyword, sort and page
- * live in the URL; an older `?status=` link still narrows the list to that exact status.
+ * customer's bookings once (newest 500) and groups, searches, sorts and pages them here. Tab, keyword, sort, page and
+ * page size (`?size=`) live in the URL; an older `?status=` link still narrows the list to that exact status.
  */
 export function useCustomerBookings() {
   const [params, setParams] = useSearchParams()
@@ -37,6 +38,7 @@ export function useCustomerBookings() {
   const rawSort = params.get('sort') ?? ''
   const sort = BOOKING_SORTS.find((item) => item === rawSort) ?? LEGACY_SORTS[rawSort] ?? 'newest'
   const requestedPage = Math.max(0, Number(params.get('page')) || 0)
+  const pageSize = pageSizeOf(params.get('size'), BOOKINGS_PAGE_SIZE)
 
   const collection = useQuery({
     queryKey: bookingKeys.collection({}),
@@ -70,11 +72,11 @@ export function useCustomerBookings() {
         .sort(compareBookings(sort)),
     [all, status, group, openInvoiceBookings, keyword, sort]
   )
-  const totalPages = Math.ceil(matching.length / BOOKINGS_PAGE_SIZE)
+  const totalPages = Math.ceil(matching.length / pageSize)
   const page = Math.min(requestedPage, Math.max(0, totalPages - 1))
-  const items = matching.slice(page * BOOKINGS_PAGE_SIZE, (page + 1) * BOOKINGS_PAGE_SIZE)
+  const items = matching.slice(page * pageSize, (page + 1) * pageSize)
 
-  function update(changes: Partial<Record<'tab' | 'status' | 'q' | 'sort' | 'page', string>>) {
+  function update(changes: Partial<Record<'tab' | 'status' | 'q' | 'sort' | 'page' | 'size', string>>) {
     setParams(
       (previous) => {
         const next = new URLSearchParams(previous)
@@ -96,6 +98,7 @@ export function useCustomerBookings() {
     items,
     matchingCount: matching.length,
     page,
+    pageSize,
     totalPages,
     group,
     status,
@@ -108,6 +111,7 @@ export function useCustomerBookings() {
     setKeyword: (value: string) => update({ q: value.trim() }),
     setSort: (value: BookingSort) => update({ sort: value === 'newest' ? '' : value }),
     setPage: (value: number) => update({ page: value > 0 ? String(value) : '' }),
+    setPageSize: (value: number) => update({ size: value === BOOKINGS_PAGE_SIZE ? '' : String(value) }),
     clearFilters: () => update({ q: '', status: '' })
   }
 }

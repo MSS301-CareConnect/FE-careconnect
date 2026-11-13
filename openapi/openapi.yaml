@@ -7952,6 +7952,40 @@ paths:
           description: BookingService error
         '503':
           description: BookingService error
+  /v1/statistics/caregivers:
+    get:
+      tags:
+        - Statistics
+      operationId: getCaregiverWorkStatistics
+      summary: Caregiver track record (all time); CENTER_MANAGER is scoped to the token center, ADMIN filters by centerId
+      parameters:
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: caregiverId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaregiverWorkStatisticsListResponse'
+        '401':
+          description: BookingService error
+        '403':
+          description: BookingService error
+        '500':
+          description: BookingService error
+        '503':
+          description: BookingService error
   /v1/statistics/system:
     get:
       tags:
@@ -16978,6 +17012,10 @@ components:
         checkInClosesAt:
           type: string
           format: date-time
+        missedRefundAt:
+          type: string
+          format: date-time
+          description: CAREGIVER_MISSED visit only (manager / admin) — when the full refund will be sent; while set the center can still record the caregiver's check-in.
         durationMinutes:
           type: integer
         careServiceId:
@@ -18560,6 +18598,75 @@ components:
           type: string
         result:
           $ref: '#/components/schemas/UnreadCountRecord'
+    CaregiverWorkStatisticsListResponse:
+      type: object
+      required:
+        - code
+        - message
+        - result
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaregiverWorkStatisticsRecord'
+    CaregiverWorkStatisticsRecord:
+      type: object
+      required:
+        - caregiverId
+        - completedVisits
+        - upcomingVisits
+        - missedVisits
+        - cancelledVisits
+        - customerNoShowVisits
+        - completedMinutes
+        - ratingCount
+        - services
+      properties:
+        caregiverId:
+          type: string
+          format: uuid
+        completedVisits:
+          type: integer
+        upcomingVisits:
+          type: integer
+          description: Visits holding the caregiver (reserved, scheduled, acknowledged, in progress)
+        missedVisits:
+          type: integer
+        cancelledVisits:
+          type: integer
+        customerNoShowVisits:
+          type: integer
+        completedMinutes:
+          type: integer
+        lastCompletedAt:
+          type: [string, 'null']
+          format: date-time
+          description: Start of the latest completed visit
+        ratingAverage:
+          type: [number, 'null']
+        ratingCount:
+          type: integer
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaregiverServiceStatisticsRecord'
+    CaregiverServiceStatisticsRecord:
+      type: object
+      required:
+        - careServiceId
+        - completedVisits
+      properties:
+        careServiceId:
+          type: string
+          format: uuid
+        serviceName:
+          type: [string, 'null']
+        completedVisits:
+          type: integer
     OperationalStatisticsResponse:
       type: object
       required:

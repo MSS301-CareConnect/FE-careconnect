@@ -1,4 +1,9 @@
-import { getCenterStatistics, getSystemStatistics } from '~/shared/api/generated/api/statistics/statistics'
+import {
+  getCaregiverWorkStatistics,
+  getCenterStatistics,
+  getSystemStatistics
+} from '~/shared/api/generated/api/statistics/statistics'
+import type { GetCaregiverWorkStatisticsParams } from '~/shared/api/generated/contracts'
 import { getProviderStatistics } from '~/shared/api/generated/api/provider-center/provider-center'
 import { readOptions, serviceResponse } from '~/shared/api/request'
 
@@ -13,7 +18,8 @@ export const statisticsKeys = {
   centerRange: (fromDate: string, toDate: string) => ['statistics', 'center', 'range', fromDate, toDate] as const,
   system: ['statistics', 'system'] as const,
   systemRange: (fromDate: string, toDate: string) => ['statistics', 'system', 'range', fromDate, toDate] as const,
-  providers: ['statistics', 'providers'] as const
+  providers: ['statistics', 'providers'] as const,
+  caregiverWork: (params: GetCaregiverWorkStatisticsParams) => ['statistics', 'caregiver-work', params] as const
 }
 
 /** A manager reads their own center; an ADMIN passes the center to read (BookingService scopes by role). */
@@ -37,4 +43,9 @@ export async function fetchSystemStatisticsBetween(fromDate: string, toDate: str
 
 export async function fetchProviderStatistics() {
   return result(await getProviderStatistics(readOptions))
+}
+
+/** Each caregiver's track record (all time): visits by outcome, hours, ratings and completed visits per service. */
+export async function fetchCaregiverWork(params: GetCaregiverWorkStatisticsParams) {
+  return result(await getCaregiverWorkStatistics(params, readOptions))
 }

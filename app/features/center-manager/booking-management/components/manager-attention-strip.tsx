@@ -11,21 +11,23 @@ import { Modal } from '~/shared/ui/modal'
 
 import { useCenterCaregivers } from '../hooks/use-center-caregivers'
 import { ManagerSessionReviewQueue } from './manager-session-review-queue'
+import { ManagerUnassignedQueue, useUnassignedVisits } from './manager-unassigned-queue'
 import { ManagerWithdrawalQueue, useCenterWithdrawals } from './manager-withdrawal-queue'
 
 const key = 'centerManager.attention' as const
-const QUEUES = ['withdrawals', 'reviews', 'absences'] as const
+const QUEUES = ['unassigned', 'withdrawals', 'reviews', 'absences'] as const
 type Queue = (typeof QUEUES)[number]
 
 const TONES: Record<Queue, { icon: string; badge: string; ring: string }> = {
+  unassigned: { icon: 'person_search', badge: 'bg-error-container text-error', ring: 'border-error/30' },
   withdrawals: { icon: 'person_alert', badge: 'bg-caution-container text-caution', ring: 'border-caution/40' },
   reviews: { icon: 'timer_off', badge: 'bg-peach-100 text-peach-700', ring: 'border-peach-200' },
   absences: { icon: 'person_off', badge: 'bg-error-container text-error', ring: 'border-error/30' }
 }
 
 /**
- * What waits on the center besides bookings (2026-11-11): caregiver withdrawals, visits to confirm and caregiver
- * absences as one row of compact cards above the list — count and a "Details" button that opens the paged queue in a
+ * What waits on the center besides bookings (2026-11-11): paid visits without a caregiver (2026-11-13), caregiver
+ * withdrawals, visits to confirm and caregiver absences as one row of compact cards above the list — count and a "Details" button that opens the paged queue in a
  * popup (`?queue=`). A card with nothing waiting is hidden; the row disappears when all are empty.
  */
 export function ManagerAttentionStrip() {
@@ -41,7 +43,9 @@ export function ManagerAttentionStrip() {
     retry: false
   })
   const absences = usePendingAbsences(undefined, 0, 1)
+  const unassigned = useUnassignedVisits(0, 1)
   const counts: Record<Queue, number> = {
+    unassigned: unassigned.data?.totalElements ?? 0,
     withdrawals: withdrawals.data?.totalElements ?? 0,
     reviews: reviews.data?.totalElements ?? 0,
     absences: absences.data?.totalElements ?? 0
@@ -62,6 +66,7 @@ export function ManagerAttentionStrip() {
   }
 
   const bodies: Record<Queue, ReactNode> = {
+    unassigned: <ManagerUnassignedQueue />,
     withdrawals: <ManagerWithdrawalQueue />,
     reviews: <ManagerSessionReviewQueue />,
     absences: <CaregiverAbsenceQueue nameOf={nameOf} role='manager' />

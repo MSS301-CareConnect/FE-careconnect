@@ -127,7 +127,8 @@ export const bookingEn = {
     error: 'Could not load the caregivers.',
     empty: 'No caregiver provides all the chosen services right now. Let the center assign one.',
     letCenter: 'Let the center assign',
-    letCenterHint: 'The center picks a suitable, available caregiver after confirming.',
+    letCenterHint:
+      'The system picks a suitable, available caregiver as soon as you book. If nobody is free yet, the center arranges one after you pay.',
     recommended: 'Recommended',
     experience: '{{count}} yrs experience',
     viewProfile: 'View profile',
@@ -289,6 +290,18 @@ export const bookingEn = {
       row: '{{name}} already has another booking at this time.',
       bufferRow: 'Too close to another booking of {{name}}: keep {{buffer}} free for travel.'
     },
+    availability: {
+      row: '{{name}} has no work shift at this time, is off or is booked elsewhere.',
+      unavailableSummary_one:
+        '{{name}} cannot take {{count}} visit (no work shift, time off or another booking). Pick another time or another caregiver.',
+      unavailableSummary_other:
+        '{{name}} cannot take {{count}} visits (no work shift, time off or another booking). Pick other times or another caregiver.',
+      noneFreeRow: 'No caregiver is free at this time yet — the center arranges one after you pay.',
+      noneFreeSummary_one:
+        'No caregiver of the center is free for {{count}} visit yet. You can still book: the center arranges someone after you pay; a visit still without a caregiver 12 hours before it starts is cancelled and refunded in full.',
+      noneFreeSummary_other:
+        'No caregiver of the center is free for {{count}} visits yet. You can still book: the center arranges someone after you pay; a visit still without a caregiver 12 hours before it starts is cancelled and refunded in full.'
+    },
     duration: {
       rowDiffers: 'Lasts {{duration}}, the other visits of this service {{usual}}.',
       fix: 'Set to {{usual}}'
@@ -341,6 +354,8 @@ export const bookingEn = {
   review: {
     title: 'Review your request',
     description: 'Check the details, then send. The booking is held for 5 minutes while you pay the first part.',
+    noneFree:
+      'No caregiver of this center is free for all of these visits yet. The center will arrange someone after you pay; a visit still without a caregiver 12 hours before it starts is cancelled and refunded in full.',
     edit: 'Edit',
     address: 'Address',
     noNote: 'No note.',
@@ -533,7 +548,8 @@ export const bookingVi = {
     error: 'Không tải được người chăm sóc.',
     empty: 'Hiện chưa có người làm được tất cả dịch vụ đã chọn. Hãy để trung tâm phân công.',
     letCenter: 'Để trung tâm phân công',
-    letCenterHint: 'Trung tâm chọn người phù hợp, còn trống lịch sau khi xác nhận.',
+    letCenterHint:
+      'Hệ thống tự chọn người phù hợp, còn trống lịch ngay khi bạn đặt. Nếu chưa có ai, trung tâm sẽ sắp xếp sau khi bạn thanh toán.',
     recommended: 'Khuyên dùng',
     experience: '{{count}} năm kinh nghiệm',
     viewProfile: 'Xem hồ sơ',
@@ -695,6 +711,18 @@ export const bookingVi = {
       row: '{{name}} đã có lịch khác vào giờ này.',
       bufferRow: 'Quá sát lịch khác của {{name}}: cần trống {{buffer}} để di chuyển.'
     },
+    availability: {
+      row: '{{name}} chưa có ca làm việc, đang nghỉ hoặc đã có lịch khác vào giờ này.',
+      unavailableSummary_one:
+        '{{name}} không nhận được {{count}} buổi (chưa có ca làm việc, đang nghỉ hoặc trùng lịch). Chọn giờ khác hoặc người chăm sóc khác.',
+      unavailableSummary_other:
+        '{{name}} không nhận được {{count}} buổi (chưa có ca làm việc, đang nghỉ hoặc trùng lịch). Chọn giờ khác hoặc người chăm sóc khác.',
+      noneFreeRow: 'Chưa có người chăm sóc nào trống lịch giờ này — trung tâm sẽ sắp xếp sau khi bạn thanh toán.',
+      noneFreeSummary_one:
+        '{{count}} buổi chưa có người chăm sóc nào của trung tâm trống lịch. Bạn vẫn đặt được: trung tâm sẽ sắp xếp sau khi thanh toán; buổi nào còn 12 giờ trước giờ bắt đầu mà chưa có người sẽ được hủy và hoàn 100 %.',
+      noneFreeSummary_other:
+        '{{count}} buổi chưa có người chăm sóc nào của trung tâm trống lịch. Bạn vẫn đặt được: trung tâm sẽ sắp xếp sau khi thanh toán; buổi nào còn 12 giờ trước giờ bắt đầu mà chưa có người sẽ được hủy và hoàn 100 %.'
+    },
     duration: {
       rowDiffers: 'Dài {{duration}}, các buổi khác của dịch vụ này {{usual}}.',
       fix: 'Đưa về {{usual}}'
@@ -747,6 +775,8 @@ export const bookingVi = {
   review: {
     title: 'Xem lại yêu cầu',
     description: 'Kiểm tra thông tin rồi gửi. Lịch được giữ 5 phút để bạn thanh toán khoản đầu.',
+    noneFree:
+      'Hiện chưa có người chăm sóc nào của trung tâm trống lịch cho tất cả các buổi này. Trung tâm sẽ sắp xếp sau khi bạn thanh toán; buổi nào còn 12 giờ trước giờ bắt đầu mà chưa có người sẽ được hủy và hoàn 100 %.',
     edit: 'Sửa',
     address: 'Địa chỉ',
     noNote: 'Không có ghi chú.',

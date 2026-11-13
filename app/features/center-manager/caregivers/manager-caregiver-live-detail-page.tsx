@@ -3,11 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
+import { FeedbackList } from '~/entities/aftercare/feedback-list'
 import { CaregiverTimeOffs } from '~/entities/provider/caregiver-time-offs'
 import { fetchCaregiver, fetchProviderMedia, providerKeys, removeCaregiver } from '~/entities/provider/provider-api'
 import { pickAvatar } from '~/entities/provider/provider-avatar'
 import { formatProviderDate } from '~/entities/provider/provider-format'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { CaregiverWorkCard } from '~/entities/statistics/caregiver-work-card'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import { calendarDayOf } from '~/shared/lib/format'
@@ -33,8 +35,8 @@ const verificationLabels = { PENDING: 'pending', VERIFIED: 'verified', REJECTED:
 const container = 'mx-auto w-full max-w-[1280px] space-y-5 px-4 pb-10 sm:px-6'
 
 /**
- * Center Manager caregiver profile: identity and status, then what the center plans with them — upcoming shifts, time
- * off, services and certificates. Edits open as popups; the shift card links to the center's work schedule.
+ * Center Manager caregiver profile: identity and status, the track record and customer reviews (answered here), then
+ * what the center plans with them — upcoming shifts, time off, services and certificates. Edits open as popups; the shift card links to the center's work schedule.
  */
 export function ManagerCaregiverDetailPage() {
   const { id = '' } = useParams()
@@ -208,6 +210,19 @@ export function ManagerCaregiverDetailPage() {
 
       <div className='grid items-start gap-5 lg:grid-cols-12'>
         <div className='space-y-5 lg:col-span-7'>
+          <CaregiverWorkCard caregiverId={id} />
+          <section
+            aria-labelledby='caregiver-reviews-title'
+            className='rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-6'
+            id='reviews'
+          >
+            <h2 className='flex items-center gap-2 text-lg font-bold' id='caregiver-reviews-title'>
+              <Icon className='text-warning' filled name='star' />
+              {t('aftercare.reviews.title')}
+            </h2>
+            <p className='mt-1 mb-4 text-sm text-on-surface-variant'>{t('aftercare.reviews.hint')}</p>
+            <FeedbackList canReply caregiverId={id} />
+          </section>
           <CaregiverUpcomingShifts caregiverId={id} centerId={person.centerId} today={today} />
           <CaregiverTimeOffs caregiverId={id} caregiverName={person.fullName} now={now} />
           <CaregiverAbsenceHistory caregiverId={id} />

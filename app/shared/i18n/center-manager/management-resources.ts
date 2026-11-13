@@ -11,6 +11,8 @@ export const managerManagementVi = {
     emptyHint: 'Thêm người chăm sóc đầu tiên để bắt đầu nhận lịch.',
     rating: '{{score}} · {{count, number}} đánh giá',
     noRating: 'Chưa có đánh giá',
+    visitsDone: '{{count, number}} buổi',
+    visitsUpcoming: '{{count, number}} sắp tới',
     onLeave: 'Đang nghỉ',
     noShiftToday: 'Không có ca',
     open: 'Xem hồ sơ',
@@ -22,11 +24,18 @@ export const managerManagementVi = {
       caregiver: 'Người chăm sóc',
       experience: 'Thâm niên',
       today: 'Hôm nay',
+      visits: 'Buổi đã làm',
       status: 'Trạng thái',
       verification: 'Xác minh',
       actions: 'Thao tác'
     },
-    sorts: { rating: 'Đánh giá cao nhất', experience: 'Thâm niên', newest: 'Mới thêm', name: 'Tên A–Z' },
+    sorts: {
+      rating: 'Đánh giá cao nhất',
+      visits: 'Nhiều buổi nhất',
+      experience: 'Thâm niên',
+      newest: 'Mới thêm',
+      name: 'Tên A–Z'
+    },
     stats: {
       label: 'Tổng quan người chăm sóc',
       total: 'Tổng nhân sự',
@@ -121,6 +130,8 @@ export const managerManagementEn = {
     emptyHint: 'Add the first caregiver to start taking bookings.',
     rating: '{{score}} · {{count, number}} reviews',
     noRating: 'No reviews yet',
+    visitsDone: '{{count, number}} visits',
+    visitsUpcoming: '{{count, number}} upcoming',
     onLeave: 'On leave',
     noShiftToday: 'No shift',
     open: 'View profile',
@@ -132,11 +143,18 @@ export const managerManagementEn = {
       caregiver: 'Caregiver',
       experience: 'Experience',
       today: 'Today',
+      visits: 'Visits done',
       status: 'Status',
       verification: 'Verification',
       actions: 'Actions'
     },
-    sorts: { rating: 'Highest rated', experience: 'Experience', newest: 'Newest', name: 'Name A–Z' },
+    sorts: {
+      rating: 'Highest rated',
+      visits: 'Most visits',
+      experience: 'Experience',
+      newest: 'Newest',
+      name: 'Name A–Z'
+    },
     stats: {
       label: 'Caregiver overview',
       total: 'Team size',

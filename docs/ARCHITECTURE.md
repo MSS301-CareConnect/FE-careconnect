@@ -958,7 +958,7 @@ Contract update workflow:
 - `/customer/bookings` groups the nine booking statuses into tabs (all, needs action, upcoming, in care, completed,
   cancelled). BookingService filters one status per request, so the list reads the customer's newest 500 bookings
   (`fetchBookingCollection`, pages of 100) and groups, searches (code or name, diacritics ignored), sorts and pages them
-  in the browser; "needs action" adds CONFIRMED bookings whose remaining-balance invoice is open
+  in the browser (pager always shown with rows per page 5 / 10 / 20 / 50 in `?size=`, default 10); "needs action" adds CONFIRMED bookings whose remaining-balance invoice is open
   (`GET /payments/me/outstanding`). Older `?status=` links still narrow to that status. The booking detail shows a
   lifecycle stepper (request → center confirmation → assignment → payment → care → done) with the current step's
   deadline and countdown, a sticky side column with the next action and the summary, and "Cancel booking" in a "⋯" menu.
@@ -1144,6 +1144,29 @@ has started (optional note) and "this visit was not delivered properly" within 2
 once sent it shows the time (`customerReportedAt`). The 24 hours are a frontend constant mirroring BookingService's
 `booking.session.customer-report-window`; BookingService answers 409 `5823` / `5824` and 400 `5825`.
 `BookingReasonDialog` makes the reason optional when `minLength` is 0.
+Since 2026-11-13 a manager records the check-in of a caregiver who forgot to press it ("Record check-in" on a started
+visit without a session, `POST /care-sessions/center-check-in`: arrival time inside the check-in window, required note
+saved as a session note and in the history, the caregiver is notified and continues in the app; 400 `5275`, 409 `5276`),
+and the manager visit dialog of a CAREGIVER_MISSED visit shows its absence record — the caregiver's explanation, the
+conclusion — with excuse / violation while pending (`manager-visit-absence.tsx`).
+A missed visit's refund is no longer sent at once: BookingService schedules it (outbox `next_attempt_at`) for the end
+of the booking's last visit that day and keeps the booking open until then; `missedRefundAt` on the occurrence detail
+(manager / admin) says it is still waiting. Until then the manager can still record the check-in
+(`entities/booking/center-check-in-dialog.tsx`, from the visit row, the visit dialog and the absence queue): the refund
+is cancelled, the visit goes back to IN_PROGRESS for the caregiver to check out and the absence becomes EXCUSED; once
+the refund went out BookingService answers 409 `5277`.
+Auto-assign (2026-11-13): a caregiver is only picked when an approved shift covers every visit. When nobody can take a
+whole booking BookingService assigns by coverage (the caregiver who can take the most missing visits first, then the
+next), tells the center at once and again 48 / 24 / 16 hours before the first missing visit, and lists those visits at
+`GET /booking-occurrences/unassigned` (CENTER_MANAGER). `/center-manager/bookings` shows them as the "visits without a
+caregiver" attention card (`manager-unassigned-queue.tsx`) with the time they will be cancelled and refunded, a link to
+the booking and "open a shift for this time" → `/center-manager/work-shifts?new=1&date=&start=&end=`, which opens the
+create form with that day and time. The booking form's review step warns when no caregiver is free for all visits of a
+"let the center assign" booking (`hooks/use-free-caregiver-check.ts`, `/caregivers/search` with the visits in chunks of 60).
+The schedule step checks each RECURRING / CUSTOM visit the same way (`useVisitAvailability`: the whole list once, each
+visit only when that fails): with a chosen caregiver a visit they cannot take (no approved shift, time off, another
+booking) is a row error (`unavailable`) that blocks Continue; when the center assigns, a visit nobody can take gets an
+amber row note and a summary, and the booking can still be sent.
 
 ### 2026-11-11 — requester names, invoice buyer, wallet balance in every account menu
 
@@ -1242,3 +1265,14 @@ form: 8613 / 503 / 404 (endpoint not deployed) read "not available" with a retry
 refresh, 403 and 400 have no retry, a network error says it is not a result. Nothing is stored. The header shows the page
 as a round icon item (name in a tooltip and for screen readers) because the floating bar (at most 1180 px) is full at
 `xl`; nav links are `px-3`/`xl:px-3.5` with `gap-0.5` to make room. The account menu lists it under "Health" with its name.
+
+### 2026-11-13 — caregiver track record and customer reviews for centers
+
+BookingService `GET /statistics/caregivers` (CENTER_MANAGER scoped to the token center, ADMIN by optional `centerId`;
+`fetchCaregiverWork` in `entities/statistics`) returns each caregiver's all-time visits by outcome, hours, rating and
+completed visits per service. `entities/statistics/caregiver-work-card.tsx` shows it on the manager caregiver detail
+and `/admin/caregivers/:id`; the manager roster adds a "visits done" column (and sort) from one center-wide read.
+`entities/aftercare/feedback-list.tsx` lists visible reviews (`GET /feedbacks`, star filter, paged; booking IDs are never
+returned) for a caregiver or a center; the manager answers a review once (`POST /feedbacks/{id}/reply`, 409 `5904`).
+It appears on the manager caregiver detail, `/admin/caregivers/:id` (read-only) and as the default "Reviews" tab of
+`/center-manager/complaints` (`?tab=reviews|complaints`), whose rows link to the caregiver.

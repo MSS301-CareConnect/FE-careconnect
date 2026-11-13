@@ -12,6 +12,7 @@ import { EmptyState, ErrorState, SkeletonBlock } from '~/shared/ui/state-panels'
 
 import { BookingGroupCard, groupByBooking } from './booking-group-card'
 import { CaregiverAbsenceCard } from './caregiver-absence-card'
+import { CenterCheckInDialog } from './center-check-in-dialog'
 
 const key = 'caregiverAbsence' as const
 const button =
@@ -51,6 +52,7 @@ export function CaregiverAbsenceQueue({
   const [size, setSize] = useState(5)
   const absences = usePendingAbsences(undefined, page, size)
   const [pending, setPending] = useState<Pending | null>(null)
+  const [checkingIn, setCheckingIn] = useState<CaregiverAbsenceRecord | null>(null)
   const mutation = useMutation({
     mutationFn: ({ item, action, text }: Pending & { text: string }) =>
       action === 'explain'
@@ -99,10 +101,16 @@ export function CaregiverAbsenceQueue({
                 actions={
                   role === 'manager' ? (
                     <>
+                      {/* 2026-11-13: the caregiver did the visit but forgot to check in; refused once refunded (5277). */}
+                      {item.source === 'MISSED_CHECK_IN' ? (
+                        <button className={primary} onClick={() => setCheckingIn(item)} type='button'>
+                          {t('centerManager.bookingDetail.occurrence.checkIn')}
+                        </button>
+                      ) : null}
                       <button className={outline} onClick={() => open(item, 'excuse')} type='button'>
                         {t(`${key}.manager.excuse`)}
                       </button>
-                      <button className={primary} onClick={() => open(item, 'confirm')} type='button'>
+                      <button className={outline} onClick={() => open(item, 'confirm')} type='button'>
                         {t(`${key}.manager.confirm`)}
                       </button>
                     </>
@@ -143,6 +151,14 @@ export function CaregiverAbsenceQueue({
         totalPages={Math.ceil(total / size)}
       />
 
+      {checkingIn ? (
+        <CenterCheckInDialog
+          occurrenceId={checkingIn.occurrenceId}
+          occurrenceNo={checkingIn.occurrenceNo}
+          onClose={() => setCheckingIn(null)}
+          startAt={checkingIn.startAt}
+        />
+      ) : null}
       {pending?.action === 'explain' ? (
         <BookingReasonDialog
           confirmLabel={t(`${key}.caregiverPanel.explain`)}

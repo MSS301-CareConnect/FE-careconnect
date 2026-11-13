@@ -46,6 +46,7 @@ import type {
   BookingCreateRequest,
   BookingQuoteRequest,
   BookingSummaryRecord,
+  CaregiverOccurrenceRecord,
   CareSessionStartRequest,
   CareTaskUpdateRequest,
   CenterBookingPolicyRequest,
@@ -111,6 +112,7 @@ export const bookingKeys = {
   /** Prefix of every absence list and count: invalidate it after an explanation or a conclusion. */
   /** System-closed sessions waiting for the center's conclusion. */
   sessionReviews: (page: number, size: number) => ['booking', 'session-reviews', page, size] as const,
+  unassigned: (page: number, size: number) => ['booking', 'unassigned', page, size] as const,
   allAbsences: ['booking', 'absences'] as const,
   absences: (params: ListCaregiverAbsencesParams) => ['booking', 'absences', 'list', params] as const,
   absenceStatistics: (params: GetCaregiverAbsenceStatisticsParams) =>
@@ -326,6 +328,29 @@ async function requestError(res: Response, fallback: string) {
       ? info.message
       : fallback
   return Object.assign(new Error(message), { info, status: res.status })
+}
+
+/** Paid visits of the manager's center that still need a caregiver, earliest first (2026-11-13). */
+export async function fetchUnassignedVisits(page = 0, size = 5) {
+  const res = await fetch(
+    `${env.API_BASE_URL}/v1/booking-occurrences/unassigned?page=${page}&size=${size}`,
+    readOptions
+  )
+  if (!res.ok) throw await requestError(res, 'Failed to load visits without a caregiver')
+  const json = await res.json()
+  return json.result as { items: CaregiverOccurrenceRecord[]; totalElements: number; totalPages: number }
+}
+
+/** The center records the check-in of a caregiver who forgot to press it (2026-11-13); `checkedInAt` = arrival. */
+export async function centerCheckIn(request: { occurrenceId: string; note: string; checkedInAt?: string }) {
+  const options = await writeOptions({ 'Content-Type': 'application/json' })
+  const res = await fetch(`${env.API_BASE_URL}/v1/care-sessions/center-check-in`, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  if (!res.ok) throw await requestError(res, 'Failed to record the check-in')
+  return true
 }
 
 export async function createCaregiverChangeRequest(bookingId: string, payload: CaregiverChangeCreatePayload) {

@@ -169,7 +169,15 @@ export const managerBookingDetailVi = {
     forceEnd: 'Buộc kết thúc ca',
     forceEndTitle: 'Buộc kết thúc ca của buổi {{number}}',
     forceEndHint: 'Ca chuyển sang kết thúc, công việc còn chờ được đánh dấu bỏ qua và buổi hoàn tất.',
-    forceEndReason: 'Lý do kết thúc'
+    forceEndReason: 'Lý do kết thúc',
+    checkIn: 'Ghi nhận check-in hộ',
+    checkInTitle: 'Ghi nhận check-in hộ cho buổi {{number}}',
+    checkInHint:
+      'Dùng khi người chăm sóc đã đến nhưng quên bấm check-in. Ca bắt đầu từ giờ đến bạn chọn; người chăm sóc tiếp tục làm checklist và check-out trên ứng dụng.',
+    checkInMissed:
+      'Buổi đã bị ghi nhận vắng. Ghi nhận check-in hộ trước {{time}} sẽ hủy khoản hoàn cho khách và miễn trừ lần vắng của người chăm sóc.',
+    checkInArrival: 'Giờ người chăm sóc đến',
+    checkInNote: 'Ghi chú (ví dụ: người chăm sóc gọi báo lúc 07:05)'
   }
 }
 
@@ -346,6 +354,14 @@ export const managerBookingDetailEn = {
     forceEnd: 'Force end session',
     forceEndTitle: 'Force end the session of visit {{number}}',
     forceEndHint: 'The session ends, pending tasks are marked skipped and the visit completes.',
-    forceEndReason: 'Reason for ending'
+    forceEndReason: 'Reason for ending',
+    checkIn: 'Record check-in',
+    checkInTitle: 'Record the check-in for visit {{number}}',
+    checkInHint:
+      'Use this when the caregiver arrived but forgot to check in. The session starts at the arrival time you pick; the caregiver then completes the checklist and checks out in the app.',
+    checkInMissed:
+      'This visit was marked missed. Recording the check-in before {{time}} cancels the customer refund and excuses the caregiver’s absence.',
+    checkInArrival: 'Caregiver arrival time',
+    checkInNote: 'Note (e.g. the caregiver called at 07:05)'
   }
 }

@@ -36,12 +36,12 @@ import { ShiftTable } from './components/shift-table'
 import { ShiftWeekView } from './components/shift-week-view'
 import { SHIFT_PAGE_SIZES, useShiftFilters } from './hooks/use-shift-filters'
 import { allowedShiftActions, BULK_SHIFT_ACTIONS, type BulkShiftAction, type ShiftAction } from './shift-actions'
-import type { ShiftFormMode } from './shift-form-model'
+import type { ShiftFormMode, ShiftFormValues } from './shift-form-model'
 
 const k = 'centerManager.workShifts' as const
 
 type Dialog =
-  | { kind: 'form'; mode: ShiftFormMode; shift?: ProviderWorkShiftRecord }
+  | { kind: 'form'; mode: ShiftFormMode; shift?: ProviderWorkShiftRecord; preset?: Partial<ShiftFormValues> }
   | { kind: 'cancel'; shift: ProviderWorkShiftRecord }
   | { kind: 'delete'; shift: ProviderWorkShiftRecord }
   | { kind: 'bulkDelete' }
@@ -81,7 +81,21 @@ export function ManagerWorkShiftsPage() {
   const now = useClock(60_000)
   const today = calendarDayOf(new Date(now))
   const filters = useShiftFilters(today)
-  const [dialog, setDialog] = useState<Dialog | null>(null)
+  // `?new=1&date=&start=&end=` (2026-11-13, from a visit nobody could be assigned to) opens the create form for that time.
+  const [dialog, setDialog] = useState<Dialog | null>(() => {
+    const date = params.get('date') ?? ''
+    const start = params.get('start') ?? ''
+    const end = params.get('end') ?? ''
+    const clock = /^\d{2}:\d{2}$/
+    if (params.get('new') !== '1' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !clock.test(start) || !clock.test(end)) {
+      return null
+    }
+    return {
+      kind: 'form',
+      mode: 'create',
+      preset: { workDate: date, startTime: start, endTime: end, shiftType: 'CUSTOM', repeatTo: addDays(date, 6) }
+    }
+  })
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set())
   const detailId = routeShiftId ?? params.get('shift') ?? undefined
   useDocumentTitle(t(`${k}.title`))
@@ -395,7 +409,20 @@ export function ManagerWorkShiftsPage() {
           key={`${dialog.mode}-${dialog.shift?.id ?? 'new'}`}
           mode={dialog.mode}
           now={now}
-          onClose={() => setDialog(null)}
+          onClose={() => {
+            setDialog(null)
+            if (params.get('new')) {
+              setParams(
+                (previous) => {
+                  const next = new URLSearchParams(previous)
+                  for (const name of ['new', 'date', 'start', 'end']) next.delete(name)
+                  return next
+                },
+                { replace: true }
+              )
+            }
+          }}
+          preset={dialog.preset}
           shift={dialog.shift}
           today={today}
         />

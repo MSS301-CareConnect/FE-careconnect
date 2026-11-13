@@ -57,6 +57,18 @@ export const bookingDetailEn = {
     services: 'Services',
     payment: 'Payment',
     unitLine: '{{price}} · {{unit}} × {{quantity}}',
+    unitPrice: 'Unit price',
+    visitDuration: 'Length of a visit',
+    quantity: 'Quantity',
+    units: {
+      HOUR_one: '{{count}} hour',
+      HOUR_other: '{{count}} hours',
+      DAY_one: '{{count}} day',
+      DAY_other: '{{count}} days',
+      SHIFT_one: '{{count}} shift',
+      SHIFT_other: '{{count}} shifts'
+    },
+    subtotal: 'Subtotal',
     deposit: 'Initial payment',
     depositEstimated: 'Estimated initial payment ({{percent}}%)',
     remaining: 'Remaining balance',
@@ -178,18 +190,18 @@ export const bookingDetailEn = {
   occurrenceDetail: {
     customerReport: {
       notArrived: {
-        action: 'Chưa thấy người chăm sóc đến',
-        label: 'Ghi chú cho trung tâm (không bắt buộc)',
-        description: 'Trung tâm sẽ được báo ngay để liên hệ người chăm sóc hoặc sắp xếp người khác.'
+        action: 'The caregiver has not arrived',
+        label: 'Note for the center (optional)',
+        description: 'The center is told at once so it can reach the caregiver or send someone else.'
       },
       notDelivered: {
-        action: 'Buổi không được thực hiện đúng',
-        label: 'Điều gì đã xảy ra?',
+        action: 'This visit was not delivered properly',
+        label: 'What happened?',
         description:
-          'Trung tâm sẽ xem lại buổi này. Nếu buổi không được thực hiện, tiền buổi được hoàn vào ví của bạn. Chỉ gửi được trong 24 giờ sau khi buổi kết thúc.'
+          'The center will review this visit. If it was not delivered, the visit is refunded to your wallet. You can report within 24 hours after the visit ends.'
       },
-      confirm: 'Gửi phản ánh',
-      sent: 'Đã gửi phản ánh lúc {{time}}'
+      confirm: 'Send report',
+      sent: 'Report sent at {{time}}'
     },
     rescheduled: 'Rescheduled {{count}} times',
     rescheduleAction: 'Move this visit to another time',
@@ -315,6 +327,18 @@ export const bookingDetailVi = {
     services: 'Dịch vụ',
     payment: 'Thanh toán',
     unitLine: '{{price}} · {{unit}} × {{quantity}}',
+    unitPrice: 'Đơn giá',
+    visitDuration: 'Thời lượng mỗi buổi',
+    quantity: 'Số lượng',
+    units: {
+      HOUR_one: '{{count}} giờ',
+      HOUR_other: '{{count}} giờ',
+      DAY_one: '{{count}} ngày',
+      DAY_other: '{{count}} ngày',
+      SHIFT_one: '{{count}} ca',
+      SHIFT_other: '{{count}} ca'
+    },
+    subtotal: 'Thành tiền',
     deposit: 'Khoản thanh toán đầu',
     depositEstimated: 'Thanh toán đầu dự kiến ({{percent}}%)',
     remaining: 'Phần còn lại',
@@ -437,18 +461,18 @@ export const bookingDetailVi = {
   occurrenceDetail: {
     customerReport: {
       notArrived: {
-        action: 'The caregiver has not arrived',
-        label: 'Note for the center (optional)',
-        description: 'The center is told at once so it can reach the caregiver or send someone else.'
+        action: 'Chưa thấy người chăm sóc đến',
+        label: 'Ghi chú cho trung tâm (không bắt buộc)',
+        description: 'Trung tâm sẽ được báo ngay để liên hệ người chăm sóc hoặc sắp xếp người khác.'
       },
       notDelivered: {
-        action: 'This visit was not delivered properly',
-        label: 'What happened?',
+        action: 'Buổi không được thực hiện đúng',
+        label: 'Điều gì đã xảy ra?',
         description:
-          'The center will review this visit. If it was not delivered, the visit is refunded to your wallet. You can report within 24 hours after the visit ends.'
+          'Trung tâm sẽ xem lại buổi này. Nếu buổi không được thực hiện, tiền buổi được hoàn vào ví của bạn. Chỉ gửi được trong 24 giờ sau khi buổi kết thúc.'
       },
-      confirm: 'Send report',
-      sent: 'Report sent at {{time}}'
+      confirm: 'Gửi phản ánh',
+      sent: 'Đã gửi phản ánh lúc {{time}}'
     },
     rescheduled: 'Đã dời {{count}} lần',
     rescheduleAction: 'Dời buổi này sang giờ khác',

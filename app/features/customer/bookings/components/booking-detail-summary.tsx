@@ -18,17 +18,14 @@ const WAITS_FOR_ASSIGNMENT: ReadonlySet<BookingStatus> = new Set([
   'IN_PROGRESS'
 ])
 
-/** Caregiver, services with unit price and quantity, and the payment breakdown. */
+/** Caregiver, services (plan, unit price, length of a visit, quantity, subtotal) and the payment breakdown. */
 export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord }) {
   const { t } = useTranslation()
   const format = useFormat()
   const deposit = initialPaymentOf(booking)
 
   return (
-    <aside
-      aria-label={t(`${key}.label`)}
-      className='flex flex-col gap-4'
-    >
+    <aside aria-label={t(`${key}.label`)} className='flex flex-col gap-4'>
       {/* Caregiver card */}
       {booking.caregiverId || WAITS_FOR_ASSIGNMENT.has(booking.status) ? (
         <div className='rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-[var(--shadow-card)]'>
@@ -47,33 +44,50 @@ export function BookingDetailSummary({ booking }: { booking: BookingDetailRecord
               {t(`${key}.services`)}
             </h3>
             <ul className='mt-3 flex flex-col gap-2.5 text-sm'>
-              {booking.services.map((service) => (
-                <li className='flex justify-between gap-3' key={service.id}>
-                  <span className='min-w-0'>
-                    <span className='block font-medium text-on-surface'>{service.serviceName}</span>
-                    <span className='block text-xs text-on-surface-variant tabular-nums'>
-                      {service.unitType
-                        ? t(`${key}.unitLine`, {
-                            price: format.money(service.unitPrice),
-                            unit: t(`booking.unitType.${service.unitType}`),
-                            quantity: service.quantity ?? 1
-                          })
-                        : format.money(service.unitPrice)}
-                    </span>
-                  </span>
-                  <span className='shrink-0 font-semibold tabular-nums text-on-surface'>
-                    {format.money(service.totalPrice)}
-                  </span>
-                </li>
-              ))}
+              {booking.services.map((service) => {
+                // One visit = units per visit × the plan's unit length (an hourly plan without a length is 60 min).
+                const unitMinutes = service.planDurationMinutes ?? (service.unitType === 'HOUR' ? 60 : undefined)
+                const visitMinutes = unitMinutes ? unitMinutes * (service.unitsPerOccurrence ?? 1) : undefined
+                return (
+                  <li className='rounded-xl bg-surface-container-low p-3' key={service.id}>
+                    <p className='font-semibold text-on-surface'>{service.serviceName}</p>
+                    {service.planName ? <p className='text-xs text-on-surface-variant'>{service.planName}</p> : null}
+                    <dl className='mt-2 flex flex-col gap-1 tabular-nums'>
+                      <div className='flex justify-between gap-3'>
+                        <dt className='text-on-surface-variant'>{t(`${key}.unitPrice`)}</dt>
+                        <dd className='text-right font-medium text-on-surface'>
+                          {format.money(service.unitPrice)}
+                          {service.unitType ? ` · ${t(`booking.unitType.${service.unitType}`)}` : ''}
+                        </dd>
+                      </div>
+                      {visitMinutes ? (
+                        <div className='flex justify-between gap-3'>
+                          <dt className='text-on-surface-variant'>{t(`${key}.visitDuration`)}</dt>
+                          <dd className='text-right font-medium text-on-surface'>{format.duration(visitMinutes)}</dd>
+                        </div>
+                      ) : null}
+                      {service.quantity !== undefined && service.unitType ? (
+                        <div className='flex justify-between gap-3'>
+                          <dt className='text-on-surface-variant'>{t(`${key}.quantity`)}</dt>
+                          <dd className='text-right font-medium text-on-surface'>
+                            {t(`${key}.units.${service.unitType}`, { count: service.quantity })}
+                          </dd>
+                        </div>
+                      ) : null}
+                      <div className='mt-1 flex justify-between gap-3 border-t border-dashed border-outline-variant pt-1.5'>
+                        <dt className='font-semibold text-on-surface'>{t(`${key}.subtotal`)}</dt>
+                        <dd className='font-bold text-primary'>{format.money(service.totalPrice)}</dd>
+                      </div>
+                    </dl>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         ) : null}
 
         <div className='p-5'>
-          <h3 className='text-xs font-bold uppercase tracking-wider text-on-surface-variant'>
-            {t(`${key}.payment`)}
-          </h3>
+          <h3 className='text-xs font-bold uppercase tracking-wider text-on-surface-variant'>{t(`${key}.payment`)}</h3>
           <dl className='mt-3 flex flex-col gap-2 text-sm'>
             {deposit.amount !== undefined ? (
               <div className='flex justify-between gap-3 text-on-surface-variant'>

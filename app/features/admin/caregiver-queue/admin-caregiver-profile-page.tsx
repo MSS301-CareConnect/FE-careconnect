@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { FeedbackList } from '~/entities/aftercare/feedback-list'
 import { BookingReasonDialog } from '~/entities/booking/booking-reason-dialog'
 import { accountKeys, fetchAccount } from '~/entities/identity/account-api'
 import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
@@ -16,6 +17,7 @@ import {
   verifyCaregiver
 } from '~/entities/provider/provider-api'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { CaregiverWorkCard } from '~/entities/statistics/caregiver-work-card'
 import { statisticsKeys } from '~/entities/statistics/statistics-api'
 import { classifyApiError } from '~/shared/api/api-error'
 import type { VerificationRequest } from '~/shared/api/generated/contracts'
@@ -120,8 +122,8 @@ export function AdminCaregiverProfilePage({ id }: { id: string }) {
     return (
       <div className={bentoContainer} role='status' aria-label={t(`${key}.profile.loading`)}>
         {back}
-        <SkeletonBlock className='h-40 w-full rounded-[1.75rem]' />
-        <SkeletonBlock className='mt-6 h-72 w-full rounded-[1.75rem]' />
+        <SkeletonBlock className='h-40 w-full rounded-[1.75rem]' label={t(`${key}.profile.loading`)} />
+        <SkeletonBlock className='mt-6 h-72 w-full rounded-[1.75rem]' label={t(`${key}.profile.loading`)} />
       </div>
     )
   if (caregiver.isError)
@@ -244,7 +246,9 @@ export function AdminCaregiverProfilePage({ id }: { id: string }) {
           </div>
           <div className='border-t border-outline-variant/40 pt-4'>
             <h3 className='text-sm font-semibold text-on-surface'>{t(`${key}.profile.services`)}</h3>
-            {services.isPending ? <SkeletonBlock className='mt-2 h-8 w-2/3 rounded-full' /> : null}
+            {services.isPending ? (
+              <SkeletonBlock className='mt-2 h-8 w-2/3 rounded-full' label={t(`${key}.profile.loading`)} />
+            ) : null}
             {services.isError ? <p className='mt-1 text-sm text-error'>{t(`${key}.profile.servicesError`)}</p> : null}
             {services.isSuccess && services.data.length === 0 ? (
               <p className='mt-1 text-sm text-on-surface-variant'>{t(`${key}.profile.noServices`)}</p>
@@ -266,7 +270,9 @@ export function AdminCaregiverProfilePage({ id }: { id: string }) {
 
         <section className={`${bentoCard} space-y-4 p-5 sm:p-6`}>
           <SectionTitle icon='workspace_premium'>{t(`${key}.profile.certificates`)}</SectionTitle>
-          {certificates.isPending ? <SkeletonBlock className='h-24 w-full rounded-2xl' /> : null}
+          {certificates.isPending ? (
+            <SkeletonBlock className='h-24 w-full rounded-2xl' label={t(`${key}.profile.loading`)} />
+          ) : null}
           {certificates.isError ? (
             <ErrorState
               message={t('admin.provider.certificateLoadError')}
@@ -306,6 +312,14 @@ export function AdminCaregiverProfilePage({ id }: { id: string }) {
               ))}
             </ul>
           ) : null}
+        </section>
+      </div>
+
+      <div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'>
+        <CaregiverWorkCard caregiverId={data.id} />
+        <section className={`${bentoCard} space-y-4 p-5 sm:p-6`}>
+          <SectionTitle icon='star'>{t('aftercare.reviews.title')}</SectionTitle>
+          <FeedbackList caregiverId={data.id} />
         </section>
       </div>
 

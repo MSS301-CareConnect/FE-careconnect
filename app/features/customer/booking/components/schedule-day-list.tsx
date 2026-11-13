@@ -49,6 +49,8 @@ export function ScheduleDayList({
   const allChosen = days.length > 0 && chosenDays.length === days.length
   const chosenIndices = chosenDays.flatMap((day) => day.indices)
   const clashing = issues.flatMap((issue, index) => (issue === 'busy' || issue === 'buffer' ? [index] : []))
+  const unavailable = issues.filter((issue) => issue === 'unavailable').length
+  const noneFree = slots.filter((slot, index) => !issues[index] && form.noneFreeOf(slot)).length
   const firstChosen = slots[chosenIndices[0]]
 
   function toggle(date: string) {
@@ -139,6 +141,27 @@ export function ScheduleDayList({
             {t('customer.booking.schedule.busy.removeAll', { count: clashing.length })}
           </Button>
         </div>
+      ) : null}
+      {unavailable > 0 ? (
+        <p
+          className='mb-3 flex items-start gap-2 rounded-xl border border-error/30 bg-error-container/40 p-3 text-sm text-on-surface'
+          role='status'
+        >
+          <Icon className='text-lg text-error' name='event_busy' />
+          {t('customer.booking.schedule.availability.unavailableSummary', {
+            count: unavailable,
+            name: form.chosenCaregiver?.fullName ?? ''
+          })}
+        </p>
+      ) : null}
+      {noneFree > 0 ? (
+        <p
+          className='mb-3 flex items-start gap-2 rounded-xl border border-warning/40 bg-warning-container/60 p-3 text-sm text-on-warning-container'
+          role='status'
+        >
+          <Icon className='text-lg' name='person_search' />
+          {t('customer.booking.schedule.availability.noneFreeSummary', { count: noneFree })}
+        </p>
       ) : null}
       {days.length > 1 ? (
         <label className='mb-2 inline-flex min-h-10 cursor-pointer items-center gap-2 text-sm font-medium text-on-surface'>

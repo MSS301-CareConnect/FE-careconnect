@@ -6,9 +6,13 @@
  * OpenAPI spec version: 0.0.1
  */
 
+export * from './caregiverServiceStatisticsRecord'
+export * from './caregiverWorkStatisticsListResponse'
+export * from './caregiverWorkStatisticsRecord'
 export * from './centerOperationalStatsPage'
 export * from './centerOperationalStatsRecord'
 export * from './complaintStatisticsRecord'
+export * from './getCaregiverWorkStatisticsParams'
 export * from './getCenterStatisticsParams'
 export * from './getSystemStatisticsParams'
 export * from './occurrenceStatisticsRecord'

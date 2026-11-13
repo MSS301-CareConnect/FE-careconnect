@@ -133,6 +133,7 @@ import type {
   CaregiverOccurrenceRecord,
   CaregiverOccurrenceResponse,
   CaregiverRatingRequest,
+  CaregiverServiceStatisticsRecord,
   CaregiverSkillRequest,
   CaregiverStatusRequest,
   CaregiverUpdateRequest,
@@ -143,6 +144,8 @@ import type {
   CaregiverWithdrawalRecord,
   CaregiverWithdrawalRequest,
   CaregiverWithdrawalState,
+  CaregiverWorkStatisticsListResponse,
+  CaregiverWorkStatisticsRecord,
   CatalogImageRecord,
   CatalogImageResponse,
   CatalogImageUploadRequest,
@@ -4398,6 +4401,7 @@ export const getCaregiverOccurrenceRecordMock = (
   endAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
   checkInOpensAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   checkInClosesAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
+  missedRefundAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]),
   durationMinutes: faker.helpers.arrayElement([faker.number.int(), undefined]),
   careServiceId: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
   status: getOccurrenceStatusMock(),
@@ -5337,6 +5341,54 @@ export const getUnreadCountResponseMock = (
   code: faker.number.int(),
   message: faker.string.alpha({ length: { min: 10, max: 20 } }),
   result: { ...getUnreadCountRecordMock() },
+  ...overrideResponse
+})
+
+export const getCaregiverServiceStatisticsRecordMock = (
+  overrideResponse: Partial<CaregiverServiceStatisticsRecord> = {}
+): CaregiverServiceStatisticsRecord => ({
+  careServiceId: faker.string.uuid(),
+  serviceName: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([faker.string.alpha({ length: { min: 10, max: 20 } }), null]),
+    undefined
+  ]),
+  completedVisits: faker.number.int(),
+  ...overrideResponse
+})
+
+export const getCaregiverWorkStatisticsRecordMock = (
+  overrideResponse: Partial<CaregiverWorkStatisticsRecord> = {}
+): CaregiverWorkStatisticsRecord => ({
+  caregiverId: faker.string.uuid(),
+  completedVisits: faker.number.int(),
+  upcomingVisits: faker.number.int(),
+  missedVisits: faker.number.int(),
+  cancelledVisits: faker.number.int(),
+  customerNoShowVisits: faker.number.int(),
+  completedMinutes: faker.number.int(),
+  lastCompletedAt: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', null]),
+    undefined
+  ]),
+  ratingAverage: faker.helpers.arrayElement([
+    faker.helpers.arrayElement([faker.number.float({ fractionDigits: 2 }), null]),
+    undefined
+  ]),
+  ratingCount: faker.number.int(),
+  services: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getCaregiverServiceStatisticsRecordMock()
+  })),
+  ...overrideResponse
+})
+
+export const getCaregiverWorkStatisticsListResponseMock = (
+  overrideResponse: Partial<CaregiverWorkStatisticsListResponse> = {}
+): CaregiverWorkStatisticsListResponse => ({
+  code: faker.number.int(),
+  message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+  result: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    ...getCaregiverWorkStatisticsRecordMock()
+  })),
   ...overrideResponse
 })
 

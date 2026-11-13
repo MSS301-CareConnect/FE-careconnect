@@ -13,7 +13,7 @@ export const caregiverAbsenceVi = {
   visit: 'Buổi {{number}} · {{time}}',
   caregiver: 'Người chăm sóc: {{name}}',
   unknownCaregiver: 'Không rõ',
-  refunded: 'Khách đã được hoàn 100 % tiền buổi này vào ví.',
+  refunded: 'Khách được hoàn 100 % tiền buổi này vào ví sau khi các buổi trong ngày kết thúc.',
   explanation: 'Giải trình: {{text}}',
   explainedAt: 'Gửi lúc {{time}}',
   noExplanation: 'Chưa có giải trình',
@@ -28,18 +28,22 @@ export const caregiverAbsenceVi = {
   manager: {
     title: 'Người chăm sóc vắng ca ({{count}})',
     description:
-      'Khách đã được hoàn 100 % tiền các buổi này. Hãy xem giải trình, kết luận từng lần và sắp xếp người khác cho các buổi còn lại nếu cần.',
+      'Khách được hoàn 100 % tiền các buổi này sau khi các buổi trong ngày kết thúc. Nếu người chăm sóc đã làm mà quên check-in, hãy ghi nhận check-in hộ trước giờ đó; nếu không, xem giải trình và kết luận từng lần.',
     excuse: 'Có lý do chính đáng',
     confirm: 'Ghi nhận vi phạm',
     excuseTitle: 'Miễn trừ lần vắng buổi {{number}}',
     excuseHint: 'Lần vắng này sẽ không tính là vi phạm của người chăm sóc. Kết luận không sửa lại được.',
     confirmTitle: 'Ghi nhận vi phạm buổi {{number}}',
     confirmHint: 'Lần vắng này sẽ tính một lần vi phạm trong hồ sơ người chăm sóc. Kết luận không sửa lại được.',
-    note: 'Ghi chú kết luận'
+    note: 'Ghi chú kết luận',
+    visitTitle: 'Hồ sơ vắng ca & giải trình của người chăm sóc',
+    refundSent: 'Khách đã được hoàn tiền buổi này nên không ghi nhận check-in hộ được nữa.',
+    refundSentConclude: 'Bạn vẫn có thể kết luận lần vắng.'
   },
   caregiverPanel: {
     title: 'Bạn bị ghi nhận vắng ca ({{count}})',
-    description: 'Khách đã được hoàn tiền các buổi này. Hãy gửi giải trình để trung tâm xem xét trước khi kết luận.',
+    description:
+      'Nếu bạn đã làm buổi mà quên check-in, hãy gửi giải trình ngay: trung tâm chỉ ghi nhận check-in hộ được trước khi các buổi trong ngày kết thúc và khách được hoàn tiền.',
     explain: 'Gửi giải trình',
     editExplanation: 'Sửa giải trình',
     explainTitle: 'Giải trình vắng buổi {{number}}',
@@ -76,7 +80,7 @@ export const caregiverAbsenceVi = {
   customer: {
     missedTitle: 'Người chăm sóc đã không đến buổi này',
     missedBody:
-      'Toàn bộ số tiền bạn đã trả cho buổi này được hoàn vào ví CareConnect. Trung tâm đang xử lý với người chăm sóc; nếu cần hỗ trợ thêm, bạn có thể gửi khiếu nại.',
+      'Chưa có người chăm sóc check-in buổi này. Nếu trung tâm xác nhận buổi không diễn ra, toàn bộ số tiền bạn đã trả cho buổi được hoàn vào ví CareConnect sau khi các buổi trong ngày kết thúc. Nếu cần hỗ trợ thêm, bạn có thể gửi khiếu nại.',
     openWallet: 'Xem ví'
   }
 }
@@ -95,7 +99,7 @@ export const caregiverAbsenceEn: typeof caregiverAbsenceVi = {
   visit: 'Visit {{number}} · {{time}}',
   caregiver: 'Caregiver: {{name}}',
   unknownCaregiver: 'Unknown',
-  refunded: 'The customer was refunded this visit in full, to their wallet.',
+  refunded: 'The customer is refunded this visit in full, to their wallet, once the day’s visits end.',
   explanation: 'Explanation: {{text}}',
   explainedAt: 'Sent {{time}}',
   noExplanation: 'No explanation yet',
@@ -110,18 +114,22 @@ export const caregiverAbsenceEn: typeof caregiverAbsenceVi = {
   manager: {
     title: 'Caregivers missed visits ({{count}})',
     description:
-      'Customers were refunded these visits in full. Read each explanation, conclude it and arrange someone else for the remaining visits if needed.',
+      'Customers are refunded these visits in full once the day’s visits end. If the caregiver did the visit but forgot to check in, record the check-in before then; otherwise read each explanation and conclude it.',
     excuse: 'Excuse',
     confirm: 'Record a violation',
     excuseTitle: 'Excuse the absence of visit {{number}}',
     excuseHint: 'This absence will not count as a violation. The conclusion cannot be changed.',
     confirmTitle: 'Record a violation for visit {{number}}',
     confirmHint: 'This absence counts as one violation on the caregiver record. The conclusion cannot be changed.',
-    note: 'Conclusion note'
+    note: 'Conclusion note',
+    visitTitle: 'Absence record & caregiver explanation',
+    refundSent: 'The customer has already been refunded for this visit, so the check-in can no longer be recorded.',
+    refundSentConclude: 'You can still conclude the absence.'
   },
   caregiverPanel: {
     title: 'You were recorded absent ({{count}})',
-    description: 'The customers were refunded these visits. Send an explanation for the center to consider.',
+    description:
+      'If you did the visit but forgot to check in, explain now: the center can record your check-in only until the day’s visits end and the customer is refunded.',
     explain: 'Send explanation',
     editExplanation: 'Edit explanation',
     explainTitle: 'Explain the absence of visit {{number}}',
@@ -158,7 +166,7 @@ export const caregiverAbsenceEn: typeof caregiverAbsenceVi = {
   customer: {
     missedTitle: 'The caregiver did not come to this visit',
     missedBody:
-      'Everything you paid for this visit was refunded to your CareConnect wallet. The center is following up with the caregiver; you can file a complaint if you need more help.',
+      'No caregiver checked in to this visit. If the center confirms it did not take place, everything you paid for it is refunded to your CareConnect wallet once the day’s visits end. You can file a complaint if you need more help.',
     openWallet: 'Open wallet'
   }
 }

@@ -6,6 +6,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { CaregiverAvatar } from '~/entities/provider/caregiver-avatar'
 import { fetchCaregivers, providerKeys } from '~/entities/provider/provider-api'
 import { ProviderStatusBadge } from '~/entities/provider/provider-status-badge'
+import { fetchCaregiverWork, statisticsKeys } from '~/entities/statistics/statistics-api'
 import { useAuthUser } from '~/features/shared/auth/auth-user-context'
 import { downloadCsv } from '~/shared/lib/csv'
 import { calendarDayOf } from '~/shared/lib/format'
@@ -34,7 +35,7 @@ const STATUSES = ['ACTIVE', 'INACTIVE', 'SUSPENDED', 'ARCHIVED'] as const
 const VERIFICATIONS = ['VERIFIED', 'PENDING', 'REJECTED'] as const
 const EXPERIENCE = ['lt2', '2-5', '5-10', 'gt10'] as const
 const EXPERIENCE_LABELS = { lt2: 'lt2', '2-5': 'range2to5', '5-10': 'range5to10', gt10: 'gt10' } as const
-const SORTS = ['rating', 'experience', 'newest', 'name'] as const
+const SORTS = ['rating', 'visits', 'experience', 'newest', 'name'] as const
 
 /**
  * Center Manager caregiver roster: numbers for the center, one filter row (server-side status / verification, search,
@@ -79,6 +80,14 @@ export function ManagerCaregiversPage() {
     retry: false
   })
   const todayInfo = useCaregiverToday(centerId, today, now)
+  // One read for the whole center (BookingService scopes a manager to it); a caregiver without visits has no row.
+  const work = useQuery({
+    queryKey: statisticsKeys.caregiverWork({}),
+    queryFn: () => fetchCaregiverWork({}),
+    enabled: Boolean(centerId),
+    retry: false
+  })
+  const workOf = useMemo(() => new Map((work.data ?? []).map((item) => [item.caregiverId, item])), [work.data])
   const visible = useMemo(() => {
     const needle = foldText(keyword.trim())
     const people =
@@ -92,15 +101,17 @@ export function ManagerCaregiversPage() {
         return true
       }) ?? []
     return [...people].sort((a, b) =>
-      sort === 'experience'
-        ? (b.experienceYears ?? -1) - (a.experienceYears ?? -1)
-        : sort === 'newest'
-          ? (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
-          : sort === 'name'
-            ? a.fullName.localeCompare(b.fullName, 'vi')
-            : (b.ratingAverage ?? -1) - (a.ratingAverage ?? -1)
+      sort === 'visits'
+        ? (workOf.get(b.id)?.completedVisits ?? 0) - (workOf.get(a.id)?.completedVisits ?? 0)
+        : sort === 'experience'
+          ? (b.experienceYears ?? -1) - (a.experienceYears ?? -1)
+          : sort === 'newest'
+            ? (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
+            : sort === 'name'
+              ? a.fullName.localeCompare(b.fullName, 'vi')
+              : (b.ratingAverage ?? -1) - (a.ratingAverage ?? -1)
     )
-  }, [caregivers.data, keyword, experience, sort])
+  }, [caregivers.data, keyword, experience, sort, workOf])
   useDocumentTitle(t(`${key}.documentTitle`))
 
   function update(name: string, value: string) {
@@ -120,12 +131,14 @@ export function ManagerCaregiversPage() {
       [
         t(`${key}.downloadName`),
         t(`${r}.columns.experience`),
+        t(`${r}.columns.visits`),
         t(`${key}.downloadStatus`),
         t(`${key}.downloadVerification`)
       ],
       ...visible.map((person) => [
         person.fullName,
         person.experienceYears !== undefined ? String(person.experienceYears) : '',
+        work.isSuccess ? String(workOf.get(person.id)?.completedVisits ?? 0) : '',
         t(`${providerKey}.${statusLabels[person.caregiverStatus]}`),
         t(`${providerKey}.${verificationLabels[person.verificationStatus]}`)
       ])
@@ -280,7 +293,7 @@ export function ManagerCaregiversPage() {
               <caption className='sr-only'>{t(`${r}.title`)}</caption>
               <thead className='border-b border-outline-variant/50 bg-surface-container-low text-xs font-semibold text-on-surface-variant'>
                 <tr>
-                  {(['caregiver', 'experience', 'today', 'status', 'verification', 'actions'] as const).map(
+                  {(['caregiver', 'experience', 'visits', 'today', 'status', 'verification', 'actions'] as const).map(
                     (column) => (
                       <th className={`px-4 py-3 ${column === 'actions' ? 'text-right' : ''}`} key={column} scope='col'>
                         {t(`${r}.columns.${column}`)}
@@ -325,6 +338,22 @@ export function ManagerCaregiversPage() {
                         {person.experienceYears !== undefined
                           ? t(`${providerKey}.yearsValue`, { count: person.experienceYears })
                           : '—'}
+                      </td>
+                      <td className='px-4 py-3 tabular-nums'>
+                        {work.isSuccess ? (
+                          <>
+                            <span className='block font-semibold text-on-surface'>
+                              {t(`${r}.visitsDone`, { count: workOf.get(person.id)?.completedVisits ?? 0 })}
+                            </span>
+                            {(workOf.get(person.id)?.upcomingVisits ?? 0) > 0 ? (
+                              <span className='text-xs text-on-surface-variant'>
+                                {t(`${r}.visitsUpcoming`, { count: workOf.get(person.id)?.upcomingVisits ?? 0 })}
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          '—'
+                        )}
                       </td>
                       <td className='px-4 py-3'>
                         {todayInfo.failed ? (

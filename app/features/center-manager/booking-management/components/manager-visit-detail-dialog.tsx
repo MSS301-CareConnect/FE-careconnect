@@ -14,6 +14,8 @@ import { Icon } from '~/shared/ui/icon'
 import { Modal } from '~/shared/ui/modal'
 import { StatusBadge } from '~/shared/ui/status-badge'
 
+import { ManagerVisitAbsence } from './manager-visit-absence'
+
 const k = 'centerManager.bookingDetail.visit' as const
 // Visits that may have a care session, report or no-show to show.
 const STARTED: ReadonlySet<BookingOccurrenceRecord['status']> = new Set([
@@ -147,6 +149,8 @@ export function ManagerVisitDetailDialog({
             ) : null}
           </div>
         ) : null}
+
+        <ManagerVisitAbsence bookingId={booking.id} caregiverName={caregiverName} occurrence={occurrence} />
 
         <div className='grid gap-4 md:grid-cols-2'>
           <div className='space-y-4'>

@@ -112,7 +112,10 @@ export function CustomerBookingsPage() {
             <Pagination
               ariaLabel={t(`${key}.pagination.label`)}
               onPageChange={list.setPage}
+              onPageSizeChange={list.setPageSize}
               page={list.page}
+              pageSize={list.pageSize}
+              totalElements={list.matchingCount}
               totalPages={list.totalPages}
             />
             {collection.data?.truncated ? (

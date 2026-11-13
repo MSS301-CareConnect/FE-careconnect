@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { toastSuccess } from '~/shared/ui/app-toast'
+import { toastError, toastSuccess } from '~/shared/ui/app-toast'
 
 import {
   cancelMyShiftRegistration,
@@ -11,6 +11,7 @@ import {
 } from '~/entities/provider/provider-api'
 import { shiftInstant } from '~/entities/provider/work-shift'
 import type { ProviderShiftRegistrationRecord, ProviderWorkShiftRecord } from '~/shared/api/generated/contracts'
+import { Button } from '~/shared/ui/button'
 import { FilterChips } from '~/shared/ui/filter-chips'
 import { Icon } from '~/shared/ui/icon'
 import { ConfirmDialog } from '~/shared/ui/modal'
@@ -82,6 +83,7 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
   const [registering, setRegistering] = useState<ProviderWorkShiftRecord | null>(null)
   const [cancelling, setCancelling] = useState<ProviderShiftRegistrationRecord | null>(null)
   const [withdrawing, setWithdrawing] = useState<ProviderShiftRegistrationRecord | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const profile = useMyCaregiverProfile()
   const shifts = useOpenShifts(centerId)
   const registrations = useMyRegistrations()
@@ -100,6 +102,29 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
     onSuccess: async () => {
       toastSuccess(t('caregiver.work.shifts.registered'))
       setRegistering(null)
+      await refresh()
+    }
+  })
+  // One request per shift, in order, so the backend's overlap and capacity checks see the earlier sign-ups.
+  const bulkRegister = useMutation({
+    mutationFn: async (list: ProviderWorkShiftRecord[]) => {
+      const failed: { shift: ProviderWorkShiftRecord; error: unknown }[] = []
+      for (const shift of list) {
+        try {
+          await registerForShift(shift.id, { caregiverNote: undefined })
+        } catch (error) {
+          failed.push({ shift, error })
+        }
+      }
+      return { done: list.length - failed.length, failed }
+    },
+    onSuccess: async ({ done, failed }) => {
+      if (done > 0) toastSuccess(t('caregiver.work.shifts.bulkRegistered', { count: done }))
+      if (failed.length > 0)
+        toastError(
+          t('caregiver.work.shifts.bulkFailed', { count: failed.length, reason: t(shiftErrorKey(failed[0].error)) })
+        )
+      setSelected(new Set(failed.map(({ shift }) => shift.id)))
       await refresh()
     }
   })
@@ -130,6 +155,17 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
     (shift) =>
       shift.shiftStatus === 'OPEN' && !activeByShift.has(shift.id) && startsLater(shift.workDate, shift.startTime)
   )
+  const isFull = (shift: ProviderWorkShiftRecord) =>
+    (shift.capacity ?? 0) > 0 && shift.approvedCount !== undefined && shift.approvedCount >= (shift.capacity ?? 0)
+  const selectable = openShifts.filter((shift) => !isFull(shift))
+  // Derived, so a shift that closed or got taken since it was ticked drops out on its own.
+  const chosen = selectable.filter((shift) => selected.has(shift.id))
+  const toggle = (id: string) =>
+    setSelected((current) => {
+      const next = new Set(current)
+      if (!next.delete(id)) next.add(id)
+      return next
+    })
   const lists: Record<Exclude<Filter, 'open'>, ProviderShiftRegistrationRecord[]> = {
     pending: [],
     approved: [],
@@ -204,21 +240,60 @@ export function ShiftSignup({ centerId, centerName }: { centerId?: string; cente
             title={t('caregiver.work.shifts.empty.open')}
           />
         ) : (
-          <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3' key={`open-${openPage.page}`}>
-            {openPage.items.map((shift) => (
-              <li key={shift.id}>
-                <ShiftCard
-                  now={now}
-                  onRegister={() => {
-                    register.reset()
-                    setRegistering(shift)
-                  }}
-                  shift={shift}
-                  state='none'
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            {selectable.length > 0 ? (
+              <div className={`${cgCard} flex flex-wrap items-center gap-2 p-3`}>
+                <span className='text-sm font-medium text-on-surface tabular-nums'>
+                  {t('caregiver.work.shifts.selectedCount', { count: chosen.length })}
+                </span>
+                <Button
+                  disabled={chosen.length === selectable.length || bulkRegister.isPending}
+                  onClick={() => setSelected(new Set(selectable.map((shift) => shift.id)))}
+                  size='sm'
+                  variant='outline'
+                >
+                  {t('caregiver.work.shifts.selectAll', { count: selectable.length })}
+                </Button>
+                {chosen.length > 0 ? (
+                  <Button
+                    disabled={bulkRegister.isPending}
+                    onClick={() => setSelected(new Set())}
+                    size='sm'
+                    variant='ghost'
+                  >
+                    {t('caregiver.work.shifts.clearSelection')}
+                  </Button>
+                ) : null}
+                <Button
+                  className='ml-auto'
+                  disabled={chosen.length === 0}
+                  leftIcon={<Icon className='text-lg' name='done_all' />}
+                  loading={bulkRegister.isPending}
+                  onClick={() => bulkRegister.mutate(chosen)}
+                  size='sm'
+                >
+                  {t('caregiver.work.shifts.bulkRegister', { count: chosen.length })}
+                </Button>
+              </div>
+            ) : null}
+            <ul className='cg-stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3' key={`open-${openPage.page}`}>
+              {openPage.items.map((shift) => (
+                <li key={shift.id}>
+                  <ShiftCard
+                    now={now}
+                    onRegister={() => {
+                      register.reset()
+                      setRegistering(shift)
+                    }}
+                    onToggleSelect={() => toggle(shift.id)}
+                    selected={selected.has(shift.id)}
+                    shift={shift}
+                    state='none'
+                  />
+                </li>
+              ))}
+            </ul>
+          </>
         )
       ) : null}
       {filter === 'open' && shifts.isSuccess ? (

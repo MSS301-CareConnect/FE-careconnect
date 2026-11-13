@@ -76,11 +76,21 @@ export const managerAttentionVi = {
   details: 'Chi tiết',
   close: 'Đóng',
   cards: {
+    unassigned: { title: 'Buổi chưa có người chăm sóc', hint: 'Bị hủy và hoàn tiền nếu không phân kịp' },
     withdrawals: { title: 'Người chăm sóc xin rút ca', hint: 'Buổi cần người khác thay' },
     reviews: { title: 'Ca chờ trung tâm xác nhận', hint: 'Tiền buổi đang được giữ lại' },
     absences: { title: 'Người chăm sóc vắng ca', hint: 'Cần kết luận: có lý do hay vi phạm' }
   },
-  dialogTitle: '{{title}} ({{count}})'
+  dialogTitle: '{{title}} ({{count}})',
+  unassigned: {
+    description:
+      'Khách đã thanh toán nhưng hệ thống chưa tìm được người: chỉ người có ca làm việc đã duyệt phủ giờ buổi mới được tự phân công. Mở ca cho khung giờ đó hoặc phân công tay trước giờ hủy.',
+    visit: 'Buổi {{number}} · {{time}}',
+    replacement: 'Cần người thay',
+    cancelAt: 'Tự hủy và hoàn tiền lúc {{time}} nếu chưa có người',
+    openShift: 'Mở ca cho giờ này',
+    assign: 'Phân công'
+  }
 }
 
 export const managerAttentionEn: typeof managerAttentionVi = {
@@ -90,9 +100,19 @@ export const managerAttentionEn: typeof managerAttentionVi = {
   details: 'Details',
   close: 'Close',
   cards: {
+    unassigned: { title: 'Visits without a caregiver', hint: 'Cancelled and refunded if not assigned in time' },
     withdrawals: { title: 'Caregivers withdrew from visits', hint: 'Visits that need someone else' },
     reviews: { title: 'Visits waiting for the center', hint: 'Their money is held' },
     absences: { title: 'Caregiver absences', hint: 'Decide: excused or a violation' }
   },
-  dialogTitle: '{{title}} ({{count}})'
+  dialogTitle: '{{title}} ({{count}})',
+  unassigned: {
+    description:
+      'The customer paid but nobody could be assigned yet: auto-assign only picks caregivers whose approved shifts cover the visit. Open a shift for that time or assign someone before the cancel time.',
+    visit: 'Visit {{number}} · {{time}}',
+    replacement: 'Needs a replacement',
+    cancelAt: 'Cancelled and refunded at {{time}} if still unassigned',
+    openShift: 'Open a shift for this time',
+    assign: 'Assign'
+  }
 }

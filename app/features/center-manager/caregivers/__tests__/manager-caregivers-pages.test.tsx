@@ -17,6 +17,8 @@ import {
   uploadMedia,
   verifyCertificateByCenter
 } from '~/entities/provider/provider-api'
+import { fetchFeedbacks } from '~/entities/aftercare/aftercare-api'
+import { fetchCaregiverWork } from '~/entities/statistics/statistics-api'
 import { AuthUserContext } from '~/features/shared/auth/auth-user-context'
 import type { ProviderCaregiverRecord } from '~/shared/api/generated/contracts'
 import { setAppLanguage } from '~/shared/i18n/i18n'
@@ -26,6 +28,14 @@ import { ManagerCaregiversPage } from '../manager-caregivers-page'
 import { provisionCaregiverAccount } from '../caregiver-onboarding-api'
 
 vi.mock('../caregiver-onboarding-api', () => ({ provisionCaregiverAccount: vi.fn() }))
+vi.mock('~/entities/statistics/statistics-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/statistics/statistics-api')>()),
+  fetchCaregiverWork: vi.fn()
+}))
+vi.mock('~/entities/aftercare/aftercare-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/entities/aftercare/aftercare-api')>()),
+  fetchFeedbacks: vi.fn()
+}))
 
 vi.mock('~/entities/provider/provider-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~/entities/provider/provider-api')>()),
@@ -77,6 +87,10 @@ beforeEach(async () => {
   vi.mocked(fetchCaregiver).mockReset()
   vi.mocked(fetchCertificates).mockReset()
   vi.mocked(fetchProviderMedia).mockReset().mockResolvedValue([])
+  vi.mocked(fetchCaregiverWork).mockReset().mockResolvedValue([])
+  vi.mocked(fetchFeedbacks)
+    .mockReset()
+    .mockResolvedValue({ items: [], page: 0, size: 5, totalElements: 0, totalPages: 1 })
   vi.mocked(saveCaregiver).mockReset()
   vi.mocked(createCertificate).mockReset()
   vi.mocked(createCaregiver).mockReset()
@@ -157,10 +171,25 @@ describe('Center Manager Provider caregivers', () => {
     })
     vi.mocked(fetchCaregiver).mockResolvedValue(person)
     vi.mocked(fetchCertificates).mockResolvedValue([])
+    vi.mocked(fetchCaregiverWork).mockResolvedValue([
+      {
+        caregiverId: person.id,
+        completedVisits: 7,
+        upcomingVisits: 2,
+        missedVisits: 0,
+        cancelledVisits: 0,
+        customerNoShowVisits: 0,
+        completedMinutes: 420,
+        ratingCount: 0,
+        services: []
+      }
+    ])
     renderManager()
 
     expect(await screen.findByText('Lan Nguyen')).toBeInTheDocument()
     expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
+    expect(await screen.findByText('7 visits')).toBeInTheDocument()
+    expect(screen.getByText('2 upcoming')).toBeInTheDocument()
     expect(fetchCaregivers).toHaveBeenCalledWith('center-1', {
       page: 0,
       size: 10,
@@ -170,6 +199,9 @@ describe('Center Manager Provider caregivers', () => {
     fireEvent.click(screen.getByRole('link', { name: 'View profile' }))
     expect(await screen.findByRole('heading', { name: 'Lan Nguyen' })).toBeInTheDocument()
     expect(await screen.findByText('No certificates yet.')).toBeInTheDocument()
+    expect(await screen.findByText('7 h')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Customer reviews' })).toBeInTheDocument()
+    expect(fetchFeedbacks).toHaveBeenCalledWith(expect.objectContaining({ caregiverId: person.id }))
     expect(screen.queryByText('caregiver-1')).not.toBeInTheDocument()
   })
 

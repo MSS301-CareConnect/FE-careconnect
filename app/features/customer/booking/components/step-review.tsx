@@ -10,6 +10,7 @@ import { Button } from '~/shared/ui/button'
 import { Skeleton, SkeletonGroup } from '~/shared/ui/skeleton'
 
 import type { BookingForm, WizardStep } from '../hooks/use-booking-form'
+import { useFreeCaregiverCheck } from '../hooks/use-free-caregiver-check'
 import { quoteFacts } from './booking-quote'
 import { NextSteps } from './next-steps'
 import { QuoteLines } from './quote-lines'
@@ -25,6 +26,12 @@ export function StepReview({ form }: { form: BookingForm }) {
   const policy = form.policy.data
   const visits = allVisits ? facts.occurrences : facts.occurrences.slice(0, VISIBLE_VISITS)
   const serviceNames = form.offerings.data?.filter((offering) => form.services[offering.id]) ?? []
+  const { noneFree } = useFreeCaregiverCheck(
+    form.centerId,
+    form.careServiceIds,
+    facts.occurrences,
+    !form.chosenCaregiver && form.schedule.bookingType !== 'SHIFT'
+  )
 
   return (
     <div className='flex flex-col gap-6'>
@@ -67,6 +74,15 @@ export function StepReview({ form }: { form: BookingForm }) {
         </ReviewRow>
         <ReviewRow label={t('customer.booking.summary.caregiver')} onEdit={() => form.goTo(2)} step={2}>
           {form.chosenCaregiver?.fullName ?? t('customer.booking.summary.letCenter')}
+          {noneFree ? (
+            <span
+              className='mt-2 flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-container p-3 text-sm font-normal text-on-warning-container'
+              role='status'
+            >
+              <Icon className='mt-0.5 text-base' name='warning' />
+              {t('customer.booking.review.noneFree')}
+            </span>
+          ) : null}
         </ReviewRow>
         <ReviewRow label={t('customer.booking.summary.schedule')} onEdit={() => form.goTo(3)} step={3}>
           <p>

@@ -15,14 +15,20 @@ import {
   resolveComplaint,
   withdrawComplaint
 } from '~/shared/api/generated/api/complaint/complaint'
-import { createFeedback, listEligibleFeedbackCaregivers } from '~/shared/api/generated/api/feedback/feedback'
+import {
+  createFeedback,
+  listEligibleFeedbackCaregivers,
+  listFeedbacks,
+  replyFeedback
+} from '~/shared/api/generated/api/feedback/feedback'
 import { apiRequestErrorKey } from '~/shared/api/error-details'
 import type {
   CareReportRequest,
   ComplaintAdminResolutionRequest,
   ComplaintRequest,
   ComplaintStatus,
-  FeedbackRequest
+  FeedbackRequest,
+  ListFeedbacksParams
 } from '~/shared/api/generated/contracts'
 import { readOptions, serviceResponse, writeOptions } from '~/shared/api/request'
 
@@ -35,7 +41,9 @@ export const aftercareKeys = {
   notes: (sessionId: string) => ['aftercare', 'notes', sessionId] as const,
   eligible: (bookingId: string) => ['aftercare', 'eligible', bookingId] as const,
   complaints: (status: string) => ['aftercare', 'complaints', status] as const,
-  complaintsAll: ['aftercare', 'complaints'] as const
+  complaintsAll: ['aftercare', 'complaints'] as const,
+  feedbacksAll: ['aftercare', 'feedbacks'] as const,
+  feedbacks: (params: ListFeedbacksParams) => ['aftercare', 'feedbacks', params] as const
 }
 
 // ===== care reports (H-04) =====
@@ -81,6 +89,16 @@ export async function sendFeedback(request: FeedbackRequest) {
   return result(await createFeedback(request, await writeOptions()))
 }
 
+/** Visible reviews, newest first, filtered by caregiver, center and star; booking IDs are never returned. */
+export async function fetchFeedbacks(params: ListFeedbacksParams) {
+  return result(await listFeedbacks(params, readOptions))
+}
+
+/** The center's one public answer to a review (BookingService refuses a second one, and other centers' reviews). */
+export async function sendFeedbackReply(id: string, reply: string) {
+  return result(await replyFeedback(id, { reply }, await writeOptions()))
+}
+
 /** BookingService scopes the list to the caller: own complaints, own center, or every escalated case for admins. */
 export async function fetchComplaints(status?: ComplaintStatus) {
   return result(await listComplaints({ status, ...PAGE }, readOptions)).items ?? []
@@ -112,7 +130,7 @@ export async function adminResolve(id: string, request: ComplaintAdminResolution
 }
 
 // D20 complaint rules and M-09 refund cap: codes with their own message.
-const KNOWN_ERROR_CODES = [5923, 5926, 5927, 5928] as const
+const KNOWN_ERROR_CODES = [5903, 5904, 5923, 5926, 5927, 5928] as const
 
 /** HTTP 4xx / 5xx from BookingService mapped to a short translated message. */
 export function aftercareErrorKey(error: unknown) {
